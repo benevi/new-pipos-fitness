@@ -1,0 +1,13 @@
+{
+  "name": "@pipos/mobile",
+  "version": "0.0.1",
+  "private": true,
+  "description": "Flutter app placeholder. Phase 13.",
+  "scripts": {
+    "build": "echo 'Mobile app: Phase 13'",
+    "lint": "echo 'Mobile app: Phase 13'",
+    "typecheck": "echo 'Mobile app: Phase 13'",
+    "test": "echo 'Mobile app: Phase 13'",
+    "test:ci": "echo 'Mobile app: Phase 13'"
+  }
+}

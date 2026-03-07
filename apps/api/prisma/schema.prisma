@@ -1,0 +1,256 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TrainingLocation {
+  home
+  gym
+  calisthenics
+}
+
+enum VolumeTrend {
+  up
+  down
+  stable
+}
+
+model User {
+  id                    String            @id @default(uuid())
+  email                 String
+  emailNormalized       String            @unique
+  passwordHash          String
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+  heightCm              Float?
+  weightKg              Float?
+  age                   Int?
+  sex                   String?
+  trainingLevel         String?
+  preferredTrainingDays Int?
+  availableEquipment    Json?
+  trainingLocation      TrainingLocation?
+  goals                 Json?
+  muscleFocus           Json?
+  refreshTokens         RefreshToken[]
+  trainingPlans         TrainingPlan[]
+  workoutSessions       WorkoutSession[]
+  exerciseProgress      ExerciseProgress[]
+}
+
+model ExerciseProgress {
+  id               String      @id @default(uuid())
+  userId           String
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId       String
+  estimated1RM     Float?
+  volumeLastWeek   Float?
+  volumeTrend      VolumeTrend?
+  fatigueScore     Float?
+  lastUpdated      DateTime    @default(now())
+  @@unique([userId, exerciseId])
+  @@index([userId])
+  @@index([userId, lastUpdated])
+}
+
+model TrainingPlan {
+  id                String              @id @default(uuid())
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime             @default(now())
+  currentVersionId  String?
+  currentVersion   TrainingPlanVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
+  versions          TrainingPlanVersion[] @relation("PlanVersions")
+  @@index([userId])
+}
+
+model TrainingPlanVersion {
+  id               String               @id @default(uuid())
+  planId           String
+  plan             TrainingPlan         @relation("PlanVersions", fields: [planId], references: [id], onDelete: Cascade)
+  currentOfPlan    TrainingPlan[]       @relation("CurrentVersion")
+  version          Int
+  createdAt        DateTime             @default(now())
+  engineVersion    String
+  objectiveScore   Float
+  sessions         TrainingSession[]
+  @@unique([planId, version])
+  @@index([planId])
+}
+
+model TrainingSession {
+  id                     String                   @id @default(uuid())
+  planVersionId          String
+  planVersion            TrainingPlanVersion      @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+  sessionIndex           Int
+  name                   String
+  targetDurationMinutes  Int
+  exercises              TrainingSessionExercise[]
+  workoutSessions        WorkoutSession[]
+  @@unique([planVersionId, sessionIndex])
+  @@index([planVersionId])
+}
+
+model WorkoutSession {
+  id                String           @id @default(uuid())
+  userId            String
+  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planSessionId     String?
+  planSession       TrainingSession? @relation(fields: [planSessionId], references: [id], onDelete: SetNull)
+  startedAt         DateTime         @default(now())
+  completedAt       DateTime?
+  durationMinutes   Int?
+  notes             String?
+  exercises         WorkoutExercise[]
+  @@index([userId])
+  @@index([userId, startedAt])
+  @@index([planSessionId])
+}
+
+model WorkoutExercise {
+  id               String        @id @default(uuid())
+  workoutSessionId String
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  exerciseId       String
+  exercise         Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  order            Int
+  sets             WorkoutSet[]
+  @@unique([workoutSessionId, order])
+  @@index([workoutSessionId])
+}
+
+model WorkoutSet {
+  id                String          @id @default(uuid())
+  workoutExerciseId String
+  workoutExercise   WorkoutExercise  @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
+  setIndex          Int
+  weightKg          Float?
+  reps              Int?
+  rir               Int?
+  completed         Boolean         @default(true)
+  @@unique([workoutExerciseId, setIndex])
+  @@index([workoutExerciseId])
+}
+
+model TrainingSessionExercise {
+  id             String          @id @default(uuid())
+  sessionId      String
+  session        TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  exerciseId     String
+  sets           Int
+  repRangeMin    Int
+  repRangeMax    Int
+  restSeconds    Int
+  rirTarget      Int
+  @@index([sessionId])
+}
+
+model RefreshToken {
+  id                 String         @id @default(uuid())
+  userId             String
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash          String
+  expiresAt          DateTime
+  createdAt          DateTime       @default(now())
+  revokedAt          DateTime?
+  replacedByTokenId   String?
+  replacedByToken    RefreshToken?  @relation("RefreshTokenRotation", fields: [replacedByTokenId], references: [id])
+  supersededBy       RefreshToken[] @relation("RefreshTokenRotation")
+  createdByIp        String?
+  userAgent          String?
+}
+
+model Muscle {
+  id           String          @id @default(uuid())
+  name         String
+  region       String
+  meshRegionId String?
+  exercises    ExerciseMuscle[]
+}
+
+model EquipmentItem {
+  id        String           @id @default(uuid())
+  name      String
+  category  String
+  exercises ExerciseEquipment[]
+}
+
+model Exercise {
+  id               String                @id @default(uuid())
+  slug             String                @unique
+  name             String
+  description      String?
+  difficulty       Int
+  movementPattern  String?
+  place            TrainingLocation
+  muscles          ExerciseMuscle[]
+  equipment        ExerciseEquipment[]
+  variants         ExerciseVariant[]     @relation("ExerciseVariants")
+  variantOf        ExerciseVariant[]      @relation("VariantOf")
+  media            ExerciseMediaYouTube[]
+  workoutExercises WorkoutExercise[]
+}
+
+model ExerciseMuscle {
+  exerciseId String
+  muscleId   String
+  role       String
+  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  muscle     Muscle   @relation(fields: [muscleId], references: [id], onDelete: Cascade)
+
+  @@id([exerciseId, muscleId])
+  @@index([muscleId])
+}
+
+model ExerciseEquipment {
+  exerciseId      String
+  equipmentItemId String
+  exercise        Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  equipmentItem   EquipmentItem @relation(fields: [equipmentItemId], references: [id], onDelete: Cascade)
+
+  @@id([exerciseId, equipmentItemId])
+  @@index([equipmentItemId])
+}
+
+model ExerciseVariant {
+  id                 String   @id @default(uuid())
+  exerciseId         String
+  variantExerciseId String
+  reason             String?
+  exercise           Exercise @relation("ExerciseVariants", fields: [exerciseId], references: [id], onDelete: Cascade)
+  variantExercise   Exercise @relation("VariantOf", fields: [variantExerciseId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseId])
+}
+
+enum CurationStatus {
+  approved
+  pending
+  rejected
+  unavailable
+}
+
+model ExerciseMediaYouTube {
+  id             String         @id @default(uuid())
+  exerciseId     String
+  youtubeVideoId String
+  channelName    String?
+  isPrimary      Boolean        @default(false)
+  startSeconds   Int?
+  endSeconds     Int?
+  curationStatus CurationStatus @default(pending)
+  exercise       Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@index([exerciseId])
+}
+
+model YouTubeChannel {
+  id           String   @id @default(uuid())
+  channelName  String   @unique
+  trustedScore Float?
+  whitelisted  Boolean  @default(false)
+}
