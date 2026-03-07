@@ -36,8 +36,10 @@ model User {
   trainingLocation      TrainingLocation?
   goals                 Json?
   muscleFocus           Json?
+  dislikedFoodIds       Json?
   refreshTokens         RefreshToken[]
   trainingPlans         TrainingPlan[]
+  nutritionPlans        NutritionPlan[]
   workoutSessions       WorkoutSession[]
   exerciseProgress      ExerciseProgress[]
 }
@@ -78,6 +80,7 @@ model TrainingPlanVersion {
   engineVersion    String
   objectiveScore   Float
   sessions         TrainingSession[]
+  workoutSessions  WorkoutSession[]
   @@unique([planId, version])
   @@index([planId])
 }
@@ -96,12 +99,14 @@ model TrainingSession {
 }
 
 model WorkoutSession {
-  id                String           @id @default(uuid())
+  id                String               @id @default(uuid())
   userId            String
-  user              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   planSessionId     String?
-  planSession       TrainingSession? @relation(fields: [planSessionId], references: [id], onDelete: SetNull)
-  startedAt         DateTime         @default(now())
+  planSession       TrainingSession?     @relation(fields: [planSessionId], references: [id], onDelete: SetNull)
+  planVersionId    String?
+  planVersion       TrainingPlanVersion? @relation(fields: [planVersionId], references: [id], onDelete: SetNull)
+  startedAt         DateTime             @default(now())
   completedAt       DateTime?
   durationMinutes   Int?
   notes             String?
@@ -109,6 +114,7 @@ model WorkoutSession {
   @@index([userId])
   @@index([userId, startedAt])
   @@index([planSessionId])
+  @@index([planVersionId])
 }
 
 model WorkoutExercise {
@@ -253,4 +259,93 @@ model YouTubeChannel {
   channelName  String   @unique
   trustedScore Float?
   whitelisted  Boolean  @default(false)
+}
+
+model Food {
+  id               String            @id @default(uuid())
+  name             String
+  caloriesPer100g  Float
+  proteinPer100g   Float
+  carbsPer100g     Float
+  fatPer100g       Float
+  mealTemplateFoods MealTemplateFood[]
+  nutritionMealItems NutritionMealItem[]
+  @@index([name])
+}
+
+model MealTemplate {
+  id               String             @id @default(uuid())
+  name             String
+  mealTemplateFoods MealTemplateFood[]
+  nutritionMeals   NutritionMeal[]
+  @@index([name])
+}
+
+model MealTemplateFood {
+  id              String        @id @default(uuid())
+  mealTemplateId  String
+  foodId          String
+  quantityG       Float
+  mealTemplate    MealTemplate  @relation(fields: [mealTemplateId], references: [id], onDelete: Cascade)
+  food            Food          @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  @@unique([mealTemplateId, foodId])
+  @@index([mealTemplateId])
+  @@index([foodId])
+}
+
+model NutritionPlan {
+  id                String               @id @default(uuid())
+  userId            String
+  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  currentVersionId  String?
+  currentVersion    NutritionPlanVersion? @relation("CurrentNutritionVersion", fields: [currentVersionId], references: [id])
+  versions          NutritionPlanVersion[] @relation("NutritionPlanVersions")
+  @@index([userId])
+}
+
+model NutritionPlanVersion {
+  id               String           @id @default(uuid())
+  planId           String
+  plan             NutritionPlan    @relation("NutritionPlanVersions", fields: [planId], references: [id], onDelete: Cascade)
+  currentOfPlan    NutritionPlan[]  @relation("CurrentNutritionVersion")
+  version          Int
+  createdAt        DateTime         @default(now())
+  engineVersion    String
+  days             NutritionDay[]
+  @@unique([planId, version])
+  @@index([planId])
+}
+
+model NutritionDay {
+  id                 String          @id @default(uuid())
+  planVersionId      String
+  planVersion        NutritionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
+  dayIndex           Int
+  meals              NutritionMeal[]
+  @@unique([planVersionId, dayIndex])
+  @@index([planVersionId])
+}
+
+model NutritionMeal {
+  id               String             @id @default(uuid())
+  nutritionDayId   String
+  nutritionDay     NutritionDay       @relation(fields: [nutritionDayId], references: [id], onDelete: Cascade)
+  mealIndex        Int
+  name             String
+  templateId       String?
+  template         MealTemplate?      @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  items            NutritionMealItem[]
+  @@index([nutritionDayId])
+  @@index([templateId])
+}
+
+model NutritionMealItem {
+  id              String        @id @default(uuid())
+  nutritionMealId String
+  foodId          String
+  quantityG       Float
+  nutritionMeal   NutritionMeal @relation(fields: [nutritionMealId], references: [id], onDelete: Cascade)
+  food            Food          @relation(fields: [foodId], references: [id], onDelete: Cascade)
+  @@index([nutritionMealId])
+  @@index([foodId])
 }

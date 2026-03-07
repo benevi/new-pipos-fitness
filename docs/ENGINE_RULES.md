@@ -20,12 +20,14 @@ Placeholder sections for training and nutrition engine rules. To be expanded in 
 
 - **Adaptation:** Uses catalog ExerciseMuscle mapping. When progress indicates fatigue (per-exercise fatigueScore > 0.5 in exerciseHistory), only exercises that target those fatigued muscles have their sets reduced. When adherenceScore < threshold (0.7), all exercises are reduced (global deload). Deterministic.
 
-## Nutrition Engine Rules
+## Nutrition Engine Rules (Phase 8)
 
-- (Phase 7) Rules for generating and adjusting nutrition plans.
-- (Phase 7) Inputs: user profile, goals, dietary constraints, preferences.
-- (Phase 7) Outputs: structured plan (immutable, versioned).
-- Safety: caloric bounds, macro limits, allergen handling (to be defined).
+- **Calories:** Mifflin-St Jeor BMR (sex, weight, height, age). TDEE = BMR × activity factor (default 1.375). Goal: lose_fat −15%, build_muscle +10%, maintain baseline.
+- **Macros:** Protein 2 g/kg, fat 0.8 g/kg; carbs from remaining calories.
+- **Meal generation:** From MealTemplate catalog; scale portions to daily calorie target; respect dislikedFoodIds; deterministic (stable sort by template id).
+- **Inputs:** user (sex, heightCm, weightKg, age), goal (lose_fat | build_muscle | maintain), dislikedFoodIds, catalog (foods, mealTemplates).
+- **Outputs:** weekPlan (7 days, each with meals and items), metadata (engineVersion, dailyCalorieTarget, dailyMacroTarget).
+- **Determinism:** Same input → same output; no randomness.
 
 ## Safety Guardrails
 

@@ -134,7 +134,6 @@ export class AnalyticsService {
       },
       include: {
         exercises: { include: { sets: { orderBy: { setIndex: 'asc' } } } },
-        planSession: { select: { planVersionId: true } },
       },
       orderBy: { startedAt: 'asc' },
     });
@@ -175,38 +174,34 @@ export class AnalyticsService {
       }
     }
 
-    let plannedSets = 0;
-    const lastWeekSessions = sessions.filter(
-      (s) => s.startedAt.getTime() >= weekAgo.getTime(),
+    // Adherence: session-based. Only workouts in last 7 days with planSessionId.
+    const lastWeekSessionsForAdherence = sessions.filter(
+      (s) =>
+        s.startedAt.getTime() >= weekAgo.getTime() &&
+        s.planSessionId != null,
     );
-    const versionIdCounts = new Map<string, number>();
-    for (const sess of lastWeekSessions) {
-      const planVersionId = sess.planSession?.planVersionId;
-      if (planVersionId) {
-        versionIdCounts.set(planVersionId, (versionIdCounts.get(planVersionId) ?? 0) + 1);
+    let plannedSets = 0;
+    let completedSetsForAdherence = 0;
+    const sessionPlannedCache = new Map<string, number>();
+    for (const sess of lastWeekSessionsForAdherence) {
+      const planSessionId = sess.planSessionId!;
+      let sessionPlanned = sessionPlannedCache.get(planSessionId);
+      if (sessionPlanned === undefined) {
+        const trainingSession = await this.prisma.trainingSession.findUnique({
+          where: { id: planSessionId },
+          include: { exercises: true },
+        });
+        sessionPlanned = trainingSession
+          ? trainingSession.exercises.reduce((sum, e) => sum + e.sets, 0)
+          : 0;
+        sessionPlannedCache.set(planSessionId, sessionPlanned);
+      }
+      plannedSets += sessionPlanned;
+      for (const ex of sess.exercises) {
+        for (const s of ex.sets) if (s.completed) completedSetsForAdherence += 1;
       }
     }
-    let planVersionIdForWeek: string | null = null;
-    if (versionIdCounts.size > 0) {
-      let maxCount = 0;
-      for (const [vid, count] of versionIdCounts) {
-        if (count > maxCount) {
-          maxCount = count;
-          planVersionIdForWeek = vid;
-        }
-      }
-    }
-    if (planVersionIdForWeek) {
-      const version = await this.prisma.trainingPlanVersion.findUnique({
-        where: { id: planVersionIdForWeek },
-        include: { sessions: { include: { exercises: true } } },
-      });
-      if (version) {
-        for (const s of version.sessions) {
-          for (const e of s.exercises) plannedSets += e.sets;
-        }
-      }
-    }
+    completedSetsLastWeek = completedSetsForAdherence;
 
     return {
       setsByExerciseLastWeek,

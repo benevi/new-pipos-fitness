@@ -32,6 +32,7 @@ export class UsersService {
         trainingLocation: true,
         goals: true,
         muscleFocus: true,
+        dislikedFoodIds: true,
       },
     });
     if (!user) {

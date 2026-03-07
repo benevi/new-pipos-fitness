@@ -42,10 +42,12 @@ describe('Workouts (e2e)', () => {
 
   beforeAll(async () => {
     mockUser.passwordHash = await bcrypt.hash('password123', 10);
+    let sessionPlanVersionId: string | null = null;
     const mockWorkoutSession = () => ({
       id: workoutSessionId,
       userId,
       planSessionId: null,
+      planVersionId: sessionPlanVersionId,
       startedAt: new Date(),
       completedAt: sessionCompletedAt,
       durationMinutes: sessionDurationMinutes,
@@ -84,16 +86,20 @@ describe('Workouts (e2e)', () => {
           delete: vi.fn(),
         },
         workoutSession: {
-          create: vi.fn().mockImplementation((args: { data: { userId: string; planSessionId?: string | null } }) => {
+          create: vi.fn().mockImplementation((args: { data: { userId: string; planSessionId?: string | null; planVersionId?: string | null } }) => {
+            sessionPlanVersionId = args.data.planVersionId ?? null;
             return Promise.resolve({
               ...mockWorkoutSession(),
               ...args.data,
               exercises: [],
             });
           }),
-          findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) =>
-            args.where.id === workoutSessionId ? Promise.resolve(mockWorkoutSession()) : Promise.resolve(null),
-          ),
+          findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) => {
+            if (args.where.id === workoutSessionId) return Promise.resolve(mockWorkoutSession());
+            if (args.where.id === 'ws-other-user')
+              return Promise.resolve({ ...mockWorkoutSession(), id: 'ws-other-user', userId: 'other-user-id', completedAt: null });
+            return Promise.resolve(null);
+          }),
           findMany: vi.fn().mockImplementation(() =>
             Promise.resolve([mockWorkoutSession()]),
           ),
@@ -133,7 +139,11 @@ describe('Workouts (e2e)', () => {
           }),
         },
         trainingSession: {
-          findUnique: vi.fn().mockResolvedValue({ id: 'ts-1' }),
+          findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) =>
+            args.where.id === 'ts-1'
+              ? Promise.resolve({ id: 'ts-1', planVersionId: 'pv-1' })
+              : Promise.resolve(null),
+          ),
         },
         exercise: {
           findUnique: vi.fn().mockResolvedValue({ id: exerciseId }),
@@ -169,12 +179,22 @@ describe('Workouts (e2e)', () => {
       expect(res.body.startedAt).toBeDefined();
     });
 
-    it('accepts planSessionId in body', async () => {
-      await request(app.getHttpServer())
+    it('accepts planSessionId in body and returns planVersionId', async () => {
+      const res = await request(app.getHttpServer())
         .post('/workouts/start')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({ planSessionId: 'ts-1' })
         .expect(201);
+      expect(res.body.planVersionId).toBe('pv-1');
+    });
+
+    it('returns planVersionId null when starting without planSessionId', async () => {
+      const res = await request(app.getHttpServer())
+        .post('/workouts/start')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({})
+        .expect(201);
+      expect(res.body.planVersionId).toBeNull();
     });
   });
 
@@ -198,6 +218,22 @@ describe('Workouts (e2e)', () => {
         .send({ weightKg: 80, reps: 10, rir: 2, completed: true })
         .expect(201);
       expect(res.body.id).toBe(workoutSessionId);
+    });
+
+    it('returns 404 when workoutExerciseId does not belong to session', async () => {
+      await request(app.getHttpServer())
+        .post(`/workouts/${workoutSessionId}/exercises/non-existent-we-id/sets`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ weightKg: 80, reps: 10 })
+        .expect(404);
+    });
+
+    it('returns 403 when session belongs to another user', async () => {
+      await request(app.getHttpServer())
+        .post('/workouts/ws-other-user/exercises/we-1/sets')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ weightKg: 80, reps: 10 })
+        .expect(403);
     });
   });
 

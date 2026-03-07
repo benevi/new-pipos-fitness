@@ -68,3 +68,11 @@ export const CurationStatus = {
 } as const;
 
 export type CurationStatus = (typeof CurationStatus)[keyof typeof CurationStatus];
+
+export const NutritionGoalType = {
+  LOSE_FAT: 'lose_fat',
+  BUILD_MUSCLE: 'build_muscle',
+  MAINTAIN: 'maintain',
+} as const;
+
+export type NutritionGoalType = (typeof NutritionGoalType)[keyof typeof NutritionGoalType];

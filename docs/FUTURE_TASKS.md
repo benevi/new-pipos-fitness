@@ -106,6 +106,21 @@ Tasks deferred to later phases. Do not implement in the current phase.
 
 ---
 
+**Phase:** Phase 7.2  
+**Task:** Final integrity pass — **Done.** WorkoutSession.planVersionId, adherence from direct planVersionId, hardened set-logging ownership, docs (ARCHITECTURE, PHASE_7_2_SUMMARY).  
+
+---
+
+**Phase:** Phase 7.3  
+**Task:** Adherence calculation fix — **Done.** Session-based planned sets (TrainingSession), no over-counting; workouts without planSessionId excluded; docs (ARCHITECTURE, PHASE_7_3_SUMMARY).  
+
+---
+
+**Phase:** Phase 8  
+**Task:** Nutrition engine — **Done.** Food, MealTemplate, NutritionPlan versioning; Mifflin-St Jeor + goal; macros; meal generation from templates; POST/GET nutrition-plans.  
+
+---
+
 **Phase:** Later (out of Phase 7 scope)  
 **Task:** Nutrition engine  
 **Reason:** Explicitly out of Phase 6 scope  

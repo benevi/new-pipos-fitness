@@ -103,6 +103,7 @@ describe('WorkoutSessionSchema', () => {
         id: '550e8400-e29b-41d4-a716-446655440000',
         userId: '550e8400-e29b-41d4-a716-446655440001',
         planSessionId: null,
+        planVersionId: null,
         startedAt: '2025-01-01T12:00:00.000Z',
         completedAt: null,
         durationMinutes: null,

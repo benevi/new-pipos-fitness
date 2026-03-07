@@ -29,6 +29,7 @@ export const WorkoutSessionSchema = z.object({
   id: z.string().uuid(),
   userId: z.string().uuid(),
   planSessionId: z.string().uuid().nullable(),
+  planVersionId: z.string().uuid().nullable(),
   startedAt: z.string().datetime(),
   completedAt: z.string().datetime().nullable(),
   durationMinutes: z.number().int().min(0).nullable(),

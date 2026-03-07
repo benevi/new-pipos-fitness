@@ -6,17 +6,21 @@ export class WorkoutsService {
   constructor(private readonly prisma: PrismaService) {}
 
   async startSession(userId: string, planSessionId?: string) {
+    let planVersionId: string | null = null;
     if (planSessionId) {
       const planSession = await this.prisma.trainingSession.findUnique({
         where: { id: planSessionId },
+        select: { planVersionId: true },
       });
       if (!planSession) throw new NotFoundException('Training session not found');
+      planVersionId = planSession.planVersionId;
     }
 
     const session = await this.prisma.workoutSession.create({
       data: {
         userId,
         planSessionId: planSessionId ?? null,
+        planVersionId,
       },
       include: {
         exercises: { include: { sets: true }, orderBy: { order: 'asc' } },
@@ -51,17 +55,22 @@ export class WorkoutsService {
     return this.toWorkoutSession(updated!);
   }
 
+  /**
+   * Log a set. Validates in order: (1) workout session exists and belongs to user (404/403),
+   * (2) workout exercise exists, belongs to that session, and session belongs to user.
+   * Returns 404 "Workout exercise not found" when exercise is missing or belongs to another session (no info leak).
+   */
   async logSet(
     userId: string,
     workoutSessionId: string,
     workoutExerciseId: string,
     body: { weightKg?: number; reps?: number; rir?: number; completed?: boolean },
   ) {
-    await this.findSessionForUser(workoutSessionId, userId);
+    const session = await this.findSessionForUser(workoutSessionId, userId);
     const workoutExercise = await this.prisma.workoutExercise.findFirst({
       where: {
         id: workoutExerciseId,
-        workoutSessionId,
+        workoutSessionId: session.id,
         workoutSession: { userId },
       },
       include: { sets: { orderBy: { setIndex: 'asc' } } },
@@ -135,6 +144,7 @@ export class WorkoutsService {
     id: string;
     userId: string;
     planSessionId: string | null;
+    planVersionId: string | null;
     startedAt: Date;
     completedAt: Date | null;
     durationMinutes: number | null;
@@ -159,6 +169,7 @@ export class WorkoutsService {
       id: row.id,
       userId: row.userId,
       planSessionId: row.planSessionId,
+      planVersionId: row.planVersionId,
       startedAt: row.startedAt.toISOString(),
       completedAt: row.completedAt?.toISOString() ?? null,
       durationMinutes: row.durationMinutes,

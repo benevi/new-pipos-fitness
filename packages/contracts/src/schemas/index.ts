@@ -16,3 +16,4 @@ export * from './catalog.js';
 export * from './training-engine.js';
 export * from './workouts.js';
 export * from './analytics.js';
+export * from './nutrition-engine.js';
