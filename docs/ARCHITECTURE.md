@@ -154,6 +154,14 @@ scripts/
 - **Models:** Freezed + json_serializable for immutable, serializable data classes (User, TrainingPlan, NutritionPlan, ProgressMetrics, AIResponse).
 - **Base URL:** Compile-time configurable via `--dart-define=API_BASE_URL=...`. Default: `http://10.0.2.2:3000`.
 
+### Mobile App Hardening (Phase 10.1)
+
+- **Auth state:** Explicit 5-state model (unknown → unauthenticated → loading → authenticated | error). Router guards depend on `isResolved` and `isAuthenticated`.
+- **Refresh concurrency:** Completer-based lock ensures only one refresh request executes; concurrent 401s share the result.
+- **Error handling:** `ApiFailure` model + `mapDioException()` mapper. Raw Dio exceptions never reach UI or providers.
+- **Theme foundation:** Dark-first Material 3 theme with orange accent (#FF6D00), design tokens (AppSpacing, AppRadius, AppColors).
+- **Provider caching:** Main-tab providers use `ref.keepAlive()` to survive tab switches without re-fetching.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

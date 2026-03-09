@@ -1,3 +1,13 @@
+/// Routing Responsibility
+///
+/// GoRouter is the single source of navigation truth. It watches [authProvider]
+/// and redirects based on [AuthStatus]:
+/// - `unknown`: stay on current route (app is checking storage)
+/// - `unauthenticated` / `error`: redirect to /login
+/// - `loading`: no redirect (screens show inline spinners)
+/// - `authenticated`: redirect away from auth routes to /dashboard
+///
+/// Protected routes live inside a ShellRoute that provides bottom navigation.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -20,9 +30,13 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/login',
     redirect: (context, state) {
-      final isAuth = authState.status == AuthStatus.authenticated;
+      // While checking stored token, don't redirect
+      if (!authState.isResolved) return null;
+
+      final isAuth = authState.isAuthenticated;
       final isAuthRoute =
-          state.matchedLocation == '/login' || state.matchedLocation == '/register';
+          state.matchedLocation == '/login' ||
+          state.matchedLocation == '/register';
 
       if (!isAuth && !isAuthRoute) return '/login';
       if (isAuth && isAuthRoute) return '/dashboard';

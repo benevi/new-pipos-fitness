@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/router.dart';
+import 'app/theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: PiposApp()));
@@ -16,16 +17,9 @@ class PiposApp extends ConsumerWidget {
     return MaterialApp.router(
       title: 'Pipos Fitness',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF6750A4),
-        useMaterial3: true,
-        brightness: Brightness.light,
-      ),
-      darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF6750A4),
-        useMaterial3: true,
-        brightness: Brightness.dark,
-      ),
+      themeMode: ThemeMode.dark,
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       routerConfig: router,
     );
   }

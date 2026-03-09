@@ -1,11 +1,28 @@
+/// Auth State Lifecycle
+///
+/// ```
+/// unknown ──(check storage)──> authenticated | unauthenticated
+/// unauthenticated ──(login/register)──> loading ──> authenticated | error
+/// error ──(retry login/register)──> loading ──> authenticated | error
+/// authenticated ──(logout)──> unauthenticated
+/// authenticated ──(token refresh fail)──> unauthenticated
+/// ```
+///
+/// The router uses this state to guard routes:
+/// - `unknown`: show nothing (splash); wait for storage check
+/// - `unauthenticated` / `error`: redirect to /login
+/// - `loading`: stay on current screen (button shows spinner)
+/// - `authenticated`: allow access to protected routes
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../app/constants.dart';
 import '../../core/api/api_client.dart';
+import '../../core/api/api_failure.dart';
+import '../../core/api/dio_error_mapper.dart';
 import '../../models/user.dart';
 
-enum AuthStatus { initial, authenticated, unauthenticated, loading }
+enum AuthStatus { unknown, unauthenticated, loading, authenticated, error }
 
 class AuthState {
   final AuthStatus status;
@@ -13,10 +30,14 @@ class AuthState {
   final String? error;
 
   const AuthState({
-    this.status = AuthStatus.initial,
+    this.status = AuthStatus.unknown,
     this.user,
     this.error,
   });
+
+  bool get isAuthenticated => status == AuthStatus.authenticated;
+  bool get isLoading => status == AuthStatus.loading;
+  bool get isResolved => status != AuthStatus.unknown;
 
   AuthState copyWith({AuthStatus? status, AuthUser? user, String? error}) {
     return AuthState(
@@ -37,11 +58,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> _checkAuth() async {
     final token = await _storage.read(key: AppConstants.accessTokenKey);
-    if (token != null) {
-      state = state.copyWith(status: AuthStatus.authenticated);
-    } else {
-      state = state.copyWith(status: AuthStatus.unauthenticated);
-    }
+    state = token != null
+        ? state.copyWith(status: AuthStatus.authenticated)
+        : state.copyWith(status: AuthStatus.unauthenticated);
   }
 
   Future<void> login(String email, String password) async {
@@ -60,11 +79,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: authResponse.user,
       );
     } on DioException catch (e) {
-      final message = _extractError(e);
-      state = state.copyWith(
-        status: AuthStatus.unauthenticated,
-        error: message,
-      );
+      final failure = mapDioException(e);
+      state = state.copyWith(status: AuthStatus.error, error: failure.message);
     }
   }
 
@@ -84,11 +100,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: authResponse.user,
       );
     } on DioException catch (e) {
-      final message = _extractError(e);
-      state = state.copyWith(
-        status: AuthStatus.unauthenticated,
-        error: message,
-      );
+      final failure = mapDioException(e);
+      state = state.copyWith(status: AuthStatus.error, error: failure.message);
     }
   }
 
@@ -99,8 +112,12 @@ class AuthNotifier extends StateNotifier<AuthState> {
         await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
       } catch (_) {}
     }
-    await _storage.delete(key: AppConstants.accessTokenKey);
-    await _storage.delete(key: AppConstants.refreshTokenKey);
+    await _clearTokens();
+    state = const AuthState(status: AuthStatus.unauthenticated);
+  }
+
+  /// Called by the auth interceptor when a token refresh fails.
+  void forceUnauthenticated() {
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
@@ -115,12 +132,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  String _extractError(DioException e) {
-    final data = e.response?.data;
-    if (data is Map<String, dynamic> && data.containsKey('message')) {
-      return data['message'] as String;
-    }
-    return 'An error occurred. Please try again.';
+  Future<void> _clearTokens() async {
+    await _storage.delete(key: AppConstants.accessTokenKey);
+    await _storage.delete(key: AppConstants.refreshTokenKey);
   }
 }
 

@@ -1,3 +1,9 @@
+/// API Client Responsibility
+///
+/// - Single Dio instance shared across the app via [dioProvider].
+/// - [AuthInterceptor] handles token attachment and refresh.
+/// - [ApiClient] is a thin typed wrapper; it does NOT catch errors.
+///   Providers catch DioExceptions and map them via [mapDioException].
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -17,7 +23,8 @@ final dioProvider = Provider<Dio>((ref) {
   ));
 
   final storage = ref.read(secureStorageProvider);
-  dio.interceptors.add(AuthInterceptor(dio: dio, storage: storage));
+  final interceptor = AuthInterceptor(dio: dio, storage: storage);
+  dio.interceptors.add(interceptor);
 
   return dio;
 });
@@ -31,7 +38,10 @@ class ApiClient {
 
   ApiClient(this._dio);
 
-  Future<Response<T>> get<T>(String path, {Map<String, dynamic>? queryParameters}) {
+  Future<Response<T>> get<T>(
+    String path, {
+    Map<String, dynamic>? queryParameters,
+  }) {
     return _dio.get<T>(path, queryParameters: queryParameters);
   }
 

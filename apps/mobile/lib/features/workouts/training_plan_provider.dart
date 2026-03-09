@@ -1,3 +1,8 @@
+/// Provider Responsibility
+///
+/// Fetches current training plan on first access. Kept alive across tab
+/// switches to avoid redundant network calls. Use [refresh()] or [generate()]
+/// to update data explicitly.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../models/training_plan.dart';
@@ -10,6 +15,7 @@ final trainingPlanProvider =
 class TrainingPlanNotifier extends AsyncNotifier<TrainingPlan?> {
   @override
   Future<TrainingPlan?> build() async {
+    ref.keepAlive();
     return _fetchCurrent();
   }
 
