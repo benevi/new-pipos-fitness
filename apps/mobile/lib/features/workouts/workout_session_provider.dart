@@ -1,12 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
-import '../../core/api/api_failure.dart';
 import '../../core/api/dio_error_mapper.dart';
 import '../../models/training_plan.dart';
 import '../../models/workout_session.dart';
 
-enum WorkoutStatus { idle, active, finishing, completed, error }
+enum WorkoutStatus { idle, starting, active, finishing, completed, error }
 
 class WorkoutSessionState {
   final WorkoutStatus status;
@@ -14,6 +13,7 @@ class WorkoutSessionState {
   final TrainingSession? planSession;
   final int currentExerciseIndex;
   final String? error;
+  final bool resumedSession;
 
   const WorkoutSessionState({
     this.status = WorkoutStatus.idle,
@@ -21,12 +21,18 @@ class WorkoutSessionState {
     this.planSession,
     this.currentExerciseIndex = 0,
     this.error,
+    this.resumedSession = false,
   });
 
   bool get isActive => status == WorkoutStatus.active;
+  bool get isStarting => status == WorkoutStatus.starting;
   bool get isCompleted => status == WorkoutStatus.completed;
 
-  int get totalExercises => planSession?.exercises.length ?? 0;
+  String? get sessionId => session?.id;
+  String? get startedAt => session?.startedAt;
+
+  int get totalExercises =>
+      planSession?.exercises.length ?? session?.exercises.length ?? 0;
 
   List<WorkoutSet> setsForExercise(String workoutExerciseId) {
     final ex = session?.exercises
@@ -41,6 +47,7 @@ class WorkoutSessionState {
     TrainingSession? planSession,
     int? currentExerciseIndex,
     String? error,
+    bool? resumedSession,
   }) {
     return WorkoutSessionState(
       status: status ?? this.status,
@@ -48,6 +55,7 @@ class WorkoutSessionState {
       planSession: planSession ?? this.planSession,
       currentExerciseIndex: currentExerciseIndex ?? this.currentExerciseIndex,
       error: error,
+      resumedSession: resumedSession ?? this.resumedSession,
     );
   }
 }
@@ -64,66 +72,98 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
 
   ApiClient get _api => _ref.read(apiClientProvider);
 
+  /// Atomic start: creates session + adds all exercises.
+  /// State transitions to active only after both succeed.
+  /// On exercise-add failure, state goes to error with retry info.
   Future<bool> startWorkout(TrainingSession planSession) async {
-    if (state.isActive) return false;
+    if (state.isActive || state.isStarting) return false;
 
+    state = WorkoutSessionState(
+      status: WorkoutStatus.starting,
+      planSession: planSession,
+    );
+
+    WorkoutSession session;
     try {
       final response = await _api.post(
         '/workouts/start',
         data: {'planSessionId': planSession.id},
       );
-      final session = WorkoutSession.fromJson(
+      session = WorkoutSession.fromJson(
         response.data as Map<String, dynamic>,
       );
-
-      state = WorkoutSessionState(
-        status: WorkoutStatus.active,
-        session: session,
-        planSession: planSession,
-        currentExerciseIndex: 0,
-      );
-
-      // Add all exercises from the plan to the workout session
-      for (final exercise in planSession.exercises) {
-        await _addExercise(session.id, exercise.exerciseId);
-      }
-
-      return true;
     } on DioException catch (e) {
       final failure = mapDioException(e);
-      state = state.copyWith(status: WorkoutStatus.error, error: failure.message);
+      state = WorkoutSessionState(
+        status: WorkoutStatus.error,
+        planSession: planSession,
+        error: failure.message,
+      );
       return false;
     }
-  }
 
-  Future<void> _addExercise(String sessionId, String exerciseId) async {
+    // Add all exercises — if any fails, abort to error
+    final exercises = <WorkoutExercise>[];
     try {
-      final response = await _api.post(
-        '/workouts/$sessionId/exercises',
-        data: {'exerciseId': exerciseId},
-      );
-      final exercise = WorkoutExercise.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-
-      if (state.session == null) return;
-      final updatedExercises = [...state.session!.exercises, exercise];
-      state = state.copyWith(
-        session: WorkoutSession(
-          id: state.session!.id,
-          userId: state.session!.userId,
-          planSessionId: state.session!.planSessionId,
-          planVersionId: state.session!.planVersionId,
-          startedAt: state.session!.startedAt,
-          completedAt: state.session!.completedAt,
-          durationMinutes: state.session!.durationMinutes,
-          notes: state.session!.notes,
-          exercises: updatedExercises,
-        ),
-      );
+      for (final planExercise in planSession.exercises) {
+        final resp = await _api.post(
+          '/workouts/${session.id}/exercises',
+          data: {'exerciseId': planExercise.exerciseId},
+        );
+        exercises.add(
+          WorkoutExercise.fromJson(resp.data as Map<String, dynamic>),
+        );
+      }
     } on DioException catch (e) {
       final failure = mapDioException(e);
-      state = state.copyWith(error: failure.message);
+      state = WorkoutSessionState(
+        status: WorkoutStatus.error,
+        planSession: planSession,
+        session: session,
+        error: 'Failed to add exercises: ${failure.message}',
+      );
+      return false;
+    }
+
+    final fullSession = WorkoutSession(
+      id: session.id,
+      userId: session.userId,
+      planSessionId: session.planSessionId,
+      planVersionId: session.planVersionId,
+      startedAt: session.startedAt,
+      completedAt: session.completedAt,
+      durationMinutes: session.durationMinutes,
+      notes: session.notes,
+      exercises: exercises,
+    );
+
+    state = WorkoutSessionState(
+      status: WorkoutStatus.active,
+      session: fullSession,
+      planSession: planSession,
+    );
+    return true;
+  }
+
+  /// Resume an incomplete workout detected from history.
+  void resumeWorkout(WorkoutSession session) {
+    state = WorkoutSessionState(
+      status: WorkoutStatus.active,
+      session: session,
+      resumedSession: true,
+    );
+  }
+
+  /// Check for an incomplete workout via GET /workouts/history.
+  Future<WorkoutSession?> checkForActiveWorkout() async {
+    try {
+      final response = await _api.get('/workouts/history');
+      final list = (response.data as List<dynamic>)
+          .map((e) => WorkoutSession.fromJson(e as Map<String, dynamic>))
+          .toList();
+      return list.where((w) => w.completedAt == null).firstOrNull;
+    } catch (_) {
+      return null;
     }
   }
 

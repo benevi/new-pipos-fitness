@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme.dart';
+import '../../models/exercise.dart';
 import '../../models/training_plan.dart';
 import '../../models/workout_session.dart';
+import 'exercise_catalog_provider.dart';
 import 'workout_session_provider.dart';
 
 class WorkoutPlayerScreen extends ConsumerWidget {
@@ -12,26 +14,33 @@ class WorkoutPlayerScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final ws = ref.watch(workoutSessionProvider);
+    final catalog = ref.watch(exerciseCatalogProvider).valueOrNull;
 
-    if (!ws.isActive || ws.session == null || ws.planSession == null) {
+    if (!ws.isActive || ws.session == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Workout')),
         body: const Center(child: Text('No active workout')),
       );
     }
 
-    final planExercises = ws.planSession!.exercises;
-    final idx = ws.currentExerciseIndex;
-    final planExercise = planExercises[idx];
+    final exercises = ws.session!.exercises;
+    final totalEx = ws.totalExercises;
+    final idx = ws.currentExerciseIndex.clamp(0, totalEx > 0 ? totalEx - 1 : 0);
 
-    // Find the matching workout exercise by order
-    final workoutExercise = ws.session!.exercises
-        .where((e) => e.order == idx)
-        .firstOrNull;
+    // For resumed workouts without planSession, use workout exercises directly
+    final planExercise = ws.planSession?.exercises.elementAtOrNull(idx);
+    final workoutExercise = exercises.elementAtOrNull(idx);
+
+    if (workoutExercise == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('Workout')),
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('${idx + 1} / ${planExercises.length}'),
+        title: Text('${idx + 1} / $totalEx'),
         leading: IconButton(
           icon: const Icon(Icons.close),
           onPressed: () => _confirmExit(context, ref),
@@ -64,30 +73,26 @@ class WorkoutPlayerScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _ExerciseHeader(exercise: planExercise),
+                  _ExerciseHeader(
+                    planExercise: planExercise,
+                    workoutExercise: workoutExercise,
+                    catalog: catalog,
+                  ),
                   const SizedBox(height: AppSpacing.lg),
-                  if (workoutExercise != null) ...[
-                    _LoggedSetsList(sets: workoutExercise.sets),
-                    const SizedBox(height: AppSpacing.md),
-                    _SetInputForm(
-                      workoutExerciseId: workoutExercise.id,
-                      setIndex: workoutExercise.sets.length,
-                      plannedSets: planExercise.sets,
-                    ),
-                  ] else
-                    const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(AppSpacing.lg),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
+                  _LoggedSetsList(sets: workoutExercise.sets),
+                  const SizedBox(height: AppSpacing.md),
+                  _SetInputForm(
+                    workoutExerciseId: workoutExercise.id,
+                    setIndex: workoutExercise.sets.length,
+                    plannedSets: planExercise?.sets ?? 0,
+                  ),
                 ],
               ),
             ),
           ),
           _BottomBar(
             currentIndex: idx,
-            totalExercises: planExercises.length,
+            totalExercises: totalEx,
           ),
         ],
       ),
@@ -99,7 +104,8 @@ class WorkoutPlayerScreen extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Leave Workout?'),
-        content: const Text('Your logged sets are saved, but the workout will remain unfinished.'),
+        content: const Text(
+            'Your logged sets are saved, but the workout will remain unfinished.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -120,11 +126,20 @@ class WorkoutPlayerScreen extends ConsumerWidget {
 }
 
 class _ExerciseHeader extends StatelessWidget {
-  final TrainingSessionExercise exercise;
-  const _ExerciseHeader({required this.exercise});
+  final TrainingSessionExercise? planExercise;
+  final WorkoutExercise workoutExercise;
+  final Map<String, Exercise>? catalog;
+
+  const _ExerciseHeader({
+    this.planExercise,
+    required this.workoutExercise,
+    this.catalog,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final name = exerciseName(catalog, workoutExercise.exerciseId);
+
     return Card(
       color: AppColors.surface,
       shape: RoundedRectangleBorder(
@@ -135,36 +150,36 @@ class _ExerciseHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              exercise.exerciseId,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppSpacing.sm),
-            Row(
-              children: [
-                _InfoChip(
-                  icon: Icons.repeat,
-                  label: '${exercise.sets} sets',
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _InfoChip(
-                  icon: Icons.straighten,
-                  label: '${exercise.repRangeMin}–${exercise.repRangeMax} reps',
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                _InfoChip(
-                  icon: Icons.timer,
-                  label: '${exercise.restSeconds}s rest',
-                ),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              'RIR target: ${exercise.rirTarget}',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurfaceVariant,
+            Text(name, style: Theme.of(context).textTheme.titleLarge),
+            if (planExercise != null) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Row(
+                children: [
+                  _InfoChip(
+                    icon: Icons.repeat,
+                    label: '${planExercise!.sets} sets',
                   ),
-            ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _InfoChip(
+                    icon: Icons.straighten,
+                    label:
+                        '${planExercise!.repRangeMin}–${planExercise!.repRangeMax} reps',
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  _InfoChip(
+                    icon: Icons.timer,
+                    label: '${planExercise!.restSeconds}s rest',
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'RIR target: ${planExercise!.rirTarget}',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+              ),
+            ],
           ],
         ),
       ),
@@ -219,8 +234,7 @@ class _LoggedSetsList extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Logged Sets',
-            style: Theme.of(context).textTheme.titleMedium),
+        Text('Logged Sets', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
         ...sets.map((s) => Container(
               margin: const EdgeInsets.only(bottom: AppSpacing.xs),
@@ -252,7 +266,9 @@ class _LoggedSetsList extends StatelessWidget {
                   ),
                   Icon(
                     s.completed ? Icons.check_circle : Icons.circle_outlined,
-                    color: s.completed ? AppColors.success : AppColors.onSurfaceVariant,
+                    color: s.completed
+                        ? AppColors.success
+                        : AppColors.onSurfaceVariant,
                     size: 20,
                   ),
                 ],
@@ -316,7 +332,9 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
 
   @override
   Widget build(BuildContext context) {
-    final allDone = widget.setIndex >= widget.plannedSets;
+    // For resumed workouts without plan data, allow unlimited sets
+    final allDone =
+        widget.plannedSets > 0 && widget.setIndex >= widget.plannedSets;
 
     if (allDone) {
       return Container(
@@ -346,7 +364,9 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Set ${widget.setIndex + 1} of ${widget.plannedSets}',
+              widget.plannedSets > 0
+                  ? 'Set ${widget.setIndex + 1} of ${widget.plannedSets}'
+                  : 'Set ${widget.setIndex + 1}',
               style: Theme.of(context).textTheme.titleSmall,
             ),
             const SizedBox(height: AppSpacing.md),
@@ -436,7 +456,8 @@ class _BottomBar extends ConsumerWidget {
             if (isLast)
               FilledButton.icon(
                 onPressed: () async {
-                  final startedAt = ref.read(workoutSessionProvider).session?.startedAt;
+                  final startedAt =
+                      ref.read(workoutSessionProvider).session?.startedAt;
                   int? duration;
                   if (startedAt != null) {
                     final start = DateTime.tryParse(startedAt);

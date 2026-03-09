@@ -174,6 +174,12 @@ scripts/
 - **Provider:** `workoutSessionProvider` (StateNotifier) manages workout lifecycle, exercise navigation, and set logging. Uses ApiClient with ApiFailure error mapping.
 - **Routing:** `/workout-player` and `/workout-complete` are full-screen routes outside ShellRoute (no bottom nav bar during workout).
 
+### Workout Hardening (Phase 11.1)
+
+- **Atomic start:** Workout start + exercise addition is a single atomic operation in the provider. State transitions to `active` only after both succeed; on failure state is `error` with retry capability.
+- **Exercise catalog:** `exerciseCatalogProvider` fetches and caches the full exercise list as `Map<String, Exercise>` with `keepAlive`. UI shows exercise names instead of IDs.
+- **Resume:** On Workouts screen load, checks `GET /workouts/history` for incomplete sessions (`completedAt == null`). Prompts user to resume, restoring full workout state.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

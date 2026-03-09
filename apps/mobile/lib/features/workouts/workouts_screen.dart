@@ -3,14 +3,68 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../app/theme.dart';
 import '../../models/training_plan.dart';
+import 'exercise_catalog_provider.dart';
 import 'training_plan_provider.dart';
 import 'workout_session_provider.dart';
 
-class WorkoutsScreen extends ConsumerWidget {
+class WorkoutsScreen extends ConsumerStatefulWidget {
   const WorkoutsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<WorkoutsScreen> createState() => _WorkoutsScreenState();
+}
+
+class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
+  bool _resumeChecked = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkResume();
+  }
+
+  Future<void> _checkResume() async {
+    if (_resumeChecked) return;
+    _resumeChecked = true;
+
+    final ws = ref.read(workoutSessionProvider);
+    if (ws.isActive) return;
+
+    final active = await ref
+        .read(workoutSessionProvider.notifier)
+        .checkForActiveWorkout();
+
+    if (active != null && mounted) {
+      final shouldResume = await showDialog<bool>(
+        context: context,
+        barrierDismissible: false,
+        builder: (ctx) => AlertDialog(
+          title: const Text('Resume Workout?'),
+          content: const Text(
+            'You have an unfinished workout session. Would you like to resume it?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Discard'),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Resume'),
+            ),
+          ],
+        ),
+      );
+
+      if (shouldResume == true && mounted) {
+        ref.read(workoutSessionProvider.notifier).resumeWorkout(active);
+        context.push('/workout-player');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final planAsync = ref.watch(trainingPlanProvider);
 
     return Scaffold(
@@ -24,7 +78,8 @@ class WorkoutsScreen extends ConsumerWidget {
               const Text('Failed to load training plan'),
               const SizedBox(height: AppSpacing.md),
               FilledButton(
-                onPressed: () => ref.read(trainingPlanProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(trainingPlanProvider.notifier).refresh(),
                 child: const Text('Retry'),
               ),
             ],
@@ -65,13 +120,14 @@ class _SessionList extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final sessions = plan.version.sessions;
+    final catalog = ref.watch(exerciseCatalogProvider).valueOrNull;
 
     return ListView.builder(
       padding: const EdgeInsets.all(AppSpacing.md),
       itemCount: sessions.length,
       itemBuilder: (context, index) {
         final session = sessions[index];
-        return _SessionCard(session: session);
+        return _SessionCard(session: session, catalog: catalog);
       },
     );
   }
@@ -79,12 +135,14 @@ class _SessionList extends ConsumerWidget {
 
 class _SessionCard extends ConsumerWidget {
   final TrainingSession session;
-  const _SessionCard({required this.session});
+  final Map<String, dynamic>? catalog;
+  const _SessionCard({required this.session, this.catalog});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final workoutState = ref.watch(workoutSessionProvider);
-    final isActive = workoutState.isActive;
+    final isBusy = workoutState.isActive || workoutState.isStarting;
+    final catalogMap = ref.watch(exerciseCatalogProvider).valueOrNull;
 
     return Card(
       color: AppColors.surface,
@@ -112,22 +170,32 @@ class _SessionCard extends ConsumerWidget {
             Wrap(
               spacing: AppSpacing.sm,
               children: session.exercises
-                  .map((e) => Chip(
-                        label: Text(
-                          e.exerciseId.length > 12
-                              ? '${e.exerciseId.substring(0, 12)}…'
-                              : e.exerciseId,
-                          style: const TextStyle(fontSize: 11),
-                        ),
-                        visualDensity: VisualDensity.compact,
-                      ))
+                  .map((e) {
+                    final name = exerciseName(catalogMap, e.exerciseId);
+                    final display = name.length > 16
+                        ? '${name.substring(0, 16)}…'
+                        : name;
+                    return Chip(
+                      label: Text(display, style: const TextStyle(fontSize: 11)),
+                      visualDensity: VisualDensity.compact,
+                    );
+                  })
                   .toList(),
             ),
             const SizedBox(height: AppSpacing.md),
+            if (workoutState.status == WorkoutStatus.error &&
+                workoutState.error != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Text(
+                  workoutState.error!,
+                  style: const TextStyle(color: AppColors.error, fontSize: 13),
+                ),
+              ),
             SizedBox(
               width: double.infinity,
               child: FilledButton.icon(
-                onPressed: isActive
+                onPressed: isBusy
                     ? null
                     : () async {
                         final notifier =
@@ -137,8 +205,21 @@ class _SessionCard extends ConsumerWidget {
                           context.push('/workout-player');
                         }
                       },
-                icon: const Icon(Icons.play_arrow),
-                label: Text(isActive ? 'Workout in Progress' : 'Start Workout'),
+                icon: workoutState.isStarting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            strokeWidth: 2, color: Colors.white),
+                      )
+                    : const Icon(Icons.play_arrow),
+                label: Text(
+                  workoutState.isStarting
+                      ? 'Starting…'
+                      : workoutState.isActive
+                          ? 'Workout in Progress'
+                          : 'Start Workout',
+                ),
               ),
             ),
           ],
