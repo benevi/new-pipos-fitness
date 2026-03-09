@@ -29,6 +29,7 @@ export const NutritionEngineUserSchema = z.object({
   heightCm: z.number().positive().nullable().optional(),
   weightKg: z.number().positive().nullable().optional(),
   age: z.number().int().positive().nullable().optional(),
+  preferredTrainingDays: z.number().int().min(0).max(7).optional(),
 });
 export type NutritionEngineUser = z.infer<typeof NutritionEngineUserSchema>;
 
@@ -74,6 +75,7 @@ export const NutritionEngineOutputMetadataSchema = z.object({
     carbsG: z.number().min(0),
     fatG: z.number().min(0),
   }),
+  macrosClamped: z.boolean().optional(),
 });
 export type NutritionEngineOutputMetadata = z.infer<typeof NutritionEngineOutputMetadataSchema>;
 

@@ -32,6 +32,7 @@ export class NutritionPlansService {
         heightCm: user.heightCm ?? undefined,
         weightKg: user.weightKg ?? undefined,
         age: user.age ?? undefined,
+        preferredTrainingDays: user.preferredTrainingDays ?? undefined,
       },
       goal: goalResolved,
       dislikedFoodIds: dislikedFoodIds.length > 0 ? dislikedFoodIds : undefined,
@@ -181,7 +182,7 @@ export class NutritionPlansService {
         }>;
       }>;
     },
-    metadata: { dailyCalorieTarget: number; dailyMacroTarget: { proteinG: number; carbsG: number; fatG: number } },
+    metadata: { dailyCalorieTarget: number; dailyMacroTarget: { proteinG: number; carbsG: number; fatG: number }; macrosClamped?: boolean },
   ) {
     return {
       plan: {
@@ -198,6 +199,7 @@ export class NutritionPlansService {
         engineVersion: version.engineVersion,
         dailyCalorieTarget: metadata.dailyCalorieTarget,
         dailyMacroTarget: metadata.dailyMacroTarget,
+        ...(metadata.macrosClamped !== undefined && { macrosClamped: metadata.macrosClamped }),
         days: version.days.map((d) => ({
           id: d.id,
           planVersionId: version.id,

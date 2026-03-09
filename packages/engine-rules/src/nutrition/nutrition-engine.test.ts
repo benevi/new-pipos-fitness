@@ -44,4 +44,16 @@ describe('generateNutritionPlan', () => {
     expect(lose.metadata.dailyCalorieTarget).toBeLessThan(maintain.metadata.dailyCalorieTarget);
     expect(build.metadata.dailyCalorieTarget).toBeGreaterThan(maintain.metadata.dailyCalorieTarget);
   });
+
+  it('preferredTrainingDays affects calorie target (dynamic activity factor)', () => {
+    const low = generateNutritionPlan({ ...validInput, user: { ...validInput.user, preferredTrainingDays: 1 } });
+    const high = generateNutritionPlan({ ...validInput, user: { ...validInput.user, preferredTrainingDays: 6 } });
+    expect(high.metadata.dailyCalorieTarget).toBeGreaterThan(low.metadata.dailyCalorieTarget);
+  });
+
+  it('metadata may include macrosClamped when carbs clamped', () => {
+    const out = generateNutritionPlan(validInput);
+    expect(out.metadata.dailyMacroTarget.carbsG).toBeGreaterThanOrEqual(0);
+    if (out.metadata.macrosClamped !== undefined) expect(out.metadata.macrosClamped).toBe(true);
+  });
 });

@@ -121,6 +121,11 @@ Tasks deferred to later phases. Do not implement in the current phase.
 
 ---
 
+**Phase:** Phase 8.1  
+**Task:** Nutrition engine hardening — **Done.** Dynamic activity factor (training days); macro clamping + metadata; deterministic meal template rotation.  
+
+---
+
 **Phase:** Later (out of Phase 7 scope)  
 **Task:** Nutrition engine  
 **Reason:** Explicitly out of Phase 6 scope  

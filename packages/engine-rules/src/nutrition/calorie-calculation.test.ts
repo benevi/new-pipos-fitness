@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateBMR, calculateTDEE, calculateDailyCalorieTarget } from './calorie-calculation.js';
+import { calculateBMR, calculateTDEE, calculateDailyCalorieTarget, getActivityFactor } from './calorie-calculation.js';
 
 describe('calculateBMR', () => {
   it('returns null when weight or height or age missing', () => {
@@ -61,5 +61,28 @@ describe('calculateDailyCalorieTarget', () => {
     const tdee = calculateTDEE(user)!;
     const target = calculateDailyCalorieTarget(user, 'build_muscle');
     expect(target).toBe(Math.round(tdee * 1.1));
+  });
+});
+
+describe('getActivityFactor', () => {
+  it('0–1 days → 1.2', () => {
+    expect(getActivityFactor(0)).toBe(1.2);
+    expect(getActivityFactor(1)).toBe(1.2);
+  });
+  it('2–3 days → 1.375', () => {
+    expect(getActivityFactor(2)).toBe(1.375);
+    expect(getActivityFactor(3)).toBe(1.375);
+  });
+  it('4–5 days → 1.55', () => {
+    expect(getActivityFactor(4)).toBe(1.55);
+    expect(getActivityFactor(5)).toBe(1.55);
+  });
+  it('6–7 days → 1.725', () => {
+    expect(getActivityFactor(6)).toBe(1.725);
+    expect(getActivityFactor(7)).toBe(1.725);
+  });
+  it('out of range clamped', () => {
+    expect(getActivityFactor(-1)).toBe(1.2);
+    expect(getActivityFactor(10)).toBe(1.725);
   });
 });

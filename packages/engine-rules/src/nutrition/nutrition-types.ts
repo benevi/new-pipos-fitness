@@ -7,6 +7,7 @@ export interface NutritionUser {
   heightCm?: number | null;
   weightKg?: number | null;
   age?: number | null;
+  preferredTrainingDays?: number | null;
 }
 
 export interface FoodRecord {

@@ -11,7 +11,7 @@ import type {
   NutritionEngineOutputMetadata,
 } from '@pipos/contracts';
 import { NutritionEngineInputSchema, NutritionGoalType } from '@pipos/contracts';
-import { calculateDailyCalorieTarget } from './calorie-calculation.js';
+import { calculateDailyCalorieTarget, getActivityFactor } from './calorie-calculation.js';
 import { calculateMacroTargets } from './macro-calculation.js';
 import { generateMealsForDay } from './meal-generation.js';
 import type { FoodRecord, MealTemplateRecord } from './nutrition-types.js';
@@ -43,15 +43,20 @@ export function generateNutritionPlan(input: unknown): NutritionEngineOutput {
 
   const { user, goal, dislikedFoodIds = [], catalog } = parsed.data;
   const weightKg = user.weightKg ?? 70;
+  const trainingDays = user.preferredTrainingDays ?? 3;
+  const activityFactor = getActivityFactor(trainingDays);
   const calorieTarget = calculateDailyCalorieTarget(
     { sex: user.sex, heightCm: user.heightCm, weightKg: user.weightKg, age: user.age },
     mapGoal(goal),
+    activityFactor,
   ) ?? 2000;
-  const macroTarget = calculateMacroTargets(weightKg, calorieTarget) ?? {
+  const macroResult = calculateMacroTargets(weightKg, calorieTarget);
+  const macroTarget = macroResult?.macroTarget ?? {
     proteinG: Math.round(weightKg * 2),
-    carbsG: Math.round((calorieTarget - (weightKg * 2 * 4) - (weightKg * 0.8 * 9)) / 4),
+    carbsG: Math.round(Math.max(0, (calorieTarget - (weightKg * 2 * 4) - (weightKg * 0.8 * 9)) / 4)),
     fatG: Math.round(weightKg * 0.8),
   };
+  const macrosClamped = macroResult?.clamped ?? false;
 
   const foods: FoodRecord[] = catalog.foods.map((f) => ({
     id: f.id,
@@ -75,6 +80,7 @@ export function generateNutritionPlan(input: unknown): NutritionEngineOutput {
       dislikedFoodIds,
       calorieTarget,
       3,
+      dayIndex,
     );
     days.push({
       dayIndex,
@@ -93,6 +99,7 @@ export function generateNutritionPlan(input: unknown): NutritionEngineOutput {
     engineVersion: NUTRITION_ENGINE_VERSION,
     dailyCalorieTarget: calorieTarget,
     dailyMacroTarget: macroTarget,
+    macrosClamped: macrosClamped || undefined,
   };
 
   return {

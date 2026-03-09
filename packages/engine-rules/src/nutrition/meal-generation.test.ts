@@ -28,7 +28,7 @@ const templates = [
 describe('generateMealsForDay', () => {
   it('scales templates to target calories per meal', () => {
     const dailyCal = 2100;
-    const meals = generateMealsForDay(templates, foods, [], dailyCal, 3);
+    const meals = generateMealsForDay(templates, foods, [], dailyCal, 3, 0);
     expect(meals.length).toBeGreaterThan(0);
     expect(meals.length).toBeLessThanOrEqual(3);
     const first = meals[0];
@@ -38,14 +38,48 @@ describe('generateMealsForDay', () => {
   });
 
   it('excludes templates that only reference disliked foods', () => {
-    const meals = generateMealsForDay(templates, foods, ['f1', 'f2'], 2100, 3);
+    const meals = generateMealsForDay(templates, foods, ['f1', 'f2'], 2100, 3, 0);
     expect(meals.length).toBe(0);
   });
 
   it('is deterministic (stable order)', () => {
-    const a = generateMealsForDay(templates, foods, [], 2000, 3);
-    const b = generateMealsForDay(templates, foods, [], 2000, 3);
+    const a = generateMealsForDay(templates, foods, [], 2000, 3, 0);
+    const b = generateMealsForDay(templates, foods, [], 2000, 3, 0);
     expect(a.length).toBe(b.length);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it('multiple templates: rotation by day reduces same-template repetition', () => {
+    const threeTemplates = [
+      { id: 't1', name: 'B1', foods: [{ foodId: 'f1', quantityG: 80 }] },
+      { id: 't2', name: 'B2', foods: [{ foodId: 'f1', quantityG: 80 }] },
+      { id: 't3', name: 'B3', foods: [{ foodId: 'f1', quantityG: 80 }] },
+    ];
+    const day0 = generateMealsForDay(threeTemplates, foods, [], 2100, 3, 0);
+    const day1 = generateMealsForDay(threeTemplates, foods, [], 2100, 3, 1);
+    expect(day0.length).toBe(3);
+    expect(day1.length).toBe(3);
+    const ids0 = day0.map((m) => m.templateId);
+    const ids1 = day1.map((m) => m.templateId);
+    expect(ids0[0]).not.toBe(ids1[0]);
+    expect(ids0).toEqual([day0[0].templateId, day0[1].templateId, day0[2].templateId]);
+  });
+
+  it('only one valid template: repetition allowed', () => {
+    const oneTemplate = [{ id: 't1', name: 'B', foods: [{ foodId: 'f1', quantityG: 80 }] }];
+    const day0 = generateMealsForDay(oneTemplate, foods, [], 2100, 3, 0);
+    const day1 = generateMealsForDay(oneTemplate, foods, [], 2100, 3, 1);
+    expect(day0.every((m) => m.templateId === 't1')).toBe(true);
+    expect(day1.every((m) => m.templateId === 't1')).toBe(true);
+  });
+
+  it('deterministic: same inputs same output', () => {
+    const threeTemplates = [
+      { id: 't1', name: 'B1', foods: [{ foodId: 'f1', quantityG: 80 }] },
+      { id: 't2', name: 'B2', foods: [{ foodId: 'f1', quantityG: 80 }] },
+    ];
+    const a = generateMealsForDay(threeTemplates, foods, [], 2000, 3, 2);
+    const b = generateMealsForDay(threeTemplates, foods, [], 2000, 3, 2);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 });

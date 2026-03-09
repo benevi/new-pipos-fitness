@@ -8,7 +8,9 @@ describe('nutrition engine', () => {
 
   it('exports calorie and macro helpers', () => {
     expect(calculateBMR({ weightKg: 70, heightCm: 175, age: 30, sex: 'male' })).not.toBeNull();
-    expect(calculateMacroTargets(70, 2000)).not.toBeNull();
+    const macro = calculateMacroTargets(70, 2000);
+    expect(macro).not.toBeNull();
+    expect(macro!.macroTarget.proteinG).toBeGreaterThan(0);
   });
 
   it('generateMealsForDay returns array', () => {

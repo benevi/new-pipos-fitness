@@ -72,10 +72,9 @@ function scaleTemplateToCalories(
 }
 
 /**
- * Generate meals for one day: use meal templates in order, scale each to target calories per meal.
- * dailyCalorieTarget and macroTarget are for the whole day; we only use calorie split per meal here.
- * Respects dislikedFoodIds (templates using only disliked foods are skipped).
- * Deterministic: templates sorted by id.
+ * Generate meals for one day. Respects dislikedFoodIds.
+ * When multiple valid templates exist, rotates by day so the same template is not repeated every day.
+ * Deterministic: templates sorted by id; rotation index = (dayIndex + mealIndex) % numValidTemplates.
  */
 export function generateMealsForDay(
   templates: MealTemplateRecord[],
@@ -83,23 +82,28 @@ export function generateMealsForDay(
   dislikedFoodIds: string[],
   dailyCalorieTarget: number,
   mealsPerDay: number = 3,
+  dayIndex: number = 0,
 ): GeneratedMeal[] {
   const foodMap = buildFoodMap(foods, dislikedFoodIds);
   const targetPerMeal = dailyCalorieTarget / mealsPerDay;
   const sortedTemplates = [...templates].sort((a, b) => a.id.localeCompare(b.id));
-  const result: GeneratedMeal[] = [];
-  let used = 0;
+  const validTemplates: MealTemplateRecord[] = [];
   for (const template of sortedTemplates) {
-    if (used >= mealsPerDay) break;
+    const items = scaleTemplateToCalories(template, foodMap, targetPerMeal);
+    if (items.length > 0) validTemplates.push(template);
+  }
+  if (validTemplates.length === 0) return [];
+  const result: GeneratedMeal[] = [];
+  for (let mealIndex = 0; mealIndex < mealsPerDay; mealIndex++) {
+    const template = validTemplates[(dayIndex + mealIndex) % validTemplates.length];
     const items = scaleTemplateToCalories(template, foodMap, targetPerMeal);
     if (items.length === 0) continue;
     result.push({
-      mealIndex: used,
+      mealIndex,
       name: template.name,
       templateId: template.id,
       items,
     });
-    used += 1;
   }
   return result;
 }

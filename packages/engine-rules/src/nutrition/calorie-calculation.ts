@@ -1,9 +1,18 @@
 /**
  * Mifflin-St Jeor BMR and goal-adjusted daily calorie target.
- * Deterministic; no I/O.
+ * Activity factor from training days per week. Deterministic; no I/O.
  */
 
 import type { NutritionUser } from './nutrition-types.js';
+
+/** Activity factor by training days per week: 0–1 → 1.2, 2–3 → 1.375, 4–5 → 1.55, 6–7 → 1.725. */
+export function getActivityFactor(trainingDaysPerWeek: number): number {
+  const n = Math.max(0, Math.min(7, Math.round(trainingDaysPerWeek)));
+  if (n <= 1) return 1.2;
+  if (n <= 3) return 1.375;
+  if (n <= 5) return 1.55;
+  return 1.725;
+}
 
 const DEFAULT_ACTIVITY_FACTOR = 1.375;
 

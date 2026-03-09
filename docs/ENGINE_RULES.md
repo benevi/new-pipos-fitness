@@ -22,12 +22,18 @@ Placeholder sections for training and nutrition engine rules. To be expanded in 
 
 ## Nutrition Engine Rules (Phase 8)
 
-- **Calories:** Mifflin-St Jeor BMR (sex, weight, height, age). TDEE = BMR × activity factor (default 1.375). Goal: lose_fat −15%, build_muscle +10%, maintain baseline.
+- **Calories:** Mifflin-St Jeor BMR (sex, weight, height, age). TDEE = BMR × activity factor. Goal: lose_fat −15%, build_muscle +10%, maintain baseline.
 - **Macros:** Protein 2 g/kg, fat 0.8 g/kg; carbs from remaining calories.
 - **Meal generation:** From MealTemplate catalog; scale portions to daily calorie target; respect dislikedFoodIds; deterministic (stable sort by template id).
 - **Inputs:** user (sex, heightCm, weightKg, age), goal (lose_fat | build_muscle | maintain), dislikedFoodIds, catalog (foods, mealTemplates).
 - **Outputs:** weekPlan (7 days, each with meals and items), metadata (engineVersion, dailyCalorieTarget, dailyMacroTarget).
 - **Determinism:** Same input → same output; no randomness.
+
+### Phase 8.1 — Nutrition hardening
+
+- **Dynamic activity factor:** Activity factor is derived from `preferredTrainingDays` (training days per week). Mapping: 0–1 days → 1.2, 2–3 days → 1.375, 4–5 days → 1.55, 6–7 days → 1.725. If `preferredTrainingDays` is missing, fallback to 3 (1.375). Input user may include `preferredTrainingDays` (0–7).
+- **Carb clamping:** If protein + fat calories exceed daily calorie target, carbs are set to 0 and metadata `macrosClamped: true` is set. Protein and fat minimums (2 g/kg, 0.8 g/kg) are preserved. Output always has non‑negative carbs and remains internally consistent.
+- **Deterministic meal rotation:** When multiple valid meal templates exist, templates are rotated by day so the same template is not repeated every day. For day `d` and meal slot `m`, template index = `(d + m) % numValidTemplates`. If only one valid template exists, repetition is allowed. Determinism preserved; dislikedFoodIds filtering unchanged.
 
 ## Safety Guardrails
 
