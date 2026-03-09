@@ -7,12 +7,13 @@ import { TrainingPlansModule } from './modules/training-plans/training-plans.mod
 import { WorkoutsModule } from './modules/workouts/workouts.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { NutritionPlansModule } from './modules/nutrition-plans/nutrition-plans.module';
+import { AICoachModule } from './modules/ai-coach/ai-coach.module';
 import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ZodValidationInterceptor } from './zod/zod-validation.interceptor';
 
 @Module({
-  imports: [HealthModule, PrismaModule, AuthModule, UsersModule, CatalogModule, TrainingPlansModule, WorkoutsModule, AnalyticsModule, NutritionPlansModule],
+  imports: [HealthModule, PrismaModule, AuthModule, UsersModule, CatalogModule, TrainingPlansModule, WorkoutsModule, AnalyticsModule, NutritionPlansModule, AICoachModule],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: ZodValidationInterceptor },
   ],

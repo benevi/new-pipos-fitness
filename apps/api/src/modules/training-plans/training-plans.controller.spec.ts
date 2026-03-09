@@ -1,7 +1,6 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { TrainingPlansController } from './training-plans.controller';
 import { TrainingPlansService } from './training-plans.service';
-import { NotFoundException } from '@nestjs/common';
+import { vi } from 'vitest';
 
 describe('TrainingPlansController', () => {
   let controller: TrainingPlansController;
@@ -27,17 +26,13 @@ describe('TrainingPlansController', () => {
 
   beforeEach(async () => {
     const mockService = {
-      generatePlan: jest.fn().mockResolvedValue(mockResponse),
-      getCurrent: jest.fn().mockResolvedValue(mockResponse),
-      getVersions: jest.fn().mockResolvedValue([{ id: 'ver-1', version: 1 }]),
-      getVersionById: jest.fn().mockResolvedValue(mockResponse.version),
+      generatePlan: vi.fn().mockResolvedValue(mockResponse),
+      getCurrent: vi.fn().mockResolvedValue(mockResponse),
+      getVersions: vi.fn().mockResolvedValue([{ id: 'ver-1', version: 1 }]),
+      getVersionById: vi.fn().mockResolvedValue(mockResponse.version),
     };
-    const module: TestingModule = await Test.createTestingModule({
-      controllers: [TrainingPlansController],
-      providers: [{ provide: TrainingPlansService, useValue: mockService }],
-    }).compile();
-    controller = module.get<TrainingPlansController>(TrainingPlansController);
-    service = module.get<TrainingPlansService>(TrainingPlansService);
+    service = mockService as unknown as TrainingPlansService;
+    controller = new TrainingPlansController(service);
   });
 
   it('POST generate calls service and returns plan + version', async () => {

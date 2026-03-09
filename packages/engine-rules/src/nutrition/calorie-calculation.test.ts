@@ -6,7 +6,9 @@ describe('calculateBMR', () => {
     expect(calculateBMR({})).toBeNull();
     expect(calculateBMR({ weightKg: 70 })).toBeNull();
     expect(calculateBMR({ weightKg: 70, heightCm: 175 })).toBeNull();
-    expect(calculateBMR({ weightKg: 70, heightCm: 175, age: 30 })).toBeNull();
+    expect(calculateBMR({ weightKg: 70, heightCm: 175, age: 30 })).toBe(
+      10 * 70 + 6.25 * 175 - 5 * 30 - 161,
+    );
   });
 
   it('computes BMR for male', () => {

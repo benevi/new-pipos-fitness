@@ -1,4 +1,3 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { vi } from 'vitest';
 import { TrainingPlansService } from './training-plans.service';
@@ -76,15 +75,11 @@ describe('TrainingPlansService', () => {
       adherenceScore: 0.9,
       fatigueDetected: false,
     });
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        TrainingPlansService,
-        { provide: PrismaService, useValue: mockPrisma },
-        { provide: UsersService, useValue: mockUsersService },
-        { provide: AnalyticsService, useValue: mockAnalyticsService },
-      ],
-    }).compile();
-    service = module.get<TrainingPlansService>(TrainingPlansService);
+    service = new TrainingPlansService(
+      mockPrisma as unknown as PrismaService,
+      mockUsersService as unknown as UsersService,
+      mockAnalyticsService as unknown as AnalyticsService,
+    );
   });
 
   it('should be defined', () => {

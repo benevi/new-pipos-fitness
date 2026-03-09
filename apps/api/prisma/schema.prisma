@@ -42,6 +42,21 @@ model User {
   nutritionPlans        NutritionPlan[]
   workoutSessions       WorkoutSession[]
   exerciseProgress      ExerciseProgress[]
+  aiInteractions        AIInteraction[]
+}
+
+model AIInteraction {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+  question         String
+  responseType     String
+  proposalType     String?
+  proposalValid    Boolean
+  contextSummary   Json
+  responseSummary  Json
+  @@index([userId, createdAt])
 }
 
 model ExerciseProgress {

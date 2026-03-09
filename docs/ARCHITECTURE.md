@@ -125,6 +125,25 @@ scripts/
 - **Meal generation:** From MealTemplate catalog; scales portions to meet daily calorie target; respects dislikedFoodIds and calorie/macro targets. Deterministic (stable sort by template id).
 - **Endpoints (JWT-protected):** `POST /nutrition-plans/generate` (optional body: goal) — generate weekly plan; `GET /nutrition-plans/current` — current plan snapshot; `GET /nutrition-plans/versions` — version history.
 
+## AI Coach (Phase 9)
+
+- **Scope:** AI coach infrastructure only. It answers questions and may return structured proposals, but it does not write to database business entities or execute automatic plan changes.
+- **Module:** `apps/api/src/modules/ai-coach` with `ai-coach.module.ts`, `ai-coach.controller.ts`, `ai-coach.service.ts`, `context-builder.ts`, and `response-validator.ts`.
+- **Endpoint:** `POST /ai-coach/ask` (JWT-protected). Input: `AIQuestionRequest` (`{ question: string }`). Output: `AIResponse` (`responseType`, `content`, optional `proposal`).
+- **Context builder:** Loads trimmed context from existing modules only: user profile (`UsersService`), training plan summary (`TrainingPlansService`), nutrition plan summary (`NutritionPlansService`), and progress metrics (`AnalyticsService`).
+- **Structured proposals:** Current proposal shape supports `exercise_swap` with `fromExerciseId` and `toExerciseId`.
+- **Validation guardrail:** `response-validator` rejects invalid proposals when exercise ids are invalid, required equipment is unavailable, or replacement would break plan constraints (location/movement-pattern/difficulty checks).
+- **Boundary rule:** AI coach is advisory. Final business decisions remain in deterministic engines and explicit API workflows.
+
+### AI Coach Safety Model (Phase 9.1)
+
+- **LLM cannot modify database:** The AI coach pipeline is read-only with respect to business entities. The only write is the `AIInteraction` audit record.
+- **Proposals must pass validator:** Every proposal goes through `ResponseValidatorService` which checks exercise existence, equipment availability, location, movement-pattern, and difficulty constraints. Invalid proposals are returned with `proposalStatus: "rejected"` — never silently dropped.
+- **Proposals are not automatically applied:** The API returns proposals to the client. The user or a separate explicit workflow must confirm and apply them.
+- **Interactions are audited:** Each `POST /ai-coach/ask` call persists a lightweight `AIInteraction` record (question, responseType, proposalType, proposalValid, context/response summaries). Full LLM prompts/responses are NOT stored.
+- **Output normalization:** Before validation, raw AI output passes through `AIResponseNormalizerService` which enforces schema conformance and falls back to a safe default response on parse failure.
+- **Context minimization:** `ContextBuilderService` sends only fitness-relevant profile fields. It explicitly excludes passwords, tokens, emails, and full plan/workout data. Lists are capped.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

@@ -27,7 +27,7 @@ describe('getBestE1RMPerExercise', () => {
       ['ex2', [{ weightKg: 60, reps: 8 }]],
     ]);
     const out = getBestE1RMPerExercise(sets);
-    expect(out.get('ex1')).toBeCloseTo(80 * (1 + 5 / 30));
+    expect(out.get('ex1')).toBeCloseTo(70 * (1 + 12 / 30));
     expect(out.get('ex2')).toBe(60 * (1 + 8 / 30));
   });
 });

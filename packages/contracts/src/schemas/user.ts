@@ -13,8 +13,7 @@ const MAX_MUSCLE_FOCUS = 100;
 
 export const AvailableEquipmentSchema = z
   .array(z.string())
-  .max(MAX_EQUIPMENT_ITEMS)
-  .strict();
+  .max(MAX_EQUIPMENT_ITEMS);
 
 export const GoalItemSchema = z
   .object({
@@ -28,7 +27,7 @@ export const GoalItemSchema = z
     { message: 'customText is required when type is custom', path: ['customText'] },
   );
 
-export const GoalsSchema = z.array(GoalItemSchema).max(MAX_GOALS).strict();
+export const GoalsSchema = z.array(GoalItemSchema).max(MAX_GOALS);
 
 export const MuscleFocusItemSchema = z
   .object({
@@ -37,7 +36,7 @@ export const MuscleFocusItemSchema = z
   })
   .strict();
 
-export const MuscleFocusSchema = z.array(MuscleFocusItemSchema).max(MAX_MUSCLE_FOCUS).strict();
+export const MuscleFocusSchema = z.array(MuscleFocusItemSchema).max(MAX_MUSCLE_FOCUS);
 
 export const UserProfileUpdateRequestSchema = z.object({
   heightCm: z.number().positive().nullable().optional(),

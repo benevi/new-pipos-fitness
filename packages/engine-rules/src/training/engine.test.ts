@@ -205,6 +205,28 @@ describe('getCompatibleExercises', () => {
 
   it('returns empty when availableEquipment is empty and all exercises need equipment', () => {
     const input = makeInput({
+      catalog: {
+        exercises: [
+          {
+            id: 'e1',
+            name: 'Squat',
+            difficulty: 1,
+            movementPattern: 'squat',
+            place: TrainingLocation.GYM,
+            equipmentIds: ['eq1'],
+            muscles: [{ muscleId: 'm1', role: MuscleRole.PRIMARY }],
+          },
+          {
+            id: 'e3',
+            name: 'Row',
+            difficulty: 2,
+            movementPattern: 'pull',
+            place: TrainingLocation.GYM,
+            equipmentIds: ['eq2'],
+            muscles: [{ muscleId: 'm3', role: MuscleRole.PRIMARY }],
+          },
+        ],
+      },
       preferences: {
         daysPerWeek: 2,
         minutesPerSession: 45,
