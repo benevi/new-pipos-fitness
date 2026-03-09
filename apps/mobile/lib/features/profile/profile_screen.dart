@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -17,10 +16,7 @@ class ProfileScreen extends ConsumerWidget {
             const Text('Profile — Phase 11'),
             const SizedBox(height: 24),
             OutlinedButton.icon(
-              onPressed: () async {
-                await ref.read(authProvider.notifier).logout();
-                if (context.mounted) context.go('/login');
-              },
+              onPressed: () => ref.read(authProvider.notifier).logout(),
               icon: const Icon(Icons.logout),
               label: const Text('Log Out'),
             ),

@@ -2,12 +2,14 @@
 ///
 /// - Single Dio instance shared across the app via [dioProvider].
 /// - [AuthInterceptor] handles token attachment and refresh.
+///   On refresh failure, it delegates to [AuthSessionCoordinator].
 /// - [ApiClient] is a thin typed wrapper; it does NOT catch errors.
 ///   Providers catch DioExceptions and map them via [mapDioException].
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../app/constants.dart';
+import '../auth/auth_session_coordinator.dart';
 import 'auth_interceptor.dart';
 
 final secureStorageProvider = Provider<FlutterSecureStorage>(
@@ -23,7 +25,11 @@ final dioProvider = Provider<Dio>((ref) {
   ));
 
   final storage = ref.read(secureStorageProvider);
-  final interceptor = AuthInterceptor(dio: dio, storage: storage);
+  final interceptor = AuthInterceptor(
+    dio: dio,
+    storage: storage,
+    coordinator: authSessionCoordinator,
+  );
   dio.interceptors.add(interceptor);
 
   return dio;

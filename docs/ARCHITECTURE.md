@@ -162,6 +162,12 @@ scripts/
 - **Theme foundation:** Dark-first Material 3 theme with orange accent (#FF6D00), design tokens (AppSpacing, AppRadius, AppColors).
 - **Provider caching:** Main-tab providers use `ref.keepAlive()` to survive tab switches without re-fetching.
 
+### Auth/Session Consistency (Phase 10.2)
+
+- **Session coordinator:** `AuthSessionCoordinator` bridges Dio interceptor → Riverpod auth state → protected provider invalidation. No circular dependencies.
+- **Forced logout:** On refresh failure: interceptor clears tokens → coordinator sets auth state to unauthenticated + invalidates data providers → router redirects to /login. Re-entry guard prevents duplicates.
+- **Provider invalidation:** `progressProvider`, `trainingPlanProvider`, `nutritionPlanProvider` are invalidated on both user-initiated and forced logout. No stale data after session loss.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

@@ -40,8 +40,6 @@ void main() {
       );
       final updated = original.copyWith(status: AuthStatus.error);
       expect(updated.status, AuthStatus.error);
-      // error is reset to null when not explicitly provided via the
-      // copyWith signature (error defaults to the parameter value)
     });
 
     test('error state holds message', () {
@@ -51,6 +49,29 @@ void main() {
       );
       expect(state.status, AuthStatus.error);
       expect(state.error, 'Bad credentials');
+    });
+
+    test('forced logout produces unauthenticated with session-expired message', () {
+      const state = AuthState(
+        status: AuthStatus.unauthenticated,
+        error: 'Your session has expired. Please log in again.',
+      );
+      expect(state.isAuthenticated, isFalse);
+      expect(state.isResolved, isTrue);
+      expect(state.error, contains('session has expired'));
+    });
+
+    test('unauthenticated state clears user', () {
+      const state = AuthState(status: AuthStatus.unauthenticated);
+      expect(state.user, isNull);
+      expect(state.error, isNull);
+    });
+
+    test('loading state is not authenticated and is resolved', () {
+      const state = AuthState(status: AuthStatus.loading);
+      expect(state.isAuthenticated, isFalse);
+      expect(state.isLoading, isTrue);
+      expect(state.isResolved, isTrue);
     });
   });
 }

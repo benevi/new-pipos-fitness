@@ -5,14 +5,16 @@
 /// unauthenticated ──(login/register)──> loading ──> authenticated | error
 /// error ──(retry login/register)──> loading ──> authenticated | error
 /// authenticated ──(logout)──> unauthenticated
-/// authenticated ──(token refresh fail)──> unauthenticated
+/// authenticated ──(token refresh fail)──> unauthenticated (via coordinator)
 /// ```
 ///
-/// The router uses this state to guard routes:
-/// - `unknown`: show nothing (splash); wait for storage check
-/// - `unauthenticated` / `error`: redirect to /login
-/// - `loading`: stay on current screen (button shows spinner)
-/// - `authenticated`: allow access to protected routes
+/// Session coordination:
+/// - On login/register success: coordinator.onSessionStarted()
+/// - On logout: coordinator.onSessionExpired() invalidates protected providers
+/// - On forced logout (interceptor refresh failure): coordinator calls
+///   forceUnauthenticated() on this notifier AND invalidates providers
+///
+/// The coordinator prevents duplicate logout execution via a re-entry guard.
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -20,7 +22,11 @@ import '../../app/constants.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/api_failure.dart';
 import '../../core/api/dio_error_mapper.dart';
+import '../../core/auth/auth_session_coordinator.dart';
 import '../../models/user.dart';
+import '../dashboard/progress_provider.dart';
+import '../nutrition/nutrition_plan_provider.dart';
+import '../workouts/training_plan_provider.dart';
 
 enum AuthStatus { unknown, unauthenticated, loading, authenticated, error }
 
@@ -51,8 +57,11 @@ class AuthState {
 class AuthNotifier extends StateNotifier<AuthState> {
   final Dio _dio;
   final FlutterSecureStorage _storage;
+  final Ref _ref;
 
-  AuthNotifier(this._dio, this._storage) : super(const AuthState()) {
+  AuthNotifier(this._dio, this._storage, this._ref) : super(const AuthState()) {
+    // Register with coordinator so forced logout can update this notifier
+    authSessionCoordinator.setForceLogoutHandler(_onForceLogout);
     _checkAuth();
   }
 
@@ -74,6 +83,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         response.data as Map<String, dynamic>,
       );
       await _persistTokens(authResponse);
+      authSessionCoordinator.onSessionStarted();
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: authResponse.user,
@@ -95,6 +105,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         response.data as Map<String, dynamic>,
       );
       await _persistTokens(authResponse);
+      authSessionCoordinator.onSessionStarted();
       state = state.copyWith(
         status: AuthStatus.authenticated,
         user: authResponse.user,
@@ -105,6 +116,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
+  /// User-initiated logout. Clears tokens, invalidates providers, sets state.
   Future<void> logout() async {
     final refreshToken = await _storage.read(key: AppConstants.refreshTokenKey);
     if (refreshToken != null) {
@@ -113,12 +125,23 @@ class AuthNotifier extends StateNotifier<AuthState> {
       } catch (_) {}
     }
     await _clearTokens();
+    _invalidateProtectedProviders();
     state = const AuthState(status: AuthStatus.unauthenticated);
   }
 
-  /// Called by the auth interceptor when a token refresh fails.
-  void forceUnauthenticated() {
-    state = const AuthState(status: AuthStatus.unauthenticated);
+  /// Called by the coordinator when the interceptor detects an expired session.
+  void _onForceLogout() {
+    _invalidateProtectedProviders();
+    state = const AuthState(
+      status: AuthStatus.unauthenticated,
+      error: 'Your session has expired. Please log in again.',
+    );
+  }
+
+  void _invalidateProtectedProviders() {
+    _ref.invalidate(progressProvider);
+    _ref.invalidate(trainingPlanProvider);
+    _ref.invalidate(nutritionPlanProvider);
   }
 
   Future<void> _persistTokens(AuthResponse auth) async {
@@ -141,5 +164,5 @@ class AuthNotifier extends StateNotifier<AuthState> {
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
   final dio = ref.read(dioProvider);
   final storage = ref.read(secureStorageProvider);
-  return AuthNotifier(dio, storage);
+  return AuthNotifier(dio, storage, ref);
 });
