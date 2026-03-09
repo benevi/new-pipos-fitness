@@ -168,6 +168,12 @@ scripts/
 - **Forced logout:** On refresh failure: interceptor clears tokens → coordinator sets auth state to unauthenticated + invalidates data providers → router redirects to /login. Re-entry guard prevents duplicates.
 - **Provider invalidation:** `progressProvider`, `trainingPlanProvider`, `nutritionPlanProvider` are invalidated on both user-initiated and forced logout. No stale data after session loss.
 
+### Workout Experience (Phase 11)
+
+- **Flow:** Workouts tab → select session from training plan → start workout (POST /workouts/start) → log sets per exercise → finish (POST /workouts/:id/finish) → summary screen → dashboard.
+- **Provider:** `workoutSessionProvider` (StateNotifier) manages workout lifecycle, exercise navigation, and set logging. Uses ApiClient with ApiFailure error mapping.
+- **Routing:** `/workout-player` and `/workout-complete` are full-screen routes outside ShellRoute (no bottom nav bar during workout).
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

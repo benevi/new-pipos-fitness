@@ -8,6 +8,8 @@
 /// - `authenticated`: redirect away from auth routes to /dashboard
 ///
 /// Protected routes live inside a ShellRoute that provides bottom navigation.
+/// Full-screen flows (workout player, workout complete) are top-level routes
+/// outside the ShellRoute so they don't show the bottom nav bar.
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +18,8 @@ import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/dashboard/dashboard_screen.dart';
 import '../features/workouts/workouts_screen.dart';
+import '../features/workouts/workout_player_screen.dart';
+import '../features/workouts/workout_complete_screen.dart';
 import '../features/nutrition/nutrition_screen.dart';
 import '../features/ai_coach/ai_coach_screen.dart';
 import '../features/profile/profile_screen.dart';
@@ -30,7 +34,6 @@ final routerProvider = Provider<GoRouter>((ref) {
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/login',
     redirect: (context, state) {
-      // While checking stored token, don't redirect
       if (!authState.isResolved) return null;
 
       final isAuth = authState.isAuthenticated;
@@ -50,6 +53,15 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/register',
         builder: (_, __) => const RegisterScreen(),
+      ),
+      // Full-screen workout flows (no bottom nav)
+      GoRoute(
+        path: '/workout-player',
+        builder: (_, __) => const WorkoutPlayerScreen(),
+      ),
+      GoRoute(
+        path: '/workout-complete',
+        builder: (_, __) => const WorkoutCompleteScreen(),
       ),
       ShellRoute(
         navigatorKey: _shellNavigatorKey,
