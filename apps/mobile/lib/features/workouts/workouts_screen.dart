@@ -57,8 +57,12 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
       );
 
       if (shouldResume == true && mounted) {
-        ref.read(workoutSessionProvider.notifier).resumeWorkout(active);
-        context.push('/workout-player');
+        final success = await ref
+            .read(workoutSessionProvider.notifier)
+            .resumeWorkout(active.id);
+        if (success && mounted) {
+          context.push('/workout-player');
+        }
       }
     }
   }
@@ -187,9 +191,32 @@ class _SessionCard extends ConsumerWidget {
                 workoutState.error != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                child: Text(
-                  workoutState.error!,
-                  style: const TextStyle(color: AppColors.error, fontSize: 13),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      workoutState.error!,
+                      style:
+                          const TextStyle(color: AppColors.error, fontSize: 13),
+                    ),
+                    if (workoutState.session != null &&
+                        workoutState.planSession != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: AppSpacing.xs),
+                        child: TextButton(
+                          onPressed: () async {
+                            final notifier =
+                                ref.read(workoutSessionProvider.notifier);
+                            final success =
+                                await notifier.retryAddExercises();
+                            if (success && context.mounted) {
+                              context.push('/workout-player');
+                            }
+                          },
+                          child: const Text('Retry'),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             SizedBox(

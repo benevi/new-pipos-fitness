@@ -27,9 +27,11 @@ class WorkoutPlayerScreen extends ConsumerWidget {
     final totalEx = ws.totalExercises;
     final idx = ws.currentExerciseIndex.clamp(0, totalEx > 0 ? totalEx - 1 : 0);
 
-    // For resumed workouts without planSession, use workout exercises directly
     final planExercise = ws.planSession?.exercises.elementAtOrNull(idx);
-    final workoutExercise = exercises.elementAtOrNull(idx);
+    // Match by order for robust lookup, fall back to positional index
+    final workoutExercise =
+        exercises.where((e) => e.order == idx).firstOrNull ??
+            exercises.elementAtOrNull(idx);
 
     if (workoutExercise == null) {
       return Scaffold(

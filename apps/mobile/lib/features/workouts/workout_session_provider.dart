@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/api/dio_error_mapper.dart';
@@ -73,8 +74,7 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
   ApiClient get _api => _ref.read(apiClientProvider);
 
   /// Atomic start: creates session + adds all exercises.
-  /// State transitions to active only after both succeed.
-  /// On exercise-add failure, state goes to error with retry info.
+  /// State becomes active only after both steps succeed.
   Future<bool> startWorkout(TrainingSession planSession) async {
     if (state.isActive || state.isStarting) return false;
 
@@ -102,16 +102,15 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
       return false;
     }
 
-    // Add all exercises — if any fails, abort to error
-    final exercises = <WorkoutExercise>[];
+    // Add all exercises; each call returns the full updated session
     try {
       for (final planExercise in planSession.exercises) {
         final resp = await _api.post(
           '/workouts/${session.id}/exercises',
           data: {'exerciseId': planExercise.exerciseId},
         );
-        exercises.add(
-          WorkoutExercise.fromJson(resp.data as Map<String, dynamic>),
+        session = WorkoutSession.fromJson(
+          resp.data as Map<String, dynamic>,
         );
       }
     } on DioException catch (e) {
@@ -125,43 +124,129 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
       return false;
     }
 
-    final fullSession = WorkoutSession(
-      id: session.id,
-      userId: session.userId,
-      planSessionId: session.planSessionId,
-      planVersionId: session.planVersionId,
-      startedAt: session.startedAt,
-      completedAt: session.completedAt,
-      durationMinutes: session.durationMinutes,
-      notes: session.notes,
-      exercises: exercises,
-    );
-
     state = WorkoutSessionState(
       status: WorkoutStatus.active,
-      session: fullSession,
+      session: session,
       planSession: planSession,
     );
     return true;
   }
 
-  /// Resume an incomplete workout detected from history.
-  void resumeWorkout(WorkoutSession session) {
+  /// Retry adding remaining exercises after a partial start failure.
+  /// Fetches current session state, determines missing exercises, adds them.
+  Future<bool> retryAddExercises() async {
+    if (state.session == null || state.planSession == null) return false;
+    if (state.status != WorkoutStatus.error) return false;
+
+    final sessionId = state.session!.id;
+    final planSession = state.planSession!;
+
+    state = state.copyWith(status: WorkoutStatus.starting, error: null);
+
+    WorkoutSession current;
+    try {
+      final resp = await _api.get('/workouts/$sessionId');
+      current = WorkoutSession.fromJson(resp.data as Map<String, dynamic>);
+    } on DioException catch (e) {
+      final failure = mapDioException(e);
+      state = state.copyWith(
+        status: WorkoutStatus.error,
+        error: 'Failed to load session: ${failure.message}',
+      );
+      return false;
+    }
+
+    final existingExerciseIds =
+        current.exercises.map((e) => e.exerciseId).toSet();
+    final missing = planSession.exercises
+        .where((pe) => !existingExerciseIds.contains(pe.exerciseId))
+        .toList();
+
+    try {
+      for (final planExercise in missing) {
+        final resp = await _api.post(
+          '/workouts/$sessionId/exercises',
+          data: {'exerciseId': planExercise.exerciseId},
+        );
+        current = WorkoutSession.fromJson(
+          resp.data as Map<String, dynamic>,
+        );
+      }
+    } on DioException catch (e) {
+      final failure = mapDioException(e);
+      state = WorkoutSessionState(
+        status: WorkoutStatus.error,
+        planSession: planSession,
+        session: current,
+        error: 'Failed to add exercises: ${failure.message}',
+      );
+      return false;
+    }
+
     state = WorkoutSessionState(
       status: WorkoutStatus.active,
-      session: session,
-      resumedSession: true,
+      session: current,
+      planSession: planSession,
     );
+    return true;
   }
 
-  /// Check for an incomplete workout via GET /workouts/history.
+  /// Resume an incomplete workout by fetching its full state from the server.
+  Future<bool> resumeWorkout(String sessionId) async {
+    try {
+      final resp = await _api.get('/workouts/$sessionId');
+      final session = WorkoutSession.fromJson(
+        resp.data as Map<String, dynamic>,
+      );
+
+      // Restore currentExerciseIndex: first exercise with fewer completed sets
+      // than expected, or the last exercise
+      final exerciseIndex = _computeResumeIndex(session);
+
+      state = WorkoutSessionState(
+        status: WorkoutStatus.active,
+        session: session,
+        resumedSession: true,
+        currentExerciseIndex: exerciseIndex,
+      );
+      return true;
+    } on DioException catch (e) {
+      final failure = mapDioException(e);
+      state = state.copyWith(error: 'Failed to resume: ${failure.message}');
+      return false;
+    }
+  }
+
+  /// Find the first exercise that has no sets, or the last one if all have sets.
+  int _computeResumeIndex(WorkoutSession session) {
+    if (session.exercises.isEmpty) return 0;
+    for (int i = 0; i < session.exercises.length; i++) {
+      if (session.exercises[i].sets.isEmpty) return i;
+    }
+    return session.exercises.length - 1;
+  }
+
+  /// Check for incomplete workouts via GET /workouts/history.
+  /// Returns the most recent incomplete session, warns in debug if multiple.
   Future<WorkoutSession?> checkForActiveWorkout() async {
     try {
       final response = await _api.get('/workouts/history');
       final list = (response.data as List<dynamic>)
           .map((e) => WorkoutSession.fromJson(e as Map<String, dynamic>))
           .toList();
-      return list.where((w) => w.completedAt == null).firstOrNull;
+
+      final incomplete = list.where((w) => w.completedAt == null).toList();
+      if (incomplete.isEmpty) return null;
+
+      if (incomplete.length > 1) {
+        debugPrint(
+          'WARNING: ${incomplete.length} incomplete workout sessions found. '
+          'Resuming most recent.',
+        );
+      }
+
+      // History is ordered by startedAt desc, so first is most recent
+      return incomplete.first;
     } catch (_) {
       return null;
     }
@@ -185,46 +270,17 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
           'completed': true,
         },
       );
-      final newSet = WorkoutSet.fromJson(
+      // Backend returns the full updated session
+      final updated = WorkoutSession.fromJson(
         response.data as Map<String, dynamic>,
       );
-
-      _updateExerciseWithSet(workoutExerciseId, newSet);
+      state = state.copyWith(session: updated);
       return true;
     } on DioException catch (e) {
       final failure = mapDioException(e);
       state = state.copyWith(error: failure.message);
       return false;
     }
-  }
-
-  void _updateExerciseWithSet(String workoutExerciseId, WorkoutSet newSet) {
-    if (state.session == null) return;
-
-    final updatedExercises = state.session!.exercises.map((ex) {
-      if (ex.id != workoutExerciseId) return ex;
-      return WorkoutExercise(
-        id: ex.id,
-        workoutSessionId: ex.workoutSessionId,
-        exerciseId: ex.exerciseId,
-        order: ex.order,
-        sets: [...ex.sets, newSet],
-      );
-    }).toList();
-
-    state = state.copyWith(
-      session: WorkoutSession(
-        id: state.session!.id,
-        userId: state.session!.userId,
-        planSessionId: state.session!.planSessionId,
-        planVersionId: state.session!.planVersionId,
-        startedAt: state.session!.startedAt,
-        completedAt: state.session!.completedAt,
-        durationMinutes: state.session!.durationMinutes,
-        notes: state.session!.notes,
-        exercises: updatedExercises,
-      ),
-    );
   }
 
   void nextExercise() {

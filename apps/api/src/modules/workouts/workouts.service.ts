@@ -118,6 +118,18 @@ export class WorkoutsService {
     return this.toWorkoutSession(updated);
   }
 
+  async getById(userId: string, workoutSessionId: string) {
+    const session = await this.prisma.workoutSession.findUnique({
+      where: { id: workoutSessionId },
+      include: {
+        exercises: { include: { sets: true }, orderBy: { order: 'asc' } },
+      },
+    });
+    if (!session) throw new NotFoundException('Workout session not found');
+    if (session.userId !== userId) throw new ForbiddenException('Not your workout session');
+    return this.toWorkoutSession(session);
+  }
+
   async getHistory(userId: string) {
     const sessions = await this.prisma.workoutSession.findMany({
       where: { userId },

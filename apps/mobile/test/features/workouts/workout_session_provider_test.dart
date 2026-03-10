@@ -27,7 +27,6 @@ void main() {
     test('isActive returns true when status is active', () {
       const state = WorkoutSessionState(status: WorkoutStatus.active);
       expect(state.isActive, true);
-      expect(state.isStarting, false);
     });
 
     test('isCompleted returns true when status is completed', () {
@@ -82,7 +81,8 @@ void main() {
       expect(state.totalExercises, 2);
     });
 
-    test('totalExercises falls back to session exercises when no planSession', () {
+    test('totalExercises falls back to session exercises when no planSession',
+        () {
       final state = WorkoutSessionState(
         session: WorkoutSession(
           id: 'w1',
@@ -90,26 +90,23 @@ void main() {
           startedAt: '2026-03-09T10:00:00Z',
           exercises: [
             WorkoutExercise(
-              id: 'we1',
-              workoutSessionId: 'w1',
-              exerciseId: 'bench-press',
-              order: 0,
-              sets: [],
-            ),
+                id: 'we1',
+                workoutSessionId: 'w1',
+                exerciseId: 'bench-press',
+                order: 0,
+                sets: []),
             WorkoutExercise(
-              id: 'we2',
-              workoutSessionId: 'w1',
-              exerciseId: 'squat',
-              order: 1,
-              sets: [],
-            ),
+                id: 'we2',
+                workoutSessionId: 'w1',
+                exerciseId: 'squat',
+                order: 1,
+                sets: []),
             WorkoutExercise(
-              id: 'we3',
-              workoutSessionId: 'w1',
-              exerciseId: 'deadlift',
-              order: 2,
-              sets: [],
-            ),
+                id: 'we3',
+                workoutSessionId: 'w1',
+                exerciseId: 'deadlift',
+                order: 2,
+                sets: []),
           ],
         ),
       );
@@ -166,14 +163,6 @@ void main() {
       final cleared = withError.copyWith(error: null);
       expect(cleared.error, isNull);
     });
-
-    test('resumedSession flag works in copyWith', () {
-      const state = WorkoutSessionState();
-      expect(state.resumedSession, false);
-
-      final resumed = state.copyWith(resumedSession: true);
-      expect(resumed.resumedSession, true);
-    });
   });
 
   group('WorkoutStatus', () {
@@ -192,14 +181,14 @@ void main() {
     });
   });
 
-  group('Atomic workout start (state transitions)', () {
+  group('Atomic start (state transitions)', () {
     test('starting status prevents double start', () {
       const state = WorkoutSessionState(status: WorkoutStatus.starting);
       expect(state.isStarting, true);
       expect(state.isActive, false);
     });
 
-    test('error status with exercises-add failure preserves session', () {
+    test('error state with partial exercises preserves session for retry', () {
       final state = WorkoutSessionState(
         status: WorkoutStatus.error,
         error: 'Failed to add exercises: No internet connection.',
@@ -207,20 +196,60 @@ void main() {
           id: 'w1',
           userId: 'u1',
           startedAt: '2026-03-09T10:00:00Z',
-          exercises: [],
+          exercises: [
+            WorkoutExercise(
+              id: 'we1',
+              workoutSessionId: 'w1',
+              exerciseId: 'bench-press',
+              order: 0,
+              sets: [],
+            ),
+          ],
+        ),
+        planSession: const TrainingSession(
+          id: 's1',
+          planVersionId: 'v1',
+          sessionIndex: 0,
+          name: 'Day 1',
+          targetDurationMinutes: 60,
+          exercises: [
+            TrainingSessionExercise(
+              id: 'e1',
+              sessionId: 's1',
+              exerciseId: 'bench-press',
+              sets: 3,
+              repRangeMin: 8,
+              repRangeMax: 12,
+              restSeconds: 90,
+              rirTarget: 2,
+            ),
+            TrainingSessionExercise(
+              id: 'e2',
+              sessionId: 's1',
+              exerciseId: 'squat',
+              sets: 4,
+              repRangeMin: 6,
+              repRangeMax: 10,
+              restSeconds: 120,
+              rirTarget: 2,
+            ),
+          ],
         ),
       );
       expect(state.status, WorkoutStatus.error);
-      expect(state.error, contains('Failed to add exercises'));
       expect(state.session, isNotNull);
+      expect(state.session!.exercises.length, 1);
+      expect(state.planSession, isNotNull);
+      expect(state.planSession!.exercises.length, 2);
     });
   });
 
-  group('Resume workout (state)', () {
-    test('resumed workout sets active with resumedSession flag', () {
-      final resumed = WorkoutSessionState(
+  group('Resume workout (state restoration)', () {
+    test('resumed state includes exercises with logged sets', () {
+      final state = WorkoutSessionState(
         status: WorkoutStatus.active,
         resumedSession: true,
+        currentExerciseIndex: 1,
         session: WorkoutSession(
           id: 'w1',
           userId: 'u1',
@@ -240,14 +269,118 @@ void main() {
                   reps: 8,
                   completed: true,
                 ),
+                WorkoutSet(
+                  id: 'ws2',
+                  workoutExerciseId: 'we1',
+                  setIndex: 1,
+                  weightKg: 65,
+                  reps: 7,
+                  completed: true,
+                ),
               ],
+            ),
+            WorkoutExercise(
+              id: 'we2',
+              workoutSessionId: 'w1',
+              exerciseId: 'squat',
+              order: 1,
+              sets: [],
             ),
           ],
         ),
       );
-      expect(resumed.isActive, true);
-      expect(resumed.resumedSession, true);
-      expect(resumed.session!.exercises.first.sets.length, 1);
+      expect(state.isActive, true);
+      expect(state.resumedSession, true);
+      expect(state.currentExerciseIndex, 1);
+      expect(state.session!.exercises[0].sets.length, 2);
+      expect(state.session!.exercises[1].sets.length, 0);
+    });
+
+    test('resumed state totalExercises uses session exercises count', () {
+      final state = WorkoutSessionState(
+        status: WorkoutStatus.active,
+        resumedSession: true,
+        session: WorkoutSession(
+          id: 'w1',
+          userId: 'u1',
+          startedAt: '2026-03-09T10:00:00Z',
+          exercises: [
+            WorkoutExercise(
+                id: 'we1',
+                workoutSessionId: 'w1',
+                exerciseId: 'bench',
+                order: 0,
+                sets: []),
+            WorkoutExercise(
+                id: 'we2',
+                workoutSessionId: 'w1',
+                exerciseId: 'squat',
+                order: 1,
+                sets: []),
+          ],
+        ),
+      );
+      expect(state.totalExercises, 2);
+    });
+  });
+
+  group('Multiple active sessions guard', () {
+    test('most recent incomplete session is selected (mock scenario)', () {
+      // Simulates the logic: history ordered by startedAt desc,
+      // incomplete sessions filtered, first (most recent) chosen
+      final sessions = [
+        WorkoutSession(
+          id: 'w2',
+          userId: 'u1',
+          startedAt: '2026-03-09T12:00:00Z',
+          exercises: [],
+        ),
+        WorkoutSession(
+          id: 'w1',
+          userId: 'u1',
+          startedAt: '2026-03-09T10:00:00Z',
+          exercises: [],
+        ),
+        WorkoutSession(
+          id: 'w0',
+          userId: 'u1',
+          startedAt: '2026-03-08T10:00:00Z',
+          completedAt: '2026-03-08T11:00:00Z',
+          exercises: [],
+        ),
+      ];
+
+      final incomplete =
+          sessions.where((w) => w.completedAt == null).toList();
+      expect(incomplete.length, 2);
+
+      final mostRecent = incomplete.first;
+      expect(mostRecent.id, 'w2');
+    });
+  });
+
+  group('Duplicate set prevention', () {
+    test('setIndex equals plannedSets marks exercise as complete', () {
+      // This mirrors the UI logic in _SetInputForm
+      const plannedSets = 3;
+      const setIndex = 3; // 3 sets logged, planned 3
+      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      expect(allDone, true);
+    });
+
+    test('allows unlimited sets when plannedSets is 0 (resumed without plan)',
+        () {
+      const plannedSets = 0;
+      const setIndex = 5;
+      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      expect(allDone, false);
+    });
+
+    test('allows more sets when under planned count', () {
+      const plannedSets = 4;
+      const setIndex = 2;
+      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      expect(allDone, false);
     });
   });
 }

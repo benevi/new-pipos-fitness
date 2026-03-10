@@ -180,6 +180,13 @@ scripts/
 - **Exercise catalog:** `exerciseCatalogProvider` fetches and caches the full exercise list as `Map<String, Exercise>` with `keepAlive`. UI shows exercise names instead of IDs.
 - **Resume:** On Workouts screen load, checks `GET /workouts/history` for incomplete sessions (`completedAt == null`). Prompts user to resume, restoring full workout state.
 
+### Workout Resume Integrity (Phase 11.2)
+
+- **Full session fetch:** `GET /workouts/:id` endpoint returns complete session with exercises and sets. Resume fetches this instead of relying on history data.
+- **Retry initialization:** `retryAddExercises()` fetches current server state, determines missing exercises, adds only those. Does not create a duplicate session.
+- **Multi-session guard:** If multiple incomplete sessions exist, the most recent (by startedAt) is chosen. Debug warning logged for multiples.
+- **State restoration:** `_computeResumeIndex()` positions the player at the first exercise with no logged sets. Existing sets are preserved and displayed.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

@@ -31,6 +31,12 @@ export class WorkoutsController {
     return this.workoutsService.getHistory(user.id);
   }
 
+  @Get(':id')
+  @ApiOperation({ summary: 'Get a single workout session with exercises and sets' })
+  getById(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+    return this.workoutsService.getById(user.id, id);
+  }
+
   @Post('start')
   @ZodBody(StartWorkoutRequestSchema)
   @ApiOperation({ summary: 'Start a workout session' })
