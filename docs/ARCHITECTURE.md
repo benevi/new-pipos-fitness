@@ -193,6 +193,13 @@ scripts/
 - **Sections:** Summary cards (adherence/exercises/fatigue), fatigue status banner, weekly volume card with muscle breakdown, per-exercise progress list with e1RM, volume, trend, and fatigue highlight.
 - **States:** Loading, error (retry), empty (no data), loaded with pull-to-refresh.
 
+### Dashboard Hardening (Phase 12.1)
+
+- **ViewModel:** `dashboardProvider` (synchronous Provider) composes progressProvider, volumeProvider, exerciseCatalogProvider, and muscleCatalogProvider into a single `DashboardViewModel`. UI renders only the ViewModel.
+- **Muscle catalog:** `muscleCatalogProvider` fetches `GET /muscles`, maps muscleId→Muscle, keepAlive. Volume chips show muscle names.
+- **Empty-state:** Dashboard is empty only when no exercises AND no volume AND no adherenceScore. Partial data renders normally.
+- **Widget extraction:** `DashboardSummaryCard`, `FatigueBanner`, `ProgressListItem`, `VolumeSummaryCard` extracted for readability.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

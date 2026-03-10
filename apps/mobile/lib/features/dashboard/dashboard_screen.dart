@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
-import '../../models/exercise.dart';
-import '../../models/progress_metrics.dart';
-import '../../models/volume_metrics.dart';
-import '../workouts/exercise_catalog_provider.dart';
+import 'dashboard_provider.dart';
 import 'progress_provider.dart';
 import 'volume_provider.dart';
+import 'widgets/dashboard_summary_card.dart';
+import 'widgets/fatigue_banner.dart';
+import 'widgets/progress_list_item.dart';
+import 'widgets/volume_summary_card.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -14,7 +15,7 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final progressAsync = ref.watch(progressProvider);
-    final volumeAsync = ref.watch(volumeProvider);
+    final vm = ref.watch(dashboardProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Dashboard')),
@@ -33,14 +34,9 @@ class DashboardScreen extends ConsumerWidget {
               ref.invalidate(volumeProvider);
             },
           ),
-          data: (progress) {
-            final volume = volumeAsync.valueOrNull;
-
-            if (progress == null || progress.exercises.isEmpty) {
-              return _EmptyView();
-            }
-
-            return _LoadedDashboard(progress: progress, volume: volume);
+          data: (_) {
+            if (vm.isEmpty) return const _EmptyView();
+            return _LoadedDashboard(vm: vm);
           },
         ),
       ),
@@ -76,6 +72,8 @@ class _ErrorView extends StatelessWidget {
 }
 
 class _EmptyView extends StatelessWidget {
+  const _EmptyView();
+
   @override
   Widget build(BuildContext context) {
     return ListView(
@@ -105,77 +103,81 @@ class _EmptyView extends StatelessWidget {
   }
 }
 
-class _LoadedDashboard extends ConsumerWidget {
-  final ProgressMetrics progress;
-  final VolumeMetrics? volume;
-
-  const _LoadedDashboard({required this.progress, this.volume});
+class _LoadedDashboard extends StatelessWidget {
+  final DashboardViewModel vm;
+  const _LoadedDashboard({required this.vm});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final catalog = ref.watch(exerciseCatalogProvider).valueOrNull;
-
+  Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
       children: [
-        _SummaryRow(progress: progress),
+        _SummaryRow(vm: vm),
         const SizedBox(height: AppSpacing.md),
-        _FatigueCard(detected: progress.fatigueDetected),
+        FatigueBanner(detected: vm.fatigueDetected),
         const SizedBox(height: AppSpacing.md),
-        if (volume != null) ...[
-          _VolumeSummaryCard(volume: volume!),
+        if (vm.totalVolume > 0 || vm.volumeByMuscle.isNotEmpty) ...[
+          VolumeSummaryCard(
+            totalVolume: vm.totalVolume,
+            exerciseCount: vm.exerciseCount,
+            muscleCount: vm.muscleCount,
+            muscleVolumes: vm.volumeByMuscle,
+          ),
           const SizedBox(height: AppSpacing.md),
         ],
-        _ExerciseProgressSection(
-          exercises: progress.exercises,
-          catalog: catalog,
-        ),
+        if (vm.exercises.isNotEmpty) ...[
+          Row(
+            children: [
+              Icon(Icons.trending_up, color: AppColors.accent, size: 22),
+              const SizedBox(width: AppSpacing.sm),
+              Text('Exercise Progress',
+                  style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          ...vm.exercises.map((e) => ProgressListItem(exercise: e)),
+        ],
       ],
     );
   }
 }
 
-// ─── Section 1: Summary Cards ───────────────────────────────────────────
-
 class _SummaryRow extends StatelessWidget {
-  final ProgressMetrics progress;
-  const _SummaryRow({required this.progress});
+  final DashboardViewModel vm;
+  const _SummaryRow({required this.vm});
 
   @override
   Widget build(BuildContext context) {
-    final adherencePct = progress.adherenceScore != null
-        ? '${(progress.adherenceScore! * 100).toStringAsFixed(0)}%'
+    final adherencePct = vm.adherenceScore != null
+        ? '${(vm.adherenceScore! * 100).toStringAsFixed(0)}%'
         : '—';
 
     return Row(
       children: [
         Expanded(
-          child: _MetricCard(
+          child: DashboardSummaryCard(
             icon: Icons.check_circle_outline,
             label: 'Adherence',
             value: adherencePct,
-            color: _adherenceColor(progress.adherenceScore),
+            color: _adherenceColor(vm.adherenceScore),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: _MetricCard(
+          child: DashboardSummaryCard(
             icon: Icons.fitness_center,
             label: 'Exercises',
-            value: '${progress.exercises.length}',
+            value: '${vm.exercises.length}',
             color: AppColors.accent,
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
         Expanded(
-          child: _MetricCard(
-            icon: progress.fatigueDetected
-                ? Icons.warning_amber
-                : Icons.favorite,
+          child: DashboardSummaryCard(
+            icon: vm.fatigueDetected ? Icons.warning_amber : Icons.favorite,
             label: 'Fatigue',
-            value: progress.fatigueDetected ? 'Yes' : 'No',
-            color:
-                progress.fatigueDetected ? AppColors.error : AppColors.success,
+            value: vm.fatigueDetected ? 'Yes' : 'No',
+            color: vm.fatigueDetected ? AppColors.error : AppColors.success,
           ),
         ),
       ],
@@ -187,339 +189,5 @@ class _SummaryRow extends StatelessWidget {
     if (score >= 0.8) return AppColors.success;
     if (score >= 0.5) return AppColors.accent;
     return AppColors.error;
-  }
-}
-
-class _MetricCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  const _MetricCard({
-    required this.icon,
-    required this.label,
-    required this.value,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.sm,
-          vertical: AppSpacing.md,
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: AppSpacing.xs),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: AppColors.onSurfaceVariant),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Section 4: Fatigue Status ──────────────────────────────────────────
-
-class _FatigueCard extends StatelessWidget {
-  final bool detected;
-  const _FatigueCard({required this.detected});
-
-  @override
-  Widget build(BuildContext context) {
-    final bgColor = detected
-        ? AppColors.error.withOpacity(0.12)
-        : AppColors.success.withOpacity(0.12);
-    final fgColor = detected ? AppColors.error : AppColors.success;
-    final icon =
-        detected ? Icons.warning_amber_rounded : Icons.shield_outlined;
-    final text = detected
-        ? 'Fatigue detected — consider reducing volume or taking a deload.'
-        : 'No fatigue detected — you are recovering well.';
-
-    return Container(
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: bgColor,
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Row(
-        children: [
-          Icon(icon, color: fgColor, size: 28),
-          const SizedBox(width: AppSpacing.md),
-          Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: fgColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Section 3: Weekly Volume ───────────────────────────────────────────
-
-class _VolumeSummaryCard extends StatelessWidget {
-  final VolumeMetrics volume;
-  const _VolumeSummaryCard({required this.volume});
-
-  @override
-  Widget build(BuildContext context) {
-    final totalByExercise =
-        volume.byExercise.fold<double>(0, (s, e) => s + e.volume);
-
-    return Card(
-      color: AppColors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.lg),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Icon(Icons.bar_chart, color: AppColors.accent, size: 22),
-                const SizedBox(width: AppSpacing.sm),
-                Text('Weekly Volume',
-                    style: Theme.of(context).textTheme.titleMedium),
-              ],
-            ),
-            const SizedBox(height: AppSpacing.md),
-            Row(
-              children: [
-                Expanded(
-                  child: _VolumeStatItem(
-                    label: 'Total Volume',
-                    value: '${totalByExercise.toStringAsFixed(0)} kg',
-                  ),
-                ),
-                Expanded(
-                  child: _VolumeStatItem(
-                    label: 'Exercises',
-                    value: '${volume.byExercise.length}',
-                  ),
-                ),
-                Expanded(
-                  child: _VolumeStatItem(
-                    label: 'Muscles',
-                    value: '${volume.byMuscle.length}',
-                  ),
-                ),
-              ],
-            ),
-            if (volume.byMuscle.isNotEmpty) ...[
-              const SizedBox(height: AppSpacing.md),
-              Wrap(
-                spacing: AppSpacing.sm,
-                runSpacing: AppSpacing.xs,
-                children: volume.byMuscle
-                    .map((m) => Chip(
-                          label: Text(
-                            '${m.muscleId}: ${m.volume.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ))
-                    .toList(),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _VolumeStatItem extends StatelessWidget {
-  final String label;
-  final String value;
-  const _VolumeStatItem({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.accent,
-              ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          label,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: AppColors.onSurfaceVariant),
-        ),
-      ],
-    );
-  }
-}
-
-// ─── Section 2: Exercise Progress ───────────────────────────────────────
-
-class _ExerciseProgressSection extends StatelessWidget {
-  final List<ExerciseProgressItem> exercises;
-  final Map<String, Exercise>? catalog;
-
-  const _ExerciseProgressSection({
-    required this.exercises,
-    this.catalog,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(Icons.trending_up, color: AppColors.accent, size: 22),
-            const SizedBox(width: AppSpacing.sm),
-            Text('Exercise Progress',
-                style: Theme.of(context).textTheme.titleMedium),
-          ],
-        ),
-        const SizedBox(height: AppSpacing.sm),
-        ...exercises.map((e) => _ExerciseProgressRow(
-              exercise: e,
-              catalog: catalog,
-            )),
-      ],
-    );
-  }
-}
-
-class _ExerciseProgressRow extends StatelessWidget {
-  final ExerciseProgressItem exercise;
-  final Map<String, Exercise>? catalog;
-
-  const _ExerciseProgressRow({required this.exercise, this.catalog});
-
-  @override
-  Widget build(BuildContext context) {
-    final name = exerciseName(catalog, exercise.exerciseId);
-    final trendIcon = _trendIcon(exercise.volumeTrend);
-    final trendColor = _trendColor(exercise.volumeTrend);
-
-    return Card(
-      color: AppColors.surface,
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppRadius.md),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(AppSpacing.md),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 3,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    name,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  if (exercise.fatigueScore != null &&
-                      exercise.fatigueScore! > 0.5)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 2),
-                      child: Text(
-                        'Fatigue: ${(exercise.fatigueScore! * 100).toStringAsFixed(0)}%',
-                        style: TextStyle(
-                          fontSize: 11,
-                          color: AppColors.error,
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Expanded(
-              flex: 2,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (exercise.estimated1RM != null)
-                    Text(
-                      '${exercise.estimated1RM!.toStringAsFixed(1)} kg e1RM',
-                      style: const TextStyle(fontSize: 13),
-                    ),
-                  if (exercise.volumeLastWeek != null)
-                    Text(
-                      '${exercise.volumeLastWeek!.toStringAsFixed(0)} kg vol',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: AppColors.onSurfaceVariant,
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Icon(trendIcon, color: trendColor, size: 22),
-          ],
-        ),
-      ),
-    );
-  }
-
-  IconData _trendIcon(String? trend) {
-    switch (trend) {
-      case 'up':
-        return Icons.trending_up;
-      case 'down':
-        return Icons.trending_down;
-      default:
-        return Icons.trending_flat;
-    }
-  }
-
-  Color _trendColor(String? trend) {
-    switch (trend) {
-      case 'up':
-        return AppColors.success;
-      case 'down':
-        return AppColors.error;
-      default:
-        return AppColors.onSurfaceVariant;
-    }
   }
 }

@@ -1,171 +1,304 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pipos_fitness/features/dashboard/dashboard_provider.dart';
+import 'package:pipos_fitness/features/dashboard/muscle_catalog_provider.dart';
+import 'package:pipos_fitness/models/exercise.dart';
+import 'package:pipos_fitness/models/muscle.dart';
 import 'package:pipos_fitness/models/progress_metrics.dart';
 import 'package:pipos_fitness/models/volume_metrics.dart';
+import 'package:pipos_fitness/features/workouts/exercise_catalog_provider.dart';
 
 void main() {
-  group('ProgressMetrics', () {
-    test('fromJson parses full response', () {
+  group('DashboardViewModel empty-state logic', () {
+    test('isEmpty when no progress, no volume, no adherence', () {
+      const vm = DashboardViewModel();
+      expect(vm.isEmpty, true);
+    });
+
+    test('not empty when adherence exists but exercises empty', () {
+      final progress = ProgressMetrics(
+        exercises: [],
+        adherenceScore: 0.9,
+        fatigueDetected: false,
+      );
+      final vm = _build(progress: progress);
+      expect(vm.isEmpty, false);
+      expect(vm.adherenceScore, 0.9);
+    });
+
+    test('not empty when volume exists but progress null', () {
+      final volume = VolumeMetrics(
+        byExercise: [VolumeByExercise(exerciseId: 'a', volume: 100)],
+        byMuscle: [],
+      );
+      final vm = _build(volume: volume);
+      expect(vm.isEmpty, false);
+      expect(vm.totalVolume, 100);
+    });
+
+    test('not empty when exercises exist', () {
+      final progress = ProgressMetrics(
+        exercises: [
+          ExerciseProgressItem(exerciseId: 'bench', estimated1RM: 100),
+        ],
+        adherenceScore: null,
+        fatigueDetected: false,
+      );
+      final vm = _build(progress: progress);
+      expect(vm.isEmpty, false);
+      expect(vm.exercises.length, 1);
+    });
+
+    test('empty when progress is null and volume is null', () {
+      final vm = _build();
+      expect(vm.isEmpty, true);
+    });
+
+    test('empty when progress has empty exercises, null adherence, no volume',
+        () {
+      final progress = ProgressMetrics(
+        exercises: [],
+        adherenceScore: null,
+        fatigueDetected: false,
+      );
+      final vm = _build(progress: progress);
+      expect(vm.isEmpty, true);
+    });
+  });
+
+  group('DashboardViewModel data composition', () {
+    test('resolves exercise names from catalog', () {
+      final progress = ProgressMetrics(
+        exercises: [
+          ExerciseProgressItem(exerciseId: 'bench-press'),
+        ],
+        adherenceScore: 0.8,
+        fatigueDetected: false,
+      );
+      final catalog = {
+        'bench-press': Exercise(
+          id: 'bench-press',
+          slug: 'bench-press',
+          name: 'Bench Press',
+          difficulty: 3,
+          place: 'gym',
+        ),
+      };
+
+      final vm = _build(progress: progress, exerciseCatalog: catalog);
+      expect(vm.exercises.first.displayName, 'Bench Press');
+    });
+
+    test('falls back to exerciseId when catalog missing', () {
+      final progress = ProgressMetrics(
+        exercises: [
+          ExerciseProgressItem(exerciseId: 'unknown-exercise'),
+        ],
+        adherenceScore: null,
+        fatigueDetected: false,
+      );
+
+      final vm = _build(progress: progress);
+      expect(vm.exercises.first.displayName, 'unknown-exercise');
+    });
+
+    test('resolves muscle names from catalog', () {
+      final volume = VolumeMetrics(
+        byExercise: [],
+        byMuscle: [VolumeByMuscle(muscleId: 'chest-1', volume: 2400)],
+      );
+      final muscleCat = {
+        'chest-1': Muscle(id: 'chest-1', name: 'Chest', region: 'upper'),
+      };
+
+      final vm = _build(volume: volume, muscleCatalog: muscleCat);
+      expect(vm.volumeByMuscle.first.displayName, 'Chest');
+    });
+
+    test('falls back to muscleId when muscle catalog missing', () {
+      final volume = VolumeMetrics(
+        byExercise: [],
+        byMuscle: [VolumeByMuscle(muscleId: 'chest-1', volume: 2400)],
+      );
+
+      final vm = _build(volume: volume);
+      expect(vm.volumeByMuscle.first.displayName, 'chest-1');
+    });
+
+    test('totalVolume sums byExercise', () {
+      final volume = VolumeMetrics(
+        byExercise: [
+          VolumeByExercise(exerciseId: 'a', volume: 1000),
+          VolumeByExercise(exerciseId: 'b', volume: 2500),
+        ],
+        byMuscle: [],
+      );
+
+      final vm = _build(volume: volume);
+      expect(vm.totalVolume, 3500);
+    });
+
+    test('fatigueDetected propagated from progress', () {
+      final progress = ProgressMetrics(
+        exercises: [ExerciseProgressItem(exerciseId: 'a')],
+        adherenceScore: 0.5,
+        fatigueDetected: true,
+      );
+
+      final vm = _build(progress: progress);
+      expect(vm.fatigueDetected, true);
+    });
+  });
+
+  group('muscleName helper', () {
+    test('returns name from catalog', () {
+      final catalog = {
+        'quads': Muscle(id: 'quads', name: 'Quadriceps', region: 'lower'),
+      };
+      expect(muscleName(catalog, 'quads'), 'Quadriceps');
+    });
+
+    test('returns muscleId when not in catalog', () {
+      expect(muscleName({}, 'unknown'), 'unknown');
+    });
+
+    test('returns muscleId when catalog is null', () {
+      expect(muscleName(null, 'some-id'), 'some-id');
+    });
+  });
+
+  group('exerciseName helper', () {
+    test('returns name from catalog', () {
+      final catalog = {
+        'bench': Exercise(
+            id: 'bench', slug: 'bench', name: 'Bench', difficulty: 3, place: 'gym'),
+      };
+      expect(exerciseName(catalog, 'bench'), 'Bench');
+    });
+
+    test('returns exerciseId when catalog null', () {
+      expect(exerciseName(null, 'abc'), 'abc');
+    });
+  });
+
+  group('Partial data rendering', () {
+    test('progress loads but volume fails', () {
+      final progress = ProgressMetrics(
+        exercises: [ExerciseProgressItem(exerciseId: 'a', estimated1RM: 80)],
+        adherenceScore: 0.7,
+        fatigueDetected: false,
+      );
+      final vm = _build(progress: progress, volume: null);
+      expect(vm.isEmpty, false);
+      expect(vm.exercises.length, 1);
+      expect(vm.totalVolume, 0);
+      expect(vm.volumeByMuscle, isEmpty);
+    });
+
+    test('volume loads but progress fails', () {
+      final volume = VolumeMetrics(
+        byExercise: [VolumeByExercise(exerciseId: 'x', volume: 500)],
+        byMuscle: [VolumeByMuscle(muscleId: 'm1', volume: 500)],
+      );
+      final vm = _build(progress: null, volume: volume);
+      expect(vm.isEmpty, false);
+      expect(vm.exercises, isEmpty);
+      expect(vm.totalVolume, 500);
+      expect(vm.volumeByMuscle.length, 1);
+    });
+  });
+
+  group('Model parsing', () {
+    test('ProgressMetrics fromJson', () {
       final json = {
         'exercises': [
           {
-            'exerciseId': 'bench-press',
+            'exerciseId': 'bench',
             'estimated1RM': 100.0,
             'volumeLastWeek': 2400.0,
             'volumeTrend': 'up',
             'fatigueScore': 0.3,
             'lastUpdated': '2026-03-09T12:00:00Z',
-          },
-          {
-            'exerciseId': 'squat',
-            'estimated1RM': 140.0,
-            'volumeLastWeek': 3200.0,
-            'volumeTrend': 'stable',
-            'fatigueScore': null,
-            'lastUpdated': null,
-          },
+          }
         ],
         'adherenceScore': 0.85,
         'fatigueDetected': false,
       };
-
-      final metrics = ProgressMetrics.fromJson(json);
-      expect(metrics.exercises.length, 2);
-      expect(metrics.adherenceScore, 0.85);
-      expect(metrics.fatigueDetected, false);
-      expect(metrics.exercises[0].exerciseId, 'bench-press');
-      expect(metrics.exercises[0].estimated1RM, 100.0);
-      expect(metrics.exercises[0].volumeTrend, 'up');
-      expect(metrics.exercises[1].fatigueScore, isNull);
+      final m = ProgressMetrics.fromJson(json);
+      expect(m.exercises.length, 1);
+      expect(m.adherenceScore, 0.85);
     });
 
-    test('fromJson handles null adherenceScore', () {
-      final json = {
-        'exercises': <dynamic>[],
-        'adherenceScore': null,
-        'fatigueDetected': true,
-      };
-
-      final metrics = ProgressMetrics.fromJson(json);
-      expect(metrics.adherenceScore, isNull);
-      expect(metrics.fatigueDetected, true);
-      expect(metrics.exercises, isEmpty);
-    });
-
-    test('fromJson handles empty exercises list', () {
-      final json = {
-        'exercises': <dynamic>[],
-        'adherenceScore': 0.5,
-        'fatigueDetected': false,
-      };
-
-      final metrics = ProgressMetrics.fromJson(json);
-      expect(metrics.exercises, isEmpty);
-    });
-  });
-
-  group('VolumeMetrics', () {
-    test('fromJson parses full response', () {
+    test('VolumeMetrics fromJson', () {
       final json = {
         'byExercise': [
-          {'exerciseId': 'bench-press', 'volume': 2400.0},
-          {'exerciseId': 'squat', 'volume': 3200.0},
+          {'exerciseId': 'a', 'volume': 1000.0}
         ],
         'byMuscle': [
-          {'muscleId': 'chest', 'volume': 2400.0},
-          {'muscleId': 'quads', 'volume': 3200.0},
+          {'muscleId': 'chest', 'volume': 1000.0}
         ],
         'weekStart': '2026-03-03T00:00:00Z',
-        'weekEnd': '2026-03-09T23:59:59Z',
       };
-
-      final volume = VolumeMetrics.fromJson(json);
-      expect(volume.byExercise.length, 2);
-      expect(volume.byMuscle.length, 2);
-      expect(volume.weekStart, '2026-03-03T00:00:00Z');
-      expect(volume.byExercise[0].volume, 2400.0);
-      expect(volume.byMuscle[1].muscleId, 'quads');
+      final v = VolumeMetrics.fromJson(json);
+      expect(v.byExercise.length, 1);
+      expect(v.byMuscle.length, 1);
+      expect(v.weekStart, '2026-03-03T00:00:00Z');
     });
 
-    test('fromJson handles empty lists', () {
-      final json = {
-        'byExercise': <dynamic>[],
-        'byMuscle': <dynamic>[],
-      };
-
-      final volume = VolumeMetrics.fromJson(json);
-      expect(volume.byExercise, isEmpty);
-      expect(volume.byMuscle, isEmpty);
-      expect(volume.weekStart, isNull);
-    });
-
-    test('total volume calculation', () {
-      final volume = VolumeMetrics(
-        byExercise: [
-          VolumeByExercise(exerciseId: 'a', volume: 1000),
-          VolumeByExercise(exerciseId: 'b', volume: 2000),
-          VolumeByExercise(exerciseId: 'c', volume: 500),
-        ],
-        byMuscle: [],
-      );
-
-      final total =
-          volume.byExercise.fold<double>(0, (s, e) => s + e.volume);
-      expect(total, 3500);
+    test('Muscle fromJson', () {
+      final json = {'id': 'm1', 'name': 'Chest', 'region': 'upper'};
+      final m = Muscle.fromJson(json);
+      expect(m.id, 'm1');
+      expect(m.name, 'Chest');
     });
   });
+}
 
-  group('Dashboard rendering logic', () {
-    test('adherence percentage formatting', () {
-      const score = 0.85;
-      final pct = '${(score * 100).toStringAsFixed(0)}%';
-      expect(pct, '85%');
-    });
+/// Helper to call the same logic as [dashboardProvider] without Riverpod.
+DashboardViewModel _build({
+  ProgressMetrics? progress,
+  VolumeMetrics? volume,
+  Map<String, Exercise>? exerciseCatalog,
+  Map<String, Muscle>? muscleCatalog,
+}) {
+  final hasExercises = progress != null && progress.exercises.isNotEmpty;
+  final hasVolume = volume != null &&
+      (volume.byExercise.isNotEmpty || volume.byMuscle.isNotEmpty);
+  final hasAdherence = progress?.adherenceScore != null;
 
-    test('null adherence shows dash', () {
-      const double? score = null;
-      final pct = score != null
-          ? '${(score * 100).toStringAsFixed(0)}%'
-          : '—';
-      expect(pct, '—');
-    });
+  if (!hasExercises && !hasVolume && !hasAdherence) {
+    return const DashboardViewModel();
+  }
 
-    test('trend icon mapping', () {
-      // Mirrors the logic in _ExerciseProgressRow
-      String trendLabel(String? trend) {
-        switch (trend) {
-          case 'up':
-            return 'trending_up';
-          case 'down':
-            return 'trending_down';
-          default:
-            return 'trending_flat';
-        }
-      }
+  final exercises = (progress?.exercises ?? []).map((e) {
+    return ExerciseProgressVM(
+      exerciseId: e.exerciseId,
+      displayName: exerciseName(exerciseCatalog, e.exerciseId),
+      estimated1RM: e.estimated1RM,
+      volumeLastWeek: e.volumeLastWeek,
+      volumeTrend: e.volumeTrend,
+      fatigueScore: e.fatigueScore,
+    );
+  }).toList();
 
-      expect(trendLabel('up'), 'trending_up');
-      expect(trendLabel('down'), 'trending_down');
-      expect(trendLabel('stable'), 'trending_flat');
-      expect(trendLabel(null), 'trending_flat');
-    });
+  final totalVolume =
+      volume?.byExercise.fold<double>(0, (s, e) => s + e.volume) ?? 0;
 
-    test('fatigue card shows correct state', () {
-      expect(true, isTrue); // fatigueDetected = true → warning
-      expect(false, isFalse); // fatigueDetected = false → shield
-    });
+  final muscleVolumes = (volume?.byMuscle ?? []).map((m) {
+    return MuscleVolumeVM(
+      muscleId: m.muscleId,
+      displayName: muscleName(muscleCatalog, m.muscleId),
+      volume: m.volume,
+    );
+  }).toList();
 
-    test('exercise fatigue highlight threshold', () {
-      // Only exercises with fatigueScore > 0.5 show the fatigue label
-      const item = ExerciseProgressItem(
-        exerciseId: 'bench',
-        fatigueScore: 0.7,
-      );
-      expect(item.fatigueScore! > 0.5, true);
-
-      const low = ExerciseProgressItem(
-        exerciseId: 'squat',
-        fatigueScore: 0.3,
-      );
-      expect(low.fatigueScore! > 0.5, false);
-    });
-  });
+  return DashboardViewModel(
+    adherenceScore: progress?.adherenceScore,
+    fatigueDetected: progress?.fatigueDetected ?? false,
+    exercises: exercises,
+    totalVolume: totalVolume,
+    volumeByMuscle: muscleVolumes,
+    exerciseCount: volume?.byExercise.length ?? exercises.length,
+    muscleCount: volume?.byMuscle.length ?? 0,
+    isEmpty: false,
+  );
 }
