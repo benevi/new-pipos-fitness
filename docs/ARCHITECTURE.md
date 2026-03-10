@@ -187,6 +187,12 @@ scripts/
 - **Multi-session guard:** If multiple incomplete sessions exist, the most recent (by startedAt) is chosen. Debug warning logged for multiples.
 - **State restoration:** `_computeResumeIndex()` positions the player at the first exercise with no logged sets. Existing sets are preserved and displayed.
 
+### Progress Dashboard (Phase 12)
+
+- **Providers:** `progressProvider` (GET /analytics/progress) and `volumeProvider` (GET /analytics/volume), both keepAlive AsyncNotifiers. Exercise catalog provider supplies display names.
+- **Sections:** Summary cards (adherence/exercises/fatigue), fatigue status banner, weekly volume card with muscle breakdown, per-exercise progress list with e1RM, volume, trend, and fatigue highlight.
+- **States:** Loading, error (retry), empty (no data), loaded with pull-to-refresh.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.
