@@ -57,7 +57,7 @@ class MealCard extends StatelessWidget {
                       children: [
                         Expanded(
                           child: Text(
-                            item.foodId,
+                            item.displayName,
                             style: tt.bodyMedium,
                             overflow: TextOverflow.ellipsis,
                           ),

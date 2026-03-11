@@ -207,6 +207,12 @@ scripts/
 - **Screen:** Summary card (calories, macros, version), day selector (horizontal chips), meal cards (name, food items, quantities), versions bottom sheet.
 - **States:** Loading, error (retry), empty (no plan), loaded with pull-to-refresh.
 
+### Nutrition Data Hardening (Phase 13.1)
+
+- **Food catalog:** `GET /foods` backend endpoint (id + name). `foodCatalogProvider` fetches, caches with keepAlive. `foodName` helper resolves display names with foodId fallback.
+- **ViewModel:** `nutritionViewModelProvider` now watches `foodCatalogProvider`. `NutritionMealItemVM` has `displayName`. `buildNutritionViewModel` extracted as pure function for testability.
+- **Display safety:** ViewModel handles null plan, null catalog, null targets, empty days, out-of-range selectedDay. UI renders `--` for missing summary values.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.

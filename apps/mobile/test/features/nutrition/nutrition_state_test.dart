@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pipos_fitness/features/nutrition/food_catalog_provider.dart';
 import 'package:pipos_fitness/features/nutrition/nutrition_view_model_provider.dart';
+import 'package:pipos_fitness/models/food.dart';
 import 'package:pipos_fitness/models/nutrition_plan.dart';
 
 void main() {
@@ -24,30 +26,37 @@ void main() {
       expect(vm.isEmpty, false);
       expect(vm.dayCount, 7);
     });
+
+    test('isEmpty true when plan has zero days', () {
+      final plan = _buildPlan(dayCount: 0);
+      final vm = buildNutritionViewModel(plan: plan);
+      expect(vm.isEmpty, true);
+      expect(vm.versionNumber, 1);
+    });
   });
 
   group('NutritionViewModel data composition', () {
     test('selectedDay clamped to valid range', () {
       final plan = _buildPlan(dayCount: 3);
-      final vm = _buildVM(plan, selectedDay: 5);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 5);
       expect(vm.selectedDay, 2);
     });
 
     test('selectedDay 0 when plan has days', () {
       final plan = _buildPlan(dayCount: 7);
-      final vm = _buildVM(plan, selectedDay: 0);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 0);
       expect(vm.selectedDay, 0);
     });
 
     test('meals populated for selected day', () {
       final plan = _buildPlan(dayCount: 2, mealsPerDay: 3);
-      final vm = _buildVM(plan, selectedDay: 1);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 1);
       expect(vm.meals.length, 3);
     });
 
     test('meals empty for day with no meals', () {
       final plan = _buildPlan(dayCount: 2, mealsPerDay: 0);
-      final vm = _buildVM(plan, selectedDay: 0);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 0);
       expect(vm.meals, isEmpty);
     });
 
@@ -59,7 +68,7 @@ void main() {
         carbsG: 220,
         fatG: 73,
       );
-      final vm = _buildVM(plan, selectedDay: 0);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 0);
       expect(vm.dailyCalorieTarget, 2200);
       expect(vm.proteinG, 165);
       expect(vm.carbsG, 220);
@@ -68,15 +77,116 @@ void main() {
 
     test('calorie and macro targets null when not provided', () {
       final plan = _buildPlan(dayCount: 1);
-      final vm = _buildVM(plan, selectedDay: 0);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 0);
       expect(vm.dailyCalorieTarget, isNull);
       expect(vm.proteinG, isNull);
     });
 
     test('versionNumber propagated', () {
       final plan = _buildPlan(dayCount: 1, versionNumber: 3);
-      final vm = _buildVM(plan, selectedDay: 0);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 0);
       expect(vm.versionNumber, 3);
+    });
+  });
+
+  group('Food catalog integration', () {
+    test('resolves food names from catalog', () {
+      final plan = _buildPlanWithItems();
+      final catalog = {
+        'eggs': const Food(id: 'eggs', name: 'Scrambled Eggs'),
+        'toast': const Food(id: 'toast', name: 'Whole Wheat Toast'),
+      };
+      final vm = buildNutritionViewModel(
+        plan: plan,
+        foodCatalog: catalog,
+      );
+      expect(vm.meals.first.items[0].displayName, 'Scrambled Eggs');
+      expect(vm.meals.first.items[1].displayName, 'Whole Wheat Toast');
+    });
+
+    test('falls back to foodId when catalog missing', () {
+      final plan = _buildPlanWithItems();
+      final vm = buildNutritionViewModel(plan: plan);
+      expect(vm.meals.first.items[0].displayName, 'eggs');
+      expect(vm.meals.first.items[1].displayName, 'toast');
+    });
+
+    test('falls back to foodId for unknown entries', () {
+      final plan = _buildPlanWithItems();
+      final catalog = {
+        'eggs': const Food(id: 'eggs', name: 'Eggs'),
+      };
+      final vm = buildNutritionViewModel(
+        plan: plan,
+        foodCatalog: catalog,
+      );
+      expect(vm.meals.first.items[0].displayName, 'Eggs');
+      expect(vm.meals.first.items[1].displayName, 'toast');
+    });
+  });
+
+  group('foodName helper', () {
+    test('returns name from catalog', () {
+      final catalog = {
+        'oats': const Food(id: 'oats', name: 'Rolled Oats'),
+      };
+      expect(foodName(catalog, 'oats'), 'Rolled Oats');
+    });
+
+    test('returns foodId when not in catalog', () {
+      expect(foodName({}, 'unknown'), 'unknown');
+    });
+
+    test('returns foodId when catalog is null', () {
+      expect(foodName(null, 'some-id'), 'some-id');
+    });
+  });
+
+  group('Partial data safety', () {
+    test('versions loaded but plan missing returns empty VM with versions', () {
+      const versions = [
+        NutritionVersionSummary(
+          id: 'v1',
+          planId: 'p1',
+          version: 1,
+          createdAt: '2026-03-09T00:00:00Z',
+          engineVersion: '0.8.0',
+        ),
+      ];
+      const vm = NutritionViewModel(versions: versions);
+      expect(vm.isEmpty, true);
+      expect(vm.versions.length, 1);
+    });
+
+    test('plan loaded but food catalog missing still works', () {
+      final plan = _buildPlanWithItems();
+      final vm = buildNutritionViewModel(plan: plan);
+      expect(vm.isEmpty, false);
+      expect(vm.meals.first.items[0].displayName, 'eggs');
+    });
+
+    test('plan loaded but summary targets null', () {
+      final plan = _buildPlan(dayCount: 1);
+      final vm = buildNutritionViewModel(plan: plan);
+      expect(vm.dailyCalorieTarget, isNull);
+      expect(vm.proteinG, isNull);
+      expect(vm.carbsG, isNull);
+      expect(vm.fatG, isNull);
+      expect(vm.isEmpty, false);
+    });
+
+    test('selected day out of range after plan refresh clamps safely', () {
+      final plan = _buildPlan(dayCount: 2);
+      final vm = buildNutritionViewModel(plan: plan, selectedDay: 10);
+      expect(vm.selectedDay, 1);
+      expect(vm.meals, isNotEmpty);
+    });
+
+    test('day exists but meals have no items', () {
+      final plan = _buildPlan(dayCount: 1, mealsPerDay: 2);
+      final vm = buildNutritionViewModel(plan: plan);
+      expect(vm.meals.length, 2);
+      expect(vm.meals[0].items, isEmpty);
     });
   });
 
@@ -111,11 +221,7 @@ void main() {
                   'name': 'Breakfast',
                   'templateId': null,
                   'items': [
-                    {
-                      'id': 'i1',
-                      'foodId': 'oats',
-                      'quantityG': 80.0,
-                    },
+                    {'id': 'i1', 'foodId': 'oats', 'quantityG': 80.0},
                   ],
                 },
               ],
@@ -173,16 +279,32 @@ void main() {
     });
   });
 
+  group('Food model parsing', () {
+    test('fromJson', () {
+      final json = {'id': 'f1', 'name': 'Oats'};
+      final f = Food.fromJson(json);
+      expect(f.id, 'f1');
+      expect(f.name, 'Oats');
+    });
+  });
+
   group('Meal data composition', () {
-    test('items mapped correctly', () {
+    test('items mapped correctly with displayName', () {
       final plan = _buildPlanWithItems();
-      final vm = _buildVM(plan, selectedDay: 0);
+      final catalog = {
+        'eggs': const Food(id: 'eggs', name: 'Eggs'),
+        'toast': const Food(id: 'toast', name: 'Toast'),
+      };
+      final vm = buildNutritionViewModel(
+        plan: plan,
+        foodCatalog: catalog,
+      );
       expect(vm.meals.length, 1);
       expect(vm.meals.first.name, 'Breakfast');
       expect(vm.meals.first.items.length, 2);
-      expect(vm.meals.first.items[0].foodId, 'eggs');
+      expect(vm.meals.first.items[0].displayName, 'Eggs');
       expect(vm.meals.first.items[0].quantityG, 120);
-      expect(vm.meals.first.items[1].foodId, 'toast');
+      expect(vm.meals.first.items[1].displayName, 'Toast');
       expect(vm.meals.first.items[1].quantityG, 60);
     });
   });
@@ -248,7 +370,7 @@ NutritionPlan _buildPlanWithItems() {
       createdAt: '2026-03-09T00:00:00Z',
       engineVersion: '0.8.0',
       days: [
-        const NutritionDay(
+        NutritionDay(
           id: 'd1',
           dayIndex: 0,
           meals: [
@@ -265,35 +387,5 @@ NutritionPlan _buildPlanWithItems() {
         ),
       ],
     ),
-  );
-}
-
-NutritionViewModel _buildVM(NutritionPlan plan, {int selectedDay = 0}) {
-  final v = plan.version;
-  final days = v.days;
-  final clampedDay = selectedDay.clamp(0, (days.length - 1).clamp(0, 999));
-  final dayMeals =
-      days.isNotEmpty ? days[clampedDay].meals : <NutritionMeal>[];
-
-  return NutritionViewModel(
-    isEmpty: days.isEmpty,
-    versionNumber: v.version,
-    dailyCalorieTarget: v.dailyCalorieTarget,
-    proteinG: v.dailyMacroTarget?.proteinG,
-    carbsG: v.dailyMacroTarget?.carbsG,
-    fatG: v.dailyMacroTarget?.fatG,
-    dayCount: days.length,
-    selectedDay: clampedDay,
-    meals: dayMeals
-        .map((m) => NutritionMealVM(
-              name: m.name,
-              items: m.items
-                  .map((i) => NutritionMealItemVM(
-                        foodId: i.foodId,
-                        quantityG: i.quantityG,
-                      ))
-                  .toList(),
-            ))
-        .toList(),
   );
 }

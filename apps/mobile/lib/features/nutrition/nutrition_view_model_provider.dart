@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/food.dart';
 import '../../models/nutrition_plan.dart';
+import 'food_catalog_provider.dart';
 import 'nutrition_plan_provider.dart';
 import 'nutrition_versions_provider.dart';
 
@@ -38,9 +40,14 @@ class NutritionMealVM {
 
 class NutritionMealItemVM {
   final String foodId;
+  final String displayName;
   final double quantityG;
 
-  const NutritionMealItemVM({required this.foodId, required this.quantityG});
+  const NutritionMealItemVM({
+    required this.foodId,
+    required this.displayName,
+    required this.quantityG,
+  });
 }
 
 final selectedDayProvider = StateProvider<int>((ref) => 0);
@@ -48,18 +55,43 @@ final selectedDayProvider = StateProvider<int>((ref) => 0);
 final nutritionViewModelProvider = Provider<NutritionViewModel>((ref) {
   final plan = ref.watch(nutritionPlanProvider).valueOrNull;
   final versions = ref.watch(nutritionVersionsProvider).valueOrNull ?? [];
+  final foodCatalog = ref.watch(foodCatalogProvider).valueOrNull;
   final selectedDay = ref.watch(selectedDayProvider);
 
-  if (plan == null) return const NutritionViewModel();
+  if (plan == null) {
+    return NutritionViewModel(versions: versions);
+  }
 
+  return buildNutritionViewModel(
+    plan: plan,
+    versions: versions,
+    foodCatalog: foodCatalog,
+    selectedDay: selectedDay,
+  );
+});
+
+/// Pure builder extracted for testability.
+NutritionViewModel buildNutritionViewModel({
+  required NutritionPlan plan,
+  List<NutritionVersionSummary> versions = const [],
+  Map<String, Food>? foodCatalog,
+  int selectedDay = 0,
+}) {
   final v = plan.version;
   final days = v.days;
 
-  final clampedDay = selectedDay.clamp(0, (days.length - 1).clamp(0, 999));
-  final dayMeals = days.isNotEmpty ? days[clampedDay].meals : <NutritionMeal>[];
+  if (days.isEmpty) {
+    return NutritionViewModel(
+      versionNumber: v.version,
+      versions: versions,
+    );
+  }
+
+  final clampedDay = selectedDay.clamp(0, days.length - 1);
+  final dayMeals = days[clampedDay].meals;
 
   return NutritionViewModel(
-    isEmpty: days.isEmpty,
+    isEmpty: false,
     versionNumber: v.version,
     dailyCalorieTarget: v.dailyCalorieTarget,
     proteinG: v.dailyMacroTarget?.proteinG,
@@ -73,6 +105,7 @@ final nutritionViewModelProvider = Provider<NutritionViewModel>((ref) {
         items: m.items
             .map((i) => NutritionMealItemVM(
                   foodId: i.foodId,
+                  displayName: foodName(foodCatalog, i.foodId),
                   quantityG: i.quantityG,
                 ))
             .toList(),
@@ -80,4 +113,4 @@ final nutritionViewModelProvider = Provider<NutritionViewModel>((ref) {
     }).toList(),
     versions: versions,
   );
-});
+}
