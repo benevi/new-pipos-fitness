@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../app/theme.dart';
+import 'food_catalog_provider.dart';
 import 'nutrition_plan_provider.dart';
 import 'nutrition_versions_provider.dart';
 import 'nutrition_view_model_provider.dart';
@@ -16,6 +17,8 @@ class NutritionScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final planAsync = ref.watch(nutritionPlanProvider);
     final vm = ref.watch(nutritionViewModelProvider);
+
+    ref.read(foodCatalogProvider.notifier).refreshIfStale();
 
     return Scaffold(
       appBar: AppBar(
@@ -35,6 +38,7 @@ class NutritionScreen extends ConsumerWidget {
           await Future.wait([
             ref.read(nutritionPlanProvider.notifier).refresh(),
             ref.read(nutritionVersionsProvider.notifier).refresh(),
+            ref.read(foodCatalogProvider.notifier).refresh(),
           ]);
         },
         child: planAsync.when(

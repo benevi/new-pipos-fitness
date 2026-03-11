@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/features/nutrition/food_catalog_provider.dart';
 import 'package:pipos_fitness/features/nutrition/nutrition_view_model_provider.dart';
-import 'package:pipos_fitness/models/food.dart';
 import 'package:pipos_fitness/models/nutrition_plan.dart';
 
 void main() {
@@ -92,53 +91,44 @@ void main() {
   group('Food catalog integration', () {
     test('resolves food names from catalog', () {
       final plan = _buildPlanWithItems();
-      final catalog = {
-        'eggs': const Food(id: 'eggs', name: 'Scrambled Eggs'),
-        'toast': const Food(id: 'toast', name: 'Whole Wheat Toast'),
-      };
-      final vm = buildNutritionViewModel(
-        plan: plan,
-        foodCatalog: catalog,
-      );
+      final catalog = {'eggs': 'Scrambled Eggs', 'toast': 'Whole Wheat Toast'};
+      final vm = buildNutritionViewModel(plan: plan, foodCatalog: catalog);
       expect(vm.meals.first.items[0].displayName, 'Scrambled Eggs');
       expect(vm.meals.first.items[1].displayName, 'Whole Wheat Toast');
     });
 
-    test('falls back to foodId when catalog missing', () {
+    test('falls back to Food item when catalog missing', () {
       final plan = _buildPlanWithItems();
       final vm = buildNutritionViewModel(plan: plan);
-      expect(vm.meals.first.items[0].displayName, 'eggs');
-      expect(vm.meals.first.items[1].displayName, 'toast');
+      expect(vm.meals.first.items[0].displayName, 'Food item');
+      expect(vm.meals.first.items[1].displayName, 'Food item');
     });
 
-    test('falls back to foodId for unknown entries', () {
+    test('falls back to Food item for unknown entries', () {
       final plan = _buildPlanWithItems();
-      final catalog = {
-        'eggs': const Food(id: 'eggs', name: 'Eggs'),
-      };
-      final vm = buildNutritionViewModel(
-        plan: plan,
-        foodCatalog: catalog,
-      );
+      final catalog = {'eggs': 'Eggs'};
+      final vm = buildNutritionViewModel(plan: plan, foodCatalog: catalog);
       expect(vm.meals.first.items[0].displayName, 'Eggs');
-      expect(vm.meals.first.items[1].displayName, 'toast');
+      expect(vm.meals.first.items[1].displayName, 'Food item');
     });
   });
 
-  group('foodName helper', () {
+  group('foodDisplayName helper', () {
     test('returns name from catalog', () {
-      final catalog = {
-        'oats': const Food(id: 'oats', name: 'Rolled Oats'),
-      };
-      expect(foodName(catalog, 'oats'), 'Rolled Oats');
+      final catalog = {'oats': 'Rolled Oats'};
+      expect(foodDisplayName(catalog, 'oats'), 'Rolled Oats');
     });
 
-    test('returns foodId when not in catalog', () {
-      expect(foodName({}, 'unknown'), 'unknown');
+    test('returns Food item when not in catalog', () {
+      expect(foodDisplayName({}, 'unknown'), 'Food item');
     });
 
-    test('returns foodId when catalog is null', () {
-      expect(foodName(null, 'some-id'), 'some-id');
+    test('returns Food item when catalog is null', () {
+      expect(foodDisplayName(null, 'some-id'), 'Food item');
+    });
+
+    test('returns Food item for empty string id', () {
+      expect(foodDisplayName({}, ''), 'Food item');
     });
   });
 
@@ -162,7 +152,7 @@ void main() {
       final plan = _buildPlanWithItems();
       final vm = buildNutritionViewModel(plan: plan);
       expect(vm.isEmpty, false);
-      expect(vm.meals.first.items[0].displayName, 'eggs');
+      expect(vm.meals.first.items[0].displayName, 'Food item');
     });
 
     test('plan loaded but summary targets null', () {
@@ -279,26 +269,11 @@ void main() {
     });
   });
 
-  group('Food model parsing', () {
-    test('fromJson', () {
-      final json = {'id': 'f1', 'name': 'Oats'};
-      final f = Food.fromJson(json);
-      expect(f.id, 'f1');
-      expect(f.name, 'Oats');
-    });
-  });
-
   group('Meal data composition', () {
     test('items mapped correctly with displayName', () {
       final plan = _buildPlanWithItems();
-      final catalog = {
-        'eggs': const Food(id: 'eggs', name: 'Eggs'),
-        'toast': const Food(id: 'toast', name: 'Toast'),
-      };
-      final vm = buildNutritionViewModel(
-        plan: plan,
-        foodCatalog: catalog,
-      );
+      final catalog = {'eggs': 'Eggs', 'toast': 'Toast'};
+      final vm = buildNutritionViewModel(plan: plan, foodCatalog: catalog);
       expect(vm.meals.length, 1);
       expect(vm.meals.first.name, 'Breakfast');
       expect(vm.meals.first.items.length, 2);

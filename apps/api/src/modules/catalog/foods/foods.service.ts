@@ -5,10 +5,14 @@ import { PrismaService } from '../../../prisma/prisma.service';
 export class FoodsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async findAll() {
+  async findAll(limit = 500, cursor?: string) {
     return this.prisma.food.findMany({
       select: { id: true, name: true },
-      orderBy: { name: 'asc' },
+      orderBy: { id: 'asc' },
+      take: limit,
+      ...(cursor
+        ? { skip: 1, cursor: { id: cursor } }
+        : {}),
     });
   }
 }

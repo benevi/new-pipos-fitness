@@ -1,5 +1,4 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/food.dart';
 import '../../models/nutrition_plan.dart';
 import 'food_catalog_provider.dart';
 import 'nutrition_plan_provider.dart';
@@ -74,7 +73,7 @@ final nutritionViewModelProvider = Provider<NutritionViewModel>((ref) {
 NutritionViewModel buildNutritionViewModel({
   required NutritionPlan plan,
   List<NutritionVersionSummary> versions = const [],
-  Map<String, Food>? foodCatalog,
+  Map<String, String>? foodCatalog,
   int selectedDay = 0,
 }) {
   final v = plan.version;
@@ -105,7 +104,7 @@ NutritionViewModel buildNutritionViewModel({
         items: m.items
             .map((i) => NutritionMealItemVM(
                   foodId: i.foodId,
-                  displayName: foodName(foodCatalog, i.foodId),
+                  displayName: foodDisplayName(foodCatalog, i.foodId),
                   quantityG: i.quantityG,
                 ))
             .toList(),
