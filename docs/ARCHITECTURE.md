@@ -200,6 +200,13 @@ scripts/
 - **Empty-state:** Dashboard is empty only when no exercises AND no volume AND no adherenceScore. Partial data renders normally.
 - **Widget extraction:** `DashboardSummaryCard`, `FatigueBanner`, `ProgressListItem`, `VolumeSummaryCard` extracted for readability.
 
+### Nutrition UI (Phase 13)
+
+- **Model update:** `NutritionPlan` restructured to match backend response shape (`plan` + `version` wrapper). Added `NutritionMacroTarget`, `NutritionVersionSummary`, nullable calorie/macro target fields on version.
+- **Providers:** `nutritionPlanProvider` (current plan, keepAlive), `nutritionVersionsProvider` (version list, keepAlive), `selectedDayProvider` (day index state), `nutritionViewModelProvider` (synchronous composition into `NutritionViewModel`).
+- **Screen:** Summary card (calories, macros, version), day selector (horizontal chips), meal cards (name, food items, quantities), versions bottom sheet.
+- **States:** Loading, error (retry), empty (no plan), loaded with pull-to-refresh.
+
 ## Configuration
 
 - **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.
