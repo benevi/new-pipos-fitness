@@ -24,6 +24,8 @@ import '../features/workouts/workout_complete_screen.dart';
 import '../features/nutrition/nutrition_screen.dart';
 import '../features/ai_coach/ai_coach_screen.dart';
 import '../features/profile/profile_screen.dart';
+import '../features/exercises/exercises_screen.dart';
+import '../features/exercises/exercise_detail_screen.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 final _shellNavigatorKey = GlobalKey<NavigatorState>();
@@ -97,6 +99,19 @@ final routerProvider = Provider<GoRouter>((ref) {
             pageBuilder: (_, __) => const NoTransitionPage(
               child: ProfileScreen(),
             ),
+          ),
+          GoRoute(
+            path: '/exercises',
+            pageBuilder: (_, __) => const NoTransitionPage(
+              child: ExercisesScreen(),
+            ),
+          ),
+          GoRoute(
+            path: '/exercises/:id',
+            builder: (_, state) {
+              final id = state.pathParameters['id'] ?? '';
+              return ExerciseDetailScreen(exerciseId: id);
+            },
           ),
         ],
       ),

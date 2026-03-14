@@ -24,6 +24,7 @@ import '../../core/api/api_client.dart';
 import '../../core/api/dio_error_mapper.dart';
 import '../../core/auth/auth_session_coordinator.dart';
 import '../../models/user.dart';
+import '../ai_coach/ai_coach_provider.dart';
 import '../dashboard/progress_provider.dart';
 import '../nutrition/nutrition_plan_provider.dart';
 import '../workouts/training_plan_provider.dart';
@@ -139,6 +140,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   void _invalidateProtectedProviders() {
+    _ref.invalidate(aiCoachProvider);
     _ref.invalidate(progressProvider);
     _ref.invalidate(trainingPlanProvider);
     _ref.invalidate(nutritionPlanProvider);

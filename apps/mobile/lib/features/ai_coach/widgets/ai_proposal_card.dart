@@ -7,10 +7,12 @@ class AiProposalCard extends StatelessWidget {
     super.key,
     required this.proposal,
     this.status,
+    this.rejectionReason,
   });
 
   final Map<String, dynamic> proposal;
   final String? status;
+  final String? rejectionReason;
 
   static String _proposalTypeLabel(String? type) {
     if (type == null) return 'Proposal';
@@ -99,6 +101,16 @@ class AiProposalCard extends StatelessWidget {
                 ),
             ],
           ),
+          if (isRejected && rejectionReason != null && rejectionReason!.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Text(
+                rejectionReason!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
+              ),
+            ),
         ],
       ),
     );

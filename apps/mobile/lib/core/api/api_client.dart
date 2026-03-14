@@ -18,8 +18,15 @@ final secureStorageProvider = Provider<FlutterSecureStorage>(
 );
 
 final dioProvider = Provider<Dio>((ref) {
+  const baseUrl = AppConstants.baseUrl;
+  if (baseUrl.isEmpty) {
+    throw StateError(
+      'API_BASE_URL is not configured. Provide it via --dart-define=API_BASE_URL=...',
+    );
+  }
+
   final dio = Dio(BaseOptions(
-    baseUrl: AppConstants.baseUrl,
+    baseUrl: baseUrl,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 15),
     headers: {'Content-Type': 'application/json'},

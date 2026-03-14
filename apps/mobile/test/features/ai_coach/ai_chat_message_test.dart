@@ -30,6 +30,19 @@ void main() {
       expect(msg.proposal!['type'], 'exercise_swap');
     });
 
+    test('holds rejectionReason when proposal is rejected', () {
+      const msg = AIChatMessage(
+        id: '3',
+        role: AIChatRole.assistant,
+        content: 'Rejected',
+        responseType: 'proposal',
+        proposalStatus: 'rejected',
+        proposal: {'type': 'exercise_swap'},
+        rejectionReason: 'Equipment not available for replacement',
+      );
+      expect(msg.rejectionReason, 'Equipment not available for replacement');
+    });
+
     test('copyWith preserves unspecified fields', () {
       const msg = AIChatMessage(
         id: '3',

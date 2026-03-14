@@ -94,6 +94,52 @@ void main() {
       expect(container.read(aiCoachProvider).error, isNull);
     });
 
+    test('retryLastQuestion resends without duplicating user message', () async {
+      final fakeApi = _FakeApiClient(
+        response: {'responseType': 'answer', 'content': 'Retry response'},
+        throwException: true,
+        throwUntilSuccessAfter: 1,
+      );
+      final container = ProviderContainer(
+        overrides: [
+          apiClientProvider.overrideWith((ref) => fakeApi),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
+      expect(container.read(aiCoachProvider).error, isNotNull);
+      expect(container.read(aiCoachProvider).messages.length, 1);
+      expect(container.read(aiCoachProvider).lastFailedQuestion, 'Hi');
+
+      await container.read(aiCoachProvider.notifier).retryLastQuestion();
+
+      final state = container.read(aiCoachProvider);
+      expect(state.error, isNull);
+      expect(state.messages.length, 2);
+      expect(state.messages[0].content, 'Hi');
+      expect(state.messages[1].content, 'Retry response');
+    });
+
+    test('invalidate clears conversation (e.g. on logout)', () async {
+      final fakeApi = _FakeApiClient(
+        response: {'responseType': 'answer', 'content': 'Hi'},
+      );
+      final container = ProviderContainer(
+        overrides: [
+          apiClientProvider.overrideWith((ref) => fakeApi),
+        ],
+      );
+      addTearDown(container.dispose);
+      await container.read(aiCoachProvider.notifier).sendQuestion('Hello');
+      expect(container.read(aiCoachProvider).messages.length, 2);
+
+      container.invalidate(aiCoachProvider);
+      final state = container.read(aiCoachProvider);
+      expect(state.messages, isEmpty);
+      expect(state.error, isNull);
+      expect(state.lastFailedQuestion, isNull);
+    });
+
     test('concurrent send prevented when sending is true', () async {
       final fakeApi = _FakeApiClient(
         response: {'responseType': 'answer', 'content': 'OK'},
@@ -125,22 +171,30 @@ class _FakeApiClient extends ApiClient {
   _FakeApiClient({
     this.response,
     this.throwException = false,
+    this.throwUntilSuccessAfter = 0,
     this.delay = Duration.zero,
+    this.onCall,
   }) : super(Dio());
 
   final Map<String, dynamic>? response;
   final bool throwException;
+  final int throwUntilSuccessAfter;
   final Duration delay;
+  final void Function()? onCall;
+  int _callCount = 0;
 
   @override
   Future<Response<T>> post<T>(String path, {Object? data}) async {
+    onCall?.call();
     await Future.delayed(delay);
-    if (throwException) {
+    if (throwException && (throwUntilSuccessAfter == 0 || _callCount < throwUntilSuccessAfter)) {
+      _callCount++;
       throw DioException(
         requestOptions: RequestOptions(path: path),
         type: DioExceptionType.connectionError,
       );
     }
+    _callCount++;
     return Response(
       requestOptions: RequestOptions(path: path),
       data: response as T?,

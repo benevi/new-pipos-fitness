@@ -2,20 +2,22 @@ import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { ZodExceptionFilter } from './zod/zod-exception.filter';
+import { log } from './logging/logging';
+import { initMonitoring } from './monitoring/monitoring';
 
-function enforceProductionConfig(): void {
-  if (process.env.NODE_ENV !== 'production') return;
-  const missing: string[] = [];
-  if (!process.env.JWT_ACCESS_SECRET?.length) missing.push('JWT_ACCESS_SECRET');
-  if (!process.env.JWT_REFRESH_SECRET?.length) missing.push('JWT_REFRESH_SECRET');
+function enforceEnvConfig(): void {
+  if (process.env.NODE_ENV === 'test') return;
+  const required = ['DATABASE_URL', 'JWT_ACCESS_SECRET', 'JWT_REFRESH_SECRET', 'PORT', 'NODE_ENV'];
+  const missing = required.filter((key) => !process.env[key] || !process.env[key]!.toString().length);
   if (missing.length > 0) {
-    console.error('Production requires the following env vars to be set:', missing.join(', '));
+    log('error', 'Missing required environment variables', { missing });
     process.exit(1);
   }
 }
 
 async function bootstrap() {
-  enforceProductionConfig();
+  initMonitoring();
+  enforceEnvConfig();
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new ZodExceptionFilter());
   app.enableCors({
@@ -29,7 +31,12 @@ async function bootstrap() {
     .build();
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('docs', app, document);
-  await app.listen(process.env.PORT ?? 3000);
+  const port = Number(process.env.PORT ?? 3000);
+  await app.listen(port);
+  log('info', 'Server started', {
+    port,
+    env: process.env.NODE_ENV ?? 'development',
+  });
 }
 
 bootstrap();

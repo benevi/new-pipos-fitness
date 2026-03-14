@@ -40,5 +40,38 @@ void main() {
       expect(find.text('Food swap'), findsOneWidget);
       expect(find.text('Rejected'), findsOneWidget);
     });
+
+    testWidgets('shows rejection reason when present', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: AiProposalCard(
+              proposal: {'type': 'exercise_swap', 'fromExerciseId': 'a', 'toExerciseId': 'b'},
+              status: 'rejected',
+              rejectionReason: 'Equipment not available for replacement',
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Rejected'), findsOneWidget);
+      expect(find.text('Equipment not available for replacement'), findsOneWidget);
+    });
+
+    testWidgets('does not crash when rejectionReason is null', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: AppTheme.dark,
+          home: Scaffold(
+            body: AiProposalCard(
+              proposal: {'type': 'exercise_swap'},
+              status: 'rejected',
+              rejectionReason: null,
+            ),
+          ),
+        ),
+      );
+      expect(find.text('Rejected'), findsOneWidget);
+    });
   });
 }

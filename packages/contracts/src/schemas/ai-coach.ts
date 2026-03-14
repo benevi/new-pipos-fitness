@@ -60,6 +60,8 @@ export const AIResponseSchema = z
     content: z.string().min(1),
     proposal: AIProposalSchema.optional(),
     proposalStatus: AIProposalStatusSchema.optional(),
+    /** Present when proposalStatus is 'rejected'; human-readable reason from validator. */
+    rejectionReason: z.string().optional(),
   })
   .superRefine((value, ctx) => {
     if (value.responseType === 'proposal' && !value.proposal) {

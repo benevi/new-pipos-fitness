@@ -24,6 +24,7 @@ mixin _$AIResponse {
   String get content => throw _privateConstructorUsedError;
   Map<String, dynamic>? get proposal => throw _privateConstructorUsedError;
   String? get proposalStatus => throw _privateConstructorUsedError;
+  String? get rejectionReason => throw _privateConstructorUsedError;
 
   /// Serializes this AIResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
@@ -45,7 +46,8 @@ abstract class $AIResponseCopyWith<$Res> {
       {String responseType,
       String content,
       Map<String, dynamic>? proposal,
-      String? proposalStatus});
+      String? proposalStatus,
+      String? rejectionReason});
 }
 
 /// @nodoc
@@ -67,6 +69,7 @@ class _$AIResponseCopyWithImpl<$Res, $Val extends AIResponse>
     Object? content = null,
     Object? proposal = freezed,
     Object? proposalStatus = freezed,
+    Object? rejectionReason = freezed,
   }) {
     return _then(_value.copyWith(
       responseType: null == responseType
@@ -85,6 +88,10 @@ class _$AIResponseCopyWithImpl<$Res, $Val extends AIResponse>
           ? _value.proposalStatus
           : proposalStatus // ignore: cast_nullable_to_non_nullable
               as String?,
+      rejectionReason: freezed == rejectionReason
+          ? _value.rejectionReason
+          : rejectionReason // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -101,7 +108,8 @@ abstract class _$$AIResponseImplCopyWith<$Res>
       {String responseType,
       String content,
       Map<String, dynamic>? proposal,
-      String? proposalStatus});
+      String? proposalStatus,
+      String? rejectionReason});
 }
 
 /// @nodoc
@@ -121,6 +129,7 @@ class __$$AIResponseImplCopyWithImpl<$Res>
     Object? content = null,
     Object? proposal = freezed,
     Object? proposalStatus = freezed,
+    Object? rejectionReason = freezed,
   }) {
     return _then(_$AIResponseImpl(
       responseType: null == responseType
@@ -139,6 +148,10 @@ class __$$AIResponseImplCopyWithImpl<$Res>
           ? _value.proposalStatus
           : proposalStatus // ignore: cast_nullable_to_non_nullable
               as String?,
+      rejectionReason: freezed == rejectionReason
+          ? _value.rejectionReason
+          : rejectionReason // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -150,7 +163,8 @@ class _$AIResponseImpl implements _AIResponse {
       {required this.responseType,
       required this.content,
       final Map<String, dynamic>? proposal,
-      this.proposalStatus})
+      this.proposalStatus,
+      this.rejectionReason})
       : _proposal = proposal;
 
   factory _$AIResponseImpl.fromJson(Map<String, dynamic> json) =>
@@ -172,10 +186,12 @@ class _$AIResponseImpl implements _AIResponse {
 
   @override
   final String? proposalStatus;
+  @override
+  final String? rejectionReason;
 
   @override
   String toString() {
-    return 'AIResponse(responseType: $responseType, content: $content, proposal: $proposal, proposalStatus: $proposalStatus)';
+    return 'AIResponse(responseType: $responseType, content: $content, proposal: $proposal, proposalStatus: $proposalStatus, rejectionReason: $rejectionReason)';
   }
 
   @override
@@ -188,13 +204,20 @@ class _$AIResponseImpl implements _AIResponse {
             (identical(other.content, content) || other.content == content) &&
             const DeepCollectionEquality().equals(other._proposal, _proposal) &&
             (identical(other.proposalStatus, proposalStatus) ||
-                other.proposalStatus == proposalStatus));
+                other.proposalStatus == proposalStatus) &&
+            (identical(other.rejectionReason, rejectionReason) ||
+                other.rejectionReason == rejectionReason));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, responseType, content,
-      const DeepCollectionEquality().hash(_proposal), proposalStatus);
+  int get hashCode => Object.hash(
+      runtimeType,
+      responseType,
+      content,
+      const DeepCollectionEquality().hash(_proposal),
+      proposalStatus,
+      rejectionReason);
 
   /// Create a copy of AIResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -217,7 +240,8 @@ abstract class _AIResponse implements AIResponse {
       {required final String responseType,
       required final String content,
       final Map<String, dynamic>? proposal,
-      final String? proposalStatus}) = _$AIResponseImpl;
+      final String? proposalStatus,
+      final String? rejectionReason}) = _$AIResponseImpl;
 
   factory _AIResponse.fromJson(Map<String, dynamic> json) =
       _$AIResponseImpl.fromJson;
@@ -230,6 +254,8 @@ abstract class _AIResponse implements AIResponse {
   Map<String, dynamic>? get proposal;
   @override
   String? get proposalStatus;
+  @override
+  String? get rejectionReason;
 
   /// Create a copy of AIResponse
   /// with the given fields replaced by the non-null parameter values.

@@ -25,7 +25,6 @@ export class AICoachService {
     this.persistInteraction(userId, question, response, proposalStatus === 'valid', context, rejectionReason).catch(
       () => {},
     );
-
     return response;
   }
 

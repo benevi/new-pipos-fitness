@@ -10,6 +10,7 @@ class AIResponse with _$AIResponse {
     required String content,
     Map<String, dynamic>? proposal,
     String? proposalStatus,
+    String? rejectionReason,
   }) = _AIResponse;
 
   factory AIResponse.fromJson(Map<String, dynamic> json) =>

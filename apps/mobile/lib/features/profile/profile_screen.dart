@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../auth/auth_provider.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -15,6 +16,11 @@ class ProfileScreen extends ConsumerWidget {
           children: [
             const Text('Profile — Phase 11'),
             const SizedBox(height: 24),
+            ListTile(
+              leading: const Icon(Icons.fitness_center),
+              title: const Text('Exercise library'),
+              onTap: () => context.push('/exercises'),
+            ),
             OutlinedButton.icon(
               onPressed: () => ref.read(authProvider.notifier).logout(),
               icon: const Icon(Icons.logout),

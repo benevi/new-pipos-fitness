@@ -32,5 +32,13 @@ void main() {
       final cleared = state.copyWith(error: null);
       expect(cleared.error, isNull);
     });
+
+    test('lastFailedQuestion set when send fails', () {
+      final state = const AIConversationState().copyWith(
+        error: 'Network error',
+        lastFailedQuestion: 'Why was my proposal rejected?',
+      );
+      expect(state.lastFailedQuestion, 'Why was my proposal rejected?');
+    });
   });
 }

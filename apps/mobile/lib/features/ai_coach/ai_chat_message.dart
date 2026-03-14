@@ -7,6 +7,7 @@ class AIChatMessage {
     this.responseType,
     this.proposalStatus,
     this.proposal,
+    this.rejectionReason,
   });
 
   final String id;
@@ -15,6 +16,7 @@ class AIChatMessage {
   final String? responseType;
   final String? proposalStatus;
   final Map<String, dynamic>? proposal;
+  final String? rejectionReason;
 
   AIChatMessage copyWith({
     String? id,
@@ -23,6 +25,7 @@ class AIChatMessage {
     String? responseType,
     String? proposalStatus,
     Map<String, dynamic>? proposal,
+    String? rejectionReason,
   }) {
     return AIChatMessage(
       id: id ?? this.id,
@@ -31,6 +34,7 @@ class AIChatMessage {
       responseType: responseType ?? this.responseType,
       proposalStatus: proposalStatus ?? this.proposalStatus,
       proposal: proposal ?? this.proposal,
+      rejectionReason: rejectionReason ?? this.rejectionReason,
     );
   }
 }

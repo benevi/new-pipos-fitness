@@ -13,10 +13,20 @@ class AiCoachScreen extends ConsumerStatefulWidget {
   ConsumerState<AiCoachScreen> createState() => _AiCoachScreenState();
 }
 
+/// Threshold in pixels: auto-scroll only when distance from bottom <= this.
+const double kAiCoachScrollThresholdPx = 120.0;
+
+/// True when the user is near the bottom (distance from bottom <= [threshold]).
+bool isNearBottom(double pixels, double maxScrollExtent, double threshold) {
+  if (maxScrollExtent <= 0) return true;
+  return (maxScrollExtent - pixels) <= threshold;
+}
+
 class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
   final _scrollController = ScrollController();
   final _textController = TextEditingController();
   static const int _maxLength = 500;
+  bool _showNewMessageChip = false;
 
   @override
   void dispose() {
@@ -25,14 +35,27 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
     super.dispose();
   }
 
-  void _scrollToBottom() {
+  /// Conditionally scroll to bottom: only if user is near bottom (within threshold).
+  /// Post-frame ensures new items are laid out; hasClients avoids exceptions if list not mounted.
+  void _scrollToBottom({bool force = false}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
+      if (!_scrollController.hasClients) return;
+      final position = _scrollController.position;
+      final shouldScroll = force ||
+          isNearBottom(
+            position.pixels,
+            position.maxScrollExtent,
+            kAiCoachScrollThresholdPx,
+          );
+      if (shouldScroll) {
         _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
+          position.maxScrollExtent,
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
         );
+        if (mounted) setState(() => _showNewMessageChip = false);
+      } else if (mounted) {
+        setState(() => _showNewMessageChip = true);
       }
     });
   }
@@ -53,25 +76,73 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
       body: Column(
         children: [
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              itemCount: state.messages.length + (state.sending ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index < state.messages.length) {
-                  return _ChatBubble(message: state.messages[index]);
-                }
-                return const _TypingIndicator();
-              },
+            child: Stack(
+              children: [
+                ListView.builder(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  itemCount: state.messages.length + (state.sending ? 1 : 0),
+                  itemBuilder: (context, index) {
+                    if (index < state.messages.length) {
+                      return _ChatBubble(message: state.messages[index]);
+                    }
+                    return const _TypingIndicator();
+                  },
+                ),
+                if (_showNewMessageChip)
+                  Positioned(
+                    left: AppSpacing.md,
+                    right: AppSpacing.md,
+                    bottom: AppSpacing.sm,
+                    child: Center(
+                      child: Material(
+                        color: AppColors.surfaceVariant,
+                        borderRadius: BorderRadius.circular(AppRadius.lg),
+                        child: InkWell(
+                          onTap: () => _scrollToBottom(force: true),
+                          borderRadius: BorderRadius.circular(AppRadius.lg),
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: AppSpacing.md,
+                              vertical: AppSpacing.sm,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.keyboard_arrow_down,
+                                  size: 20,
+                                  color: AppColors.accent,
+                                ),
+                                const SizedBox(width: AppSpacing.xs),
+                                Text(
+                                  'New response',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: AppColors.accent,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
-          if (state.error != null) _ErrorBar(
-            message: state.error!,
-            onRetry: notifier.clearError,
-          ),
+          if (state.error != null)
+            _ErrorBar(
+              message: state.error!,
+              canRetry: state.lastFailedQuestion != null,
+              onDismiss: notifier.clearError,
+              onRetry: notifier.retryLastQuestion,
+            ),
           _InputRow(
             controller: _textController,
             maxLength: _maxLength,
@@ -139,6 +210,7 @@ class _ChatBubble extends StatelessWidget {
                   child: AiProposalCard(
                     proposal: message.proposal!,
                     status: message.proposalStatus,
+                    rejectionReason: message.rejectionReason,
                   ),
                 ),
             ],
@@ -199,9 +271,16 @@ class _Dot extends StatelessWidget {
 }
 
 class _ErrorBar extends StatelessWidget {
-  const _ErrorBar({required this.message, required this.onRetry});
+  const _ErrorBar({
+    required this.message,
+    required this.canRetry,
+    required this.onDismiss,
+    required this.onRetry,
+  });
 
   final String message;
+  final bool canRetry;
+  final VoidCallback onDismiss;
   final VoidCallback onRetry;
 
   @override
@@ -224,8 +303,13 @@ class _ErrorBar extends StatelessWidget {
               ),
             ),
           ),
+          if (canRetry)
+            TextButton(
+              onPressed: onRetry,
+              child: const Text('Retry'),
+            ),
           TextButton(
-            onPressed: onRetry,
+            onPressed: onDismiss,
             child: const Text('Dismiss'),
           ),
         ],
