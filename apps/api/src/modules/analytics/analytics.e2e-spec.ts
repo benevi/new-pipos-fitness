@@ -55,8 +55,9 @@ describe('Analytics (e2e)', () => {
           findMany: vi.fn().mockResolvedValue([]),
         },
         exerciseProgress: {
-          upsert: vi.fn().mockImplementation((args: { where: unknown; create: unknown; update: unknown }) =>
-            Promise.resolve({
+          upsert: vi.fn().mockImplementation((args: { where: unknown; create: unknown; update: unknown }) => {
+            void args;
+            return Promise.resolve({
               userId,
               exerciseId: 'ex-1',
               estimated1RM: null,
@@ -64,8 +65,8 @@ describe('Analytics (e2e)', () => {
               volumeTrend: null,
               fatigueScore: null,
               lastUpdated: new Date(),
-            }),
-          ),
+            });
+          }),
         },
         exerciseMuscle: { findMany: vi.fn().mockResolvedValue([]) },
         trainingSession: {
@@ -136,7 +137,7 @@ describe('Analytics (e2e)', () => {
             },
           ],
         },
-      ]);
+      ] as never);
       vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
         id: 'ts-1',
         planVersionId: 'pv-1',
@@ -205,7 +206,7 @@ describe('Analytics (e2e)', () => {
             },
           ],
         },
-      ]);
+      ] as never);
       vi.mocked(prisma.trainingSession.findUnique)
         .mockResolvedValueOnce({
           id: 'ts-1',
@@ -255,7 +256,7 @@ describe('Analytics (e2e)', () => {
             },
           ],
         },
-      ]);
+      ] as never);
       const res = await request(app.getHttpServer())
         .get('/analytics/progress')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -289,7 +290,7 @@ describe('Analytics (e2e)', () => {
             },
           ],
         },
-      ]);
+      ] as never);
       vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
         id: 'ts-1',
         planVersionId: 'pv-1',
@@ -334,7 +335,7 @@ describe('Analytics (e2e)', () => {
             },
           ],
         },
-      ]);
+      ] as never);
       vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
         id: 'ts-1',
         planVersionId: 'pv-1',

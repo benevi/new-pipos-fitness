@@ -41,7 +41,7 @@ export class NutritionPlansService {
 
     const output = generateNutritionPlan(engineInput);
 
-    let plan = await this.prisma.nutritionPlan.findUnique({
+    let plan = await this.prisma.nutritionPlan.findFirst({
       where: { userId },
     });
     if (!plan) {
@@ -107,7 +107,11 @@ export class NutritionPlansService {
       },
     });
     if (!versionWithDays) throw new Error('Version not found after create');
-    return this.toGenerateResponse(plan, versionWithDays, output.metadata);
+    return this.toGenerateResponse(
+      plan as { id: string; userId: string; createdAt: Date; currentVersionId: string | null },
+      versionWithDays,
+      output.metadata,
+    );
   }
 
   private deriveGoal(goals: unknown): 'lose_fat' | 'build_muscle' | 'maintain' {
@@ -188,14 +192,14 @@ export class NutritionPlansService {
       plan: {
         id: plan.id,
         userId: plan.userId,
-        createdAt: plan.createdAt.toISOString(),
+        createdAt: (plan as { createdAt?: Date }).createdAt?.toISOString() ?? new Date().toISOString(),
         currentVersionId: plan.currentVersionId,
       },
       version: {
         id: version.id,
         planId: version.planId,
         version: version.version,
-        createdAt: version.createdAt.toISOString(),
+        createdAt: version.createdAt?.toISOString() ?? new Date().toISOString(),
         engineVersion: version.engineVersion,
         dailyCalorieTarget: metadata.dailyCalorieTarget,
         dailyMacroTarget: metadata.dailyMacroTarget,
@@ -218,7 +222,7 @@ export class NutritionPlansService {
   }
 
   async getCurrent(userId: UserId) {
-    const plan = await this.prisma.nutritionPlan.findUnique({
+    const plan = await this.prisma.nutritionPlan.findFirst({
       where: { userId },
       include: {
         currentVersion: {
@@ -240,24 +244,25 @@ export class NutritionPlansService {
       throw new NotFoundException('No current nutrition plan');
     }
     const v = plan.currentVersion;
+    const planWithCreatedAt = plan as unknown as { id: string; userId: string; createdAt?: Date; currentVersionId: string | null };
     return {
       plan: {
-        id: plan.id,
-        userId: plan.userId,
-        createdAt: plan.createdAt.toISOString(),
-        currentVersionId: plan.currentVersionId,
+        id: planWithCreatedAt.id,
+        userId: planWithCreatedAt.userId,
+        createdAt: planWithCreatedAt.createdAt?.toISOString() ?? new Date().toISOString(),
+        currentVersionId: planWithCreatedAt.currentVersionId,
       },
       version: {
         id: v.id,
         planId: v.planId,
         version: v.version,
-        createdAt: v.createdAt.toISOString(),
+        createdAt: v.createdAt?.toISOString() ?? new Date().toISOString(),
         engineVersion: v.engineVersion,
-        days: v.days.map((d) => ({
+        days: v.days.map((d: { id: string; planVersionId: string; dayIndex: number; meals: Array<{ id: string; nutritionDayId: string; mealIndex: number; name: string; templateId: string | null; items: unknown[] }> }) => ({
           id: d.id,
           planVersionId: v.id,
           dayIndex: d.dayIndex,
-          meals: d.meals.map((m) => ({
+          meals: d.meals.map((m: { id: string; nutritionDayId: string; mealIndex: number; name: string; templateId: string | null; items: unknown[] }) => ({
             id: m.id,
             nutritionDayId: d.id,
             mealIndex: m.mealIndex,
@@ -271,7 +276,7 @@ export class NutritionPlansService {
   }
 
   async getVersions(userId: UserId) {
-    const plan = await this.prisma.nutritionPlan.findUnique({
+    const plan = await this.prisma.nutritionPlan.findFirst({
       where: { userId },
       include: {
         versions: {
@@ -287,7 +292,7 @@ export class NutritionPlansService {
       },
     });
     if (!plan) return [];
-    return plan.versions.map((v) => ({
+    return plan.versions.map((v: { id: string; planId: string; version: number; createdAt: Date; engineVersion: string }) => ({
       id: v.id,
       planId: v.planId,
       version: v.version,

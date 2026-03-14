@@ -30,7 +30,7 @@ class VolumeSummaryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(Icons.bar_chart, color: AppColors.accent, size: 22),
+                const Icon(Icons.bar_chart, color: AppColors.accent, size: 22),
                 const SizedBox(width: AppSpacing.sm),
                 Text('Weekly Volume',
                     style: Theme.of(context).textTheme.titleMedium),

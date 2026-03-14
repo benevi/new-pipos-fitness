@@ -57,7 +57,7 @@ class _ErrorView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.cloud_off,
+              const Icon(Icons.cloud_off,
                   size: 48, color: AppColors.onSurfaceVariant),
               const SizedBox(height: AppSpacing.md),
               const Text('Failed to load analytics'),
@@ -83,7 +83,7 @@ class _EmptyView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.insights, size: 64, color: AppColors.onSurfaceVariant),
+              const Icon(Icons.insights, size: 64, color: AppColors.onSurfaceVariant),
               const SizedBox(height: AppSpacing.md),
               Text('No progress data yet',
                   style: Theme.of(context).textTheme.titleMedium),
@@ -128,7 +128,7 @@ class _LoadedDashboard extends StatelessWidget {
         if (vm.exercises.isNotEmpty) ...[
           Row(
             children: [
-              Icon(Icons.trending_up, color: AppColors.accent, size: 22),
+              const Icon(Icons.trending_up, color: AppColors.accent, size: 22),
               const SizedBox(width: AppSpacing.sm),
               Text('Exercise Progress',
                   style: Theme.of(context).textTheme.titleMedium),

@@ -5,6 +5,7 @@
 ///   On refresh failure, it delegates to [AuthSessionCoordinator].
 /// - [ApiClient] is a thin typed wrapper; it does NOT catch errors.
 ///   Providers catch DioExceptions and map them via [mapDioException].
+library;
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';

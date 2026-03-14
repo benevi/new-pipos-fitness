@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { AIResponse } from '@pipos/contracts';
+import { TrainingLocation } from '@pipos/contracts';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ContextBuilderService, type AICoachContext } from './context-builder';
 import { AIResponseNormalizerService } from './ai-response-normalizer';
@@ -78,6 +79,7 @@ export class AICoachService {
           responseType: 'proposal',
           content: 'Propuesta validada de cambio de ejercicio compatible con tu plan actual.',
           proposal,
+          proposalStatus: 'valid',
         };
       }
     }
@@ -113,7 +115,7 @@ export class AICoachService {
       where: {
         id: { not: fromExercise.id },
         movementPattern: fromExercise.movementPattern ?? undefined,
-        place: context.profile.trainingLocation ?? undefined,
+        place: (context.profile.trainingLocation as TrainingLocation) ?? undefined,
       },
       include: { equipment: true },
       orderBy: { id: 'asc' },
@@ -121,7 +123,9 @@ export class AICoachService {
     });
 
     const compatible = candidates.find((candidate) =>
-      candidate.equipment.every((item) => availableEquipment.includes(item.equipmentItemId)),
+      candidate.equipment.every((item: { equipmentItemId: string }) =>
+        availableEquipment.includes(item.equipmentItemId),
+      ),
     );
     if (!compatible) return undefined;
 

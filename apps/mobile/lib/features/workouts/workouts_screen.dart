@@ -95,7 +95,7 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.fitness_center,
+                  const Icon(Icons.fitness_center,
                       size: 64, color: AppColors.onSurfaceVariant),
                   const SizedBox(height: AppSpacing.md),
                   const Text('No training plan yet'),

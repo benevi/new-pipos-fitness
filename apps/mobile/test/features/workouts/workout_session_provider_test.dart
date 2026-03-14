@@ -35,7 +35,7 @@ void main() {
     });
 
     test('sessionId and startedAt derive from session', () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         session: WorkoutSession(
           id: 'w1',
           userId: 'u1',
@@ -83,7 +83,7 @@ void main() {
 
     test('totalExercises falls back to session exercises when no planSession',
         () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         session: WorkoutSession(
           id: 'w1',
           userId: 'u1',
@@ -114,7 +114,7 @@ void main() {
     });
 
     test('setsForExercise returns sets for matching workout exercise', () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         session: WorkoutSession(
           id: 'w1',
           userId: 'u1',
@@ -189,7 +189,7 @@ void main() {
     });
 
     test('error state with partial exercises preserves session for retry', () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         status: WorkoutStatus.error,
         error: 'Failed to add exercises: No internet connection.',
         session: WorkoutSession(
@@ -206,7 +206,7 @@ void main() {
             ),
           ],
         ),
-        planSession: const TrainingSession(
+        planSession: TrainingSession(
           id: 's1',
           planVersionId: 'v1',
           sessionIndex: 0,
@@ -246,7 +246,7 @@ void main() {
 
   group('Resume workout (state restoration)', () {
     test('resumed state includes exercises with logged sets', () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         status: WorkoutStatus.active,
         resumedSession: true,
         currentExerciseIndex: 1,
@@ -297,7 +297,7 @@ void main() {
     });
 
     test('resumed state totalExercises uses session exercises count', () {
-      final state = WorkoutSessionState(
+      const state = WorkoutSessionState(
         status: WorkoutStatus.active,
         resumedSession: true,
         session: WorkoutSession(
@@ -329,19 +329,19 @@ void main() {
       // Simulates the logic: history ordered by startedAt desc,
       // incomplete sessions filtered, first (most recent) chosen
       final sessions = [
-        WorkoutSession(
+        const WorkoutSession(
           id: 'w2',
           userId: 'u1',
           startedAt: '2026-03-09T12:00:00Z',
           exercises: [],
         ),
-        WorkoutSession(
+        const WorkoutSession(
           id: 'w1',
           userId: 'u1',
           startedAt: '2026-03-09T10:00:00Z',
           exercises: [],
         ),
-        WorkoutSession(
+        const WorkoutSession(
           id: 'w0',
           userId: 'u1',
           startedAt: '2026-03-08T10:00:00Z',
@@ -364,7 +364,7 @@ void main() {
       // This mirrors the UI logic in _SetInputForm
       const plannedSets = 3;
       const setIndex = 3; // 3 sets logged, planned 3
-      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      const allDone = plannedSets > 0 && setIndex >= plannedSets;
       expect(allDone, true);
     });
 
@@ -372,14 +372,14 @@ void main() {
         () {
       const plannedSets = 0;
       const setIndex = 5;
-      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      const allDone = plannedSets > 0 && setIndex >= plannedSets;
       expect(allDone, false);
     });
 
     test('allows more sets when under planned count', () {
       const plannedSets = 4;
       const setIndex = 2;
-      final allDone = plannedSets > 0 && setIndex >= plannedSets;
+      const allDone = plannedSets > 0 && setIndex >= plannedSets;
       expect(allDone, false);
     });
   });

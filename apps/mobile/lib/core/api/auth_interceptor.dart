@@ -14,6 +14,7 @@
 /// - coordinator sets auth state to unauthenticated (once) and invalidates providers
 /// - the original 401 error propagates to the caller
 /// - no duplicate logouts because coordinator has a re-entry guard
+library;
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../app/constants.dart';

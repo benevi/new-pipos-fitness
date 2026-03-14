@@ -15,7 +15,7 @@ void main() {
     });
 
     test('not empty when adherence exists but exercises empty', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [],
         adherenceScore: 0.9,
         fatigueDetected: false,
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('not empty when volume exists but progress null', () {
-      final volume = VolumeMetrics(
+      const volume = VolumeMetrics(
         byExercise: [VolumeByExercise(exerciseId: 'a', volume: 100)],
         byMuscle: [],
       );
@@ -36,7 +36,7 @@ void main() {
     });
 
     test('not empty when exercises exist', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [
           ExerciseProgressItem(exerciseId: 'bench', estimated1RM: 100),
         ],
@@ -55,7 +55,7 @@ void main() {
 
     test('empty when progress has empty exercises, null adherence, no volume',
         () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [],
         adherenceScore: null,
         fatigueDetected: false,
@@ -67,7 +67,7 @@ void main() {
 
   group('DashboardViewModel data composition', () {
     test('resolves exercise names from catalog', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [
           ExerciseProgressItem(exerciseId: 'bench-press'),
         ],
@@ -75,7 +75,7 @@ void main() {
         fatigueDetected: false,
       );
       final catalog = {
-        'bench-press': Exercise(
+        'bench-press': const Exercise(
           id: 'bench-press',
           slug: 'bench-press',
           name: 'Bench Press',
@@ -89,7 +89,7 @@ void main() {
     });
 
     test('falls back to exerciseId when catalog missing', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [
           ExerciseProgressItem(exerciseId: 'unknown-exercise'),
         ],
@@ -102,12 +102,12 @@ void main() {
     });
 
     test('resolves muscle names from catalog', () {
-      final volume = VolumeMetrics(
+      const volume = VolumeMetrics(
         byExercise: [],
         byMuscle: [VolumeByMuscle(muscleId: 'chest-1', volume: 2400)],
       );
       final muscleCat = {
-        'chest-1': Muscle(id: 'chest-1', name: 'Chest', region: 'upper'),
+        'chest-1': const Muscle(id: 'chest-1', name: 'Chest', region: 'upper'),
       };
 
       final vm = _build(volume: volume, muscleCatalog: muscleCat);
@@ -115,7 +115,7 @@ void main() {
     });
 
     test('falls back to muscleId when muscle catalog missing', () {
-      final volume = VolumeMetrics(
+      const volume = VolumeMetrics(
         byExercise: [],
         byMuscle: [VolumeByMuscle(muscleId: 'chest-1', volume: 2400)],
       );
@@ -125,7 +125,7 @@ void main() {
     });
 
     test('totalVolume sums byExercise', () {
-      final volume = VolumeMetrics(
+      const volume = VolumeMetrics(
         byExercise: [
           VolumeByExercise(exerciseId: 'a', volume: 1000),
           VolumeByExercise(exerciseId: 'b', volume: 2500),
@@ -138,7 +138,7 @@ void main() {
     });
 
     test('fatigueDetected propagated from progress', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [ExerciseProgressItem(exerciseId: 'a')],
         adherenceScore: 0.5,
         fatigueDetected: true,
@@ -152,7 +152,7 @@ void main() {
   group('muscleName helper', () {
     test('returns name from catalog', () {
       final catalog = {
-        'quads': Muscle(id: 'quads', name: 'Quadriceps', region: 'lower'),
+        'quads': const Muscle(id: 'quads', name: 'Quadriceps', region: 'lower'),
       };
       expect(muscleName(catalog, 'quads'), 'Quadriceps');
     });
@@ -169,7 +169,7 @@ void main() {
   group('exerciseName helper', () {
     test('returns name from catalog', () {
       final catalog = {
-        'bench': Exercise(
+        'bench': const Exercise(
             id: 'bench', slug: 'bench', name: 'Bench', difficulty: 3, place: 'gym'),
       };
       expect(exerciseName(catalog, 'bench'), 'Bench');
@@ -182,7 +182,7 @@ void main() {
 
   group('Partial data rendering', () {
     test('progress loads but volume fails', () {
-      final progress = ProgressMetrics(
+      const progress = ProgressMetrics(
         exercises: [ExerciseProgressItem(exerciseId: 'a', estimated1RM: 80)],
         adherenceScore: 0.7,
         fatigueDetected: false,
@@ -195,7 +195,7 @@ void main() {
     });
 
     test('volume loads but progress fails', () {
-      final volume = VolumeMetrics(
+      const volume = VolumeMetrics(
         byExercise: [VolumeByExercise(exerciseId: 'x', volume: 500)],
         byMuscle: [VolumeByMuscle(muscleId: 'm1', volume: 500)],
       );

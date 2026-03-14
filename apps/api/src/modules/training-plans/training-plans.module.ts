@@ -9,5 +9,6 @@ import { AnalyticsModule } from '../analytics/analytics.module';
   imports: [PrismaModule, UsersModule, AnalyticsModule],
   controllers: [TrainingPlansController],
   providers: [TrainingPlansService],
+  exports: [TrainingPlansService],
 })
 export class TrainingPlansModule {}

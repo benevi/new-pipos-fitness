@@ -15,7 +15,7 @@ describe('TrainingPlansService', () => {
 
   const mockPrisma = {
     trainingPlan: {
-      findUnique: vi.fn(),
+      findFirst: vi.fn(),
       create: vi.fn(),
       update: vi.fn(),
     },
@@ -98,7 +98,7 @@ describe('TrainingPlansService', () => {
         },
         weekPlan: { sessions: [] },
       });
-      mockPrisma.trainingPlan.findUnique.mockResolvedValue(null);
+      mockPrisma.trainingPlan.findFirst.mockResolvedValue(null);
 
       await expect(service.generatePlan('user-1')).rejects.toThrow(BadRequestException);
 
@@ -116,12 +116,12 @@ describe('TrainingPlansService', () => {
         },
         weekPlan: { sessions: [] },
       });
-      mockPrisma.trainingPlan.findUnique.mockResolvedValue(null);
+      mockPrisma.trainingPlan.findFirst.mockResolvedValue(null);
 
       try {
         await service.generatePlan('user-1');
-      } catch (e) {
-        expect(e.getResponse()).toMatchObject({
+      } catch (e: unknown) {
+        expect((e as { getResponse: () => unknown }).getResponse()).toMatchObject({
           code: 'PLAN_CONSTRAINT_VIOLATIONS',
           constraintViolations: violations,
         });
@@ -131,12 +131,12 @@ describe('TrainingPlansService', () => {
 
   describe('getCurrent', () => {
     it('throws when no plan exists', async () => {
-      mockPrisma.trainingPlan.findUnique.mockResolvedValue(null);
+      mockPrisma.trainingPlan.findFirst.mockResolvedValue(null);
       await expect(service.getCurrent('user-1')).rejects.toThrow(NotFoundException);
     });
 
     it('throws when plan has no current version', async () => {
-      mockPrisma.trainingPlan.findUnique.mockResolvedValue({
+      mockPrisma.trainingPlan.findFirst.mockResolvedValue({
         id: 'plan-1',
         userId: 'user-1',
         currentVersionId: null,
@@ -148,7 +148,7 @@ describe('TrainingPlansService', () => {
 
   describe('getVersions', () => {
     it('returns empty array when no plan', async () => {
-      mockPrisma.trainingPlan.findUnique.mockResolvedValue(null);
+      mockPrisma.trainingPlan.findFirst.mockResolvedValue(null);
       expect(await service.getVersions('user-1')).toEqual([]);
     });
   });

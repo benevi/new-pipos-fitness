@@ -254,7 +254,7 @@ class _LoggedSetsList extends StatelessWidget {
                     width: 32,
                     child: Text(
                       '#${s.setIndex + 1}',
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: AppColors.accent,
                         fontWeight: FontWeight.w600,
                       ),
@@ -345,11 +345,11 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
           color: AppColors.success.withOpacity(0.1),
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
-        child: Row(
+        child: const Row(
           children: [
             Icon(Icons.check_circle, color: AppColors.success),
-            const SizedBox(width: AppSpacing.sm),
-            const Text('All planned sets completed!'),
+            SizedBox(width: AppSpacing.sm),
+            Text('All planned sets completed!'),
           ],
         ),
       );

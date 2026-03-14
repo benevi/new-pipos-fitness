@@ -5,7 +5,6 @@ import {
   ExerciseSchema,
   ExerciseFilterQuerySchema,
   ExerciseListResponseSchema,
-  ExerciseDetailSchema,
   ExerciseMediaYouTubeSchema,
   CreateExerciseRequestSchema,
 } from './catalog.js';

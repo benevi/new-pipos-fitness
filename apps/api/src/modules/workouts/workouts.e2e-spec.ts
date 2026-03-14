@@ -8,7 +8,6 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 describe('Workouts (e2e)', () => {
   let app: INestApplication;
-  let prisma: PrismaService;
   let accessToken: string;
 
   const userId = 'user-workout-1';
@@ -152,7 +151,7 @@ describe('Workouts (e2e)', () => {
       .compile();
 
     app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get(PrismaService);
+    void moduleFixture.get(PrismaService);
     await app.init();
 
     const loginRes = await request(app.getHttpServer())

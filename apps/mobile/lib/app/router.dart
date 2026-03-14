@@ -10,6 +10,7 @@
 /// Protected routes live inside a ShellRoute that provides bottom navigation.
 /// Full-screen flows (workout player, workout complete) are top-level routes
 /// outside the ShellRoute so they don't show the bottom nav bar.
+library;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';

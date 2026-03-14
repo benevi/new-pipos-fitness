@@ -30,7 +30,7 @@ export class WorkoutsService {
   }
 
   async addExercise(userId: string, workoutSessionId: string, exerciseId: string) {
-    const session = await this.findSessionForUser(workoutSessionId, userId);
+    await this.findSessionForUser(workoutSessionId, userId);
     const exerciseExists = await this.prisma.exercise.findUnique({
       where: { id: exerciseId },
     });
@@ -38,7 +38,7 @@ export class WorkoutsService {
     const count = await this.prisma.workoutExercise.count({
       where: { workoutSessionId },
     });
-    const exercise = await this.prisma.workoutExercise.create({
+    await this.prisma.workoutExercise.create({
       data: {
         workoutSessionId,
         exerciseId,

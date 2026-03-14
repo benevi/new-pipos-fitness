@@ -31,7 +31,7 @@ class WorkoutCompleteScreen extends ConsumerWidget {
                     color: AppColors.success.withOpacity(0.15),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.check_circle_outline,
                     size: 80,
                     color: AppColors.success,

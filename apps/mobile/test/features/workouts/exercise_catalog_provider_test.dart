@@ -6,7 +6,7 @@ void main() {
   group('exerciseName', () {
     test('returns name from catalog when present', () {
       final catalog = {
-        'bench-press': Exercise(
+        'bench-press': const Exercise(
           id: 'bench-press',
           slug: 'bench-press',
           name: 'Bench Press',

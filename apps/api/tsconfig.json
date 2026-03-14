@@ -8,7 +8,8 @@
     "rootDir": "./src",
     "strictPropertyInitialization": false,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "types": ["node", "vitest/globals"]
   },
   "include": ["src/**/*"]
 }

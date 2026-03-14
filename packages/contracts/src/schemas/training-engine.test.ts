@@ -4,7 +4,6 @@ import {
   TrainingEngineInputSchema,
   TrainingEngineOutputSchema,
   PlanExerciseSchema,
-  PlanSessionSchema,
   GenerateTrainingPlanResponseSchema,
   TrainingSessionExerciseSchema,
 } from './training-engine.js';

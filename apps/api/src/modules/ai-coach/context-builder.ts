@@ -95,16 +95,18 @@ export class ContextBuilderService {
     try {
       const current = await this.trainingPlansService.getCurrent(userId);
       const exerciseIds = current.version.sessions
-        .flatMap((session) => session.exercises.map((exercise) => exercise.exerciseId))
-        .filter((id, index, arr) => arr.indexOf(id) === index)
-        .sort((a, b) => a.localeCompare(b))
+        .flatMap((session) =>
+          (session.exercises as { exerciseId: string }[]).map((ex) => ex.exerciseId),
+        )
+        .filter((id: string, index: number, arr: string[]) => arr.indexOf(id) === index)
+        .sort((a: string, b: string) => a.localeCompare(b))
         .slice(0, MAX_EXERCISE_IDS);
 
       return {
         versionId: current.version.id,
         sessionsCount: current.version.sessions.length,
         exercisesCount: current.version.sessions.reduce(
-          (sum, session) => sum + session.exercises.length,
+          (sum: number, session: { exercises: unknown[] }) => sum + session.exercises.length,
           0,
         ),
         exerciseIds,
@@ -121,7 +123,10 @@ export class ContextBuilderService {
       return {
         versionId: current.version.id,
         daysCount: current.version.days.length,
-        mealsCount: current.version.days.reduce((sum, day) => sum + day.meals.length, 0),
+        mealsCount: current.version.days.reduce(
+        (sum: number, day: { meals: unknown[] }) => sum + day.meals.length,
+        0,
+      ),
       };
     } catch (error) {
       if (error instanceof NotFoundException) return null;

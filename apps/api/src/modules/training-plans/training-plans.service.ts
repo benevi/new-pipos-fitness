@@ -3,7 +3,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UsersService } from '../users/users.service';
 import { AnalyticsService } from '../analytics/analytics.service';
 import { generateTrainingPlan } from '@pipos/engine-rules';
-import type { TrainingEngineInput, CatalogExerciseSnapshot } from '@pipos/contracts';
+import type {
+  TrainingEngineInput,
+  CatalogExerciseSnapshot,
+} from '@pipos/contracts';
 import { TrainingLevel, TrainingLocation } from '@pipos/contracts';
 
 type UserId = string;
@@ -41,8 +44,12 @@ export class TrainingPlansService {
         age: user.age ?? undefined,
       },
       preferences,
-      goals: Array.isArray(user.goals) ? user.goals : undefined,
-      muscleFocus: Array.isArray(user.muscleFocus) ? user.muscleFocus : undefined,
+      goals: Array.isArray(user.goals)
+        ? (user.goals as TrainingEngineInput['goals'])
+        : undefined,
+      muscleFocus: Array.isArray(user.muscleFocus)
+        ? (user.muscleFocus as TrainingEngineInput['muscleFocus'])
+        : undefined,
       catalog,
       progress,
     };
@@ -57,7 +64,7 @@ export class TrainingPlansService {
       });
     }
 
-    let plan = await this.prisma.trainingPlan.findUnique({
+    let plan = await this.prisma.trainingPlan.findFirst({
       where: { userId },
     });
     if (!plan) {
@@ -211,7 +218,7 @@ export class TrainingPlansService {
   }
 
   async getCurrent(userId: UserId) {
-    const plan = await this.prisma.trainingPlan.findUnique({
+    const plan = await this.prisma.trainingPlan.findFirst({
       where: { userId },
       include: {
         currentVersion: {
@@ -242,7 +249,7 @@ export class TrainingPlansService {
         createdAt: v.createdAt.toISOString(),
         engineVersion: v.engineVersion,
         objectiveScore: v.objectiveScore,
-        sessions: v.sessions.map((s) => ({
+        sessions: v.sessions.map((s: { id: string; planVersionId: string; sessionIndex: number; name: string; targetDurationMinutes: number; exercises: unknown[] }) => ({
           id: s.id,
           planVersionId: v.id,
           sessionIndex: s.sessionIndex,
@@ -255,7 +262,7 @@ export class TrainingPlansService {
   }
 
   async getVersions(userId: UserId) {
-    const plan = await this.prisma.trainingPlan.findUnique({
+    const plan = await this.prisma.trainingPlan.findFirst({
       where: { userId },
       include: {
         versions: {
@@ -272,7 +279,7 @@ export class TrainingPlansService {
       },
     });
     if (!plan) return [];
-    return plan.versions.map((v) => ({
+    return plan.versions.map((v: { id: string; planId: string; version: number; createdAt: Date; engineVersion: string; objectiveScore: number }) => ({
       id: v.id,
       planId: v.planId,
       version: v.version,

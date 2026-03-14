@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { ZodExceptionFilter } from './zod/zod-exception.filter';
 
 function enforceProductionConfig(): void {
   if (process.env.NODE_ENV !== 'production') return;
@@ -16,6 +17,11 @@ function enforceProductionConfig(): void {
 async function bootstrap() {
   enforceProductionConfig();
   const app = await NestFactory.create(AppModule);
+  app.useGlobalFilters(new ZodExceptionFilter());
+  app.enableCors({
+    origin: process.env.NODE_ENV === 'production' ? false : true,
+    credentials: true,
+  });
   const config = new DocumentBuilder()
     .setTitle('Pipos Fitness API')
     .setDescription('API for Pipos Fitness application')

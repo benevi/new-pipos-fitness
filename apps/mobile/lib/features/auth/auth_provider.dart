@@ -15,12 +15,12 @@
 ///   forceUnauthenticated() on this notifier AND invalidates providers
 ///
 /// The coordinator prevents duplicate logout execution via a re-entry guard.
+library;
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../app/constants.dart';
 import '../../core/api/api_client.dart';
-import '../../core/api/api_failure.dart';
 import '../../core/api/dio_error_mapper.dart';
 import '../../core/auth/auth_session_coordinator.dart';
 import '../../models/user.dart';

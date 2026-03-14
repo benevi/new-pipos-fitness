@@ -1,4 +1,4 @@
-/// Auth Session Coordinator
+﻿/// Auth Session Coordinator
 ///
 /// Bridges the gap between the Dio [AuthInterceptor] (which lives outside
 /// Riverpod) and the Riverpod-managed [AuthNotifier] + protected providers.
@@ -11,15 +11,15 @@
 ///   follow the exact same invalidation sequence.
 ///
 /// Dependency direction (no cycles):
-///   AuthInterceptor ──calls──> AuthSessionCoordinator ──calls──> AuthNotifier
-///                                                     ──invalidates──> data providers
+///   AuthInterceptor â”€â”€callsâ”€â”€> AuthSessionCoordinator â”€â”€callsâ”€â”€> AuthNotifier
+///                                                     â”€â”€invalidatesâ”€â”€> data providers
 ///
 /// The coordinator is created once and injected into both the interceptor
 /// and the auth provider setup. It holds a weak reference to the Ref via
 /// a callback list, not a direct Ref, so it can be instantiated before the
 /// provider tree is fully built.
+library;
 import 'dart:async';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 typedef _InvalidateCallback = void Function();
 
