@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -8,8 +8,9 @@ export class WorkoutsService {
   async startSession(userId: string, planSessionId?: string) {
     let planVersionId: string | null = null;
     if (planSessionId) {
-      const planSession = await this.prisma.trainingSession.findUnique({
-        where: { id: planSessionId },
+      // Ownership: la sesión planificada debe pertenecer a un plan del usuario. Si no, 404.
+      const planSession = await this.prisma.trainingSession.findFirst({
+        where: { id: planSessionId, planVersion: { plan: { userId } } },
         select: { planVersionId: true },
       });
       if (!planSession) throw new NotFoundException('Training session not found');
@@ -56,7 +57,7 @@ export class WorkoutsService {
   }
 
   /**
-   * Log a set. Validates in order: (1) workout session exists and belongs to user (404/403),
+   * Log a set. Validates in order: (1) workout session exists and belongs to user (404),
    * (2) workout exercise exists, belongs to that session, and session belongs to user.
    * Returns 404 "Workout exercise not found" when exercise is missing or belongs to another session (no info leak).
    */
@@ -101,8 +102,7 @@ export class WorkoutsService {
     workoutSessionId: string,
     body: { durationMinutes?: number; notes?: string },
   ) {
-    const session = await this.findSessionForUser(workoutSessionId, userId);
-    if (session.completedAt) throw new ForbiddenException('Workout already completed');
+    await this.findSessionForUser(workoutSessionId, userId);
 
     const updated = await this.prisma.workoutSession.update({
       where: { id: workoutSessionId },
@@ -119,14 +119,13 @@ export class WorkoutsService {
   }
 
   async getById(userId: string, workoutSessionId: string) {
-    const session = await this.prisma.workoutSession.findUnique({
-      where: { id: workoutSessionId },
+    const session = await this.prisma.workoutSession.findFirst({
+      where: { id: workoutSessionId, userId },
       include: {
         exercises: { include: { sets: true }, orderBy: { order: 'asc' } },
       },
     });
     if (!session) throw new NotFoundException('Workout session not found');
-    if (session.userId !== userId) throw new ForbiddenException('Not your workout session');
     return this.toWorkoutSession(session);
   }
 
@@ -142,13 +141,16 @@ export class WorkoutsService {
     return sessions.map((s) => this.toWorkoutSession(s));
   }
 
+  /**
+   * Ownership: la consulta filtra por userId, así que un recurso ajeno es
+   * indistinguible de uno inexistente (404, sin filtrar su existencia).
+   */
   private async findSessionForUser(workoutSessionId: string, userId: string) {
-    const session = await this.prisma.workoutSession.findUnique({
-      where: { id: workoutSessionId },
+    const session = await this.prisma.workoutSession.findFirst({
+      where: { id: workoutSessionId, userId },
     });
     if (!session) throw new NotFoundException('Workout session not found');
-    if (session.userId !== userId) throw new ForbiddenException('Not your workout session');
-    if (session.completedAt) throw new ForbiddenException('Workout already completed');
+    if (session.completedAt) throw new ConflictException('Workout already completed');
     return session;
   }
 
