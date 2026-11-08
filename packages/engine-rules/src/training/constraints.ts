@@ -5,7 +5,6 @@
 import type {
   TrainingEngineInput,
   TrainingEngineOutput,
-  PlanSession,
   CatalogExerciseSnapshot,
   ConstraintViolation,
 } from '@pipos/contracts';
@@ -31,7 +30,7 @@ export function buildCatalogMap(
 
 export function getCompatibleExercises(
   input: TrainingEngineInput,
-  catalog: Map<string, CatalogExerciseSnapshot>,
+  _catalog: Map<string, CatalogExerciseSnapshot>,
 ): CatalogExerciseSnapshot[] {
   const { preferences, catalog: cat } = input;
   const loc = preferences.trainingLocation;

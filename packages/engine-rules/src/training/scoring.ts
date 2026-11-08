@@ -11,7 +11,6 @@ import type {
 import { TrainingLevel } from '@pipos/contracts';
 import { estimateSessionDurationMinutesSimple } from './duration.js';
 import { computeWeeklySetsByMuscle } from './volume.js';
-import { MUSCLE_ROLE_WEIGHT } from './model.js';
 
 export function scorePlan(
   plan: TrainingEngineOutput,

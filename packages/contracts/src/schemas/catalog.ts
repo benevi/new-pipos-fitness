@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { CurationStatus, MuscleRole, TrainingLocation } from '../enums/index.js';
+import { CatalogIdSchema, TEXT_LIMITS } from './limits.js';
 
 export const MuscleSchema = z.object({
   id: z.string(),
@@ -78,12 +79,12 @@ export const ExerciseListResponseSchema = z.object({
 export type ExerciseListResponse = z.infer<typeof ExerciseListResponseSchema>;
 
 export const ExerciseFilterQuerySchema = z.object({
-  muscleId: z.string().optional(),
-  equipmentId: z.string().optional(),
+  muscleId: CatalogIdSchema.optional(),
+  equipmentId: CatalogIdSchema.optional(),
   difficulty: z.coerce.number().int().min(1).max(5).optional(),
-  movementPattern: z.string().optional(),
+  movementPattern: z.string().max(TEXT_LIMITS.MOVEMENT_PATTERN).optional(),
   place: ExercisePlaceSchema.optional(),
-  search: z.string().optional(),
+  search: z.string().max(TEXT_LIMITS.SEARCH).optional(),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(100).default(20),
 });
@@ -91,13 +92,16 @@ export const ExerciseFilterQuerySchema = z.object({
 export type ExerciseFilterQuery = z.infer<typeof ExerciseFilterQuerySchema>;
 
 export const CreateExerciseRequestSchema = z.object({
-  slug: z.string().min(1),
-  name: z.string().min(1),
-  description: z.string().nullable().optional(),
+  slug: z.string().min(1).max(TEXT_LIMITS.SLUG),
+  name: z.string().min(1).max(TEXT_LIMITS.NAME),
+  description: z.string().max(TEXT_LIMITS.DESCRIPTION).nullable().optional(),
   difficulty: z.number().int().min(1).max(5),
-  movementPattern: z.string().nullable().optional(),
+  movementPattern: z.string().max(TEXT_LIMITS.MOVEMENT_PATTERN).nullable().optional(),
   place: ExercisePlaceSchema,
-  muscleIds: z.array(z.object({ muscleId: z.string(), role: z.nativeEnum(MuscleRole) })).optional(),
+  muscleIds: z
+    .array(z.object({ muscleId: CatalogIdSchema, role: z.nativeEnum(MuscleRole) }))
+    .max(50)
+    .optional(),
 });
 
 export type CreateExerciseRequest = z.infer<typeof CreateExerciseRequestSchema>;
@@ -107,11 +111,19 @@ export const UpdateExerciseRequestSchema = CreateExerciseRequestSchema.partial()
 export type UpdateExerciseRequest = z.infer<typeof UpdateExerciseRequestSchema>;
 
 export const AddExerciseMediaRequestSchema = z.object({
-  youtubeVideoId: z.string().min(1),
-  channelName: z.string().nullable().optional(),
+  youtubeVideoId: z.string().min(1).max(TEXT_LIMITS.YOUTUBE_VIDEO_ID),
+  channelName: z.string().max(TEXT_LIMITS.CHANNEL_NAME).nullable().optional(),
   isPrimary: z.boolean().default(false),
   startSeconds: z.number().int().min(0).nullable().optional(),
   endSeconds: z.number().int().min(0).nullable().optional(),
 });
 
 export type AddExerciseMediaRequest = z.infer<typeof AddExerciseMediaRequestSchema>;
+
+/** Query de GET /foods: paginación por cursor (id de alimento). */
+export const FoodsListQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(1000).default(500),
+  cursor: CatalogIdSchema.optional(),
+});
+
+export type FoodsListQuery = z.infer<typeof FoodsListQuerySchema>;

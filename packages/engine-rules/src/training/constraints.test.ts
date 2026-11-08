@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildCatalogMap, getCompatibleExercises, validatePlan } from './constraints.js';
+import { buildCatalogMap, validatePlan } from './constraints.js';
 import { TrainingLevel, TrainingLocation, MuscleRole } from '@pipos/contracts';
 
 describe('buildCatalogMap', () => {

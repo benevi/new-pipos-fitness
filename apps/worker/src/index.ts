@@ -14,7 +14,8 @@ const queue = new Queue(queueName, { connection });
 const worker = new Worker(
   queueName,
   async (job) => {
-    console.log(`Processing job ${job.id}`, job.data);
+    // No se registra job.data: puede contener datos personales/de salud. Sólo el id.
+    console.log(`Processing job ${job.id}`);
     return { processed: true, jobId: job.id };
   },
   { connection },
@@ -25,7 +26,7 @@ worker.on('completed', (job) => {
 });
 
 worker.on('failed', (job, err) => {
-  console.error(`Job ${job?.id} failed`, err);
+  console.error(`Job ${job?.id} failed: ${err.message}`);
 });
 
 async function shutdown() {

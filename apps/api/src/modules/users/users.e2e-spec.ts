@@ -1,113 +1,87 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import { vi } from 'vitest';
-import { AppModule } from '../../app.module';
-import { PrismaService } from '../../prisma/prisma.service';
-import { JwtService } from '@nestjs/jwt';
+import request from 'supertest';
+import { createTestApp, registerUser, truncateAll, bearer, type TestContext, type RegisteredUser } from '../../test/e2e/helpers';
 
-const mockUser = {
-  id: 'user-1',
-  email: 'me@example.com',
-  passwordHash: 'hash',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  heightCm: null,
-  weightKg: null,
-  age: null,
-  sex: null,
-  trainingLevel: null,
-  preferredTrainingDays: null,
-  availableEquipment: null,
-  trainingLocation: null,
-  goals: null,
-  muscleFocus: null,
-};
-
-describe('Users /me (e2e)', () => {
-  let app: INestApplication;
-  let accessToken: string;
+describe('Users /me (e2e, Postgres real)', () => {
+  let ctx: TestContext;
+  let user: RegisteredUser;
+  const server = () => ctx.app.getHttpServer();
 
   beforeAll(async () => {
-    process.env.JWT_ACCESS_SECRET = 'test-secret';
-    const jwtService = new JwtService({
-      secret: 'test-secret',
-      signOptions: { expiresIn: '15m' },
-    });
-    accessToken = jwtService.sign({ userId: mockUser.id, email: mockUser.email });
+    ctx = await createTestApp();
+  });
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue({
-        user: {
-          findUnique: vi.fn().mockResolvedValue(mockUser),
-          update: vi.fn().mockResolvedValue({ ...mockUser }),
-        },
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    await app.init();
+  beforeEach(async () => {
+    await truncateAll(ctx.prisma);
+    user = await registerUser(ctx.app, 'me@example.com');
   });
 
   afterAll(async () => {
-    await app.close();
+    await ctx.app.close();
   });
 
   describe('GET /me', () => {
-    it('returns 200 and user when authenticated', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/me')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.id).toBe(mockUser.id);
-      expect(res.body.email).toBe(mockUser.email);
+    it('200 con el usuario autenticado (sin passwordHash)', async () => {
+      const res = await request(server()).get('/me').set(bearer(user.accessToken)).expect(200);
+      expect(res.body.id).toBe(user.id);
+      expect(res.body.email).toBe('me@example.com');
+      expect(res.body).not.toHaveProperty('passwordHash');
     });
 
-    it('returns 401 when no token', async () => {
-      await request(app.getHttpServer()).get('/me').expect(401);
+    it('401 sin token', async () => {
+      await request(server()).get('/me').expect(401);
+    });
+
+    it('401 con token malformado', async () => {
+      await request(server()).get('/me').set(bearer('not-a-jwt')).expect(401);
     });
   });
 
   describe('PUT /me/profile', () => {
-    it('returns 200 and updated user', async () => {
-      const res = await request(app.getHttpServer())
+    it('200 y persiste los datos', async () => {
+      const res = await request(server())
         .put('/me/profile')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set(bearer(user.accessToken))
         .send({ heightCm: 180, weightKg: 75, age: 30, sex: 'male' })
         .expect(200);
-      expect(res.body.id).toBe(mockUser.id);
+      expect(res.body).toMatchObject({ id: user.id, heightCm: 180, weightKg: 75, age: 30, sex: 'male' });
+      const stored = await ctx.prisma.user.findUniqueOrThrow({ where: { id: user.id } });
+      expect(stored.weightKg).toBe(75);
+    });
+
+    it('400 con valores inválidos', async () => {
+      await request(server())
+        .put('/me/profile')
+        .set(bearer(user.accessToken))
+        .send({ weightKg: -1 })
+        .expect(400);
     });
   });
 
   describe('PUT /me/preferences', () => {
-    it('returns 200', async () => {
-      await request(app.getHttpServer())
+    it('200 con preferencias válidas', async () => {
+      const res = await request(server())
         .put('/me/preferences')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({
-          trainingLevel: 'intermediate',
-          preferredTrainingDays: 3,
-          trainingLocation: 'gym',
-        })
+        .set(bearer(user.accessToken))
+        .send({ trainingLevel: 'intermediate', preferredTrainingDays: 3, trainingLocation: 'gym' })
         .expect(200);
+      expect(res.body).toMatchObject({ trainingLevel: 'intermediate', preferredTrainingDays: 3, trainingLocation: 'gym' });
     });
-    it('returns 200 with valid availableEquipment array', async () => {
-      await request(app.getHttpServer())
+
+    it('200 con availableEquipment válido', async () => {
+      const res = await request(server())
         .put('/me/preferences')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ availableEquipment: ['dumbbells', 'barbell'] })
+        .set(bearer(user.accessToken))
+        .send({ availableEquipment: ['eq-dumbbell', 'eq-barbell'] })
         .expect(200);
+      expect(res.body.availableEquipment).toEqual(['eq-dumbbell', 'eq-barbell']);
     });
   });
 
   describe('PUT /me/goals', () => {
-    it('returns 200 with strict goals schema', async () => {
-      await request(app.getHttpServer())
+    it('200 con el esquema estricto de goals', async () => {
+      await request(server())
         .put('/me/goals')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set(bearer(user.accessToken))
         .send({
           goals: [
             { type: 'muscle_gain', priority: 1 },
@@ -116,20 +90,39 @@ describe('Users /me (e2e)', () => {
         })
         .expect(200);
     });
+
+    it('400 si customText supera el límite', async () => {
+      await request(server())
+        .put('/me/goals')
+        .set(bearer(user.accessToken))
+        .send({ goals: [{ type: 'custom', priority: 1, customText: 'x'.repeat(201) }] })
+        .expect(400);
+    });
   });
 
   describe('PUT /me/muscle-focus', () => {
-    it('returns 200 with strict muscleFocus schema', async () => {
-      await request(app.getHttpServer())
+    it('200 con el esquema estricto de muscleFocus', async () => {
+      await request(server())
         .put('/me/muscle-focus')
-        .set('Authorization', `Bearer ${accessToken}`)
+        .set(bearer(user.accessToken))
         .send({
           muscleFocus: [
-            { muscleId: 'chest', priority: 'grow' },
-            { muscleId: 'back', priority: 'maintain' },
+            { muscleId: 'muscle-chest', priority: 'grow' },
+            { muscleId: 'muscle-back', priority: 'maintain' },
           ],
         })
         .expect(200);
     });
+  });
+
+  it('cada usuario sólo ve y modifica su propio perfil', async () => {
+    const other = await registerUser(ctx.app, 'other@example.com');
+    await request(server())
+      .put('/me/profile')
+      .set(bearer(other.accessToken))
+      .send({ weightKg: 99 })
+      .expect(200);
+    const mine = await request(server()).get('/me').set(bearer(user.accessToken)).expect(200);
+    expect(mine.body.weightKg).toBeNull();
   });
 });

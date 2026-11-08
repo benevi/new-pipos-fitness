@@ -2,12 +2,12 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
 import { ZodBody } from '../../zod/zod-body.decorator';
+import { UuidParam } from '../../zod/zod-param';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../users/current-user.decorator';
 import { WorkoutsService } from './workouts.service';
@@ -33,7 +33,7 @@ export class WorkoutsController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get a single workout session with exercises and sets' })
-  getById(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+  getById(@CurrentUser() user: { id: string }, @UuidParam('id') id: string) {
     return this.workoutsService.getById(user.id, id);
   }
 
@@ -49,7 +49,7 @@ export class WorkoutsController {
   @ApiOperation({ summary: 'Add exercise to workout' })
   addExercise(
     @CurrentUser() user: { id: string },
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() body: { exerciseId: string },
   ) {
     return this.workoutsService.addExercise(user.id, id, body.exerciseId);
@@ -60,8 +60,8 @@ export class WorkoutsController {
   @ApiOperation({ summary: 'Log a set' })
   logSet(
     @CurrentUser() user: { id: string },
-    @Param('id') id: string,
-    @Param('workoutExerciseId') workoutExerciseId: string,
+    @UuidParam('id') id: string,
+    @UuidParam('workoutExerciseId') workoutExerciseId: string,
     @Body()
     body: { weightKg?: number; reps?: number; rir?: number; completed?: boolean },
   ) {
@@ -73,7 +73,7 @@ export class WorkoutsController {
   @ApiOperation({ summary: 'Finish workout session' })
   finish(
     @CurrentUser() user: { id: string },
-    @Param('id') id: string,
+    @UuidParam('id') id: string,
     @Body() body: { durationMinutes?: number; notes?: string },
   ) {
     return this.workoutsService.finishSession(user.id, id, body);
