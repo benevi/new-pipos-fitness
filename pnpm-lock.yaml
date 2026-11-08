@@ -136,6 +136,31 @@ importers:
         specifier: ^2.1.0
         version: 2.1.9(@types/node@20.19.35)(terser@5.46.0)
 
+  packages/catalog:
+    dependencies:
+      '@pipos/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      '@types/node':
+        specifier: ^20.10.0
+        version: 20.19.35
+      '@typescript-eslint/eslint-plugin':
+        specifier: ^6.19.0
+        version: 6.21.0(@typescript-eslint/parser@6.21.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: ^6.19.0
+        version: 6.21.0(eslint@8.57.1)(typescript@5.9.3)
+      eslint:
+        specifier: ^8.56.0
+        version: 8.57.1
+      typescript:
+        specifier: ^5.3.3
+        version: 5.9.3
+      vitest:
+        specifier: ^2.1.0
+        version: 2.1.9(@types/node@20.19.35)(terser@5.46.0)
+
   packages/contracts:
     dependencies:
       zod:
