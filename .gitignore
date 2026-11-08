@@ -45,3 +45,6 @@ apps/mobile/.flutter-plugins-dependencies
 # Herramientas locales y temporales (no versionar)
 .tools/
 _tmp_*
+
+# Worktrees de agentes de Claude Code
+.claude/worktrees/
