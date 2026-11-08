@@ -6,20 +6,21 @@ import {
   TrainingLevel,
   TrainingLocation,
 } from '../enums/index.js';
+import { CatalogIdSchema, TEXT_LIMITS } from './limits.js';
 
 const MAX_EQUIPMENT_ITEMS = 200;
 const MAX_GOALS = 10;
 const MAX_MUSCLE_FOCUS = 100;
 
 export const AvailableEquipmentSchema = z
-  .array(z.string())
+  .array(CatalogIdSchema)
   .max(MAX_EQUIPMENT_ITEMS);
 
 export const GoalItemSchema = z
   .object({
     type: z.nativeEnum(GoalType),
     priority: z.number().int().min(1).max(5),
-    customText: z.string().optional(),
+    customText: z.string().max(TEXT_LIMITS.CUSTOM_TEXT).optional(),
   })
   .strict()
   .refine(
@@ -31,7 +32,7 @@ export const GoalsSchema = z.array(GoalItemSchema).max(MAX_GOALS);
 
 export const MuscleFocusItemSchema = z
   .object({
-    muscleId: z.string(),
+    muscleId: CatalogIdSchema,
     priority: z.nativeEnum(MusclePriority),
   })
   .strict();

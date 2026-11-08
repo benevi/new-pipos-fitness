@@ -86,3 +86,11 @@ export const NutritionEngineOutputSchema = z.object({
   }),
 });
 export type NutritionEngineOutput = z.infer<typeof NutritionEngineOutputSchema>;
+
+/** Body de POST /nutrition-plans/generate: objetivo opcional, enum cerrado, sin campos extra. */
+export const NutritionPlanGenerateRequestSchema = z
+  .object({
+    goal: z.nativeEnum(NutritionGoalType).optional(),
+  })
+  .strict();
+export type NutritionPlanGenerateRequest = z.infer<typeof NutritionPlanGenerateRequestSchema>;

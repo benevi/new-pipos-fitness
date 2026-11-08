@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TEXT_LIMITS } from './limits.js';
 
 export const StartWorkoutRequestSchema = z.object({
   planSessionId: z.string().uuid().optional(),
@@ -42,7 +43,7 @@ export const StartWorkoutResponseSchema = WorkoutSessionSchema;
 export type StartWorkoutResponse = z.infer<typeof StartWorkoutResponseSchema>;
 
 export const AddExerciseToWorkoutRequestSchema = z.object({
-  exerciseId: z.string(),
+  exerciseId: z.string().uuid(),
 });
 export type AddExerciseToWorkoutRequest = z.infer<typeof AddExerciseToWorkoutRequestSchema>;
 
@@ -55,8 +56,8 @@ export const LogSetRequestSchema = z.object({
 export type LogSetRequest = z.infer<typeof LogSetRequestSchema>;
 
 export const FinishWorkoutRequestSchema = z.object({
-  durationMinutes: z.number().int().min(0).optional(),
-  notes: z.string().optional(),
+  durationMinutes: z.number().int().min(0).max(24 * 60).optional(),
+  notes: z.string().max(TEXT_LIMITS.NOTES).optional(),
 });
 export type FinishWorkoutRequest = z.infer<typeof FinishWorkoutRequestSchema>;
 
