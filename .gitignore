@@ -44,3 +44,6 @@ apps/mobile/.flutter-plugins-dependencies
 
 # Misc
 *.local
+
+# Worktrees de agentes de Claude Code
+.claude/worktrees/
