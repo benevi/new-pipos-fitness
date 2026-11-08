@@ -7,7 +7,6 @@ import type {
   TrainingEngineOutput,
   PlanSession,
   PlanExercise,
-  CatalogExerciseSnapshot,
 } from '@pipos/contracts';
 import { buildCatalogMap, getCompatibleExercises } from './constraints.js';
 import { defaultPlanExercise } from './scoring.js';
