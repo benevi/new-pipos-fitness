@@ -298,7 +298,7 @@ Las marcas de volumen de Renaissance Periodization (MEV, MAV, MRV; Israetel, Hof
 2. Si **todas** las series alcanzan `r_max` con RIR ≥ objetivo, la siguiente sesión sube la carga en `INCREMENTO`.
 3. Si alguna serie queda por debajo de `r_min`, o el RIR registrado es menor que objetivo − 1 durante 2 sesiones seguidas, mantén la carga o bájala un 5-10 %.
 4. Programa una descarga si se cumple cualquiera de estas condiciones:
-   - hay estancamiento o regresión del e1RM en `N_SESIONES_ESTANCAMIENTO` sesiones;
+   - hay estancamiento o regresión en `N_SESIONES_ESTANCAMIENTO` sesiones seguidas, comparando solo lo comparable: a igual carga, reps + RIR de la mejor serie; si la carga bajó, el e1RM; si subió, no cuenta (Epley no es comparable entre rangos de reps: 60×12 → 62×8 no es una regresión);
    - han pasado `DELOAD_CADA_SEMANAS`.
 5. Durante la descarga, aplica `DELOAD_REDUCCION_VOLUMEN` a las series, aumenta el RIR en 2 y mantén la frecuencia.
 

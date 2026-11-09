@@ -335,7 +335,7 @@ function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[]): string[] {
     );
   }
   out.push(
-    `Cada ${ctx.config.plan.mesocycleWeeks.value} semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.`,
+    `Cada ${ctx.config.plan.mesocycleWeeks.value} semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.`,
   );
   return out;
 }

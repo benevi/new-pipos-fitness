@@ -189,7 +189,7 @@
 - Volumen objetivo: 10-16 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Prioridad en glúteos: su volumen se lleva a la parte alta del rango y sus ejercicios van antes.
 - Todos los grupos musculares llegan al mínimo de volumen semanal.
-- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
+- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.
 
 ## Puntuación
 

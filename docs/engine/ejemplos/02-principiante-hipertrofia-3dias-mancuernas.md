@@ -137,7 +137,7 @@
 - Hipertrofia: 8-12 repeticiones en multiarticulares y 10-15 en aislamiento, cerca del fallo pero sin llegar en los ejercicios pesados (Schoenfeld 2017; Robinson 2024).
 - Volumen objetivo: 6-12 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Con 3 días de 45 min y este material, hombros, tríceps y isquiosurales no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
-- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
+- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.
 
 ## Puntuación
 

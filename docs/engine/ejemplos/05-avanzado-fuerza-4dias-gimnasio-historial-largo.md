@@ -191,7 +191,7 @@
 - Volumen objetivo: 6-20 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Para fuerza basta con un volumen bajo o moderado (en fuerza los rendimientos decrecientes llegan antes), así que el mínimo baja a 6 series; si sobra tiempo se sube hacia el rango alto.
 - Todos los grupos musculares llegan al mínimo de volumen semanal.
-- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
+- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.
 
 ## Puntuación
 

@@ -90,6 +90,38 @@ describe('CUJ-3: progresión semanal', () => {
     expect(n.rationale[0]).toMatch(/2 sesiones seguidas/);
   });
 
+  it('subir la carga NO dispara un deload reactivo (60×12 → 62×8 no es una regresión)', () => {
+    const n = nextPrescription({
+      prescription: { ...bench, loadKg: 62 },
+      history: [
+        log('2026-10-26', [12, 12, 12], 60, 2, bench.exerciseId),
+        log('2026-10-30', [8, 8, 8], 62, 2, bench.exerciseId),
+        log('2026-11-05', [8, 8, 7], 62, 1, bench.exerciseId),
+      ],
+      today: '2026-11-09',
+      weeksSinceDeload: 1,
+    });
+    expect(n.ok && n.next.action).not.toBe('deload');
+  });
+
+  it('estancamiento a la misma carga N sesiones → deload reactivo', () => {
+    const n = next({
+      history: [log('2026-10-26', [10, 9, 9], 100, 2), log('2026-10-30', [10, 9, 9], 100, 2), log('2026-11-05', [10, 9, 9], 100, 2)],
+    });
+    expect(n.action).toBe('deload');
+  });
+
+  it('bajar la carga y aun así rendir menos (e1RM) cuenta como regresión', () => {
+    const n = next({
+      history: [log('2026-10-26', [10, 10, 10], 100, 2), log('2026-10-30', [9, 9, 9], 100, 2), log('2026-11-05', [9, 9, 9], 95, 1)],
+    });
+    expect(n.action).toBe('deload');
+    const ok = next({
+      history: [log('2026-10-26', [10, 10, 10], 100, 2), log('2026-10-30', [9, 9, 9], 100, 2), log('2026-11-05', [12, 12, 12], 95, 2)],
+    });
+    expect(ok.action).not.toBe('deload');
+  });
+
   it('deload programado tras 6 semanas', () => {
     const n = next({ history: [log('2026-11-05', [10, 10, 10], 100, 2)], weeksSinceDeload: 6 });
     expect(n.action).toBe('deload');
@@ -182,6 +214,28 @@ describe('CUJ-5: faltar y volver', () => {
 });
 
 describe('propiedades de la progresión (I12)', () => {
+  it('con cargas estrictamente crecientes nunca hay deload reactivo', () => {
+    fc.assert(
+      fc.property(
+        fc.array(fc.record({ inc: fc.integer({ min: 1, max: 10 }), reps: fc.integer({ min: 1, max: 15 }), rir: fc.integer({ min: 0, max: 4 }) }), {
+          minLength: 3,
+          maxLength: 6,
+        }),
+        (steps) => {
+          let load = 40;
+          const history = steps.map((st, i) => {
+            load += st.inc;
+            return log(`2026-10-${String(10 + i * 2).padStart(2, '0')}`, [st.reps, st.reps], load, st.rir);
+          });
+          const n = next({ history, today: '2026-10-25' });
+          expect(n.action).not.toBe('deload');
+        },
+      ),
+      { numRuns: 300, seed: 7 },
+    );
+  });
+
+
   it('nunca sube más del incremento, nunca carga negativa y el deload deja ≥ 1 serie', () => {
     const setArb = fc.record({ reps: fc.integer({ min: 0, max: 20 }), loadKg: fc.integer({ min: 0, max: 200 }), rir: fc.integer({ min: 0, max: 5 }) });
     const logArb = fc.record({
