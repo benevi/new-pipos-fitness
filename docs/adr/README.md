@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Registro de decisiones de la reconstrucción (noviembre 2026). Sustituye a `docs/DECISIONS.md`, que queda como histórico. Los ADR antiguos que siguen vigentes (monorepo pnpm, lógica en funciones puras, contratos Zod, NestJS monolito modular, JWT con refresh rotativo) se dan por aceptados y no se repiten aquí.
+Registro de decisiones de la reconstrucción (noviembre 2026). Sustituye a [`docs/archivo/DECISIONS.md`](../archivo/DECISIONS.md), que queda como histórico. Los ADR antiguos que siguen vigentes (monorepo pnpm, lógica en funciones puras, contratos Zod, NestJS monolito modular, JWT con refresh rotativo) se dan por aceptados y no se repiten aquí.
 
 Fase 0 aprobada. Estado de cada ADR en su cabecera; resumen en la última columna.
 

@@ -1,32 +1,50 @@
-# Coding Rules
+# Reglas de código
 
-Rules for human and AI-generated code to keep the system consistent and safe.
+Reglas para el código escrito por personas o por IA, para mantener el sistema coherente y seguro.
 
-## Scope and Modules
+## Alcance y módulos
 
-- **Never modify unrelated modules.** Changes must be limited to the feature or fix at hand.
-- **Respect module boundaries.** Do not move business logic into API or worker; do not add I/O to engine-rules.
-- **Keep changes minimal.** Prefer clarity over cleverness; avoid large refactors unless explicitly requested.
+- **No toques módulos ajenos al cambio.** Limita los cambios a la funcionalidad o el arreglo.
+- **Respeta las fronteras** (ver [ARCHITECTURE.md](ARCHITECTURE.md)): las reglas de entrenamiento
+  y nutrición viven en `packages/engine-rules`; la API orquesta y persiste; sin E/S en el motor.
+- **Cambios mínimos.** Claridad antes que ingenio; nada de refactors grandes sin pedirlo.
 
-## Contracts
+## Contratos
 
-- **Contracts must be updated with API changes.** When adding or changing endpoints, update `packages/contracts` first (schemas, enums).
-- **Use contracts for validation.** API and worker must validate inputs/outputs with Zod schemas from contracts.
-- **No duplicate DTOs.** Do not define request/response shapes in apps; use contracts.
+- **Primero los contratos.** Al añadir o cambiar un endpoint, cambia `packages/contracts`
+  (esquemas, enums) y regenera `apps/api/openapi.json` (`pnpm --filter @pipos/api openapi:generate`;
+  CI ejecuta `openapi:check`).
+- **Valida con los contratos.** Entrada y salida de la API se validan con los esquemas Zod
+  (`@Contract`); sin DTOs duplicados en las apps.
+- **Enums BD ↔ contratos** idénticos (lo comprueba `src/contracts-enums.spec.ts`).
+- Si cambia un contrato, actualiza los fixtures de la app (`apps/mobile/test/fixtures/api_v1`) y
+  comprueba `node apps/mobile/tool/validate_fixtures.mjs`.
 
-## Business Logic
+## Lógica de negocio
 
-- **Business logic only inside engine-rules.** Training and nutrition decisions are implemented as pure functions in `packages/engine-rules`.
-- **No DB or framework in engine-rules.** Engine functions must not import Prisma, NestJS, or any I/O layer.
-- **Deterministic engines.** Same inputs must produce the same outputs; no randomness inside core logic unless explicitly designed.
+- **Solo en engine-rules**, como funciones puras y **deterministas** (misma entrada → misma salida).
+- **Constantes citadas**: todo número del motor está en `src/config/programming.ts` con su fuente
+  en `docs/engine/PROGRAMACION.md`; las heurísticas se marcan como tales.
+- Cambios del motor o del catálogo: regenera los ejemplos (`pnpm --filter @pipos/engine-rules examples`)
+  y actualiza `docs/engine/ejemplos/REVISION.md` si cambian las decisiones.
+
+## Datos y migraciones
+
+- **Nunca edites una migración aplicada**: cada cambio es una migración nueva; CI comprueba la deriva.
+- Si cambia una fórmula de analítica, sube su `formulaVersion` y documenta que hay que ejecutar
+  `analytics:rebuild`.
+- Datos de salud (art. 9): solo con consentimiento vigente; todo lo derivado de ellos debe poder
+  borrarse al retirarlo (ADR-0011). Nada de datos personales en logs.
 
 ## Tests
 
-- **Tests required for engines.** Every exported engine function must have unit tests.
-- **Engine tests must not use DB or HTTP.** Use in-memory inputs only.
-- **CI must pass.** Lint, typecheck, and tests must succeed before merge.
+- Cada función exportada del motor tiene tests unitarios (sin BD ni HTTP).
+- Cada arreglo lleva un test que falla antes y pasa después.
+- Los e2e usan Postgres real: **prohibido** sustituir `PrismaService` por un mock (lo comprueban
+  un test y una regla de ESLint).
+- **CI en verde** (build, lint con 0 avisos, typecheck, unitarios, e2e, OpenAPI, fixtures) antes de mezclar.
 
-## Dependencies
+## Dependencias y decisiones
 
-- **Avoid unnecessary dependencies.** Prefer standard library or existing packages.
-- **Document architectural decisions.** Non-obvious choices go in `docs/DECISIONS.md`.
+- Evita dependencias innecesarias; versiones fijadas por el lockfile (`--frozen-lockfile`).
+- Las decisiones de arquitectura no obvias se registran como ADR en `docs/adr/`.

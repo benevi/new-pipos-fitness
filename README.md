@@ -5,8 +5,9 @@ cuestionario corto genera un **plan determinista y explicado** que encaja con tu
 tus minutos y tus molestias, te dice qué toca hoy, registra tus series (también sin red) y ajusta la
 carga sesión a sesión.
 
-> Estado (noviembre 2026): reconstrucción en curso ([PLAN](docs/PLAN_RECONSTRUCCION.md)). Fases 0–3
-> (decisiones, seguridad + CI, motor v2 y API v1) hechas; la app móvil consume la API en la Fase 4b.
+> Estado (noviembre 2026): reconstrucción completada ([PLAN](docs/PLAN_RECONSTRUCCION.md), [fases](docs/PHASES.md)):
+> decisiones, seguridad + CI, motor v2, API v1 y app móvil v1. **No está desplegada**: lo que falta para
+> producción está en el [checklist de despliegue](docs/DEPLOY_CHECKLIST.md) y la deuda en [DEUDA_TECNICA.md](docs/DEUDA_TECNICA.md).
 
 ## Qué hace v1
 
@@ -98,7 +99,7 @@ pnpm test                                    # unitarios (+ cobertura: API ≥ 8
 DATABASE_URL=postgresql://pipos:pipos@localhost:5432/pipos_e2e pnpm test:e2e   # e2e contra Postgres real
 pnpm --filter @pipos/api prisma:diff         # schema.prisma y migraciones sin deriva
 pnpm --filter @pipos/api openapi:generate    # regenera apps/api/openapi.json (openapi:check en CI)
-pnpm --filter @pipos/api analytics:rebuild   # recalcula e1RM/volumen/adherencia desde las series
+pnpm --filter @pipos/api analytics:rebuild   # recalcula e1RM/volumen (músculo y grupo)/adherencia desde las series
 pnpm --filter @pipos/engine-rules examples   # 10 planes de ejemplo del motor
 ```
 
@@ -124,4 +125,6 @@ Contratos en `packages/contracts`; documento OpenAPI 3 en [`apps/api/openapi.jso
 - [Plan de reconstrucción](docs/PLAN_RECONSTRUCCION.md) · [Spec v1](docs/SPEC_V1.md) · [CUJ](docs/CUJS.md)
 - [Programación del motor](docs/engine/PROGRAMACION.md) · [Invariantes](docs/engine/INVARIANTES.md)
 - [Modelo de datos](docs/MODELO_DATOS.md) · [Seguridad](docs/SECURITY.md) · [ADR](docs/adr/README.md)
-- Histórico (anterior a la reconstrucción): `docs/DECISIONS.md`, `docs/PHASE_*.md`
+- [Arquitectura](docs/ARCHITECTURE.md) · [Fases](docs/PHASES.md) · [Reglas de código](docs/CODING_RULES.md)
+- [Checklist de despliegue](docs/DEPLOY_CHECKLIST.md) · [Deuda técnica](docs/DEUDA_TECNICA.md)
+- Histórico (anterior a la reconstrucción): [docs/archivo/](docs/archivo/README.md) y [análisis inicial](docs/ANALISIS_ESTADO_2026-11.md)

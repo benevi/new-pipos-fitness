@@ -1,230 +1,111 @@
-# Architecture
+# Arquitectura
 
-## System Overview
+> Estado al cierre de la reconstrucción (Fase 5). Las decisiones están en los [ADR](adr/README.md);
+> el alcance funcional en [SPEC_V1.md](SPEC_V1.md) y el modelo de datos en [MODELO_DATOS.md](MODELO_DATOS.md).
 
-Pipos Fitness is an AI-powered mobile application for personalized training and nutrition. The system consists of:
+## 1. Visión general
 
-- **Mobile app (Flutter)**: User interface, workout/nutrition display, tracking, analytics, AI assistant.
-- **API (NestJS)**: REST API, orchestration, data access. No business logic; delegates to engine-rules.
-- **Worker**: Background jobs (BullMQ). Processes async tasks; uses engine-rules for decisions.
-- **Engine-rules**: Pure, deterministic business logic. No DB, no framework.
-- **Contracts**: Shared Zod schemas for requests/responses and validation.
+Pipos Fitness genera un plan de entrenamiento de fuerza personalizado y explicado, registra los
+entrenamientos (también sin red) y muestra el progreso. v1 tiene **tres piezas en ejecución**:
 
-AI assists and explains; it does not control business logic. Deterministic engines produce plans; AI may augment explanations.
+- **App móvil** (`apps/mobile`, Flutter 3.38.10 fijado, ADR-0012): interfaz, cola offline y caché.
+- **API** (`apps/api`, NestJS + Prisma): HTTP, autenticación, persistencia y orquestación.
+- **Postgres 16**.
 
-## Module Boundaries
+Y **tres paquetes TypeScript** compartidos:
 
-| Module        | Responsibility                    | Allowed dependencies        |
-|---------------|------------------------------------|-----------------------------|
-| contracts     | Schemas, enums, validation         | Zod only                    |
-| engine-rules  | Training/nutrition logic (pure)   | contracts                   |
-| api           | HTTP, Prisma, orchestration       | contracts, engine-rules      |
-| worker        | Queues, job execution             | contracts, engine-rules      |
-| mobile        | UI, API client                    | contracts (shared types)    |
+- `packages/contracts`: esquemas Zod de la API v1 y del motor (`engineV2`). Fuente única de
+  tipos, validación y del documento OpenAPI (`apps/api/openapi.json`, generado).
+- `packages/engine-rules`: motor **puro y determinista** (sin E/S): generación del plan,
+  progresión sesión a sesión, sustituciones, e1RM y objetivos nutricionales diarios
+  (ADR-0004, ADR-0006). Constantes citadas en `src/config/programming.ts`
+  (fuentes en [engine/PROGRAMACION.md](engine/PROGRAMACION.md)).
+- `packages/catalog`: catálogo de ~144 ejercicios en JSON revisado en git, con músculos y
+  fracciones, material, nivel, tipo de carga y etiquetas de riesgo por zona (ADR-0005).
 
-API and worker must not contain business rules; they call engine-rules and persist results.
+**No existen** en v1: worker ni colas (ADR-0002), coach de IA (ADR-0003), panel o rutas de
+administración (ADR-0005), alimentos ni comidas (ADR-0004), notificaciones ni pagos.
 
-## Dependency Flow
-
-Dependencies must only point downward. This avoids AI and human errors (e.g. importing backend into contracts).
-
-```
-contracts
-   ↑
-engine-rules
-   ↑
-backend  (api + worker)
-   ↑
-mobile
-```
-
-- **contracts** — No internal package dependencies (only Zod).
-- **engine-rules** — May depend on `contracts` only.
-- **backend** (api, worker) — May depend on `contracts` and `engine-rules`. Never the reverse.
-- **mobile** — May depend on `contracts` (and later API client). Never on engine-rules or api code directly.
-
-## Folder Structure
+## 2. Dependencias entre módulos
 
 ```
-apps/
-  api/          # NestJS app
-  worker/       # BullMQ worker
-  mobile/       # Flutter app
-packages/
-  contracts/    # Zod schemas, enums
-  engine-rules/ # Pure functions (training, nutrition)
-docs/
-scripts/
-.github/workflows/
+contracts  ◀── engine-rules ◀── api
+    ▲             ▲
+    └── catalog ──┘ (datos; el api lo siembra en BD)
+mobile ── HTTP/JSON ──▶ api   (los fixtures de la app se validan contra contracts en CI)
 ```
 
-## Monorepo Strategy
+- `engine-rules` solo depende de `contracts`; no importa Prisma, Nest ni nada con E/S.
+- La API no contiene reglas de entrenamiento: llama al motor y persiste el resultado.
+- La app no comparte código con el backend; usa la API y valida sus fixtures contra los
+  contratos Zod (`node apps/mobile/tool/validate_fixtures.mjs`).
 
-- pnpm workspaces; shared `tsconfig.base.json`.
-- Each app/package has its own `package.json`, `tsconfig.json`, and scripts.
-- CI runs install, lint, typecheck, and tests for all packages.
+## 3. API (`apps/api/src`)
 
-## Engine Isolation
+| Módulo | Responsabilidad |
+|---|---|
+| `auth` | Registro, login, refresh con rotación y detección de reutilización, logout. JWT de acceso HS256 (15 min) y refresh opaco (solo se guarda su SHA-256). |
+| `account` | `GET /me`, `GET /me/export` (RGPD acceso/portabilidad), `DELETE /me` (supresión en cascada). |
+| `profile` | Perfil de entrenamiento y consentimiento de salud (`ConsentEvent` append-only). Cambiar el perfil regenera el plan en la misma transacción; retirar el consentimiento borra los datos de salud y lo derivado de ellos (ADR-0011). |
+| `plans` | Prepara el plan con el motor (fuera de la transacción) y lo guarda como versión inmutable (`TrainingPlan` → `PlanVersion` → `PlanSession` → `PlanExercise`), con reintento ante colisión del número de versión. |
+| `workouts` | `GET /sessions/today` (siguiente sesión pendiente + prescripción de hoy del motor), entrenamientos, series idempotentes por `clientId`, sustituciones, cierre. |
+| `analytics` | Proyecciones calculadas **al escribir** en la misma transacción (ADR-0008): `ExerciseE1rm`, `WeeklyMuscleVolume`, `WeeklyGroupVolume`, `WeeklyAdherence`. Reconstruibles con `pnpm --filter @pipos/api analytics:rebuild`. |
+| `progress` | `GET /progress/*`: solo leen las proyecciones. |
+| `nutrition` | `GET /me/nutrition-targets`: cálculo puro, no se persiste. |
+| `catalog` | `GET /exercises[/:id]` y caché en memoria del catálogo para el motor. |
+| `common`, `config`, `logging`, `monitoring`, `health`, `openapi` | Errores tipados, interceptor de contratos (valida entrada y salida con Zod), reloj inyectable, entorno validado, logs JSON redactados, sondas, generación de OpenAPI. |
 
-- All business logic lives in `packages/engine-rules`.
-- Functions are pure: same inputs → same outputs; no I/O, no globals.
-- Fully unit tested; no database or HTTP in tests.
-- NestJS/worker only: load data → call engine → persist/respond.
+### Flujo de datos principal
 
-## Contract-First Design
+1. **Onboarding:** `PUT /me/profile` (y, si el usuario quiere declarar salud, antes
+   `POST /me/consents/health`) → `POST /plans/generate`.
+2. **Generación:** `EngineInputService` arma la entrada del motor (perfil, preferencias,
+   consentimiento, historial reciente para cargas por e1RM) → `generatePlan` (puro) →
+   una escritura anidada en `$transaction`.
+3. **Entrenar:** `GET /sessions/today` elige la siguiente sesión pendiente de la versión vigente
+   y pide al motor la prescripción de cada ejercicio (`nextPrescription`: doble progresión,
+   descarga programada anclada al inicio del plan, descarga reactiva por estancamiento,
+   vuelta tras pausa). La app crea el entrenamiento y envía las series.
+4. **Escribir una serie** (`POST /workouts/:id/sets`): candado por usuario
+   (`pg_advisory_xact_lock`), inserción idempotente y recálculo de e1RM y de la semana en la
+   misma transacción.
+5. **Progreso:** lecturas directas de las proyecciones.
 
-- All API request/response shapes and shared types live in `packages/contracts`.
-- Schemas are Zod; used for validation and (where needed) codegen.
-- API changes require contract updates first; no ad-hoc DTOs in apps.
+### Concurrencia e idempotencia
 
-## Versioning Philosophy
+- Series y entrenamientos: `UNIQUE(userId, clientId)`; reenviar devuelve la fila existente
+  (200 en vez de 201). Edición «última escritura gana» por `clientUpdatedAt`; borrado lógico.
+- Escrituras que afectan a la analítica o al consentimiento toman el candado por usuario.
+- Versiones de plan: `UNIQUE(planId, version)` + reintento de la transacción.
+- Propiedad: filtros por `userId` en servicio y FK compuestas `(id, userId)` en BD.
 
-- Critical objects (e.g. plans) are immutable and versioned (later phases).
-- History is append-only; no in-place edits of plan content.
+## 4. App móvil (`apps/mobile/lib`)
 
-## Authentication Layer
+- `core/api`: cliente Dio, interceptor de auth con refresh *single-flight*, mapeo de errores.
+- `core/auth`: tokens en `flutter_secure_storage`.
+- `core/offline`: base drift (SQLite) con la cola de entrenamientos/series y una caché de
+  lecturas; `SyncService` sincroniza en orden con reintentos exponenciales (ADR-0007).
+- `features/`: `auth`, `onboarding`, `today`, `plan`, `progress`, `settings`.
+  UX documentada en [UX_MOVIL.md](UX_MOVIL.md).
 
-- **JWT access tokens** (short-lived, e.g. 15 minutes) for API authorization. Payload includes `userId` and `email`.
-- **Refresh tokens** (long-lived, e.g. 7 days) stored hashed in the database; rotation on use (old token invalidated when a new one is issued).
-- **Password hashing** with bcrypt before storing. No plaintext passwords or refresh tokens.
-- **Protected routes** use a JWT guard; the current user is attached to the request and available via a `CurrentUser` decorator.
-- Auth endpoints: `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`, `POST /auth/logout`. User profile: `GET /me`, `PUT /me/profile`, `PUT /me/preferences`, `PUT /me/goals`, `PUT /me/muscle-focus`.
-- **Refresh token rotation:** Each refresh token is single-use. After use it is marked revoked (`revokedAt`). Reuse of a revoked token returns `401` with code `AUTH_REFRESH_REUSED`. Logout revokes the given refresh token.
+### Sincronización offline
 
-## Exercise Catalog System
+Registrar una serie escribe primero en drift con un UUID de cliente; la UI se pinta desde
+drift. Con red, `SyncService` envía en orden: entrenamientos sin `serverId`, series
+pendientes y cierres. Errores transitorios (red, 5xx, 401, 408, 429) → reintento con backoff;
+4xx → `failed` (reintentable a mano). Al arrancar, lo que quedó «enviando» vuelve a la cola: el
+servidor es idempotente.
 
-- **Catalog** provides the curated exercise list used by the app and (later) the training engine.
-- **Models:** Muscle (id, name, region, meshRegionId), EquipmentItem (id, name, category), Exercise (slug, name, description, difficulty, movementPattern, place), ExerciseMuscle (exercise–muscle with role), ExerciseEquipment (exercise–equipment), ExerciseVariant, ExerciseMediaYouTube (YouTube video, curation status), YouTubeChannel.
-- **Public endpoints:** `GET /muscles`, `GET /equipment-items`, `GET /exercises` (filters: muscleId, equipmentId, difficulty, movementPattern, place, search; pagination), `GET /exercises/:id`, `GET /exercises/:id/media` (approved media only).
-- **Admin endpoints:** `POST /admin/exercises`, `PUT /admin/exercises/:id`, `POST /admin/exercises/:id/media`, `PUT /admin/exercise-media/:id/approve`, `PUT /admin/exercise-media/:id/reject`. No admin auth in Phase 3 (placeholder).
+## 5. Datos
 
-## Training Plan Versioning
+Esquema Prisma en `apps/api/prisma/schema.prisma` (documentado en [MODELO_DATOS.md](MODELO_DATOS.md)).
+Migraciones en `apps/api/prisma/migrations` (inicial + cambios de la Fase 5); CI comprueba que no
+hay deriva (`prisma migrate diff --exit-code`). El catálogo se siembra desde `packages/catalog`
+(`pnpm --filter @pipos/api prisma:seed`, idempotente, borrado lógico de lo retirado).
 
-- **Models:** TrainingPlan (userId, currentVersionId), TrainingPlanVersion (planId, version, engineVersion, objectiveScore), TrainingSession (planVersionId, sessionIndex, name, targetDurationMinutes), TrainingSessionExercise (sessionId, exerciseId, sets, repRangeMin/Max, restSeconds, rirTarget).
-- **Generation:** `POST /training-plans/generate` (authenticated). API gathers user profile and preferences, loads catalog snapshot from DB, calls `generateTrainingPlan(input)` from engine-rules, then persists a new plan version and sessions/exercises, and sets the plan’s currentVersionId.
-- **Retrieval:** `GET /training-plans/current` (latest plan snapshot), `GET /training-plans/versions` (list of versions), `GET /training-plans/versions/:id` (specific version). All require authentication and are scoped to the current user’s plan.
+## 6. Calidad
 
-## Workout Tracking
-
-- **Models:** WorkoutSession (userId, optional planSessionId FK to TrainingSession, optional planVersionId FK to TrainingPlanVersion, startedAt, completedAt, durationMinutes, notes), WorkoutExercise (workoutSessionId, exerciseId, order), WorkoutSet (workoutExerciseId, setIndex, weightKg, reps, rir, completed). When a workout is started with planSessionId, the API resolves TrainingSession.planVersionId and stores it on WorkoutSession.planVersionId so adherence is tied directly to the versioned plan.
-- **Set logging ownership:** `POST /workouts/:id/exercises/:workoutExerciseId/sets` validates: (1) workout session exists and belongs to the authenticated user (404/403), (2) workout exercise exists, belongs to that session, and session belongs to user. Set logging is attached to WorkoutExercise (not catalog Exercise) because sets are recorded per instance of an exercise within a specific workout; the same catalog exercise can appear in multiple workouts with different set logs. Returns 404 "Workout exercise not found" when the exercise does not exist or does not belong to the given session (avoids leaking existence of other users’ data).
-- **Endpoints (all JWT-protected):** `POST /workouts/start` (optional body: planSessionId) — start session, returns WorkoutSession (planVersionId set when planSessionId provided); `POST /workouts/:id/exercises` (body: exerciseId) — add exercise (exerciseId must reference catalog Exercise); `POST /workouts/:id/exercises/:workoutExerciseId/sets` (body: weightKg, reps, rir, completed) — log set; `POST /workouts/:id/finish` (body: durationMinutes, notes) — finish session; `GET /workouts/history` — recent sessions for current user.
-
-## Adaptive Training Engine
-
-- **Progress analytics (Phase 7):** Engine input may include optional `progress`: exerciseHistory (per-exercise e1RM, volume, trend, fatigueScore), weeklyVolume, adherenceScore, fatigueScore. Analytics are computed from WorkoutSet data: e1RM = weightKg × (1 + reps/30), weekly volume per exercise and per muscle (via ExerciseMuscle), adherence = completed_sets / planned_sets, fatigue when rir ≤ 0 or reps drop > 20% across sets. **Adherence is session-based:** computed over the last 7 days; only WorkoutSessions with `planSessionId != null` are included. For each such workout, planned sets = sum of sets defined in the linked TrainingSession (TrainingSessionExercise.sets); completed sets = WorkoutSets with `completed = true` in that workout. No version-level aggregation; no over-counting. Workouts without planSessionId are excluded from adherence.
-- **Adaptation:** When generating a plan, the API loads progress via the analytics module and passes it to the engine. The engine performs **localized adaptation**: it identifies exercises associated with fatigued muscles (from exerciseHistory and catalog ExerciseMuscle mapping) and reduces sets only for those exercises; unrelated exercises are unchanged. When adherenceScore < 0.7 (deload threshold), sets are reduced for all exercises.
-- **Models:** ExerciseProgress (userId, exerciseId, estimated1RM, volumeLastWeek, volumeTrend, fatigueScore, lastUpdated). **ExerciseProgress is a derived analytics projection;** source of truth remains WorkoutSession, WorkoutExercise, and WorkoutSet. Progress is recomputed from that source and upserted for read use; it is not authoritative for history.
-- **Endpoints:** `GET /analytics/progress` — user exercise progress metrics (e1RM, volume, trend, fatigue, adherence); `GET /analytics/volume` — weekly volume by exercise and by muscle.
-
-## Nutrition Engine (Phase 8)
-
-- **Models:** Food (name, caloriesPer100g, proteinPer100g, carbsPer100g, fatPer100g), MealTemplate (name), MealTemplateFood (mealTemplateId, foodId, quantityG), NutritionPlan (userId, currentVersionId), NutritionPlanVersion (planId, version, engineVersion), NutritionDay (planVersionId, dayIndex), NutritionMeal (nutritionDayId, mealIndex, name, templateId), NutritionMealItem (nutritionMealId, foodId, quantityG). User has optional dislikedFoodIds (JSON array of food ids).
-- **Calories:** Mifflin-St Jeor BMR; TDEE = BMR × activity factor. Goal adjustment: lose_fat −15%, build_muscle +10%, maintain baseline.
-- **Macros:** Protein 2 g/kg, fat 0.8 g/kg; carbs from remaining calories.
-- **Meal generation:** From MealTemplate catalog; scales portions to meet daily calorie target; respects dislikedFoodIds and calorie/macro targets. Deterministic (stable sort by template id).
-- **Endpoints (JWT-protected):** `POST /nutrition-plans/generate` (optional body: goal) — generate weekly plan; `GET /nutrition-plans/current` — current plan snapshot; `GET /nutrition-plans/versions` — version history.
-
-## AI Coach (Phase 9)
-
-- **Scope:** AI coach infrastructure only. It answers questions and may return structured proposals, but it does not write to database business entities or execute automatic plan changes.
-- **Module:** `apps/api/src/modules/ai-coach` with `ai-coach.module.ts`, `ai-coach.controller.ts`, `ai-coach.service.ts`, `context-builder.ts`, and `response-validator.ts`.
-- **Endpoint:** `POST /ai-coach/ask` (JWT-protected). Input: `AIQuestionRequest` (`{ question: string }`). Output: `AIResponse` (`responseType`, `content`, optional `proposal`).
-- **Context builder:** Loads trimmed context from existing modules only: user profile (`UsersService`), training plan summary (`TrainingPlansService`), nutrition plan summary (`NutritionPlansService`), and progress metrics (`AnalyticsService`).
-- **Structured proposals:** Current proposal shape supports `exercise_swap` with `fromExerciseId` and `toExerciseId`.
-- **Validation guardrail:** `response-validator` rejects invalid proposals when exercise ids are invalid, required equipment is unavailable, or replacement would break plan constraints (location/movement-pattern/difficulty checks).
-- **Boundary rule:** AI coach is advisory. Final business decisions remain in deterministic engines and explicit API workflows.
-
-### AI Coach Safety Model (Phase 9.1)
-
-- **LLM cannot modify database:** The AI coach pipeline is read-only with respect to business entities. The only write is the `AIInteraction` audit record.
-- **Proposals must pass validator:** Every proposal goes through `ResponseValidatorService` which checks exercise existence, equipment availability, location, movement-pattern, and difficulty constraints. Invalid proposals are returned with `proposalStatus: "rejected"` — never silently dropped.
-- **Proposals are not automatically applied:** The API returns proposals to the client. The user or a separate explicit workflow must confirm and apply them.
-- **Interactions are audited:** Each `POST /ai-coach/ask` call persists a lightweight `AIInteraction` record (question, responseType, proposalType, proposalValid, context/response summaries). Full LLM prompts/responses are NOT stored.
-- **Output normalization:** Before validation, raw AI output passes through `AIResponseNormalizerService` which enforces schema conformance and falls back to a safe default response on parse failure.
-- **Context minimization:** `ContextBuilderService` sends only fitness-relevant profile fields. It explicitly excludes passwords, tokens, emails, and full plan/workout data. Lists are capped.
-
-## Mobile App (Phase 10)
-
-- **Framework:** Flutter with Material 3.
-- **State management:** Riverpod (StateNotifier for auth, AsyncNotifier for data).
-- **Routing:** GoRouter with auth redirect guard and ShellRoute bottom navigation.
-- **API client:** Dio with `AuthInterceptor` (automatic Bearer token attachment, 401 refresh retry).
-- **Token storage:** `flutter_secure_storage` for access and refresh tokens.
-- **Models:** Freezed + json_serializable for immutable, serializable data classes (User, TrainingPlan, NutritionPlan, ProgressMetrics, AIResponse).
-- **Base URL:** Compile-time configurable via `--dart-define=API_BASE_URL=...`. Default: `http://10.0.2.2:3000`.
-
-### Mobile App Hardening (Phase 10.1)
-
-- **Auth state:** Explicit 5-state model (unknown → unauthenticated → loading → authenticated | error). Router guards depend on `isResolved` and `isAuthenticated`.
-- **Refresh concurrency:** Completer-based lock ensures only one refresh request executes; concurrent 401s share the result.
-- **Error handling:** `ApiFailure` model + `mapDioException()` mapper. Raw Dio exceptions never reach UI or providers.
-- **Theme foundation:** Dark-first Material 3 theme with orange accent (#FF6D00), design tokens (AppSpacing, AppRadius, AppColors).
-- **Provider caching:** Main-tab providers use `ref.keepAlive()` to survive tab switches without re-fetching.
-
-### Auth/Session Consistency (Phase 10.2)
-
-- **Session coordinator:** `AuthSessionCoordinator` bridges Dio interceptor → Riverpod auth state → protected provider invalidation. No circular dependencies.
-- **Forced logout:** On refresh failure: interceptor clears tokens → coordinator sets auth state to unauthenticated + invalidates data providers → router redirects to /login. Re-entry guard prevents duplicates.
-- **Provider invalidation:** `progressProvider`, `trainingPlanProvider`, `nutritionPlanProvider` are invalidated on both user-initiated and forced logout. No stale data after session loss.
-
-### Workout Experience (Phase 11)
-
-- **Flow:** Workouts tab → select session from training plan → start workout (POST /workouts/start) → log sets per exercise → finish (POST /workouts/:id/finish) → summary screen → dashboard.
-- **Provider:** `workoutSessionProvider` (StateNotifier) manages workout lifecycle, exercise navigation, and set logging. Uses ApiClient with ApiFailure error mapping.
-- **Routing:** `/workout-player` and `/workout-complete` are full-screen routes outside ShellRoute (no bottom nav bar during workout).
-
-### Workout Hardening (Phase 11.1)
-
-- **Atomic start:** Workout start + exercise addition is a single atomic operation in the provider. State transitions to `active` only after both succeed; on failure state is `error` with retry capability.
-- **Exercise catalog:** `exerciseCatalogProvider` fetches and caches the full exercise list as `Map<String, Exercise>` with `keepAlive`. UI shows exercise names instead of IDs.
-- **Resume:** On Workouts screen load, checks `GET /workouts/history` for incomplete sessions (`completedAt == null`). Prompts user to resume, restoring full workout state.
-
-### Workout Resume Integrity (Phase 11.2)
-
-- **Full session fetch:** `GET /workouts/:id` endpoint returns complete session with exercises and sets. Resume fetches this instead of relying on history data.
-- **Retry initialization:** `retryAddExercises()` fetches current server state, determines missing exercises, adds only those. Does not create a duplicate session.
-- **Multi-session guard:** If multiple incomplete sessions exist, the most recent (by startedAt) is chosen. Debug warning logged for multiples.
-- **State restoration:** `_computeResumeIndex()` positions the player at the first exercise with no logged sets. Existing sets are preserved and displayed.
-
-### Progress Dashboard (Phase 12)
-
-- **Providers:** `progressProvider` (GET /analytics/progress) and `volumeProvider` (GET /analytics/volume), both keepAlive AsyncNotifiers. Exercise catalog provider supplies display names.
-- **Sections:** Summary cards (adherence/exercises/fatigue), fatigue status banner, weekly volume card with muscle breakdown, per-exercise progress list with e1RM, volume, trend, and fatigue highlight.
-- **States:** Loading, error (retry), empty (no data), loaded with pull-to-refresh.
-
-### Dashboard Hardening (Phase 12.1)
-
-- **ViewModel:** `dashboardProvider` (synchronous Provider) composes progressProvider, volumeProvider, exerciseCatalogProvider, and muscleCatalogProvider into a single `DashboardViewModel`. UI renders only the ViewModel.
-- **Muscle catalog:** `muscleCatalogProvider` fetches `GET /muscles`, maps muscleId→Muscle, keepAlive. Volume chips show muscle names.
-- **Empty-state:** Dashboard is empty only when no exercises AND no volume AND no adherenceScore. Partial data renders normally.
-- **Widget extraction:** `DashboardSummaryCard`, `FatigueBanner`, `ProgressListItem`, `VolumeSummaryCard` extracted for readability.
-
-### Nutrition UI (Phase 13)
-
-- **Model update:** `NutritionPlan` restructured to match backend response shape (`plan` + `version` wrapper). Added `NutritionMacroTarget`, `NutritionVersionSummary`, nullable calorie/macro target fields on version.
-- **Providers:** `nutritionPlanProvider` (current plan, keepAlive), `nutritionVersionsProvider` (version list, keepAlive), `selectedDayProvider` (day index state), `nutritionViewModelProvider` (synchronous composition into `NutritionViewModel`).
-- **Screen:** Summary card (calories, macros, version), day selector (horizontal chips), meal cards (name, food items, quantities), versions bottom sheet.
-- **States:** Loading, error (retry), empty (no plan), loaded with pull-to-refresh.
-
-### Nutrition Data Hardening (Phase 13.1)
-
-- **Food catalog:** `GET /foods` backend endpoint (id + name). `foodCatalogProvider` fetches, caches with keepAlive. `foodName` helper resolves display names with foodId fallback.
-- **ViewModel:** `nutritionViewModelProvider` now watches `foodCatalogProvider`. `NutritionMealItemVM` has `displayName`. `buildNutritionViewModel` extracted as pure function for testability.
-- **Display safety:** ViewModel handles null plan, null catalog, null targets, empty days, out-of-range selectedDay. UI renders `--` for missing summary values.
-
-### Nutrition Production Polish (Phase 13.2)
-
-- **Pagination:** `GET /foods` supports optional `limit` (default 500, max 1000) and `cursor` query parameters for cursor-based pagination. Response shape unchanged.
-- **Food catalog refresh:** `foodCatalogProvider` stores `Map<String, String>` (foodId → name) instead of `Map<String, Food>`. Tracks `_lastFetchedAt` timestamp; `refreshIfStale()` auto-refreshes if cache older than 1 hour. Manual `refresh()` also available. Nutrition screen calls `refreshIfStale()` on build and full refresh on pull-to-refresh.
-- **Display fallback:** `foodDisplayName()` returns catalog name if found, otherwise `"Food item"`. Raw IDs never shown in UI.
-
-## Configuration
-
-- **Production enforcement:** When `NODE_ENV=production`, the API will not start unless `JWT_ACCESS_SECRET` and `JWT_REFRESH_SECRET` are set. This avoids running production with default or missing secrets. Optionally enforce `BCRYPT_COST` (or other cost env) in the same way in a future iteration.
-
-## AI Development Protocol
-
-- **Contract-first:** Before changing or adding API behaviour, define or update schemas in `packages/contracts`. All request/response shapes and shared enums live there. No ad-hoc DTOs in apps.
-- **Engine-first:** Business rules (training, nutrition, validation) are implemented only in `packages/engine-rules` as pure functions. API and worker orchestrate and persist; they do not contain business logic. Add or change behaviour in engine-rules first, then call from backend.
-- **Phase tagging:** Work is scoped by phase. Each phase ends with a git tag (e.g. `phase-1-foundations`). Do not implement tasks from a later phase in the current phase. See [PHASES.md](PHASES.md) and [FUTURE_TASKS.md](FUTURE_TASKS.md).
+- Unitarios (Vitest) en contracts, catalog, engine-rules (incl. propiedades con fast-check) y
+  servicios de la API; e2e contra Postgres real **sin mocks de Prisma** (ADR-0010).
+- Flutter: `analyze --fatal-infos`, tests de widgets y un integration test headless.
+- CI: `.github/workflows/ci.yml` (backend y móvil). Ver [CODING_RULES.md](CODING_RULES.md).
