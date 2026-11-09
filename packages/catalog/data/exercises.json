@@ -406,6 +406,12 @@
       "Espalda apoyada en el respaldo",
       "Baja controlando la profundidad"
     ],
+    "descriptionEs": "Sentadilla en una máquina guiada con respaldo inclinado y almohadillas sobre los hombros: bajas flexionando rodillas y cadera y subes empujando la plataforma. Al tener la espalda apoyada, el esfuerzo se concentra en los cuádriceps, con los glúteos como apoyo.",
+    "mistakesEs": [
+      "Despegar la cadera o la espalda del respaldo al llegar abajo",
+      "Levantar los talones de la plataforma al bajar",
+      "Bloquear las rodillas con brusquedad al terminar cada repetición"
+    ],
     "media": null
   },
   {
@@ -442,6 +448,12 @@
     "cuesEs": [
       "Pies ligeramente adelantados respecto a la barra",
       "Rodillas en la línea de los pies"
+    ],
+    "descriptionEs": "Sentadilla con la barra apoyada en la parte alta de la espalda dentro de una máquina Smith, que guía la barra en un carril vertical. Al no tener que equilibrar la barra, permite ajustar la posición de los pies. Trabaja sobre todo los cuádriceps, con los glúteos como apoyo.",
+    "mistakesEs": [
+      "Poner los pies justo debajo de la barra y cargar el peso en las puntas",
+      "Recostarse en la barra y dejar que la cadera se adelante al subir",
+      "Olvidar los seguros del carril a la altura adecuada"
     ],
     "media": null
   },
@@ -660,6 +672,12 @@
       "Colócate en el centro de la barra",
       "Pecho alto y empuja el suelo"
     ],
+    "descriptionEs": "Peso muerto con una barra hexagonal: te colocas dentro del marco, agarras las asas laterales y levantas la carga extendiendo cadera y rodillas. Con el peso a los lados, el tronco queda más erguido que con barra recta. Trabaja sobre todo los glúteos, con cuádriceps, isquiosurales, zona lumbar y antebrazos como apoyo.",
+    "mistakesEs": [
+      "Ponerse descentrado, con las asas por delante o por detrás de los tobillos",
+      "Arrancar con la espalda redondeada y la cadera muy alta",
+      "Dejar caer la barra al bajar en vez de acompañarla hasta el suelo"
+    ],
     "media": null
   },
   {
@@ -702,6 +720,12 @@
     "cuesEs": [
       "Carga ligera y recorrido controlado",
       "Espalda neutra en todo momento"
+    ],
+    "descriptionEs": "De pie con una barra sobre la parte alta de la espalda, inclinas el tronco hacia delante llevando la cadera atrás con las rodillas apenas flexionadas, y vuelves a la vertical. Es un ejercicio avanzado y exigente para la zona lumbar. Trabaja sobre todo los isquiosurales, con glúteos y zona lumbar como apoyo.",
+    "mistakesEs": [
+      "Redondear la espalda al inclinarse para ganar recorrido",
+      "Flexionar mucho las rodillas y convertirlo en una sentadilla",
+      "Usar cargas altas antes de dominar el movimiento con poco peso"
     ],
     "media": null
   },
@@ -748,6 +772,12 @@
     "cuesEs": [
       "El movimiento sale de la cadera, no de los brazos",
       "Aprieta glúteos arriba sin hiperextender"
+    ],
+    "descriptionEs": "Con una kettlebell agarrada con las dos manos, la balanceas entre las piernas llevando la cadera atrás y la proyectas al frente con una extensión rápida de cadera, sin levantarla con los brazos. Trabaja sobre todo los glúteos, con isquiosurales y zona lumbar como apoyo.",
+    "mistakesEs": [
+      "Agacharse como en una sentadilla en lugar de llevar la cadera atrás",
+      "Subir la kettlebell tirando con los hombros y los brazos",
+      "Echar el tronco hacia atrás arriba, arqueando la zona lumbar"
     ],
     "media": null
   },
@@ -829,6 +859,12 @@
       "De espaldas a la polea, cuerda entre las piernas",
       "Lleva la cadera atrás y extiéndela apretando glúteos"
     ],
+    "descriptionEs": "De espaldas a una polea baja, sujetas una cuerda entre las piernas, llevas la cadera atrás inclinando el tronco y vuelves a ponerte de pie extendiendo la cadera. La polea tira desde atrás y mantiene la tensión en la bisagra. Trabaja sobre todo los glúteos, con los isquiosurales como apoyo.",
+    "mistakesEs": [
+      "Ponerse demasiado cerca de la polea y perder tensión arriba",
+      "Tirar de la cuerda con los brazos en lugar de extender la cadera",
+      "Flexionar mucho las rodillas y bajar en sentadilla"
+    ],
     "media": null
   },
   {
@@ -909,6 +945,12 @@
       "Bisagra desde la cadera",
       "Sube hasta alinear tronco y piernas, sin hiperextender"
     ],
+    "descriptionEs": "En un banco inclinado a 45 grados, con los pies sujetos y la cadera sobre el apoyo, bajas el tronco flexionando la cadera y subes hasta alinearlo con las piernas. Trabaja sobre todo la zona lumbar, con glúteos e isquiosurales como apoyo.",
+    "mistakesEs": [
+      "Ajustar el apoyo tan alto que bloquea la flexión de cadera",
+      "Subir con impulso y pasar de la línea del cuerpo arqueando la espalda",
+      "Bajar sin control dejando caer el tronco"
+    ],
     "media": null
   },
   {
@@ -945,6 +987,12 @@
     "cuesEs": [
       "Eleva pecho y piernas unos centímetros",
       "Mantén la mirada al suelo"
+    ],
+    "descriptionEs": "Tumbado boca abajo en el suelo, elevas a la vez el pecho y las piernas unos centímetros, mantienes un instante y bajas despacio. Es un ejercicio con el peso corporal y de recorrido corto que trabaja sobre todo la zona lumbar, con los glúteos como apoyo.",
+    "mistakesEs": [
+      "Levantar la cabeza y mirar al frente, forzando el cuello",
+      "Subir lo más alto posible a base de arquear la zona lumbar",
+      "Hacer rebotes rápidos sin pausa arriba"
     ],
     "media": null
   },
@@ -1070,6 +1118,12 @@
       "Rodilla de atrás casi roza el suelo",
       "Empuja con el pie de delante"
     ],
+    "descriptionEs": "De pie, das un paso largo hacia atrás, bajas hasta que la rodilla trasera queda cerca del suelo y vuelves a la posición inicial empujando con la pierna de delante. Se hace con el peso corporal, una pierna cada vez. Trabaja sobre todo cuádriceps y glúteos, con los aductores como apoyo.",
+    "mistakesEs": [
+      "Dar el paso atrás demasiado corto, con la rodilla delantera muy adelantada",
+      "Golpear el suelo con la rodilla de atrás",
+      "Volver impulsándose con la pierna trasera en lugar de con la delantera"
+    ],
     "media": null
   },
   {
@@ -1167,6 +1221,12 @@
     "cuesEs": [
       "Pasos largos y controlados",
       "No dejes que la rodilla se meta hacia dentro"
+    ],
+    "descriptionEs": "Con una mancuerna en cada mano a los lados, avanzas dando zancadas alternas y encadenando un paso tras otro, sin volver a juntar los pies. Exige equilibrio y coordinación además de fuerza. Trabaja sobre todo cuádriceps y glúteos, con los aductores como apoyo.",
+    "mistakesEs": [
+      "Caminar sobre una línea estrecha, como en una cuerda floja, y perder el equilibrio",
+      "Inclinar el tronco hacia delante con el peso de las mancuernas",
+      "Encadenar pasos con prisa sin estabilizarse en cada zancada"
     ],
     "media": null
   },
@@ -1267,6 +1327,12 @@
       "Empeine trasero sobre el banco",
       "Baja en vertical con control"
     ],
+    "descriptionEs": "Con el empeine del pie trasero apoyado en un banco y el pie delantero adelantado, bajas flexionando la rodilla de delante y subes empujando con esa pierna. Se hace sin carga añadida y trabaja una pierna cada vez, sobre todo cuádriceps y glúteos.",
+    "mistakesEs": [
+      "Colocar el pie delantero demasiado cerca del banco",
+      "Empujar con la pierna de atrás en lugar de con la de delante",
+      "Dejar que la cadera rote o se incline hacia un lado al bajar"
+    ],
     "media": null
   },
   {
@@ -1309,6 +1375,12 @@
       "Apoya todo el pie en el cajón",
       "Sube empujando con la pierna de arriba"
     ],
+    "descriptionEs": "Con una mancuerna en cada mano, apoyas un pie en un cajón y subes hasta quedar de pie sobre él extendiendo esa pierna; luego bajas con control. Trabaja una pierna cada vez, sobre todo cuádriceps y glúteos.",
+    "mistakesEs": [
+      "Elegir un cajón tan alto que la cadera queda por debajo de la rodilla al empezar",
+      "Bajar dejándose caer en lugar de controlar el descenso",
+      "Inclinar el tronco y balancear las mancuernas para subir"
+    ],
     "media": null
   },
   {
@@ -1345,6 +1417,12 @@
     "cuesEs": [
       "Banco estable y a la altura de la rodilla o menos",
       "No te impulses con la pierna de abajo"
+    ],
+    "descriptionEs": "Apoyas un pie en un banco y subes hasta quedar de pie sobre él extendiendo esa pierna, sin carga añadida, y después bajas con control. Es una forma accesible de trabajar una pierna cada vez, sobre todo cuádriceps y glúteos.",
+    "mistakesEs": [
+      "Apoyar solo la punta del pie en el banco",
+      "Dejar que la rodilla de la pierna que sube se vaya hacia dentro",
+      "Bajar de golpe al suelo en vez de controlar la bajada"
     ],
     "media": null
   },
@@ -1573,6 +1651,12 @@
       "Agarres a la altura del pecho",
       "Espalda pegada al respaldo"
     ],
+    "descriptionEs": "Sentado en una máquina con respaldo, empujas los agarres al frente desde la altura del pecho hasta casi extender los brazos y vuelves con control. La trayectoria guiada simplifica el equilibrio. Trabaja sobre todo el pecho, con tríceps y hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Ajustar el asiento de modo que los agarres quedan a la altura del cuello",
+      "Despegar la espalda del respaldo y adelantar los hombros al empujar",
+      "Dejar que las placas choquen entre repeticiones"
+    ],
     "media": null
   },
   {
@@ -1614,6 +1698,12 @@
     "cuesEs": [
       "Un pie adelantado para estabilizarte",
       "Empuja al frente sin encoger hombros"
+    ],
+    "descriptionEs": "De pie entre dos poleas a la altura del pecho, con un pie adelantado, empujas los agarres al frente hasta extender los brazos. Al trabajar de pie sin respaldo, el tronco tiene que estabilizarse. Trabaja sobre todo el pecho, con tríceps y hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Inclinar el tronco hacia delante para mover más peso",
+      "Dejar que los cables lleven los codos muy atrás en la vuelta",
+      "Empujar cada brazo a una altura distinta"
     ],
     "media": null
   },
@@ -1701,6 +1791,12 @@
       "Banco colocado para que la barra baje al centro del pecho",
       "Escápulas juntas"
     ],
+    "descriptionEs": "Tumbado en un banco dentro de una máquina Smith, bajas la barra guiada hasta el pecho y la empujas hacia arriba. El carril fija la trayectoria, por lo que la posición del banco es clave. Trabaja sobre todo el pecho, con tríceps y hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Colocar el banco de forma que la barra baja hacia el cuello",
+      "Rebotar la barra en el pecho",
+      "No ajustar los seguros del carril a una altura útil"
+    ],
     "media": null
   },
   {
@@ -1751,6 +1847,12 @@
     "cuesEs": [
       "Manos a la anchura de los hombros",
       "Codos pegados al cuerpo"
+    ],
+    "descriptionEs": "Press de banca con barra y las manos a la anchura de los hombros, bajando la barra a la parte baja del pecho con los codos cerca del cuerpo. El agarre más estrecho desplaza el esfuerzo hacia los tríceps, que son los principales, con pecho y hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Juntar tanto las manos que las muñecas se doblan hacia fuera",
+      "Abrir los codos hacia los lados al bajar",
+      "Bajar la barra demasiado alta, hacia el cuello"
     ],
     "media": null
   },
@@ -2097,6 +2199,12 @@
       "Tronco ligeramente inclinado hacia delante",
       "Baja solo hasta donde el hombro esté cómodo"
     ],
+    "descriptionEs": "Suspendido entre dos barras paralelas con los brazos extendidos, bajas el cuerpo flexionando los codos y vuelves a subir empujando. Con el tronco algo inclinado trabaja sobre todo pecho y tríceps, con el hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Bajar mucho más allá de lo cómodo para el hombro",
+      "Dejar que los hombros se encojan hacia las orejas",
+      "Balancear las piernas para ayudarse a subir"
+    ],
     "media": null
   },
   {
@@ -2142,6 +2250,12 @@
     "cuesEs": [
       "Anillas pegadas al cuerpo arriba",
       "Recorrido controlado"
+    ],
+    "descriptionEs": "Fondos sobre anillas de gimnasia: desde los brazos extendidos, bajas flexionando los codos y subes empujando, mientras controlas que las anillas no se separen. La inestabilidad lo hace más exigente que en paralelas. Trabaja sobre todo pecho y tríceps, con el hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Dejar que las anillas se abran hacia los lados",
+      "Intentarlos sin dominar antes el apoyo estático en anillas",
+      "Bajar rápido y rebotar en la parte baja"
     ],
     "media": null
   },
@@ -2224,6 +2338,12 @@
       "Un paso adelante y tronco ligeramente inclinado",
       "Junta las manos delante del pecho"
     ],
+    "descriptionEs": "De pie entre dos poleas altas, con los codos ligeramente flexionados, llevas los agarres en arco hasta juntar las manos delante del pecho y vuelves despacio. Es un ejercicio de aislamiento que trabaja sobre todo el pecho, con el hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Flexionar y extender los codos, convirtiéndolo en un press",
+      "Dejar que los brazos se vayan muy atrás en la apertura",
+      "Balancear el tronco para cerrar los brazos"
+    ],
     "media": null
   },
   {
@@ -2260,6 +2380,12 @@
     "cuesEs": [
       "Asiento con los agarres a la altura del pecho",
       "Codos ligeramente flexionados"
+    ],
+    "descriptionEs": "Sentado en una máquina con los brazos abiertos sobre las palancas o agarres, cierras los brazos en arco delante del pecho y vuelves con control. La máquina fija el recorrido y aísla el movimiento. Trabaja sobre todo el pecho, con el hombro anterior como apoyo.",
+    "mistakesEs": [
+      "Ajustar el tope para que los brazos se abran más de lo cómodo",
+      "Despegar la espalda del respaldo al cerrar",
+      "Soltar la vuelta de golpe y dejar que las placas choquen"
     ],
     "media": null
   },
@@ -2312,6 +2438,12 @@
       "Glúteos y abdomen firmes",
       "La barra sube en línea recta pasando cerca de la cara"
     ],
+    "descriptionEs": "De pie, con una barra apoyada a la altura de las clavículas, la empujas por encima de la cabeza hasta extender los brazos y la bajas con control. Al hacerlo de pie, el tronco debe mantenerse firme. Trabaja sobre todo el hombro anterior, con hombro lateral, tríceps y abdominales como apoyo.",
+    "mistakesEs": [
+      "Echar el tronco hacia atrás arqueando la zona lumbar al empujar",
+      "Llevar la barra en arco por delante de la cara en lugar de en línea recta",
+      "Terminar con la barra por delante de la cabeza en vez de sobre ella"
+    ],
     "media": null
   },
   {
@@ -2354,6 +2486,12 @@
     "cuesEs": [
       "Respaldo casi vertical",
       "Codos ligeramente por delante del tronco"
+    ],
+    "descriptionEs": "Sentado en un banco con respaldo casi vertical, empujas una mancuerna en cada mano desde la altura de los hombros hasta extender los brazos por encima de la cabeza. Cada brazo trabaja por separado. Trabaja sobre todo el hombro anterior, con hombro lateral y tríceps como apoyo.",
+    "mistakesEs": [
+      "Abrir los codos totalmente a los lados, alineados con los hombros",
+      "Chocar las mancuernas arriba perdiendo el control",
+      "Despegar la espalda del respaldo y arquear la zona lumbar"
     ],
     "media": null
   },
@@ -2551,6 +2689,12 @@
       "Pisa la banda y empuja por encima de la cabeza",
       "Abdomen firme"
     ],
+    "descriptionEs": "De pie pisando una banda elástica, sujetas los extremos a la altura de los hombros y empujas por encima de la cabeza. La resistencia crece al extender los brazos. Trabaja sobre todo el hombro anterior, con hombro lateral y tríceps como apoyo.",
+    "mistakesEs": [
+      "Pisar la banda con un solo pie de modo que la tensión queda desigual",
+      "Dejar que la banda baje los brazos de golpe",
+      "Arquear la zona lumbar para terminar el empuje"
+    ],
     "media": null
   },
   {
@@ -2637,6 +2781,12 @@
       "Solo con buena movilidad de hombro",
       "Carga moderada y recorrido controlado"
     ],
+    "descriptionEs": "Con la barra apoyada en la parte alta de la espalda, por detrás de la cabeza, la empujas hacia arriba hasta extender los brazos y la bajas de nuevo detrás de la nuca. Exige mucha movilidad de hombro. Trabaja sobre todo el hombro anterior, con hombro lateral y tríceps como apoyo.",
+    "mistakesEs": [
+      "Adelantar la cabeza y el cuello para dejar pasar la barra",
+      "Bajar la barra hasta la nuca aunque el hombro no llegue con comodidad",
+      "Usar cargas altas o hacerlo con prisa"
+    ],
     "media": null
   },
   {
@@ -2683,6 +2833,12 @@
       "Cadera alta formando una V invertida",
       "Lleva la cabeza hacia delante de las manos"
     ],
+    "descriptionEs": "Con manos y pies en el suelo y la cadera alta formando una V invertida, flexionas los codos para acercar la cabeza al suelo y vuelves a empujar. Se hace con el peso corporal y trabaja sobre todo el hombro anterior, con tríceps y hombro lateral como apoyo.",
+    "mistakesEs": [
+      "Bajar la cadera y convertirlo en una flexión normal",
+      "Llevar la cabeza hacia las manos en vez de por delante de ellas",
+      "Abrir los codos completamente hacia los lados"
+    ],
     "media": null
   },
   {
@@ -2728,6 +2884,12 @@
     "cuesEs": [
       "Domina primero el pino estático",
       "Baja controlando hasta casi tocar con la cabeza"
+    ],
+    "descriptionEs": "En posición de pino con los pies apoyados en la pared, bajas el cuerpo flexionando los codos hasta acercar la cabeza al suelo y vuelves a empujar hasta extender los brazos. Es un ejercicio avanzado con el peso corporal que trabaja sobre todo el hombro anterior, con tríceps y hombro lateral como apoyo.",
+    "mistakesEs": [
+      "Arquear mucho la espalda contra la pared",
+      "Apoyar la cabeza en el suelo con peso al llegar abajo",
+      "Colocar las manos demasiado lejos de la pared"
     ],
     "media": null
   },
@@ -2932,6 +3094,12 @@
       "Postura escalonada con la mano libre en el muslo",
       "Lleva el codo hacia la cadera sin girar el tronco"
     ],
+    "descriptionEs": "En postura escalonada, con el tronco inclinado y la mano libre en el muslo, tiras de una kettlebell hacia la cadera con el otro brazo y la bajas con control. Trabaja un lado cada vez, sobre todo dorsales y parte alta de la espalda, con hombro posterior y bíceps como apoyo.",
+    "mistakesEs": [
+      "Girar el tronco hacia arriba para subir más la kettlebell",
+      "Tirar con el codo hacia fuera en lugar de hacia la cadera",
+      "Redondear la espalda al bajar la kettlebell"
+    ],
     "media": null
   },
   {
@@ -2973,6 +3141,12 @@
     "cuesEs": [
       "Tronco quieto y erguido",
       "Tira hacia el abdomen juntando escápulas"
+    ],
+    "descriptionEs": "Sentado frente a una polea baja con los pies apoyados, tiras del agarre hacia el abdomen llevando los codos atrás y lo devuelves estirando los brazos. Trabaja sobre todo dorsales y parte alta de la espalda, con hombro posterior y bíceps como apoyo.",
+    "mistakesEs": [
+      "Balancear el tronco atrás y adelante para mover el peso",
+      "Encoger los hombros hacia las orejas al final del tirón",
+      "Redondear la espalda al estirar los brazos en la vuelta"
     ],
     "media": null
   },
@@ -3016,6 +3190,12 @@
       "Pecho contra el apoyo",
       "Lleva los codos atrás"
     ],
+    "descriptionEs": "Sentado en una máquina con el pecho apoyado, tiras de los agarres hacia el cuerpo llevando los codos atrás y vuelves con control. El apoyo del pecho limita el balanceo del tronco. Trabaja sobre todo la parte alta de la espalda y los dorsales, con hombro posterior y bíceps como apoyo.",
+    "mistakesEs": [
+      "Separar el pecho del apoyo para ayudarse con el tronco",
+      "Ajustar el asiento tan bajo o alto que los agarres no quedan a la altura del pecho",
+      "Recortar el recorrido sin llevar los codos atrás del todo"
+    ],
     "media": null
   },
   {
@@ -3057,6 +3237,12 @@
     "cuesEs": [
       "Cuerpo recto como una tabla",
       "Cuanto más vertical, más fácil"
+    ],
+    "descriptionEs": "Remo con el propio peso colgado de unas anillas: con el cuerpo recto y los talones en el suelo, tiras hasta acercar el pecho a las manos. Trabaja sobre todo la parte alta de la espalda y los dorsales, con el hombro posterior y el bíceps como apoyo. Las anillas giran libremente, lo que exige más control que una barra fija.",
+    "mistakesEs": [
+      "Dejar caer la cadera y tirar con el cuerpo doblado",
+      "Abrir las anillas hacia fuera en lugar de mantenerlas junto al tronco",
+      "Bajar de golpe sin controlar el balanceo de las anillas"
     ],
     "media": null
   },
@@ -3100,6 +3286,12 @@
       "Cuerpo recto y abdomen firme",
       "Tira del pecho hacia las asas"
     ],
+    "descriptionEs": "Remo con el peso corporal agarrado a las asas de un entrenador en suspensión: inclinado hacia atrás con los pies apoyados, tiras para llevar el pecho hacia las manos. Trabaja la parte alta de la espalda y los dorsales, con ayuda del hombro posterior y el bíceps. La dificultad se ajusta acercando o alejando los pies del anclaje.",
+    "mistakesEs": [
+      "Subir encogiendo los hombros hacia las orejas",
+      "Perder la tensión de las correas al bajar y caer de golpe",
+      "Empezar el tirón doblando la cadera en lugar de con los brazos y la espalda"
+    ],
     "media": null
   },
   {
@@ -3142,6 +3334,12 @@
     "cuesEs": [
       "Barra fija en el rack a la altura de la cadera",
       "Lleva el pecho a la barra"
+    ],
+    "descriptionEs": "Remo con el peso corporal bajo una barra fijada en el rack: tumbado debajo, con el cuerpo recto y los talones en el suelo, tiras hasta acercar el pecho a la barra. Trabaja la parte alta de la espalda y los dorsales, con el hombro posterior y el bíceps como apoyo. La altura de la barra regula la dificultad.",
+    "mistakesEs": [
+      "Llevar la barbilla a la barra estirando el cuello",
+      "Hundir la cadera en cada repetición",
+      "Quedarse a mitad de recorrido sin estirar los brazos abajo"
     ],
     "media": null
   },
@@ -3234,6 +3432,12 @@
       "Lleva el pecho hacia la barra",
       "Baja hasta estirar los brazos"
     ],
+    "descriptionEs": "Tirón vertical colgado de una barra con las palmas hacia delante: subes el cuerpo hasta acercar el pecho a la barra y bajas hasta estirar los brazos. Es un ejercicio exigente que trabaja sobre todo los dorsales, con la parte alta de la espalda y el bíceps como apoyo.",
+    "mistakesEs": [
+      "Balancear las piernas o dar tirones para ganar impulso",
+      "Asomar solo la barbilla estirando el cuello hacia delante",
+      "Empezar cada repetición con los hombros sueltos y encogidos"
+    ],
     "media": null
   },
   {
@@ -3279,6 +3483,12 @@
     "cuesEs": [
       "Palmas hacia ti, a la anchura de los hombros",
       "Barbilla por encima de la barra"
+    ],
+    "descriptionEs": "Tirón vertical colgado de una barra con las palmas mirando hacia ti y las manos a la anchura de los hombros: subes hasta pasar la barbilla por encima de la barra. Trabaja sobre todo los dorsales y, por el agarre, implica más al bíceps que la versión prona; la parte alta de la espalda colabora.",
+    "mistakesEs": [
+      "Bajar sin control y llegar abajo con un tirón en los codos",
+      "Encoger los hombros y subir solo con los brazos",
+      "Acortar el recorrido sin llegar a estirar los brazos"
     ],
     "media": null
   },
@@ -3371,6 +3581,12 @@
       "Sube con ayuda de un salto o un apoyo",
       "Baja en 3-5 segundos"
     ],
+    "descriptionEs": "Variante de la dominada en la que solo se hace la bajada: subes con ayuda de un salto o un apoyo y desciendes despacio desde la barra hasta estirar los brazos. Trabaja los dorsales, con la parte alta de la espalda y el bíceps como apoyo, y se usa para progresar hacia la dominada completa.",
+    "mistakesEs": [
+      "Dejarse caer en la última parte de la bajada",
+      "Saltar con tanta fuerza que no se controla el inicio arriba",
+      "Hacer demasiadas repeticiones seguidas perdiendo el ritmo lento"
+    ],
     "media": null
   },
   {
@@ -3412,6 +3628,12 @@
     "cuesEs": [
       "Más peso de asistencia = más fácil",
       "Lleva el pecho hacia la barra"
+    ],
+    "descriptionEs": "Dominada en una máquina que descuenta parte del peso corporal mediante una plataforma o almohadilla bajo las rodillas o los pies. Permite hacer el movimiento completo de tirón vertical y trabaja los dorsales, con la parte alta de la espalda y el bíceps como apoyo.",
+    "mistakesEs": [
+      "Usar tanta asistencia que la plataforma hace casi todo el trabajo",
+      "Dejar que la plataforma suba de golpe al bajar",
+      "Inclinar el tronco hacia atrás y convertirlo en un remo"
     ],
     "media": null
   },
@@ -3790,6 +4012,12 @@
       "Palmas enfrentadas todo el recorrido",
       "Codos fijos"
     ],
+    "descriptionEs": "Flexión de codo con una mancuerna en cada mano y las palmas enfrentadas, como si sujetaras un martillo. Trabaja el bíceps y los antebrazos, en especial la musculatura del lado externo del antebrazo, más que el curl con las palmas hacia arriba.",
+    "mistakesEs": [
+      "Girar las muñecas durante la subida y perder el agarre neutro",
+      "Balancear el tronco para subir las mancuernas",
+      "Adelantar los codos al final del recorrido"
+    ],
     "media": null
   },
   {
@@ -3865,6 +4093,12 @@
     "cuesEs": [
       "Polea baja",
       "Codos fijos junto al cuerpo"
+    ],
+    "descriptionEs": "Flexión de codo de pie frente a una polea baja, con barra o agarre recto: subes el agarre hacia los hombros con los codos junto al cuerpo. Trabaja el bíceps, con los antebrazos como apoyo; el cable mantiene la tensión también abajo, donde las mancuernas apenas cargan.",
+    "mistakesEs": [
+      "Colocarse demasiado cerca o lejos y que el cable roce o tire en diagonal",
+      "Alejarse de la polea y separar los codos del cuerpo al subir",
+      "Soltar el peso de golpe en la bajada"
     ],
     "media": null
   },
@@ -3973,6 +4207,12 @@
       "De espaldas a la polea",
       "Codos apuntando al frente"
     ],
+    "descriptionEs": "Extensión de codos de espaldas a la polea, con el agarre detrás de la cabeza y los brazos por encima de ella: estiras los codos hasta tener los brazos rectos. Trabaja el tríceps en una posición de estiramiento que no se da en los ejercicios con los brazos pegados al cuerpo.",
+    "mistakesEs": [
+      "Abrir los codos hacia los lados al empujar",
+      "Arquear la zona lumbar para compensar la carga",
+      "Mover los hombros y convertirlo en un press por encima de la cabeza"
+    ],
     "media": null
   },
   {
@@ -4048,6 +4288,12 @@
       "Brazos ligeramente inclinados hacia atrás",
       "Baja la barra hacia la frente con control"
     ],
+    "descriptionEs": "Extensión de codos tumbado en un banco con una barra Z: con los brazos algo inclinados hacia atrás, bajas la barra hacia la frente doblando solo los codos y vuelves a estirar. Trabaja el tríceps; la barra Z permite un agarre semiinclinado más cómodo para las muñecas que una barra recta.",
+    "mistakesEs": [
+      "Mover los brazos desde el hombro y convertirlo en un press",
+      "Abrir los codos hacia fuera durante la bajada",
+      "Cargar más peso del que se controla cerca de la cara"
+    ],
     "media": null
   },
   {
@@ -4081,6 +4327,12 @@
       "Palmas enfrentadas",
       "Solo se mueven los codos"
     ],
+    "descriptionEs": "Extensión de codos tumbado en un banco con una mancuerna en cada mano y las palmas enfrentadas: bajas las mancuernas junto a la cabeza y vuelves a estirar los brazos. Trabaja el tríceps; cada brazo trabaja por separado y el agarre neutro suele resultar cómodo para codos y muñecas.",
+    "mistakesEs": [
+      "Dejar que las mancuernas se separen o se vayan hacia fuera",
+      "Bajar los brazos hacia atrás desde el hombro en cada repetición",
+      "Chocar las mancuernas arriba perdiendo la tensión"
+    ],
     "media": null
   },
   {
@@ -4107,6 +4359,12 @@
     "cuesEs": [
       "Banda anclada en alto",
       "Codos pegados al cuerpo"
+    ],
+    "descriptionEs": "Extensión de codos de pie con una banda elástica anclada en alto: empujas hacia abajo hasta estirar los brazos con los codos junto al cuerpo. Trabaja el tríceps; la resistencia aumenta según se estira la banda, por lo que es mayor al final del recorrido.",
+    "mistakesEs": [
+      "Inclinar el tronco sobre la banda para empujar con el peso del cuerpo",
+      "Dejar que la banda tire de los brazos hacia arriba sin control",
+      "Separar los codos del cuerpo al empujar"
     ],
     "media": null
   },
@@ -4153,6 +4411,12 @@
     "cuesEs": [
       "Espalda cerca del banco",
       "Baja solo hasta 90° de codo"
+    ],
+    "descriptionEs": "Con las manos apoyadas en el borde de un banco detrás de ti y los pies en el suelo, bajas el cuerpo doblando los codos y vuelves a subir. Trabaja sobre todo el tríceps, con el pecho y el hombro anterior como apoyo. Exige bastante a la parte delantera del hombro, por eso conviene limitar la bajada.",
+    "mistakesEs": [
+      "Bajar demasiado y llevar los hombros por delante de las manos",
+      "Separar la espalda del banco y alejar la cadera",
+      "Girar los dedos hacia fuera y cargar las muñecas en mala posición"
     ],
     "media": null
   },
@@ -4278,6 +4542,12 @@
       "Pisa la banda",
       "Sube los brazos hacia los lados"
     ],
+    "descriptionEs": "De pie pisando una banda elástica, subes los brazos hacia los lados hasta la altura de los hombros con los codos casi estirados. Trabaja el hombro lateral, con el trapecio como apoyo. La banda carga más arriba, donde se estira, y es una opción sencilla para entrenar en casa.",
+    "mistakesEs": [
+      "Encoger el trapecio y subir los hombros junto con los brazos",
+      "Subir los brazos por encima de los hombros",
+      "Dejar que la banda baje los brazos de golpe"
+    ],
     "media": null
   },
   {
@@ -4366,6 +4636,12 @@
     "cuesEs": [
       "Agarre ancho",
       "Sube los codos solo hasta la altura de los hombros"
+    ],
+    "descriptionEs": "De pie con una barra agarrada por delante, la subes pegada al cuerpo llevando los codos hacia los lados y arriba. Trabaja sobre todo el hombro lateral, con el trapecio y el bíceps como apoyo. Con agarre ancho y sin subir los codos por encima de los hombros se reduce la tensión en la articulación.",
+    "mistakesEs": [
+      "Usar un agarre estrecho con las manos casi juntas",
+      "Subir la barra hasta la barbilla con los codos muy altos",
+      "Doblar las muñecas hacia abajo al tirar"
     ],
     "media": null
   },
@@ -4637,6 +4913,12 @@
       "Sentado, banda anclada detrás del tobillo",
       "Extiende la rodilla sin bloquear"
     ],
+    "descriptionEs": "Sentado, con una banda elástica anclada detrás y sujeta al tobillo, estiras una pierna cada vez hasta casi bloquear la rodilla. Trabaja los cuádriceps de forma aislada y es una alternativa a la máquina de extensiones cuando solo se dispone de una banda.",
+    "mistakesEs": [
+      "Separar el muslo del asiento al estirar la pierna",
+      "Dar un golpe seco al final bloqueando la rodilla",
+      "Dejar que la banda devuelva la pierna sin frenarla"
+    ],
     "media": null
   },
   {
@@ -4669,6 +4951,12 @@
       "Sujétate a un apoyo fijo",
       "Rodillas adelante y tronco en línea con los muslos"
     ],
+    "descriptionEs": "Sentadilla con el propio peso en la que, sujeto a un apoyo fijo, te pones de puntillas y llevas las rodillas hacia delante mientras el tronco se inclina hacia atrás en línea con los muslos. Trabaja intensamente los cuádriceps y carga mucho la rodilla, por eso es un ejercicio de nivel avanzado.",
+    "mistakesEs": [
+      "Doblar la cadera y sentarse hacia atrás como en una sentadilla normal",
+      "Bajar más de lo que se controla y caer sobre las rodillas",
+      "Soltarse del apoyo antes de dominar el movimiento"
+    ],
     "media": null
   },
   {
@@ -4695,6 +4983,12 @@
     "cuesEs": [
       "Cadera pegada al banco",
       "Baja despacio"
+    ],
+    "descriptionEs": "Tumbado boca abajo en una máquina, con el rodillo detrás de los tobillos, flexionas las rodillas para acercar los talones a los glúteos. Trabaja de forma aislada los isquiosurales, con una trayectoria guiada que facilita centrarse en el músculo.",
+    "mistakesEs": [
+      "Levantar la cadera del banco para terminar la repetición",
+      "Colocar el rodillo sobre los gemelos en lugar de en los tobillos",
+      "Hacer recorridos cortos sin estirar del todo las piernas"
     ],
     "media": null
   },
@@ -4761,6 +5055,12 @@
       "Tobillos bien sujetos (compañero o mueble pesado)",
       "Baja lo más despacio que puedas",
       "Ayúdate con las manos al final"
+    ],
+    "descriptionEs": "De rodillas, con los tobillos bien sujetos, dejas caer el cuerpo hacia delante en bloque frenando con la parte posterior del muslo. Trabaja los isquiosurales, sobre todo en la fase de bajada, con una exigencia muy alta para el peso corporal. Las manos sirven para amortiguar el final.",
+    "mistakesEs": [
+      "Doblar la cadera y llevarla hacia atrás al bajar",
+      "Dejarse caer en la primera mitad sin frenar",
+      "Usar un anclaje de tobillos que se mueve o se levanta"
     ],
     "media": null
   },
@@ -4860,6 +5160,12 @@
     "cuesEs": [
       "Tumbado boca abajo, banda anclada al tobillo",
       "Flexiona la rodilla sin levantar la cadera"
+    ],
+    "descriptionEs": "Tumbado boca abajo, con una banda elástica anclada por delante y sujeta a un tobillo, flexionas la rodilla para acercar el talón al glúteo, una pierna cada vez. Trabaja los isquiosurales y es una alternativa al curl en máquina cuando solo se dispone de una banda.",
+    "mistakesEs": [
+      "Levantar la cadera del suelo al final del recorrido",
+      "Dejar que la banda estire la pierna de golpe",
+      "Colocarse tan cerca del anclaje que la banda no tiene tensión"
     ],
     "media": null
   },
@@ -5010,6 +5316,12 @@
       "Pierna libre extendida o flexionada",
       "Cadera nivelada"
     ],
+    "descriptionEs": "Tumbado boca arriba con un pie en el suelo y la otra pierna en el aire, empujas con el talón para subir la cadera hasta alinear tronco y muslo. Trabaja los glúteos, con los isquiosurales como apoyo; al hacerse a una pierna exige más control de la pelvis que el puente con dos.",
+    "mistakesEs": [
+      "Dejar caer la cadera del lado de la pierna libre",
+      "Arquear la zona lumbar en lugar de extender la cadera",
+      "Empujar con la punta del pie y notar el esfuerzo en el muslo delantero"
+    ],
     "media": null
   },
   {
@@ -5037,6 +5349,12 @@
       "Tobillera en la polea baja",
       "Lleva la pierna atrás sin arquear la espalda"
     ],
+    "descriptionEs": "De pie frente a una polea baja, con una tobillera enganchada, llevas una pierna hacia atrás extendiendo la cadera mientras te sujetas a la máquina. Trabaja de forma aislada los glúteos; la polea mantiene la tensión durante todo el recorrido y facilita ajustar la carga.",
+    "mistakesEs": [
+      "Inclinar el tronco hacia delante para llevar la pierna más arriba",
+      "Balancear la pierna sin pausa ni control",
+      "Girar la cadera hacia fuera al final del movimiento"
+    ],
     "media": null
   },
   {
@@ -5063,6 +5381,12 @@
     "cuesEs": [
       "En cuadrupedia o de pie con apoyo",
       "Extiende la cadera sin girar la pelvis"
+    ],
+    "descriptionEs": "En cuadrupedia o de pie con apoyo, con una banda elástica alrededor del pie o del tobillo, llevas una pierna hacia atrás extendiendo la cadera. Trabaja de forma aislada los glúteos; la banda ofrece más resistencia al final del recorrido y permite hacerlo en casa.",
+    "mistakesEs": [
+      "Arquear la zona lumbar para llevar la pierna más alta",
+      "Dejar que la banda recoja la pierna sin frenarla",
+      "Desplazar el peso hacia el lado de apoyo y torcer el tronco"
     ],
     "media": null
   },
@@ -5134,6 +5458,12 @@
       "Cadera apilada, sin rodar hacia atrás",
       "Sube la pierna un poco por detrás del cuerpo"
     ],
+    "descriptionEs": "Tumbado de lado con las piernas estiradas y las caderas apiladas, subes la pierna de arriba ligeramente por detrás del cuerpo y bajas despacio. Trabaja los abductores, con los glúteos como apoyo, solo con el peso corporal.",
+    "mistakesEs": [
+      "Llevar la pierna hacia delante al subirla",
+      "Girar el pie con la punta hacia el techo",
+      "Subir la pierna tan alto que se inclina el tronco"
+    ],
     "media": null
   },
   {
@@ -5166,6 +5496,12 @@
       "Banda por encima de las rodillas o en los tobillos",
       "Semisentadilla y pasos cortos"
     ],
+    "descriptionEs": "Con una banda elástica por encima de las rodillas o en los tobillos y en posición de semisentadilla, das pasos cortos hacia un lado manteniendo la tensión de la banda. Trabaja los abductores, con los glúteos como apoyo.",
+    "mistakesEs": [
+      "Juntar los pies del todo y perder la tensión de la banda",
+      "Erguirse y caminar con las piernas rectas",
+      "Balancear el tronco de lado a lado en cada paso"
+    ],
     "media": null
   },
   {
@@ -5197,6 +5533,12 @@
     "cuesEs": [
       "Espalda apoyada",
       "Cierra las piernas sin rebotar"
+    ],
+    "descriptionEs": "Sentado en una máquina con las almohadillas por el interior de las rodillas, cierras las piernas contra la resistencia y vuelves a abrirlas con control. Trabaja de forma aislada los aductores, en una trayectoria guiada.",
+    "mistakesEs": [
+      "Abrir las piernas más de lo cómodo al empezar",
+      "Despegar la espalda del respaldo para mover más carga",
+      "Dejar que las almohadillas se separen de golpe al volver"
     ],
     "media": null
   },
@@ -5238,6 +5580,12 @@
     "cuesEs": [
       "Empieza con la rodilla apoyada (versión corta)",
       "Sube la cadera hasta alinear el cuerpo"
+    ],
+    "descriptionEs": "Plancha lateral con la pierna de arriba apoyada sobre un banco, por la rodilla o por el pie, y el antebrazo en el suelo: subes la cadera hasta alinear el cuerpo. Trabaja sobre todo los aductores de la pierna apoyada, con los oblicuos como apoyo. La versión con la rodilla en el banco es la más asequible.",
+    "mistakesEs": [
+      "Dejar caer la cadera hacia el suelo durante la serie",
+      "Girar el tronco hacia delante o hacia atrás",
+      "Empezar con el pie en el banco sin dominar la versión corta"
     ],
     "media": null
   },
@@ -5526,6 +5874,12 @@
       "Pies en las asas, apoyado en antebrazos",
       "Muévete atrás y adelante sin hundir la cadera"
     ],
+    "descriptionEs": "En posición de plancha sobre los antebrazos, con los pies en las asas de un entrenador en suspensión, desplazas el cuerpo atrás y adelante sin mover la cadera. Trabaja los abdominales, que deben evitar que la zona lumbar se arquee cuanto más lejos van los brazos de los pies.",
+    "mistakesEs": [
+      "Subir la cadera hacia arriba para facilitar el movimiento",
+      "Desplazarse más atrás de lo que se puede sostener sin arquear la espalda",
+      "Dejar que las correas se balanceen de lado a lado"
+    ],
     "media": null
   },
   {
@@ -5566,6 +5920,12 @@
     "cuesEs": [
       "Anillas bajas, desde rodillas",
       "No arquees la espalda"
+    ],
+    "descriptionEs": "De rodillas, con las manos en unas anillas bajas, dejas que los brazos avancen por delante de la cabeza mientras el cuerpo se alarga y luego vuelves a la posición inicial. Trabaja intensamente los abdominales, con los dorsales como apoyo; la inestabilidad de las anillas lo hace más exigente que con rueda.",
+    "mistakesEs": [
+      "Dejar que la cadera se hunda y la zona lumbar se arquee",
+      "Abrir las anillas hacia los lados durante la extensión",
+      "Volver doblando la cadera en lugar de tirar con los brazos y el abdomen"
     ],
     "media": null
   },
@@ -5794,6 +6154,12 @@
       "Lleva las rodillas al pecho despegando la pelvis",
       "Baja despacio"
     ],
+    "descriptionEs": "Tumbado boca arriba con las rodillas flexionadas, llevas las rodillas hacia el pecho hasta despegar la pelvis del suelo y bajas despacio. Trabaja los abdominales moviendo la pelvis hacia el tronco, sin material.",
+    "mistakesEs": [
+      "Usar el impulso de las piernas sin llegar a despegar la pelvis",
+      "Empujar el suelo con las manos para subir",
+      "Dejar caer las piernas al bajar"
+    ],
     "media": null
   },
   {
@@ -5864,6 +6230,12 @@
       "Evita balancearte",
       "Lleva las rodillas al pecho redondeando la pelvis"
     ],
+    "descriptionEs": "Colgado de una barra con los brazos estirados, subes las rodillas hacia el pecho redondeando la pelvis y bajas con control. Trabaja los abdominales, y los antebrazos colaboran al sostener el agarre.",
+    "mistakesEs": [
+      "Subir las rodillas solo hasta la cadera sin girar la pelvis",
+      "Bajar las piernas de golpe y empezar a balancearse",
+      "Soltar los hombros y quedarse colgado de forma pasiva"
+    ],
     "media": null
   },
   {
@@ -5906,6 +6278,12 @@
       "Hombros atrás y abajo",
       "Pasos cortos y tronco erguido"
     ],
+    "descriptionEs": "Caminar sosteniendo una mancuerna pesada en cada mano, con los brazos a los lados y el tronco erguido. Trabaja sobre todo los antebrazos, por el agarre, y el trapecio, que sostiene los hombros; los oblicuos y los abdominales ayudan a mantener el tronco estable.",
+    "mistakesEs": [
+      "Dejar que los hombros caigan hacia delante",
+      "Dar zancadas largas que hacen balancear las mancuernas",
+      "Golpear las piernas con las mancuernas al caminar"
+    ],
     "media": null
   },
   {
@@ -5943,6 +6321,12 @@
       "No te inclines hacia el peso",
       "Camina despacio"
     ],
+    "descriptionEs": "Caminar con una sola mancuerna en una mano, como si llevaras una maleta, manteniendo el tronco recto. Trabaja sobre todo los oblicuos, que evitan que el cuerpo se incline hacia el peso, y los antebrazos por el agarre, con el trapecio como apoyo.",
+    "mistakesEs": [
+      "Subir el hombro del lado libre para compensar",
+      "Separar el brazo cargado del cuerpo",
+      "Hacer solo un lado o recorrer distancias distintas con cada mano"
+    ],
     "media": null
   },
   {
@@ -5979,6 +6363,12 @@
     "cuesEs": [
       "Agarre firme",
       "Tronco erguido"
+    ],
+    "descriptionEs": "Caminar sosteniendo una kettlebell en cada mano, con los brazos a los lados y el tronco erguido. Trabaja los antebrazos y el trapecio, con los oblicuos como apoyo; el asa gruesa y el peso colgando por debajo de la mano exigen un agarre firme.",
+    "mistakesEs": [
+      "Dejar que las kettlebells giren y golpeen las piernas",
+      "Inclinar el tronco hacia delante al cansarse",
+      "Abrir los dedos y sujetar el asa solo con la punta"
     ],
     "media": null
   },
@@ -6026,6 +6416,12 @@
     "cuesEs": [
       "Levanta como en el peso muerto",
       "Pasos cortos"
+    ],
+    "descriptionEs": "Levantas una barra hexagonal desde el suelo como en un peso muerto y caminas con ella con pasos cortos. Trabaja los antebrazos y el trapecio, con los oblicuos y los glúteos como apoyo. Permite mover más peso que con mancuernas, pero la barra se balancea si no se controla el paso.",
+    "mistakesEs": [
+      "Levantar la barra con la espalda redondeada",
+      "Caminar rápido y dejar que la barra oscile hacia delante y atrás",
+      "Soltar la barra de golpe en lugar de bajarla con control"
     ],
     "media": null
   }
