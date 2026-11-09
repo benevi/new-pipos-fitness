@@ -2297,7 +2297,8 @@ class $PendingMutationsTable extends PendingMutations
 class PendingMutation extends DataClass implements Insertable<PendingMutation> {
   final String userId;
 
-  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  /// Clave lógica: `note:<exerciseId>`, `measurement:<YYYY-MM-DD>` o
+  /// `swap:<workoutClientId>:<planExerciseId>:<id>` (una fila por cambio).
   final String mutationKey;
   final MutationKind kind;
 

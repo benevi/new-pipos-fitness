@@ -101,6 +101,14 @@ class FakeBackend
   /// Si devuelve un fallo, `upsertSet` lo lanza (sin guardar la serie).
   ApiFailure? Function(UpsertSetRequest request)? setFailure;
 
+  /// Como la API desde la Fase 5: rechaza (400) una serie nueva de un
+  /// ejercicio que no sea el original del hueco ni su sustitución
+  /// registrada (la última) en ese entrenamiento.
+  bool enforceSlotExercise = false;
+
+  /// Fallos que lanzarán los próximos `substitute` (uno por llamada).
+  final List<ApiFailure> substituteFailures = [];
+
   /// Fallos que lanzarán los próximos `finishWorkout` (uno por llamada).
   final List<ApiFailure> finishFailures = [];
   int finishCalls = 0;
@@ -419,6 +427,23 @@ class FakeBackend
       setsReplayed++;
       return Upserted(existing, created: false);
     }
+    if (enforceSlotExercise && request.planExerciseId != null) {
+      final slot = (todayJson['exercises'] as List).cast<Json>().firstWhere(
+        (e) => e['planExerciseId'] == request.planExerciseId,
+      );
+      final original =
+          ((slot['substitutedFrom'] ?? slot['exercise']) as Json)['id'];
+      String? substituted;
+      for (final sub in substitutions) {
+        if (sub.workoutId == workoutId &&
+            sub.planExerciseId == request.planExerciseId) {
+          substituted = sub.exerciseId;
+        }
+      }
+      if (request.exerciseId != original && request.exerciseId != substituted) {
+        throw _error(400, ApiErrorCode.validationFailed);
+      }
+    }
     final s = SetLog(
       id: 'set-${request.clientId}',
       clientId: request.clientId,
@@ -542,8 +567,13 @@ class FakeBackend
     required String exerciseId,
   }) async {
     _guard('POST /workouts/$workoutId/exercises/$planExerciseId/substitute');
-    if (_byServerId(workoutId) == null) {
+    if (substituteFailures.isNotEmpty) throw substituteFailures.removeAt(0);
+    final w = _byServerId(workoutId);
+    if (w == null) {
       throw _error(404, ApiErrorCode.notFound);
+    }
+    if (w.status != WorkoutStatus.inProgress) {
+      throw _error(409, ApiErrorCode.workoutFinished);
     }
     final options = SubstitutesResponse.fromJson(fixture('substitutes'));
     final chosen = options.substitutes.firstWhere(
@@ -558,7 +588,7 @@ class FakeBackend
     final slot = exercises.firstWhere(
       (e) => e['planExerciseId'] == planExerciseId,
     );
-    final original = slot['exercise'] as Json;
+    final original = (slot['substitutedFrom'] ?? slot['exercise']) as Json;
     slot['substitutedFrom'] = original;
     slot['exercise'] = {
       'id': chosen.exerciseId,

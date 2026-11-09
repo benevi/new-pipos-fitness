@@ -715,6 +715,22 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String swapQueued(String name) {
+    return 'Swap to $name saved. It will be sent when you\'re back online.';
+  }
+
+  @override
+  String get swapOfflineNotice =>
+      'Offline: alternatives saved today. Today\'s swap will be sent when you\'re back online; pinning it to the plan needs a connection.';
+
+  @override
+  String get swapPinNeedsNetwork =>
+      'Pinning the swap to the plan needs a connection. Offline you can swap it for today only.';
+
+  @override
+  String get swapPendingBadge => 'Swap waiting to be sent';
+
+  @override
   String get completeTitle => 'Workout complete!';
 
   @override

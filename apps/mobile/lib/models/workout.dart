@@ -502,6 +502,34 @@ class TodayExercise {
         note: clearNote ? null : (note ?? this.note),
       );
 
+  /// Vista local de un cambio de ejercicio aún sin confirmar por la API
+  /// (#23): sin la carga, los discos, el calentamiento ni la nota del
+  /// original, que no valen para el sustituto (se rellenan al sincronizar).
+  TodayExercise withPendingSwap(ExerciseRef to, ExerciseRef original) =>
+      TodayExercise(
+        planExerciseId: planExerciseId,
+        order: order,
+        exercise: to,
+        substitutedFrom: to.id == original.id ? null : original,
+        cuesEs: const [],
+        movementPattern: movementPattern,
+        loadType: loadType,
+        role: role,
+        restSeconds: restSeconds,
+        prescription: TodayPrescription(
+          action: prescription.action,
+          sets: prescription.sets,
+          repMin: prescription.repMin,
+          repMax: prescription.repMax,
+          targetRir: prescription.targetRir,
+          loadKg: null,
+          isDeload: prescription.isDeload,
+          rationale: const [],
+        ),
+        warmupSets: const [],
+        loggedSets: loggedSets,
+      );
+
   factory TodayExercise.fromJson(Json j) => TodayExercise(
     planExerciseId: j.str('planExerciseId'),
     order: j.integer('order'),

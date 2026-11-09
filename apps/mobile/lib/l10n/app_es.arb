@@ -245,6 +245,11 @@
   "@swapChoose": { "placeholders": { "name": { "type": "String" } } },
   "swapDone": "Ejercicio cambiado por {name}",
   "@swapDone": { "placeholders": { "name": { "type": "String" } } },
+  "swapQueued": "Cambio a {name} guardado. Se enviará al recuperar la conexión.",
+  "@swapQueued": {"placeholders": {"name": {"type": "String"}}},
+  "swapOfflineNotice": "Sin conexión: alternativas guardadas hoy. El cambio de hoy se enviará al volver la red; fijarlo en el plan necesita conexión.",
+  "swapPinNeedsNetwork": "Fijar el cambio en el plan necesita conexión. Sin red puedes cambiarlo solo para hoy.",
+  "swapPendingBadge": "Cambio pendiente de enviar",
 
   "completeTitle": "¡Entrenamiento completado!",
   "completeSummary": "{count, plural, =1{1 serie registrada} other{{count} series registradas}} · {volume} kg movidos",

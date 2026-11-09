@@ -119,13 +119,23 @@ class CachedPayloads extends Table {
 }
 
 /// Tipo de escritura offline de [PendingMutations].
-enum MutationKind { notePut, noteDelete, measurementPut, measurementDelete }
+enum MutationKind {
+  notePut,
+  noteDelete,
+  measurementPut,
+  measurementDelete,
+
+  /// Cambio de ejercicio de un hueco en un entrenamiento (#23). Lo envía el
+  /// propio `SyncService`, en orden con las series.
+  substitute,
+}
 
 @DataClassName('PendingMutation')
 class PendingMutations extends Table {
   TextColumn get userId => text()();
 
-  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  /// Clave lógica: `note:<exerciseId>`, `measurement:<YYYY-MM-DD>` o
+  /// `swap:<workoutClientId>:<planExerciseId>:<id>` (una fila por cambio).
   TextColumn get mutationKey => text()();
   TextColumn get kind => textEnum<MutationKind>()();
 

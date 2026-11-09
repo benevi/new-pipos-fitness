@@ -14,6 +14,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_failure.dart';
 import '../../core/offline/app_database.dart';
 import '../../core/offline/offline_providers.dart';
+import '../../core/offline/sync_service.dart';
 import '../../core/reminders/reminders.dart';
 import '../../data/pipos_api.dart';
 import '../../models/workout.dart';
@@ -34,6 +35,16 @@ final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
         .getToday(adjustment: adjustment);
 
     await cache.write(CacheKeys.today, session.toJson());
+    if (adjustment == null) {
+      unawaited(
+        prefetchSubstitutes(
+          ref.read(workoutApiProvider),
+          cache,
+          session,
+          ref.read(clockProvider)(),
+        ),
+      );
+    }
     return Cached(session);
   } on ApiFailure catch (f) {
     if (f.code == ApiErrorCode.planRequired ||
@@ -51,6 +62,78 @@ final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
     );
   }
 });
+
+/// Guarda en caché las alternativas de cada ejercicio de la sesión (las
+/// que falten o sean de otro día) para poder cambiar de ejercicio sin red
+/// (#23). Nunca falla: es una mejora oportunista.
+Future<void> prefetchSubstitutes(
+  WorkoutApi api,
+  CacheStore cache,
+  TodaySession session,
+  DateTime now,
+) async {
+  try {
+    for (final e in session.exercises) {
+      final key = CacheKeys.substitutes(e.exercise.id);
+      final saved = await cache.read(key);
+      if (saved != null && isSameLocalDay(saved.savedAt, now)) continue;
+      final options = await api.getSubstitutes(e.exercise.id);
+      await cache.write(key, options.toJson());
+    }
+  } catch (_) {}
+}
+
+/// Alternativas de un ejercicio: de la API (y a la caché) o, sin red, la
+/// última copia guardada.
+final substitutesProvider = FutureProvider.autoDispose
+    .family<Cached<SubstitutesResponse>, String>((ref, exerciseId) async {
+      final cache = ref.read(cacheStoreProvider);
+      final key = CacheKeys.substitutes(exerciseId);
+      try {
+        final r = await ref
+            .watch(workoutApiProvider)
+            .getSubstitutes(exerciseId);
+        await cache.write(key, r.toJson());
+        return Cached(r);
+      } on ApiFailure catch (f) {
+        if (!f.isConnectivity && f.type != ApiFailureType.server) rethrow;
+        final saved = await cache.read(key);
+        if (saved == null) rethrow;
+        return Cached(
+          SubstitutesResponse.fromJson(saved.json),
+          savedAt: saved.savedAt,
+          fromCache: true,
+        );
+      }
+    });
+
+/// Cambios de ejercicio en la cola (#23), del más antiguo al más reciente.
+final pendingSwapsProvider = StreamProvider.autoDispose<List<PendingSwap>>(
+  (ref) => ref.watch(syncServiceProvider).watchSwaps(),
+);
+
+/// Aplica a la sesión los cambios de ejercicio aún sin confirmar del
+/// entrenamiento [workoutClientId] (el último de cada hueco manda; los
+/// fallidos no se aplican).
+List<TodayExercise> applyPendingSwaps(
+  List<TodayExercise> exercises,
+  List<PendingSwap> swaps,
+  String? workoutClientId,
+) {
+  if (workoutClientId == null || swaps.isEmpty) return exercises;
+  final bySlot = <String, PendingSwap>{
+    for (final s in swaps)
+      if (!s.failed && s.workoutClientId == workoutClientId)
+        s.planExerciseId: s,
+  };
+  return [
+    for (final e in exercises)
+      if (bySlot[e.planExerciseId] case final s?)
+        e.withPendingSwap(s.exercise, s.substitutedFrom)
+      else
+        e,
+  ];
+}
 
 /// Entrenamiento local abierto para la sesión de hoy (o null si aún no se
 /// ha registrado ninguna serie).

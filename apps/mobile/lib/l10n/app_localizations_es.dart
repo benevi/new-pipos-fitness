@@ -719,6 +719,22 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String swapQueued(String name) {
+    return 'Cambio a $name guardado. Se enviará al recuperar la conexión.';
+  }
+
+  @override
+  String get swapOfflineNotice =>
+      'Sin conexión: alternativas guardadas hoy. El cambio de hoy se enviará al volver la red; fijarlo en el plan necesita conexión.';
+
+  @override
+  String get swapPinNeedsNetwork =>
+      'Fijar el cambio en el plan necesita conexión. Sin red puedes cambiarlo solo para hoy.';
+
+  @override
+  String get swapPendingBadge => 'Cambio pendiente de enviar';
+
+  @override
   String get completeTitle => '¡Entrenamiento completado!';
 
   @override

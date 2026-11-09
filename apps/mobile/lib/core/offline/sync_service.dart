@@ -10,7 +10,12 @@
 ///    a. `POST /workouts` de los entrenamientos sin `serverId` (idempotente
 ///       por `clientId`: 201 la primera vez, 200 al reenviar).
 ///    b. `POST /workouts/:id/sets` de las series `pending` (orden
-///       `completedAt`, `setIndex`; idempotente por `clientId`).
+///       `completedAt`, `setIndex`; idempotente por `clientId`). Una serie
+///       ya confirmada y editada va por `PATCH` (gana la última escritura
+///       por `clientUpdatedAt`) y una borrada por `DELETE` (#21, #22).
+///       Intercalados por orden de registro, los cambios de ejercicio en
+///       cola (`POST .../substitute`, #23): cada uno sale antes que las
+///       series registradas después, que la API rechazaría sin él.
 ///    c. `POST /workouts/:id/finish` de los terminados sin series por
 ///       confirmar (ni pendientes ni `failed`), con el mismo backoff.
 ///    - 2xx → `synced`.
@@ -113,6 +118,64 @@ class SyncSummary {
 abstract class MutationSender {
   Future<void> send(PendingMutation mutation);
 }
+
+/// Cambio de ejercicio guardado en la cola (#23).
+class PendingSwap {
+  const PendingSwap({
+    required this.workoutClientId,
+    required this.planExerciseId,
+    required this.exercise,
+    required this.substitutedFrom,
+    this.updatedAt,
+    this.failed = false,
+    this.lastError,
+    this.key,
+  });
+
+  static const keyPrefix = 'swap:';
+
+  /// Clave de la fila en la cola (para descartarla).
+  final String? key;
+
+  final String workoutClientId;
+  final String planExerciseId;
+
+  /// Ejercicio elegido para el hueco.
+  final ExerciseRef exercise;
+
+  /// Ejercicio original del hueco.
+  final ExerciseRef substitutedFrom;
+  final DateTime? updatedAt;
+  final bool failed;
+  final String? lastError;
+
+  factory PendingSwap.fromMutation(PendingMutation m) {
+    final p = (jsonDecode(m.payload) as Map).cast<String, dynamic>();
+    return PendingSwap(
+      workoutClientId: p['workoutClientId'] as String,
+      planExerciseId: p['planExerciseId'] as String,
+      exercise: ExerciseRef.fromJson(
+        (p['exercise'] as Map).cast<String, dynamic>(),
+      ),
+      substitutedFrom: ExerciseRef.fromJson(
+        (p['substitutedFrom'] as Map).cast<String, dynamic>(),
+      ),
+      updatedAt: m.updatedAt,
+      failed: m.status == SetSyncStatus.failed,
+      lastError: m.lastError,
+      key: m.mutationKey,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+    'workoutClientId': workoutClientId,
+    'planExerciseId': planExerciseId,
+    'exercise': exercise.toJson(),
+    'substitutedFrom': substitutedFrom.toJson(),
+  };
+}
+
+enum _SwapOutcome { sent, failed, waiting, deferred }
 
 class SyncService {
   SyncService({
@@ -298,6 +361,58 @@ class SyncService {
     )..where((t) => t.userId.equals(_uid) & t.mutationKey.equals(key))).go();
     _notify();
   }
+
+  /// Cambio de ejercicio de un hueco en este entrenamiento (#23). Va a la
+  /// cola (funciona sin red) y se envía EN ORDEN con las series: antes que
+  /// las registradas después, que la API rechazaría sin la sustitución.
+  /// Cada cambio es una fila propia (cambiar dos veces envía los dos).
+  Future<void> enqueueSubstitution({
+    required String workoutClientId,
+    required String planExerciseId,
+    required ExerciseRef exercise,
+    required ExerciseRef substitutedFrom,
+  }) async {
+    final swap = PendingSwap(
+      workoutClientId: workoutClientId,
+      planExerciseId: planExerciseId,
+      exercise: exercise,
+      substitutedFrom: substitutedFrom,
+    );
+    await _db
+        .into(_mutations)
+        .insert(
+          PendingMutationsCompanion.insert(
+            userId: _uid,
+            mutationKey:
+                '${PendingSwap.keyPrefix}$workoutClientId:$planExerciseId:'
+                '${_newId()}',
+            kind: MutationKind.substitute,
+            payload: jsonEncode(swap.toJson()),
+            updatedAt: _clock(),
+          ),
+        );
+    _notify();
+    _kick();
+  }
+
+  /// Cambios de ejercicio en cola (pendientes o fallidos), en orden.
+  Future<List<PendingSwap>> pendingSwaps() async {
+    final rows =
+        await (_db.select(_mutations)
+              ..where(
+                (t) =>
+                    t.userId.equals(_uid) &
+                    t.kind.equalsValue(MutationKind.substitute),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.updatedAt)]))
+            .get();
+    return rows.map(PendingSwap.fromMutation).toList();
+  }
+
+  /// Igual que [pendingSwaps], como flujo que se actualiza con la cola.
+  Stream<List<PendingSwap>> watchSwaps() => watchMutations(
+    PendingSwap.keyPrefix,
+  ).map((rows) => rows.map(PendingSwap.fromMutation).toList());
 
   /// Escrituras pendientes o fallidas cuya clave empieza por [prefix].
   Stream<List<PendingMutation>> watchMutations(String prefix) {
@@ -747,16 +862,6 @@ class SyncService {
         );
   }
 
-  /// Garantiza que el entrenamiento existe en la API (lo necesita la
-  /// sustitución de ejercicio, que es online). Devuelve su id o lanza
-  /// [ApiFailure].
-  Future<String> ensureStartedOnServer(String workoutClientId) async {
-    final w = await workoutByClientId(workoutClientId);
-    if (w == null) throw StateError('Entrenamiento local desconocido');
-    if (w.serverId != null) return w.serverId!;
-    return _startOnServer(w);
-  }
-
   /// `POST /workouts`. Si la API responde `409 WORKOUT_IN_PROGRESS` (ya hay
   /// otro entrenamiento en curso en la cuenta, p. ej. empezado en otro
   /// dispositivo), se consulta `GET /sessions/today` —que devuelve la
@@ -809,10 +914,34 @@ class SyncService {
     );
   }
 
-  /// Borra un entrenamiento local y sus series (acción «Descartar»).
+  /// Cambios de ejercicio en cola de un entrenamiento local.
+  Future<List<PendingMutation>> _swapRowsOf(String workoutClientId) async {
+    final rows =
+        await (_db.select(_mutations)..where(
+              (t) =>
+                  t.userId.equals(_uid) &
+                  t.kind.equalsValue(MutationKind.substitute),
+            ))
+            .get();
+    return rows
+        .where(
+          (m) => PendingSwap.fromMutation(m).workoutClientId == workoutClientId,
+        )
+        .toList();
+  }
+
+  /// Borra un entrenamiento local, sus series y sus cambios de ejercicio en
+  /// cola (acción «Descartar»).
   Future<void> discardWorkout(String workoutClientId) async {
     final userId = _uid;
     await _db.transaction(() async {
+      for (final m in await _swapRowsOf(workoutClientId)) {
+        await (_db.delete(_mutations)..where(
+              (t) =>
+                  t.userId.equals(userId) & t.mutationKey.equals(m.mutationKey),
+            ))
+            .go();
+      }
       await (_db.delete(_sets)..where(
             (t) =>
                 t.userId.equals(userId) &
@@ -902,9 +1031,49 @@ class SyncService {
               )
               ..orderBy(_order))
             .get();
+    // Cambios de ejercicio (#23), intercalados por orden de registro: cada
+    // uno sale antes que las series registradas después (a igual segundo,
+    // primero el cambio). Uno aplazado detiene la pasada, como una serie.
+    final swaps =
+        await (_db.select(_mutations)
+              ..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.kind.equalsValue(MutationKind.substitute) &
+                    t.status.equalsValue(SetSyncStatus.pending),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.updatedAt)]))
+            .get();
+    var nextSwap = 0;
+    Future<bool> sendSwapsUntil(DateTime? until) async {
+      while (nextSwap < swaps.length && !_disposed) {
+        final m = swaps[nextSwap];
+        if (until != null && m.updatedAt.isAfter(until)) return true;
+        nextSwap++;
+        switch (await _sendSwap(m)) {
+          case _SwapOutcome.sent:
+            sent++;
+          case _SwapOutcome.failed:
+            failed++;
+          case _SwapOutcome.waiting:
+            break;
+          case _SwapOutcome.deferred:
+            return false;
+        }
+      }
+      return true;
+    }
+
     for (var i = 0; i < items.length; i++) {
       if (_disposed) break;
       final item = items[i];
+      if (!await sendSwapsUntil(item.completedAt)) {
+        return SyncReport(
+          sent: sent,
+          failed: failed,
+          deferred: items.length - i + swaps.length - nextSwap + 1,
+        );
+      }
       final workout = await workoutByClientId(item.workoutClientId);
       final serverId = workout?.serverId;
       if (serverId == null) {
@@ -973,6 +1142,14 @@ class SyncService {
       }
     }
 
+    if (!await sendSwapsUntil(null)) {
+      return SyncReport(
+        sent: sent,
+        failed: failed,
+        deferred: swaps.length - nextSwap + 1,
+      );
+    }
+
     // c. Finales de entrenamiento. Solo cuando no queda NINGUNA serie sin
     // confirmar (tampoco `failed`): tras el finish la API rechaza series
     // nuevas con 409 WORKOUT_FINISHED.
@@ -1034,7 +1211,8 @@ class SyncService {
                 ..where(
                   (t) =>
                       t.userId.equals(userId) &
-                      t.status.equalsValue(SetSyncStatus.pending),
+                      t.status.equalsValue(SetSyncStatus.pending) &
+                      t.kind.equalsValue(MutationKind.substitute).not(),
                 )
                 ..orderBy([(t) => OrderingTerm.asc(t.updatedAt)]))
               .get();
@@ -1051,42 +1229,13 @@ class SyncService {
         await _setMutationStatus(m, SetSyncStatus.syncing);
         try {
           await sender.send(m);
-          // Solo se borra si nadie la ha sustituido mientras se enviaba.
-          await (_db.delete(_mutations)..where(
-                (t) =>
-                    t.userId.equals(userId) &
-                    t.mutationKey.equals(m.mutationKey) &
-                    t.updatedAt.equals(m.updatedAt) &
-                    t.payload.equals(m.payload),
-              ))
-              .go();
-          await _setMutationStatus(m, SetSyncStatus.pending);
+          await _mutationSent(m);
           sent++;
         } catch (e) {
-          final f = ApiFailure.from(e);
-          final attempts = m.attempts + 1;
-          final permanent = !_isTransient(f) || attempts >= backoff.maxAttempts;
-          final delay = backoff.delayFor(attempts);
-          await (_db.update(_mutations)..where(
-                (t) =>
-                    t.userId.equals(userId) &
-                    t.mutationKey.equals(m.mutationKey),
-              ))
-              .write(
-                PendingMutationsCompanion(
-                  status: Value(
-                    permanent ? SetSyncStatus.failed : SetSyncStatus.pending,
-                  ),
-                  attempts: Value(attempts),
-                  lastError: Value(_reason(f)),
-                  nextAttemptAt: Value(permanent ? null : _clock().add(delay)),
-                ),
-              );
-          if (permanent) {
+          if (await _mutationFailed(m, ApiFailure.from(e))) {
             failed++;
             continue;
           }
-          _scheduleRetry(delay);
           return SyncReport(
             sent: sent,
             failed: failed,
@@ -1096,6 +1245,90 @@ class SyncService {
       }
     }
     return SyncReport(sent: sent, failed: failed);
+  }
+
+  /// Envía un cambio de ejercicio de la cola (#23).
+  Future<_SwapOutcome> _sendSwap(PendingMutation m) async {
+    final swap = PendingSwap.fromMutation(m);
+    final workout = await workoutByClientId(swap.workoutClientId);
+    if (workout == null) {
+      // Entrenamiento descartado: el cambio ya no tiene a qué aplicarse.
+      await (_db.delete(_mutations)..where(
+            (t) =>
+                t.userId.equals(m.userId) & t.mutationKey.equals(m.mutationKey),
+          ))
+          .go();
+      _notify();
+      return _SwapOutcome.waiting;
+    }
+    final serverId = workout.serverId;
+    if (serverId == null) {
+      if (workout.attempts < backoff.maxAttempts) return _SwapOutcome.waiting;
+      final reason = workout.lastError ?? 'WORKOUT_NOT_STARTED';
+      await _mutationFailed(
+        m,
+        ApiFailure(
+          type: ApiFailureType.badRequest,
+          message: reason,
+          code: reason,
+        ),
+      );
+      return _SwapOutcome.failed;
+    }
+    if (_deferIfNotDue(m.nextAttemptAt)) return _SwapOutcome.deferred;
+    await _setMutationStatus(m, SetSyncStatus.syncing);
+    try {
+      await _api.substitute(
+        workoutId: serverId,
+        planExerciseId: swap.planExerciseId,
+        exerciseId: swap.exercise.id,
+      );
+      await _mutationSent(m);
+      return _SwapOutcome.sent;
+    } catch (e) {
+      return await _mutationFailed(m, ApiFailure.from(e))
+          ? _SwapOutcome.failed
+          : _SwapOutcome.deferred;
+    }
+  }
+
+  /// La API confirmó la escritura: se borra si nadie la ha sustituido
+  /// mientras se enviaba.
+  Future<void> _mutationSent(PendingMutation m) async {
+    await (_db.delete(_mutations)..where(
+          (t) =>
+              t.userId.equals(m.userId) &
+              t.mutationKey.equals(m.mutationKey) &
+              t.updatedAt.equals(m.updatedAt) &
+              t.payload.equals(m.payload),
+        ))
+        .go();
+    await _setMutationStatus(m, SetSyncStatus.pending);
+  }
+
+  /// Registra un fallo de envío. Devuelve true si es permanente (`failed`);
+  /// si no, queda `pending` con backoff y un reintento programado.
+  Future<bool> _mutationFailed(PendingMutation m, ApiFailure f) async {
+    final attempts = m.attempts + 1;
+    final permanent = !_isTransient(f) || attempts >= backoff.maxAttempts;
+    final delay = backoff.delayFor(attempts);
+    await (_db.update(_mutations)..where(
+          (t) =>
+              t.userId.equals(m.userId) & t.mutationKey.equals(m.mutationKey),
+        ))
+        .write(
+          PendingMutationsCompanion(
+            status: Value(
+              permanent ? SetSyncStatus.failed : SetSyncStatus.pending,
+            ),
+            attempts: Value(attempts),
+            lastError: Value(_reason(f)),
+            nextAttemptAt: Value(permanent ? null : _clock().add(delay)),
+          ),
+        );
+    _notify();
+    if (!permanent) _scheduleRetry(delay);
+    return permanent;
   }
 
   /// Cambia el estado si la fila sigue existiendo (si se envió, ya no está).
@@ -1172,6 +1405,24 @@ class SyncService {
     await (_db.update(_sets)
           ..where((t) => t.workoutClientId.equals(dup.clientId)))
         .write(LocalSetLogsCompanion(workoutClientId: Value(target.clientId)));
+    for (final m in await _swapRowsOf(dup.clientId)) {
+      final swap = PendingSwap.fromMutation(m);
+      final moved = PendingSwap(
+        workoutClientId: target.clientId,
+        planExerciseId: swap.planExerciseId,
+        exercise: swap.exercise,
+        substitutedFrom: swap.substitutedFrom,
+      );
+      await (_db.update(_mutations)..where(
+            (t) =>
+                t.userId.equals(m.userId) & t.mutationKey.equals(m.mutationKey),
+          ))
+          .write(
+            PendingMutationsCompanion(
+              payload: Value(jsonEncode(moved.toJson())),
+            ),
+          );
+    }
     final bothFinished = dup.finishedAt != null && target.finishedAt != null;
     final finishedAt = !bothFinished
         ? null

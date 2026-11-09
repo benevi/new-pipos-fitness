@@ -65,6 +65,10 @@ class CacheKeys {
 
   /// Evolución corporal (`GET /progress/body`).
   static const bodyProgress = 'progress/body';
+
+  /// Alternativas de un ejercicio (para cambiarlo sin red, #23).
+  static String substitutes(String exerciseId) =>
+      'exercises/$exerciseId/substitutes';
 }
 
 /// Última respuesta JSON de lecturas clave, por usuario (modo avión).

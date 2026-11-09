@@ -155,13 +155,17 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
   que solo están en la API se adoptan en drift antes de editarlas. Borrar deja una lápida hasta el
   `DELETE`. Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/edit_set_test.dart`.
 
-### [Móvil] Cambiar de ejercicio sin conexión
-- **Severidad:** Baja
-- **Impacto:** la sustitución exige red. Desde la Fase 5 la API rechaza (400) series de un
-  ejercicio que no sea el del hueco ni su sustitución registrada, así que una sustitución offline
-  tendría que sincronizarse **antes** que esas series.
-- **Propuesta:** encolar la sustitución en drift (alternativas cacheadas con el plan) y enviarla en
-  orden antes de las series del hueco.
+### ~~[Móvil] Cambiar de ejercicio sin conexión~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #23.
+- **Qué se hizo:** las alternativas de cada ejercicio se guardan en caché con la sesión de hoy
+  (`CacheKeys.substitutes`). El cambio de hoy se encola en drift (`PendingMutations`, tipo
+  `substitute`, una fila por cambio) y Hoy lo muestra al momento («Cambio pendiente de enviar», sin
+  la carga del original). `SyncService` lo envía intercalado por orden de registro con las series:
+  antes que las registradas después (a igual segundo, primero el cambio) y, si se aplaza, la pasada
+  se detiene para no desordenar. Fijar el cambio en el plan sigue necesitando red (mensaje propio).
+  Tests de orden: `test/core/offline/swap_queue_test.dart` (el fake de la API rechaza, como la
+  real, series de un ejercicio que no sea el del hueco ni su sustitución) y
+  `test/features/today/swap_exercise_test.dart`.
 
 ### ~~[Móvil] Notificación del temporizador de descanso en segundo plano~~ — RESUELTO (PR pendiente)
 - **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #24.

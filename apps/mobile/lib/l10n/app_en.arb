@@ -202,6 +202,11 @@
   "swapEmpty": "No alternatives fit your equipment and limitations.",
   "swapChoose": "Use {name}",
   "swapDone": "Exercise swapped for {name}",
+  "swapQueued": "Swap to {name} saved. It will be sent when you're back online.",
+  "@swapQueued": {"placeholders": {"name": {"type": "String"}}},
+  "swapOfflineNotice": "Offline: alternatives saved today. Today's swap will be sent when you're back online; pinning it to the plan needs a connection.",
+  "swapPinNeedsNetwork": "Pinning the swap to the plan needs a connection. Offline you can swap it for today only.",
+  "swapPendingBadge": "Swap waiting to be sent",
 
   "completeTitle": "Workout complete!",
   "completeSummary": "{count, plural, =1{1 set logged} other{{count} sets logged}} · {volume} kg lifted",

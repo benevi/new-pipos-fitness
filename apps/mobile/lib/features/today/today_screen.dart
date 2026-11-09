@@ -14,6 +14,7 @@ import '../../app/tokens.dart';
 import '../../core/api/api_failure.dart';
 import '../../core/offline/app_database.dart';
 import '../../core/offline/offline_providers.dart';
+import '../../core/offline/sync_service.dart' show PendingSwap;
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
@@ -288,6 +289,22 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     final pendingNotes =
         ref.watch(pendingNotesProvider).valueOrNull ??
         const <String, String?>{};
+    // Cambios de ejercicio en cola (#23): se ven al momento; al confirmarse
+    // se relee la sesión (carga y discos del sustituto).
+    final swaps =
+        ref.watch(pendingSwapsProvider).valueOrNull ?? const <PendingSwap>[];
+    final exercises = applyPendingSwaps(
+      session.exercises,
+      swaps,
+      workout?.clientId,
+    );
+    ref.listen(pendingSwapsProvider, (prev, next) {
+      final before = prev?.valueOrNull?.map((s) => s.key).toSet() ?? {};
+      final now = next.valueOrNull?.map((s) => s.key).toSet() ?? {};
+      if (before.any((k) => !now.contains(k))) {
+        ref.invalidate(todaySessionProvider);
+      }
+    });
     // Una nota que deja de estar pendiente ya está en la API: se relee la
     // sesión para mostrar la versión del servidor.
     ref.listen(pendingNotesProvider, (prev, next) {
@@ -386,10 +403,16 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               icon: Icons.directions_walk,
             ),
           if (!hasLogged) NoticeBanner(text: l10n.todayStartHint),
-          for (final e in session.exercises)
+          for (final e in exercises)
             ExerciseCard(
               key: Key('exercise-${e.planExerciseId}'),
               exercise: e,
+              swapPending: swaps.any(
+                (s) =>
+                    !s.failed &&
+                    s.workoutClientId == workout?.clientId &&
+                    s.planExerciseId == e.planExerciseId,
+              ),
               note: pendingNotes.containsKey(e.exercise.id)
                   ? pendingNotes[e.exercise.id]
                   : e.note,
@@ -524,7 +547,11 @@ class ExerciseCard extends StatelessWidget {
     this.onEditNote,
     this.onEditSet,
     this.onDeleteSet,
+    this.swapPending = false,
   });
+
+  /// Cambio de ejercicio guardado en la cola sin confirmar (#23).
+  final bool swapPending;
 
   final TodayExercise exercise;
   final List<LoggedSetView> logged;
@@ -605,6 +632,26 @@ class ExerciseCard extends StatelessWidget {
                             exercise.substitutedFrom!.nameEs,
                           ),
                           style: theme.textTheme.bodySmall,
+                        ),
+                      if (swapPending)
+                        Row(
+                          key: Key('swap-pending-${exercise.planExerciseId}'),
+                          children: [
+                            ExcludeSemantics(
+                              child: Icon(
+                                Icons.cloud_upload_outlined,
+                                size: AppSpacing.md,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                l10n.swapPendingBadge,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
                         ),
                     ],
                   ),

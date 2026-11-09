@@ -1190,6 +1190,30 @@ abstract class AppLocalizations {
   /// **'Ejercicio cambiado por {name}'**
   String swapDone(String name);
 
+  /// No description provided for @swapQueued.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio a {name} guardado. Se enviará al recuperar la conexión.'**
+  String swapQueued(String name);
+
+  /// No description provided for @swapOfflineNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión: alternativas guardadas hoy. El cambio de hoy se enviará al volver la red; fijarlo en el plan necesita conexión.'**
+  String get swapOfflineNotice;
+
+  /// No description provided for @swapPinNeedsNetwork.
+  ///
+  /// In es, this message translates to:
+  /// **'Fijar el cambio en el plan necesita conexión. Sin red puedes cambiarlo solo para hoy.'**
+  String get swapPinNeedsNetwork;
+
+  /// No description provided for @swapPendingBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio pendiente de enviar'**
+  String get swapPendingBadge;
+
   /// No description provided for @completeTitle.
   ///
   /// In es, this message translates to:
