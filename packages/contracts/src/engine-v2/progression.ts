@@ -6,7 +6,7 @@ export const CurrentPrescriptionSchema = z
   .object({
     exerciseId: z.string().min(1),
     movementPattern: MovementPatternSchema,
-    loadType: z.enum(['external', 'bodyweight']),
+    loadType: z.enum(['weighted', 'unweighted']),
     sets: z.number().int().min(1).max(10),
     repMin: z.number().int().min(1).max(50),
     repMax: z.number().int().min(1).max(50),

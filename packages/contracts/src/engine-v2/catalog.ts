@@ -44,6 +44,8 @@ export const CatalogExerciseSchema = z
     minLevel: TrainingLevelSchema,
     /** TODO el material es obligatorio (el motor usa `.every`). Sin material: ['bodyweight']. */
     equipment: z.array(EquipmentSchema).min(1),
+    /** 'weighted' si la carga se mide y progresa en kg; 'unweighted' para peso corporal, bandas o asistencia. */
+    loadType: z.enum(['weighted', 'unweighted']),
     muscles: z.array(CatalogMuscleSchema).min(1),
     riskTags: z.array(CatalogRiskTagSchema),
     substitutionGroup: z

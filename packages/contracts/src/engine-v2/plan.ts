@@ -36,7 +36,7 @@ export const PlannedExerciseSchema = z
     repMax: z.number().int().min(1).max(50),
     targetRir: z.number().int().min(0).max(5),
     restSeconds: z.number().int().min(15).max(600),
-    loadType: z.enum(['external', 'bodyweight']),
+    loadType: z.enum(['weighted', 'unweighted']),
     initialLoadKg: z.number().min(0).nullable(),
     initialLoadIsEstimate: z.boolean(),
     warmupSets: z.array(WarmupSetSchema),

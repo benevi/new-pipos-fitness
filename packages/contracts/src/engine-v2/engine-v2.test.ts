@@ -10,6 +10,7 @@ const exercise = {
   isUnilateral: false,
   minLevel: 'beginner',
   equipment: ['barbell', 'bench'],
+  loadType: 'weighted',
   muscles: [
     { muscle: 'chest', role: 'primary', fraction: 1 },
     { muscle: 'triceps', role: 'secondary', fraction: 0.5 },
@@ -106,7 +107,7 @@ describe('engineV2: progresión y nutrición', () => {
     const r = engineV2.CurrentPrescriptionSchema.safeParse({
       exerciseId: 'x',
       movementPattern: 'squat',
-      loadType: 'external',
+      loadType: 'weighted',
       sets: 3,
       repMin: 12,
       repMax: 8,
