@@ -141,7 +141,7 @@ function inputSummary(p: engineV2.EngineProfileInput): string {
   return lines.join('\n');
 }
 
-function render(ex: Example, plan: engineV2.PlanDraft, ms: number): string {
+function render(ex: Example, plan: engineV2.PlanDraft): string {
   const out: string[] = [];
   out.push(`# ${ex.title}`, '', `> Generado por \`pnpm --filter @pipos/engine-rules examples\` con el motor ${plan.engineVersion}. No editar a mano.`, '');
   out.push('## Entrada', '', inputSummary(ex.profile), '');
@@ -179,7 +179,7 @@ function render(ex: Example, plan: engineV2.PlanDraft, ms: number): string {
     '|---|---|---|---|---|---|---|---|',
     `| ${plan.score.total} | ${plan.score.coverage} | ${plan.score.volumeFit} | ${plan.score.timeFit} | ${plan.score.frequency} | ${plan.score.balance} | ${plan.score.variety} | ${plan.score.preferences} |`,
     '',
-    `Búsqueda local: ${ls.initialScore} → ${ls.finalScore} (${gain >= 0 ? '+' : ''}${gain.toFixed(2)} %), ${ls.acceptedMoves} movimientos, ${ls.evaluations} evaluaciones, parada: ${ls.stoppedBy}. Tiempo de generación en esta máquina: ${ms.toFixed(0)} ms.`,
+    `Búsqueda local: ${ls.initialScore} → ${ls.finalScore} (${gain >= 0 ? '+' : ''}${gain.toFixed(2)} %), ${ls.acceptedMoves} movimientos, ${ls.evaluations} evaluaciones, parada: ${ls.stoppedBy}.`,
     '',
   );
   return out.join('\n');
@@ -196,11 +196,11 @@ const summary: string[] = [
 ];
 const gains: number[] = [];
 for (const ex of EXAMPLES) {
-  const t0 = performance.now();
+
   const r = generatePlan(ex.profile, CATALOG);
-  const ms = performance.now() - t0;
+
   if (!r.ok) throw new Error(`${ex.file}: ${JSON.stringify(r.error)}`);
-  writeFileSync(resolve(OUT, ex.file), render(ex, r.plan, ms));
+  writeFileSync(resolve(OUT, ex.file), render(ex, r.plan));
   const ls = r.plan.meta.localSearch;
   const gain = ((ls.finalScore - ls.initialScore) / ls.initialScore) * 100;
   gains.push(gain);

@@ -130,4 +130,4 @@
 |---|---|---|---|---|---|---|---|
 | 0.9494 | 0.985 | 0.9375 | 1 | 1 | 0.6667 | 0.99 | 1 |
 
-Búsqueda local: 0.948083 → 0.949417 (+0.14 %), 1 movimientos, 72 evaluaciones, parada: converged. Tiempo de generación en esta máquina: 5 ms.
+Búsqueda local: 0.948083 → 0.949417 (+0.14 %), 1 movimientos, 72 evaluaciones, parada: converged.

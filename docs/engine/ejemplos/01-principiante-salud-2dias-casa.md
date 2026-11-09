@@ -123,4 +123,4 @@
 |---|---|---|---|---|---|---|---|
 | 0.6959 | 0.76 | 0.45 | 0.9444 | 0.8 | 0 | 0.97 | 1 |
 
-Búsqueda local: 0.678667 → 0.695889 (+2.54 %), 1 movimientos, 30 evaluaciones, parada: converged. Tiempo de generación en esta máquina: 24 ms.
+Búsqueda local: 0.678667 → 0.695889 (+2.54 %), 1 movimientos, 30 evaluaciones, parada: converged.
