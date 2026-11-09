@@ -16,7 +16,7 @@ const DEFAULT_CODES: Partial<Record<number, ErrorCode>> = {
 };
 
 /** Un error inesperado se registra sin su mensaje (puede contener datos de la consulta). */
-function describeUnexpected(error: unknown): Record<string, unknown> {
+export function describeUnexpected(error: unknown): Record<string, unknown> {
   if (error instanceof Error) {
     const code = (error as { code?: unknown }).code;
     return {
