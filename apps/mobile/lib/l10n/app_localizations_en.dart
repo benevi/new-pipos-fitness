@@ -848,6 +848,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsTitle => 'Settings';
 
   @override
+  String get settingsEmailOffline =>
+      'Offline: your email will show up once you\'re back online.';
+
+  @override
   String get settingsProfile => 'Training profile';
 
   @override

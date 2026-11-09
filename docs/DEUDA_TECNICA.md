@@ -175,11 +175,14 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
   duplicado se borra; queda terminado solo si los dos lo estaban. Tests en
   `test/core/offline/sync_service_test.dart` (dos inicios encolados; adopción desde Hoy).
 
-### [Móvil] Login offline con solo el userId en caché muestra el email vacío
-- **Severidad:** Baja
-- **Impacto:** si solo hay `userId` cacheado, Ajustes muestra el email vacío hasta tener red.
-- **Propuesta:** cachear el usuario completo (`id`, `email`) al validar la sesión y mostrar un
-  marcador «sin conexión» mientras falte.
+### ~~[Móvil] Login offline con solo el userId en caché muestra el email vacío~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #26.
+- **Qué se hizo:** al validar la sesión (login, registro o `GET /me`) el usuario completo (`id`,
+  `email`) se guarda también en el mismo valor que los tokens; `readCachedUser` lo usa si falta su
+  clave propia (un refresh lo conserva; otro dueño no lo hereda). Si aun así solo hay `userId`
+  (sesiones antiguas), Ajustes muestra «Sin conexión: tu correo aparecerá al recuperar la red» en
+  vez de un correo vacío. Tests: `test/core/auth/token_storage_test.dart`,
+  `test/features/settings/offline_email_test.dart`.
 
 ### [Móvil] Validar las reglas de exclusión de backup en un build Android real
 - **Severidad:** Baja

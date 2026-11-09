@@ -236,6 +236,7 @@
   "progressEmptyBody": "Complete your first session to start seeing strength, volume and adherence.",
 
   "settingsTitle": "Settings",
+  "settingsEmailOffline": "Offline: your email will show up once you're back online.",
   "settingsProfile": "Training profile",
   "settingsProfileSubtitle": "Goal, days, minutes, equipment and preferences",
   "settingsHealth": "Health data and limitations",

@@ -852,6 +852,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsTitle => 'Ajustes';
 
   @override
+  String get settingsEmailOffline =>
+      'Sin conexión: tu correo aparecerá al recuperar la red.';
+
+  @override
   String get settingsProfile => 'Perfil de entrenamiento';
 
   @override

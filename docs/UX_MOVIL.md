@@ -27,6 +27,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - Cuatro destinos, etiquetados con texto e icono (Material `NavigationBar`). Pulsar el destino activo vuelve a su raíz.
 - Sin plan en caché y sin red, la puerta deja pasar: las pestañas muestran su estado sin conexión en vez de encerrar al usuario en el cuestionario.
 - La barra de sincronización (pendientes, fallidas con «Reintentar», sin conexión) va sobre la navegación en todas las pestañas.
+- Entrar sin red usa el usuario guardado (id y correo, también junto a los tokens). Si de una sesión antigua solo queda el id, Ajustes muestra «Sin conexión: tu correo aparecerá al recuperar la red» en lugar del correo, hasta revalidar la sesión (#26).
 
 ## 2. Estados por pantalla
 

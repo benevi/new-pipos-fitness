@@ -289,6 +289,7 @@
   "progressEmptyBody": "Completa tu primera sesión para empezar a ver fuerza, volumen y adherencia.",
 
   "settingsTitle": "Ajustes",
+  "settingsEmailOffline": "Sin conexión: tu correo aparecerá al recuperar la red.",
   "settingsProfile": "Perfil de entrenamiento",
   "settingsProfileSubtitle": "Objetivo, días, minutos, material y preferencias",
   "settingsHealth": "Datos de salud y limitaciones",

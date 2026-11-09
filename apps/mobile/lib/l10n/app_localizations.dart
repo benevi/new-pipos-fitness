@@ -1383,6 +1383,12 @@ abstract class AppLocalizations {
   /// **'Ajustes'**
   String get settingsTitle;
 
+  /// No description provided for @settingsEmailOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión: tu correo aparecerá al recuperar la red.'**
+  String get settingsEmailOffline;
+
   /// No description provided for @settingsProfile.
   ///
   /// In es, this message translates to:
