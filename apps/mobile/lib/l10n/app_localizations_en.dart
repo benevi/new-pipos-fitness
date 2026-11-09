@@ -1581,6 +1581,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'on_track': 'You\'re on track',
       'too_fast': 'You\'re going too fast',
       'too_slow': 'Slower than expected',
+      'wrong_direction': 'Moving away from your goal',
       'no_target': 'Your goal doesn\'t set a pace',
       'insufficient_data': 'Not enough data for a trend',
       'other': '$status',

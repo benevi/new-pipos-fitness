@@ -103,6 +103,38 @@ void main() {
     await harness.drainAndUnmount(tester);
   });
 
+  testWidgets(
+    'peso en sentido contrario al objetivo: estado propio, no «más lento»',
+    (tester) async {
+      usePhoneSize(tester);
+      final base = fixture('body_progress');
+      final weight = Map<String, dynamic>.from(base['weight'] as Map);
+      weight['trend'] = {
+        ...(weight['trend'] as Map<String, dynamic>),
+        'status': 'wrong_direction',
+        'weeklyRatePct': -0.5,
+        'target': {'direction': 'gain', 'minPct': 0.25, 'maxPct': 0.5},
+        'rationale': [
+          'Estás perdiendo peso (−0,5 %/semana) y tu objetivo es ganar entre 0,25 y 0,5 % por semana.',
+        ],
+      };
+      final backend = FakeBackend()
+        ..bodyProgressJson = {...base, 'weight': weight};
+      final harness = AppHarness.signedIn(backend: backend);
+      await _openBody(tester, harness);
+      expect(
+        find.text('Vas en sentido contrario a tu objetivo'),
+        findsOneWidget,
+      );
+      expect(find.text('Vas más lento de lo previsto'), findsNothing);
+      expect(
+        find.text('Objetivo: ganar entre el 0,25 y el 0,5 % por semana'),
+        findsOneWidget,
+      );
+      await harness.drainAndUnmount(tester);
+    },
+  );
+
   testWidgets('sin consentimiento: pide el texto nuevo antes de mostrar nada', (
     tester,
   ) async {

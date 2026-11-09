@@ -379,7 +379,7 @@
   "bodyEmpty": "You haven't logged any measurements yet. Weigh and measure yourself in similar conditions each time (for example, in the morning).",
   "bodyWeightTitle": "Weight",
   "bodyWeightLatest": "Latest: {kg} ({date})",
-  "bodyTrendStatus": "{status, select, on_track{You're on track} too_fast{You're going too fast} too_slow{Slower than expected} no_target{Your goal doesn't set a pace} insufficient_data{Not enough data for a trend} other{{status}}}",
+  "bodyTrendStatus": "{status, select, on_track{You're on track} too_fast{You're going too fast} too_slow{Slower than expected} wrong_direction{Moving away from your goal} no_target{Your goal doesn't set a pace} insufficient_data{Not enough data for a trend} other{{status}}}",
   "bodyTrendRate": "{rate}% per week",
   "bodyTrendTarget": "{direction, select, loss{Target: lose {min}–{max}% per week} gain{Target: gain {min}–{max}% per week} other{}}",
   "bodyChartLabel": "7-day average: from {first} to {last} over {count} entries",

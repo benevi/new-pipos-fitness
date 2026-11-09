@@ -191,7 +191,8 @@ class _WeightCard extends StatelessWidget {
     final ok = t.status == WeightTrendStatus.onTrack;
     final warn =
         t.status == WeightTrendStatus.tooFast ||
-        t.status == WeightTrendStatus.tooSlow;
+        t.status == WeightTrendStatus.tooSlow ||
+        t.status == WeightTrendStatus.wrongDirection;
     return SectionCard(
       title: l10n.bodyWeightTitle,
       child: Column(

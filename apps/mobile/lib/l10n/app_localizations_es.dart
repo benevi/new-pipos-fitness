@@ -1585,6 +1585,7 @@ class AppLocalizationsEs extends AppLocalizations {
       'on_track': 'Vas a buen ritmo',
       'too_fast': 'Vas demasiado rápido',
       'too_slow': 'Vas más lento de lo previsto',
+      'wrong_direction': 'Vas en sentido contrario a tu objetivo',
       'no_target': 'Tu objetivo no fija un ritmo',
       'insufficient_data': 'Faltan datos para ver el ritmo',
       'other': '$status',

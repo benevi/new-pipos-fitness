@@ -397,6 +397,10 @@ enum WeightTrendStatus implements WireEnum {
   onTrack('on_track'),
   tooFast('too_fast'),
   tooSlow('too_slow'),
+
+  /// El peso va en sentido contrario al objetivo (baja con meta de ganar o
+  /// sube con meta de perder).
+  wrongDirection('wrong_direction'),
   noTarget('no_target'),
   insufficientData('insufficient_data');
 
