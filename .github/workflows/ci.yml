@@ -71,6 +71,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Fixtures de la app móvil válidos contra los contratos Zod
+        run: node apps/mobile/tool/validate_fixtures.mjs
+
       - name: OpenAPI al día (contratos → apps/api/openapi.json)
         run: pnpm --filter @pipos/api openapi:check
 
