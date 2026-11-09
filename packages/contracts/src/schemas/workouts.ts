@@ -12,12 +12,27 @@ import { WarmupSetResponseSchema } from './plans.js';
  * entrenamiento y cada serie: reenviar el mismo `clientId` devuelve la fila existente
  * (200) en lugar de crear otra.
  */
+/**
+ * Ajuste de la sesión de hoy (idea 4, ADR-0013; PROGRAMACION.md §16.17): minutos disponibles
+ * (15-90, incluye el calentamiento general; null = sin límite) y volumen reducido voluntario.
+ * Solo se guarda el modo elegido, nunca el motivo.
+ */
+export const WorkoutAdjustmentSchema = z
+  .object({
+    availableMinutes: z.number().int().min(15).max(90).nullable().default(null),
+    reducedVolume: z.boolean().default(false),
+  })
+  .strict();
+export type WorkoutAdjustment = z.infer<typeof WorkoutAdjustmentSchema>;
+
 export const StartWorkoutRequestSchema = z
   .object({
     clientId: IdSchema,
     planSessionId: IdSchema,
     /** Reloj del cliente. */
     startedAt: DateTimeSchema,
+    /** Ajuste elegido antes de empezar; `GET /sessions/today` lo aplica mientras dure el entrenamiento. */
+    adjustment: WorkoutAdjustmentSchema.optional(),
   })
   .strict();
 export type StartWorkoutRequest = z.infer<typeof StartWorkoutRequestSchema>;
@@ -103,6 +118,8 @@ export const WorkoutResponseSchema = z
     completedAt: DateTimeSchema.nullable(),
     sets: z.array(SetLogResponseSchema),
     substitutions: z.array(SubstitutionResponseSchema),
+    /** Ajuste guardado al empezar (null = sesión completa). Siempre presente en el servidor. */
+    adjustment: WorkoutAdjustmentSchema.nullable().default(null),
   })
   .strict();
 export type WorkoutResponse = z.infer<typeof WorkoutResponseSchema>;
@@ -181,6 +198,36 @@ export const TodayExerciseSchema = z
   .strict();
 export type TodayExercise = z.infer<typeof TodayExerciseSchema>;
 
+/**
+ * GET /sessions/today?minutes=30&mode=reduced — vista ajustada de la sesión de hoy (solo lectura:
+ * no guarda nada ni crea una versión del plan). Sin parámetros y con un entrenamiento en curso,
+ * se aplica el ajuste guardado al empezarlo.
+ */
+export const TodaySessionQuerySchema = z
+  .object({
+    minutes: z.coerce.number().int().min(15).max(90).optional(),
+    mode: z.enum(['normal', 'reduced']).optional(),
+  })
+  .strict();
+export type TodaySessionQuery = z.infer<typeof TodaySessionQuerySchema>;
+
+export const TodayAdjustmentSchema = z
+  .object({
+    /** De dónde sale el ajuste: parámetros de la petición o el entrenamiento en curso. */
+    source: z.enum(['query', 'workout']),
+    availableMinutes: z.number().int().nullable(),
+    reducedVolume: z.boolean(),
+    /** Estimación de la sesión ajustada (min, incluye el calentamiento general). */
+    estimatedMinutes: z.number(),
+    /** false si ni con solo los principales al mínimo cabe en el tiempo. */
+    fits: z.boolean(),
+    /** Ejercicios quitados hoy (no aparecen en `exercises`), en el orden en que se quitaron. */
+    dropped: z.array(z.object({ planExerciseId: IdSchema, exercise: ExerciseRefSchema }).strict()),
+    rationale: z.array(z.string()),
+  })
+  .strict();
+export type TodayAdjustment = z.infer<typeof TodayAdjustmentSchema>;
+
 export const TodaySessionResponseSchema = z
   .object({
     planVersionId: IdSchema,
@@ -200,6 +247,8 @@ export const TodaySessionResponseSchema = z
       .strict()
       .nullable(),
     exercises: z.array(TodayExerciseSchema),
+    /** Ajuste aplicado hoy (idea 4); null = sesión completa. Siempre presente en el servidor. */
+    adjustment: TodayAdjustmentSchema.nullable().default(null),
   })
   .strict();
 export type TodaySessionResponse = z.infer<typeof TodaySessionResponseSchema>;

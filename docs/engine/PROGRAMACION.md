@@ -823,3 +823,33 @@ Propiedad comprobada con fast-check: toda carga propuesta por la subida, la baja
 
 Fuera de alcance: microdiscos y pasos propios por usuario (`TrainingProfile.loadSteps`), anotado como LATER.
 
+### 16.17 Ajuste de la sesión de hoy: poco tiempo o volumen reducido
+
+Origen: idea 4 de `docs/IDEAS_EL_PLAN.md` (una app previa recortaba ejercicios del final con cortes fijos del 66 % y 50 % y subía series un 15 % con «energía alta»; se adapta sin esos cortes ni esa subida). Función pura `adjustSession`; no crea una versión del plan.
+
+**Poco tiempo** (`availableMinutes`, 15-90; incluye el calentamiento general):
+1. Se quitan ejercicios **enteros** por prioridad inversa de §6: core → accesorio → secundario; dentro de cada rol, del último al primero. **Nunca** el principal.
+2. Se para en cuanto la estimación de §8 cabe en el tiempo.
+3. Si con solo los principales sigue sin caber, cada principal baja una serie (del último al primero, mínimo 2) hasta caber; si aun así no cabe, se avisa.
+
+Apoyo: el volumen **semanal** es lo que más pesa en la hipertrofia (§1) y los multiarticulares van primero (§6). El criterio de descarte en sí es **heurístico, confianza baja**.
+
+**Volumen reducido** (opción voluntaria, nunca sugerida por un cuestionario de energía ni de sueño):
+- una serie menos por ejercicio (mínimo 2 en principal y secundarios, 1 en el resto);
+- RIR objetivo + 1;
+- sin subida de carga ese día (si tocaba subir, se mantiene la carga: `hold`).
+
+Apoyo: la autorregulación por RIR es eficaz (Graham y Cleather 2021; Helms 2018; §7, confianza media). Que reducir series por una escala de energía mejore los resultados **no tiene evidencia**: por eso no se pregunta por la energía y el usuario elige el modo. **No se adopta** subir series con «energía alta» (puede superar el techo de volumen de §1).
+
+**Progresión.** Las sesiones ajustadas (`ExerciseSessionLog.adjusted`) no cuentan para la descarga reactiva ni para la bajada por rendimiento (§7, §16.9): un día flojo elegido no provoca una descarga. Siguen contando para la carga actual y para la ausencia de §16.9.
+
+**Propiedades comprobadas** (fast-check): nunca se quita un principal; nunca aumenta el número de ejercicios ni de series; el resultado cabe en el tiempo o lo avisa; es determinista; con volumen reducido no sube la carga.
+
+| constante | valor | fuente | confianza |
+|---|---|---|---|
+| `adjust.dropOrder` | core, accesorio, secundario | §6 (orden inverso) | baja (heurística) |
+| `adjust.minMinutes` / `maxMinutes` | 15 / 90 | rango de `minutesPerSession` | baja (heurística) |
+| `adjust.minMainSets` | 2 | §16.3 `series.min` | baja (heurística) |
+| `adjust.reducedSetsDelta` | 1 | diseño | baja (heurística) |
+| `adjust.reducedExtraRir` | 1 | diseño; autorregulación §7 | baja (heurística) |
+

@@ -47,5 +47,9 @@ export function toWorkoutResponse(w: WorkoutRow): WorkoutResponse {
       exercise: s.exercise,
       substitutedFrom: s.planExercise.exercise,
     })),
+    adjustment:
+      w.adjustedMinutes !== null || w.reducedVolume
+        ? { availableMinutes: w.adjustedMinutes, reducedVolume: w.reducedVolume }
+        : null,
   };
 }

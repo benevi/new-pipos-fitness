@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { z } from 'zod';
 import {
@@ -15,7 +15,9 @@ import {
   SubstituteExerciseRequestSchema,
   SubstitutesResponseSchema,
   SubstitutionResponseSchema,
+  TodaySessionQuerySchema,
   TodaySessionResponseSchema,
+  type TodaySessionQuery,
   UpsertSetRequestSchema,
   WorkoutResponseSchema,
   type FinishWorkoutRequest,
@@ -55,11 +57,14 @@ export class WorkoutsController {
   @Contract({
     tag: 'workouts',
     summary: 'Sesión de hoy: calentamiento y prescripción con carga sugerida',
+    description:
+      'minutes (15-90) y mode=reduced ajustan la vista de hoy quitando ejercicios enteros de menor prioridad o una serie por ejercicio (PROGRAMACION.md §16.17). Solo lectura: no guarda nada ni crea una versión del plan.',
+    query: TodaySessionQuerySchema,
     response: TodaySessionResponseSchema,
     errors: [404, 409],
   })
-  today(@CurrentUser() user: AuthenticatedUser) {
-    return this.sessions.today(user.id);
+  today(@CurrentUser() user: AuthenticatedUser, @Query() query: TodaySessionQuery) {
+    return this.sessions.today(user.id, query);
   }
 
   @Post('workouts')

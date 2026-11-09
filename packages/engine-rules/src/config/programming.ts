@@ -291,6 +291,23 @@ export const PROGRAMMING = {
       note: 'por encima, la explicación avisa de que el siguiente peso disponible es un salto grande',
     }),
   },
+  /** Ajuste de la sesión de hoy: poco tiempo o volumen reducido (idea 4, ADR-0013). */
+  adjust: {
+    dropOrder: k(['core', 'accessory', 'secondary'] as const, 'PROGRAMACION.md §16.17', 'baja', {
+      heuristic: true,
+      note: 'orden inverso de prioridad de §6; nunca se quita el principal',
+    }),
+    minMinutes: k(15, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'min' }),
+    maxMinutes: k(90, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'min' }),
+    minMainSets: k(2, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedSetsDelta: k(1, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedMinSetsMain: k(2, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedMinSetsOther: k(1, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedExtraRir: k(1, 'PROGRAMACION.md §16.17', 'baja', {
+      heuristic: true,
+      note: 'apoyo: autorregulación por RIR (Graham y Cleather 2021; Helms 2018, §7)',
+    }),
+  },
   balance: {
     pullPushRatioMin: k(1, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),
     pullPushRatioMax: k(1.5, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),

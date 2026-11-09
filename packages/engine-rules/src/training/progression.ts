@@ -137,9 +137,12 @@ export function nextPrescription(
 
   // 3. Descarga reactiva: estancamiento o regresión N sesiones seguidas (PROGRAMACION.md §7),
   //    comparando solo lo comparable (misma carga, o e1RM si la carga bajó).
+  // Las sesiones ajustadas (poco tiempo o volumen reducido, §16.17) no cuentan: un día flojo
+  // elegido no debe provocar una descarga ni una bajada de carga.
+  const comparable = history.filter((h) => !h.adjusted);
   const n = pr.stagnationSessions.value;
-  if (history.length >= n + 1) {
-    const recent = history.slice(-(n + 1));
+  if (comparable.length >= n + 1) {
+    const recent = comparable.slice(-(n + 1));
     let stalled = true;
     for (let i = 1; i < recent.length; i++) {
       if (!notImproving(recent[i - 1], recent[i], config.e1rm.epleyDivisor.value)) stalled = false;
@@ -153,8 +156,9 @@ export function nextPrescription(
   }
 
   // 4. Rendimiento por debajo del objetivo dos sesiones seguidas → bajar la carga.
-  const prev = history.length >= 2 ? history[history.length - 2] : null;
-  if (underperformed(last, p)) {
+  const lastComparable = comparable.length > 0 ? comparable[comparable.length - 1] : null;
+  const prev = comparable.length >= 2 ? comparable[comparable.length - 2] : null;
+  if (lastComparable === last && underperformed(last, p)) {
     if (prev && underperformed(prev, p) && weighted && currentLoad !== null) {
       const reduced = lower(currentLoad * (1 - pr.reactiveDecreasePct.value / 100), currentLoad);
       return {

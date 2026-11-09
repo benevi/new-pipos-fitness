@@ -64,7 +64,14 @@ export class WorkoutsService {
     try {
       // La FK compuesta (planSessionId, userId) impide en BD apuntar a la sesión de otro usuario.
       const created = await this.prisma.workoutSession.create({
-        data: { userId, clientId: input.clientId, planSessionId: input.planSessionId, startedAt: new Date(input.startedAt) },
+        data: {
+          userId,
+          clientId: input.clientId,
+          planSessionId: input.planSessionId,
+          startedAt: new Date(input.startedAt),
+          adjustedMinutes: input.adjustment?.availableMinutes ?? null,
+          reducedVolume: input.adjustment?.reducedVolume ?? false,
+        },
         include: workoutInclude,
       });
       return { value: toWorkoutResponse(created), created: true };

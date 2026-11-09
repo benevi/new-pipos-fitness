@@ -1,5 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
+  adjustedPrescription,
+  adjustSession,
   barKgFor,
   daysBetween,
   loadImplement,
@@ -9,7 +11,7 @@ import {
   plateBreakdown,
   PROGRAMMING,
 } from '@pipos/engine-rules';
-import type { engineV2, ExerciseRef, TodayExercise, TodaySessionResponse } from '@pipos/contracts';
+import type { engineV2, ExerciseRef, TodayExercise, TodaySessionQuery, TodaySessionResponse } from '@pipos/contracts';
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { localDate } from '../../common/time';
@@ -65,7 +67,7 @@ export class SessionsService {
     private readonly notes: NotesService,
   ) {}
 
-  async today(userId: string): Promise<TodaySessionResponse> {
+  async today(userId: string, query: TodaySessionQuery = {}): Promise<TodaySessionResponse> {
     const ctx = await this.engineInput.load(userId);
     if (!ctx) throw new ApiError(HttpStatus.CONFLICT, 'PROFILE_REQUIRED', 'Complete your training profile first');
     const tz = ctx.profile.timezone;
@@ -126,7 +128,7 @@ export class SessionsService {
     const today = localDate(this.clock.now(), tz);
     const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
 
-    const exercises: TodayExercise[] = session.exercises.map((slot) => {
+    const computed = session.exercises.map((slot) => {
       const performedId = performedOf(slot);
       const original: ExerciseRef = { id: slot.exercise.id, slug: slot.exercise.slug, nameEs: slot.exercise.nameEs };
       const performed = refs.get(performedId) ?? original;
@@ -137,6 +139,7 @@ export class SessionsService {
       const own = history.entries.filter((h) => h.exerciseId === performed.slug);
       const substituted = performedId !== slot.exerciseId;
       const initial = substituted || slot.initialLoadKg === null ? null : Number(slot.initialLoadKg);
+      const current = currentLoad(loadType, initial, own);
       const result = nextPrescription({
         prescription: {
           exerciseId: performed.slug,
@@ -146,7 +149,7 @@ export class SessionsService {
           repMin: slot.repMin,
           repMax: slot.repMax,
           targetRir: slot.targetRir,
-          loadKg: currentLoad(loadType, initial, own),
+          loadKg: current,
           implement,
         },
         history: own,
@@ -156,36 +159,74 @@ export class SessionsService {
       if (!result.ok) {
         throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, 'INTERNAL', 'Could not compute the prescription');
       }
-      const next = result.next;
-      return {
-        planExerciseId: slot.id,
-        order: slot.order,
-        exercise: performed,
-        substitutedFrom: substituted ? original : null,
-        cuesEs: entry?.cuesEs ?? slot.exercise.cuesEs,
-        movementPattern,
-        loadType,
-        role: slot.role,
-        restSeconds: slot.restSeconds,
-        prescription: {
-          action: next.action,
-          sets: next.sets,
-          repMin: next.repMin,
-          repMax: next.repMax,
-          targetRir: next.targetRir,
-          loadKg: next.loadKg,
-          isDeload: next.isDeload,
-          rationale: next.rationale,
-        },
-        warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null, implement),
-        loggedSets: (workout?.setLogs ?? []).filter((s) => s.planExerciseId === slot.id).map(toSetResponse),
-        loadImplement: implement,
-        loadStepKg: implement ? loadStepKg(implement) : null,
-        plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
-        pinned: !swaps.has(slot.id) && slot.override !== null && performedId !== slot.exerciseId,
-        note: notes.get(performedId) ?? null,
-      };
+      return { slot, performedId, original, performed, entry, movementPattern, loadType, implement, substituted, current, next: result.next };
     });
+
+    // Ajuste de hoy (idea 4): parámetros de la petición o, si no hay, el guardado al empezar.
+    const requested = query.minutes !== undefined || query.mode !== undefined;
+    const adjustment = requested
+      ? { source: 'query' as const, availableMinutes: query.minutes ?? null, reducedVolume: query.mode === 'reduced' }
+      : workout && (workout.adjustedMinutes !== null || workout.reducedVolume)
+        ? { source: 'workout' as const, availableMinutes: workout.adjustedMinutes, reducedVolume: workout.reducedVolume }
+        : null;
+    const active = adjustment && (adjustment.availableMinutes !== null || adjustment.reducedVolume) ? adjustment : null;
+    const adjusted = active
+      ? adjustSession(
+          computed.map((c) => ({
+            id: c.slot.id,
+            nameEs: c.performed.nameEs,
+            role: c.slot.role,
+            order: c.slot.order,
+            sets: c.next.sets,
+            repMin: c.next.repMin,
+            repMax: c.next.repMax,
+            targetRir: c.next.targetRir,
+            restSeconds: c.slot.restSeconds,
+            isUnilateral: c.entry?.isUnilateral ?? false,
+            warmupSets: Array.isArray(c.slot.warmupSets) ? c.slot.warmupSets.length : 0,
+          })),
+          { availableMinutes: active.availableMinutes, reducedVolume: active.reducedVolume },
+        )
+      : null;
+    const keptById = new Map(adjusted?.kept.map((k) => [k.id, k]) ?? []);
+
+    const exercises: TodayExercise[] = computed.flatMap((c) => {
+      const { slot, performedId, loadType, implement } = c;
+      const kept = keptById.get(slot.id);
+      if (adjusted && !kept) return [];
+      const next = kept && active ? adjustedPrescription(c.next, kept, active.reducedVolume, c.current) : c.next;
+      return [
+        {
+          planExerciseId: slot.id,
+          order: slot.order,
+          exercise: c.performed,
+          substitutedFrom: c.substituted ? c.original : null,
+          cuesEs: c.entry?.cuesEs ?? slot.exercise.cuesEs,
+          movementPattern: c.movementPattern,
+          loadType,
+          role: slot.role,
+          restSeconds: slot.restSeconds,
+          prescription: {
+            action: next.action,
+            sets: next.sets,
+            repMin: next.repMin,
+            repMax: next.repMax,
+            targetRir: next.targetRir,
+            loadKg: next.loadKg,
+            isDeload: next.isDeload,
+            rationale: next.rationale,
+          },
+          warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null, implement),
+          loggedSets: (workout?.setLogs ?? []).filter((s) => s.planExerciseId === slot.id).map(toSetResponse),
+          loadImplement: implement,
+          loadStepKg: implement ? loadStepKg(implement) : null,
+          plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
+          pinned: !swaps.has(slot.id) && slot.override !== null && performedId !== slot.exerciseId,
+          note: notes.get(performedId) ?? null,
+        },
+      ];
+    });
+    const byId = new Map(computed.map((c) => [c.slot.id, c]));
 
     return {
       planVersionId: version.id,
@@ -203,6 +244,18 @@ export class SessionsService {
         ? { id: workout.id, clientId: workout.clientId, status: workout.status, startedAt: workout.startedAt.toISOString() }
         : null,
       exercises,
+      adjustment:
+        active && adjusted
+          ? {
+              source: active.source,
+              availableMinutes: active.availableMinutes,
+              reducedVolume: active.reducedVolume,
+              estimatedMinutes: adjusted.estimatedMinutes,
+              fits: adjusted.fits,
+              dropped: adjusted.dropped.map((id) => ({ planExerciseId: id, exercise: byId.get(id)!.performed })),
+              rationale: adjusted.rationale,
+            }
+          : null,
     };
   }
 }

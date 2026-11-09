@@ -961,6 +961,25 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "adjustment": {
+                  "type": "object",
+                  "properties": {
+                    "availableMinutes": {
+                      "type": "integer",
+                      "minimum": 15,
+                      "maximum": 90,
+                      "nullable": true,
+                      "default": null
+                    },
+                    "reducedVolume": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "default": null
                 }
               },
               "required": [
@@ -3518,6 +3537,23 @@
           "startedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "availableMinutes": {
+                "type": "integer",
+                "minimum": 15,
+                "maximum": 90,
+                "nullable": true,
+                "default": null
+              },
+              "reducedVolume": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false
           }
         },
         "required": [
@@ -4085,6 +4121,87 @@
               ],
               "additionalProperties": false
             }
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "query",
+                  "workout"
+                ]
+              },
+              "availableMinutes": {
+                "type": "integer",
+                "nullable": true
+              },
+              "reducedVolume": {
+                "type": "boolean"
+              },
+              "estimatedMinutes": {
+                "type": "number"
+              },
+              "fits": {
+                "type": "boolean"
+              },
+              "dropped": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "planExerciseId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "exercise": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "nameEs": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "slug",
+                        "nameEs"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "planExerciseId",
+                    "exercise"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "rationale": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "source",
+              "availableMinutes",
+              "reducedVolume",
+              "estimatedMinutes",
+              "fits",
+              "dropped",
+              "rationale"
+            ],
+            "additionalProperties": false,
+            "nullable": true,
+            "default": null
           }
         },
         "required": [
@@ -4551,6 +4668,25 @@
               ],
               "additionalProperties": false
             }
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "availableMinutes": {
+                "type": "integer",
+                "minimum": 15,
+                "maximum": 90,
+                "nullable": true,
+                "default": null
+              },
+              "reducedVolume": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false,
+            "nullable": true,
+            "default": null
           }
         },
         "required": [
@@ -7025,12 +7161,50 @@
           "workouts"
         ],
         "summary": "Sesión de hoy: calentamiento y prescripción con carga sugerida",
+        "description": "minutes (15-90) y mode=reduced ajustan la vista de hoy quitando ejercicios enteros de menor prioridad o una serie por ejercicio (PROGRAMACION.md §16.17). Solo lectura: no guarda nada ni crea una versión del plan.",
         "security": [
           {
             "bearer": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "integer",
+                  "minimum": 15,
+                  "maximum": 90
+                }
+              ]
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "normal",
+                    "reduced"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",

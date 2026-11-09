@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import { isLoadStepMultiple } from '@pipos/engine-rules';
 import {
   AccountExportSchema,
@@ -8,7 +9,17 @@ import {
   TodaySessionResponseSchema,
   type TodayExercise,
 } from '@pipos/contracts';
-import { bearer, createTestApp, setBody, startToday, truncateAll, userWithPlan, type TestContext } from './helpers';
+import type { WriteEvent } from '../../prisma/prisma.service';
+import {
+  BEGINNER_GYM,
+  bearer,
+  createTestApp,
+  setBody,
+  startToday,
+  truncateAll,
+  userWithPlan,
+  type TestContext,
+} from './helpers';
 
 const DAY = 86_400_000;
 
@@ -251,7 +262,7 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
             level: profile.body.level,
             daysPerWeek: profile.body.daysPerWeek,
             minutesPerSession: profile.body.minutesPerSession,
-            equipment: profile.body.equipment.filter((e: string) => !removable.includes(e)),
+            equipment: profile.body.equipment.filter((e: string) => !(removable as string[]).includes(e)),
             timezone: profile.body.timezone,
           })
           .expect(200);
@@ -289,6 +300,107 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
         return;
       }
       throw new Error('ningún ejercicio con alternativas');
+    });
+  });
+
+  describe('Idea 4: ajuste de hoy (poco tiempo o volumen reducido)', () => {
+    it('?minutes recorta ejercicios enteros sin escribir ni crear versión; mode=reduced baja series y sube RIR', async () => {
+      const { user } = await userWithPlan(ctx.app, { ...BEGINNER_GYM, minutesPerSession: 60 });
+      const t = bearer(user.accessToken);
+      const full = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(full.adjustment).toBeNull();
+      const versions = await ctx.prisma.planVersion.count({ where: { userId: user.id } });
+
+      const writes: WriteEvent[] = [];
+      const stop = ctx.prisma.onWrite((e) => writes.push(e));
+      let short;
+      let reduced;
+      try {
+        short = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today?minutes=20').set(t).expect(200)).body);
+        reduced = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today?mode=reduced').set(t).expect(200)).body);
+      } finally {
+        stop();
+      }
+      expect(writes).toEqual([]);
+      expect(await ctx.prisma.planVersion.count({ where: { userId: user.id } })).toBe(versions);
+
+      expect(short.adjustment).toMatchObject({ source: 'query', availableMinutes: 20, reducedVolume: false });
+      expect(short.exercises.length + short.adjustment!.dropped.length).toBe(full.exercises.length);
+      expect(short.adjustment!.dropped.length).toBeGreaterThan(0);
+      // Nunca se quita el principal ni aumenta el volumen.
+      for (const e of full.exercises.filter((x) => x.role === 'main')) {
+        expect(short.exercises.some((x) => x.planExerciseId === e.planExerciseId)).toBe(true);
+      }
+      const fullSets = new Map(full.exercises.map((e) => [e.planExerciseId, e.prescription.sets]));
+      for (const e of short.exercises) expect(e.prescription.sets).toBeLessThanOrEqual(fullSets.get(e.planExerciseId)!);
+      if (short.adjustment!.fits) expect(short.adjustment!.estimatedMinutes).toBeLessThanOrEqual(20);
+      expect(short.adjustment!.rationale.length).toBeGreaterThan(0);
+
+      expect(reduced.exercises).toHaveLength(full.exercises.length);
+      for (const e of reduced.exercises) {
+        const f = full.exercises.find((x) => x.planExerciseId === e.planExerciseId)!;
+        expect(e.prescription.sets).toBeLessThanOrEqual(f.prescription.sets);
+        expect(e.prescription.targetRir).toBe(Math.min(5, f.prescription.targetRir + 1));
+      }
+
+      // Parámetros fuera de rango → 400.
+      await request(server()).get('/sessions/today?minutes=10').set(t).expect(400);
+      await request(server()).get('/sessions/today?mode=turbo').set(t).expect(400);
+
+      // Empezar con el ajuste: queda guardado y today lo aplica sin parámetros; reenvío idempotente.
+      const clientId = randomUUID();
+      const body = { clientId, planSessionId: full.planSessionId, startedAt: new Date().toISOString(), adjustment: { availableMinutes: 20 } };
+      const started = await request(server()).post('/workouts').set(t).send(body).expect(201);
+      expect(started.body.adjustment).toEqual({ availableMinutes: 20, reducedVolume: false });
+      await request(server()).post('/workouts').set(t).send(body).expect(200);
+      const during = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(during.adjustment).toMatchObject({ source: 'workout', availableMinutes: 20 });
+      expect(during.exercises.map((e) => e.planExerciseId)).toEqual(short.exercises.map((e) => e.planExerciseId));
+      // Un ajuste fuera de rango al empezar → 400.
+      await request(server())
+        .post('/workouts')
+        .set(t)
+        .send({ ...body, clientId: randomUUID(), adjustment: { availableMinutes: 5 } })
+        .expect(400);
+    });
+
+    it('dos sesiones flojas con volumen reducido no bajan la carga (no cuentan para la progresión)', async () => {
+      const { user } = await userWithPlan(ctx.app);
+      const t = bearer(user.accessToken);
+      const start = new Date(Date.now() - 10 * DAY);
+      const plan = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+      let firstWeighted: string | null = null;
+      // Dos vueltas al microciclo, siempre en modo reducido y por debajo del rango.
+      for (let i = 0; i < plan.sessions.length * 2; i++) {
+        const at = new Date(start.getTime() + i * DAY);
+        ctx.clock.set(at);
+        const today = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today?mode=reduced').set(t).expect(200)).body);
+        const w = await request(server())
+          .post('/workouts')
+          .set(t)
+          .send({ clientId: randomUUID(), planSessionId: today.planSessionId, startedAt: at.toISOString(), adjustment: { reducedVolume: true } })
+          .expect(201);
+        if (today.order === 0) {
+          const ex = today.exercises.find((e) => e.loadType === 'weighted')!;
+          firstWeighted ??= ex.planExerciseId;
+          const target = today.exercises.find((e) => e.planExerciseId === firstWeighted)!;
+          for (let s = 0; s < target.prescription.sets; s++) {
+            await request(server())
+              .post(`/workouts/${w.body.id}/sets`)
+              .set(t)
+              .send(setBody(target, { setIndex: s, reps: target.prescription.repMin - 2, loadKg: 40, rir: 0, completedAt: new Date(at.getTime() + (s + 1) * 60_000).toISOString() }))
+              .expect(201);
+          }
+        }
+        await finishAt(user.accessToken, w.body.id, at);
+      }
+      ctx.clock.set(new Date(start.getTime() + plan.sessions.length * 2 * DAY));
+      const now = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(now.order).toBe(0);
+      const ex = now.exercises.find((e) => e.planExerciseId === firstWeighted)!;
+      expect(ex.prescription.action).not.toBe('decrease_load');
+      expect(ex.prescription.action).not.toBe('deload');
+      expect(ex.prescription.loadKg).toBe(40);
     });
   });
 });

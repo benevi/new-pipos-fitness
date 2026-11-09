@@ -19,3 +19,11 @@ export {
   type RoundDirection,
 } from './load.js';
 export { resolvePins, pinDropReason, type PinDropReason, type ResolvedPins } from './pins.js';
+export {
+  adjustSession,
+  adjustedPrescription,
+  type AdjustItem,
+  type AdjustResult,
+  type AdjustedItem,
+  type SessionAdjustment,
+} from './adjust.js';

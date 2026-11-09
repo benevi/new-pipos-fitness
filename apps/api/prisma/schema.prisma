@@ -542,20 +542,24 @@ model PlanExerciseOverride {
 // ─────────────────────────────────────────────────────────────
 
 model WorkoutSession {
-  id            String                @id @default(uuid()) @db.Uuid
-  clientId      String                @db.Uuid
-  userId        String                @db.Uuid
-  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planSessionId String                @db.Uuid
-  planSession   PlanSession           @relation(fields: [planSessionId, userId], references: [id, userId], onDelete: NoAction)
-  status        WorkoutStatus         @default(in_progress)
-  startedAt     DateTime              @db.Timestamptz(3)
-  completedAt   DateTime?             @db.Timestamptz(3)
-  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime              @updatedAt @db.Timestamptz(3)
-  setLogs       SetLog[]
-  substitutions WorkoutSubstitution[]
-  e1rmEntries   ExerciseE1rm[]
+  id              String                @id @default(uuid()) @db.Uuid
+  clientId        String                @db.Uuid
+  userId          String                @db.Uuid
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planSessionId   String                @db.Uuid
+  planSession     PlanSession           @relation(fields: [planSessionId, userId], references: [id, userId], onDelete: NoAction)
+  status          WorkoutStatus         @default(in_progress)
+  /// Ajuste elegido al empezar (idea 4, ADR-0013): minutos disponibles (null = sin límite) y
+  /// volumen reducido. Solo el modo, nunca el motivo (no es dato de salud).
+  adjustedMinutes Int?                  @db.SmallInt
+  reducedVolume   Boolean               @default(false)
+  startedAt       DateTime              @db.Timestamptz(3)
+  completedAt     DateTime?             @db.Timestamptz(3)
+  createdAt       DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @db.Timestamptz(3)
+  setLogs         SetLog[]
+  substitutions   WorkoutSubstitution[]
+  e1rmEntries     ExerciseE1rm[]
 
   @@unique([userId, clientId])
   @@unique([id, userId])
