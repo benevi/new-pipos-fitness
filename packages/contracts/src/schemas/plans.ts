@@ -6,6 +6,7 @@ import {
   SessionKindSchema,
   SplitTypeSchema,
 } from '../engine-v2/plan.js';
+import { LoadImplementSchema } from '../engine-v2/enums.js';
 import { LoadTypeSchema, MovementPatternSchema } from '../enums/index.js';
 import { DateTimeSchema, IdSchema, paginatedSchema } from './common.js';
 
@@ -38,6 +39,11 @@ export const PlanExerciseResponseSchema = z
     restSeconds: z.number().int(),
     initialLoadKg: z.number().nullable(),
     initialLoadIsEstimate: z.boolean(),
+    /**
+     * Material que fija el paso de carga (PROGRAMACION.md §16.16); null sin carga en kg.
+     * El servidor siempre lo envía; el `default` solo mantiene válidos los clientes anteriores.
+     */
+    loadImplement: LoadImplementSchema.nullable().default(null),
     warmupSets: z.array(WarmupSetResponseSchema),
     estimatedMinutes: z.number(),
     rationale: z.array(z.string()),

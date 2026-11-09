@@ -641,6 +641,22 @@
                                   "initialLoadIsEstimate": {
                                     "type": "boolean"
                                   },
+                                  "loadImplement": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "trap_bar",
+                                      "ez_bar",
+                                      "smith_machine",
+                                      "dumbbell",
+                                      "kettlebell",
+                                      "machine",
+                                      "cable",
+                                      "weight_plate"
+                                    ],
+                                    "nullable": true,
+                                    "default": null
+                                  },
                                   "warmupSets": {
                                     "type": "array",
                                     "items": {
@@ -2351,6 +2367,22 @@
                       "initialLoadIsEstimate": {
                         "type": "boolean"
                       },
+                      "loadImplement": {
+                        "type": "string",
+                        "enum": [
+                          "barbell",
+                          "trap_bar",
+                          "ez_bar",
+                          "smith_machine",
+                          "dumbbell",
+                          "kettlebell",
+                          "machine",
+                          "cable",
+                          "weight_plate"
+                        ],
+                        "nullable": true,
+                        "default": null
+                      },
                       "warmupSets": {
                         "type": "array",
                         "items": {
@@ -3718,6 +3750,58 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "loadImplement": {
+                  "type": "string",
+                  "enum": [
+                    "barbell",
+                    "trap_bar",
+                    "ez_bar",
+                    "smith_machine",
+                    "dumbbell",
+                    "kettlebell",
+                    "machine",
+                    "cable",
+                    "weight_plate"
+                  ],
+                  "nullable": true,
+                  "default": null
+                },
+                "loadStepKg": {
+                  "type": "number",
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "nullable": true,
+                  "default": null
+                },
+                "plates": {
+                  "type": "object",
+                  "properties": {
+                    "barKg": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "perSide": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "exclusiveMinimum": true,
+                        "minimum": 0
+                      }
+                    },
+                    "remainderKg": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "barKg",
+                    "perSide",
+                    "remainderKg"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "default": null
                 }
               },
               "required": [

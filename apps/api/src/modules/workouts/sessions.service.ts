@@ -1,5 +1,14 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { daysBetween, nextPendingSession, nextPrescription, PROGRAMMING } from '@pipos/engine-rules';
+import {
+  barKgFor,
+  daysBetween,
+  loadImplement,
+  loadStepKg,
+  nextPendingSession,
+  nextPrescription,
+  plateBreakdown,
+  PROGRAMMING,
+} from '@pipos/engine-rules';
 import type { engineV2, ExerciseRef, TodayExercise, TodaySessionResponse } from '@pipos/contracts';
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
@@ -30,6 +39,13 @@ export function currentLoad(
   const last = [...history].sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0)).at(-1);
   const top = last ? Math.max(0, ...last.sets.filter((s) => !s.isWarmup).map((s) => s.loadKg)) : 0;
   return top > 0 ? top : initialLoadKg;
+}
+
+/** Desglose de discos por lado (solo barras con peso conocido; idea 1, §16.16). */
+export function platesFor(implement: engineV2.LoadImplement | null, loadKg: number | null) {
+  const bar = barKgFor(implement);
+  if (bar === null || loadKg === null) return null;
+  return plateBreakdown(loadKg, bar);
 }
 
 /**
@@ -87,7 +103,7 @@ export class SessionsService {
       include: {
         exercises: {
           orderBy: { order: 'asc' },
-          include: { exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true } } },
+          include: { exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true, equipment: true } } },
         },
       },
     });
@@ -110,6 +126,7 @@ export class SessionsService {
       const entry = catalog.byId.get(performedId);
       const movementPattern = entry?.movementPattern ?? slot.exercise.movementPattern;
       const loadType = entry?.loadType ?? slot.exercise.loadType;
+      const implement = entry ? entry.loadImplement : loadImplement(slot.exercise);
       const own = history.entries.filter((h) => h.exerciseId === performed.slug);
       const substituted = performedId !== slot.exerciseId;
       const initial = substituted || slot.initialLoadKg === null ? null : Number(slot.initialLoadKg);
@@ -123,6 +140,7 @@ export class SessionsService {
           repMax: slot.repMax,
           targetRir: slot.targetRir,
           loadKg: currentLoad(loadType, initial, own),
+          implement,
         },
         history: own,
         today,
@@ -152,8 +170,11 @@ export class SessionsService {
           isDeload: next.isDeload,
           rationale: next.rationale,
         },
-        warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null),
+        warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null, implement),
         loggedSets: (workout?.setLogs ?? []).filter((s) => s.planExerciseId === slot.id).map(toSetResponse),
+        loadImplement: implement,
+        loadStepKg: implement ? loadStepKg(implement) : null,
+        plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
       };
     });
 

@@ -1,5 +1,5 @@
 import type { Prisma } from '@prisma/client';
-import { PROGRAMMING } from '@pipos/engine-rules';
+import { loadImplement, roundLoad as roundToStep } from '@pipos/engine-rules';
 import type {
   engineV2,
   PlanExerciseResponse,
@@ -33,7 +33,7 @@ export const planVersionInclude = {
     include: {
       exercises: {
         orderBy: { order: 'asc' },
-        include: { exercise: { select: { slug: true, nameEs: true, movementPattern: true, loadType: true } } },
+        include: { exercise: { select: { slug: true, nameEs: true, movementPattern: true, loadType: true, equipment: true } } },
       },
     },
   },
@@ -45,17 +45,21 @@ type SummaryRow = Pick<
   'id' | 'planId' | 'version' | 'engineVersion' | 'mesocycleWeeks' | 'objectiveScore' | 'createdAt' | 'rationale'
 > & { _count?: { sessions: number }; sessions?: unknown[] };
 
-export function roundLoad(kg: number): number {
-  const step = PROGRAMMING.e1rm.loadRoundingKg.value;
-  return Math.floor(kg / step + 1e-9) * step;
+/** Hacia abajo al paso real del material (PROGRAMACION.md §16.16; 1 kg sin material). */
+export function roundLoad(kg: number, implement: engineV2.LoadImplement | null = null): number {
+  return roundToStep(kg, implement, 'down');
 }
 
-export function warmupsFor(stored: unknown, workingLoad: number | null): WarmupSetResponse[] {
+export function warmupsFor(
+  stored: unknown,
+  workingLoad: number | null,
+  implement: engineV2.LoadImplement | null = null,
+): WarmupSetResponse[] {
   const ramp = Array.isArray(stored) ? (stored as { reps: number; loadPct: number | null }[]) : [];
   return ramp.map((w) => ({
     reps: w.reps,
     loadPct: w.loadPct,
-    loadKg: workingLoad === null || w.loadPct === null ? null : roundLoad((workingLoad * w.loadPct) / 100),
+    loadKg: workingLoad === null || w.loadPct === null ? null : roundLoad((workingLoad * w.loadPct) / 100, implement),
   }));
 }
 
@@ -155,6 +159,7 @@ export function toSummary(row: SummaryRow): PlanVersionSummary {
 
 export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exercises'][number]): PlanExerciseResponse {
   const initial = e.initialLoadKg === null ? null : Number(e.initialLoadKg);
+  const implement = loadImplement(e.exercise);
   return {
     id: e.id,
     order: e.order,
@@ -171,7 +176,8 @@ export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exerci
     restSeconds: e.restSeconds,
     initialLoadKg: initial,
     initialLoadIsEstimate: e.initialLoadIsEstimate,
-    warmupSets: warmupsFor(e.warmupSets, initial),
+    loadImplement: implement,
+    warmupSets: warmupsFor(e.warmupSets, initial, implement),
     estimatedMinutes: e.estimatedMinutes,
     rationale: readExerciseRationale(e.rationale),
   };

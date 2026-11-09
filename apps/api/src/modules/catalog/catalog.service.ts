@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { loadImplement } from '@pipos/engine-rules';
 import type {
   engineV2,
   ExerciseDetail,
@@ -31,6 +32,8 @@ export interface CatalogEntry {
   isUnilateral: boolean;
   cuesEs: string[];
   muscles: { muscle: engineV2.Muscle; fraction: number }[];
+  /** Material que fija el paso de carga (PROGRAMACION.md §16.16); null si no se carga en kg. */
+  loadImplement: engineV2.LoadImplement | null;
 }
 
 export interface EngineCatalog {
@@ -88,6 +91,7 @@ function toEntry(row: ExerciseRow): CatalogEntry {
     isUnilateral: row.isUnilateral,
     cuesEs: row.cuesEs,
     muscles: row.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
+    loadImplement: loadImplement(row),
   };
 }
 

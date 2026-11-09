@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { LoadImplementSchema } from '../engine-v2/enums.js';
+import { PlateBreakdownSchema } from '../engine-v2/load.js';
 import { ExerciseRoleSchema, SessionKindSchema } from '../engine-v2/plan.js';
 import { ProgressionActionSchema } from '../engine-v2/progression.js';
 import { LoadTypeSchema, MovementPatternSchema, WorkoutStatusSchema } from '../enums/index.js';
@@ -163,6 +165,14 @@ export const TodayExerciseSchema = z
     warmupSets: z.array(WarmupSetResponseSchema),
     /** Series ya registradas en el entrenamiento en curso. */
     loggedSets: z.array(SetLogResponseSchema),
+    // ── Campos añadidos (ADR-0013). El servidor siempre los envía; el `default` solo mantiene
+    //    válidos los clientes y fixtures anteriores.
+    /** Material que fija el paso de carga (PROGRAMACION.md §16.16); null sin carga en kg. */
+    loadImplement: LoadImplementSchema.nullable().default(null),
+    /** Paso real de carga del material (kg totales); null sin carga en kg. */
+    loadStepKg: z.number().positive().nullable().default(null),
+    /** Discos por lado para la carga sugerida (solo barras con peso conocido y carga ≥ barra). */
+    plates: PlateBreakdownSchema.nullable().default(null),
   })
   .strict();
 export type TodayExercise = z.infer<typeof TodayExerciseSchema>;
