@@ -3,7 +3,7 @@ import type { AdherenceResponse, E1rmQuery, E1rmResponse, engineV2, VolumeRespon
 import { Clock } from '../../common/clock';
 import { addDays, dateColumn, fromDateColumn, weekStartOf } from '../../common/time';
 import { PrismaService } from '../../prisma/prisma.service';
-import { E1RM_FORMULA_VERSION, groupVolume } from '../analytics/analytics-calc';
+import { E1RM_FORMULA_VERSION } from '../analytics/analytics-calc';
 import { readRationale } from '../plans/plan-mapper';
 
 export function lastWeeks(currentWeek: string, count: number): string[] {
@@ -69,11 +69,10 @@ export class ProgressService {
   async volume(userId: string, weeks: number): Promise<VolumeResponse> {
     const tz = await this.timezone(userId);
     const range = lastWeeks(weekStartOf(this.clock.now(), tz), weeks);
-    const [rows, version] = await Promise.all([
-      this.prisma.weeklyMuscleVolume.findMany({
-        where: { userId, weekStart: { gte: dateColumn(range[0]), lte: dateColumn(range[range.length - 1]) } },
-        orderBy: [{ weekStart: 'asc' }, { muscle: 'asc' }],
-      }),
+    const inRange = { userId, weekStart: { gte: dateColumn(range[0]), lte: dateColumn(range[range.length - 1]) } };
+    const [rows, groupRows, version] = await Promise.all([
+      this.prisma.weeklyMuscleVolume.findMany({ where: inRange, orderBy: [{ weekStart: 'asc' }, { muscle: 'asc' }] }),
+      this.prisma.weeklyGroupVolume.findMany({ where: inRange }),
       this.prisma.planVersion.findFirst({
         where: { userId, plan: { status: 'active' } },
         orderBy: { version: 'desc' },
@@ -88,7 +87,9 @@ export class ProgressService {
       weeks: range.map((weekStart) => {
         const own = rows.filter((r) => fromDateColumn(r.weekStart) === weekStart);
         const muscles = new Map(own.map((r) => [r.muscle, { effectiveSets: Number(r.effectiveSets), tonnageKg: Number(r.tonnageKg) }]));
-        const groups = groupVolume(muscles);
+        const groups = new Map(
+          groupRows.filter((r) => fromDateColumn(r.weekStart) === weekStart).map((r) => [r.group, Number(r.effectiveSets)]),
+        );
         const allGroups = new Set<engineV2.VolumeGroup>([...targets.keys(), ...groups.keys()]);
         return {
           weekStart,

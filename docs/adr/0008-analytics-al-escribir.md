@@ -18,3 +18,5 @@ Al guardar una serie o cerrar una sesión, dentro de la misma transacción se ac
 
 ## Revisión
 - Si el recálculo en escritura supera 50 ms en p95, mover a un job.
+
+> Fase 5: se añade la proyección `WeeklyGroupVolume` (volumen por grupo con la regla del motor, `groupFractions` de engine-rules). Tras desplegar la migración `20261110000100_volumen_por_grupo` hay que ejecutar `pnpm --filter @pipos/api analytics:rebuild`.

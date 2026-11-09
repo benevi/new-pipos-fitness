@@ -694,6 +694,7 @@ Impacto en `packages/contracts/src/enums/index.ts`: reemplazar `GoalType` por `T
 | ExerciseE1rm | `UNIQUE(userId, exerciseId, workoutSessionId)` | Upsert en escritura (una fila por ejercicio y sesión). |
 | ExerciseE1rm | `(userId, exerciseId, performedOn DESC)` | Gráfica de progresión de e1RM. |
 | WeeklyMuscleVolume | PK `(userId, weekStart, muscle)` | Upsert en escritura; gráfica semanal por músculo (`WHERE userId AND weekStart BETWEEN`). |
+| WeeklyGroupVolume | PK `(userId, weekStart, group)` | Upsert en escritura; volumen por grupo con la regla del motor (máxima fracción por ejercicio y grupo, PROGRAMACION §16.1). Fase 5: no derivable de WeeklyMuscleVolume. |
 | WeeklyAdherence | PK `(userId, weekStart)` | Upsert en escritura; tarjeta de adherencia. |
 | NutritionTarget | `(userId, createdAt DESC)` | Objetivo vigente (`LIMIT 1`) e historial. |
 
@@ -730,7 +731,7 @@ Principio: **el usuario es la raíz de borrado** (borrar cuenta = borrar todo lo
 | ExerciseE1rm → WorkoutSession | Cascade | Si se borra un entrenamiento, su e1RM deja de ser válido. |
 | ExerciseE1rm → Exercise | Restrict | Historial. |
 | ExerciseE1rm.sourceSetLogId | sin FK | Proyección reconstruible; una FK aquí obligaría a ordenar el recálculo y no aporta integridad útil (la fila se recalcula desde la sesión). |
-| WeeklyMuscleVolume / WeeklyAdherence → User | Cascade | Raíz. `planVersionId` informativo sin FK. |
+| WeeklyMuscleVolume / WeeklyGroupVolume / WeeklyAdherence → User | Cascade | Raíz. `planVersionId` informativo sin FK. |
 | NutritionTarget → User | Cascade | Raíz. |
 
 Borrado lógico de `Exercise`: el servicio de catálogo filtra `deletedAt IS NULL` en todas las lecturas para el motor y el catálogo público; las lecturas de historial (planes, logs) **no** filtran, para mostrar el nombre del ejercicio retirado.

@@ -106,6 +106,19 @@ enum Muscle {
   calves
 }
 
+enum VolumeGroup {
+  chest
+  back
+  shoulders
+  biceps
+  triceps
+  quads
+  hamstrings
+  glutes
+  calves
+  core
+}
+
 enum MuscleRole {
   primary
   secondary
@@ -228,6 +241,7 @@ model User {
   substitutions       WorkoutSubstitution[]
   e1rmHistory         ExerciseE1rm[]
   weeklyMuscleVolume  WeeklyMuscleVolume[]
+  weeklyGroupVolume   WeeklyGroupVolume[]
   weeklyAdherence     WeeklyAdherence[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
@@ -598,6 +612,22 @@ model WeeklyMuscleVolume {
   computedAt     DateTime @default(now()) @db.Timestamptz(3)
 
   @@id([userId, weekStart, muscle])
+}
+
+/// Series efectivas por grupo de volumen con la regla del motor: por serie, la máxima
+/// fracción de los músculos del ejercicio en ese grupo (PROGRAMACION.md §16.1). No se puede
+/// derivar de WeeklyMuscleVolume (que suma por músculo), por eso es una proyección propia.
+model WeeklyGroupVolume {
+  userId         String      @db.Uuid
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Lunes ISO en la zona horaria del usuario.
+  weekStart      DateTime    @db.Date
+  group          VolumeGroup
+  effectiveSets  Decimal     @db.Decimal(6, 2)
+  formulaVersion String      @db.VarChar(16)
+  computedAt     DateTime    @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, weekStart, group])
 }
 
 model WeeklyAdherence {

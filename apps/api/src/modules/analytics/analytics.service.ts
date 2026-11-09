@@ -1,7 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { dateColumn, localDate, weekRange, weekStartOf } from '../../common/time';
 import type { TransactionClient } from '../../prisma/prisma.service';
-import { bestE1rm, E1RM_FORMULA_VERSION, muscleVolume, VOLUME_FORMULA_VERSION } from './analytics-calc';
+import {
+  bestE1rm,
+  E1RM_FORMULA_VERSION,
+  GROUP_VOLUME_FORMULA_VERSION,
+  groupVolume,
+  muscleVolume,
+  VOLUME_FORMULA_VERSION,
+} from './analytics-calc';
 
 export interface WorkoutForAnalytics {
   id: string;
@@ -72,13 +79,13 @@ export class AnalyticsService {
       where: { userId, deletedAt: null, isWarmup: false, workoutSession: inWeek },
       select: { reps: true, loadKg: true, exercise: { select: { muscles: { select: { muscle: true, fraction: true } } } } },
     });
-    const volume = muscleVolume(
-      sets.map((s) => ({
-        reps: s.reps,
-        loadKg: Number(s.loadKg),
-        muscles: s.exercise.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
-      })),
-    );
+    const forCalc = sets.map((s) => ({
+      reps: s.reps,
+      loadKg: Number(s.loadKg),
+      muscles: s.exercise.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
+    }));
+    const volume = muscleVolume(forCalc);
+    const groups = groupVolume(forCalc);
     const week = dateColumn(weekStart);
     await tx.weeklyMuscleVolume.deleteMany({ where: { userId, weekStart: week } });
     if (volume.size > 0) {
@@ -90,6 +97,18 @@ export class AnalyticsService {
           effectiveSets: v.effectiveSets,
           tonnageKg: v.tonnageKg,
           formulaVersion: VOLUME_FORMULA_VERSION,
+        })),
+      });
+    }
+    await tx.weeklyGroupVolume.deleteMany({ where: { userId, weekStart: week } });
+    if (groups.size > 0) {
+      await tx.weeklyGroupVolume.createMany({
+        data: [...groups].map(([group, effectiveSets]) => ({
+          userId,
+          weekStart: week,
+          group,
+          effectiveSets,
+          formulaVersion: GROUP_VOLUME_FORMULA_VERSION,
         })),
       });
     }
@@ -122,6 +141,7 @@ export class AnalyticsService {
     const tz = await this.timezoneOf(tx, userId);
     await tx.exerciseE1rm.deleteMany({ where: { userId } });
     await tx.weeklyMuscleVolume.deleteMany({ where: { userId } });
+    await tx.weeklyGroupVolume.deleteMany({ where: { userId } });
     await tx.weeklyAdherence.deleteMany({ where: { userId } });
     const workouts = await tx.workoutSession.findMany({
       where: { userId, status: { not: 'abandoned' } },

@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 import { loadCatalog } from '@pipos/catalog';
+import { groupFractions, PROGRAMMING } from '@pipos/engine-rules';
 import {
   AccountExportSchema,
   PlanVersionResponseSchema,
@@ -295,6 +296,11 @@ describe('CUJ-1..8 (e2e, Postgres real)', () => {
     const mv = week.muscles.find((m: { muscle: string }) => m.muscle === primary.muscle);
     expect(mv.effectiveSets).toBeCloseTo(ex.prescription.sets, 5);
     expect(week.groups.some((g: { targetMin: number | null }) => g.targetMin !== null)).toBe(true);
+    // Volumen por grupo contado como el motor: máxima fracción por ejercicio y grupo (§16.1).
+    for (const [group, fraction] of groupFractions(catalog.get(ex.exercise.slug)!.muscles, PROGRAMMING)) {
+      const gv = week.groups.find((g: { group: string }) => g.group === group);
+      expect(gv.effectiveSets, group).toBeCloseTo(fraction * ex.prescription.sets, 5);
+    }
 
     const adherence = await request(server()).get('/progress/adherence?weeks=1').set(bearer(user.accessToken)).expect(200);
     expect(adherence.body.weeks[0]).toMatchObject({ plannedSessions: 3, completedSessions: 1, completedSets: ex.prescription.sets });
