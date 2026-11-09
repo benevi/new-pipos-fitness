@@ -472,8 +472,14 @@ model ExerciseMedia {
   exerciseId       String           @db.Uuid
   exercise         Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   kind             MediaKind
+  /// Vídeo de YouTube: su videoId (11 caracteres).
   externalId       String?          @db.VarChar(64)
   url              String?
+  /// Imagen propia del paquete del catálogo (`packages/catalog/media/<file>`; ADR-0014, Fase 4).
+  file             String?          @db.VarChar(96)
+  /// Crédito y licencia de la imagen (obligatorios para `image`, CHECK media_source_chk).
+  credit           String?          @db.VarChar(120)
+  licence          String?          @db.VarChar(32)
   channelName      String?
   startSeconds     Int?
   endSeconds       Int?
