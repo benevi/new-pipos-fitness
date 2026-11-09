@@ -25,7 +25,7 @@ class OnboardingScreen extends ConsumerWidget {
     return profile.when(
       loading: () => const Scaffold(body: LoadingView()),
       // Sin perfil legible (p. ej. sin red): se empieza de cero.
-      error: (_, __) => const _ProfileFormScaffold(
+      error: (_, _) => const _ProfileFormScaffold(
         profile: null,
         mode: ProfileFormMode.onboarding,
       ),

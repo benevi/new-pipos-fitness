@@ -137,15 +137,15 @@ final routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) =>
         appRedirect(refresh.auth, refresh.setup, state.matchedLocation),
     routes: [
-      GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
-      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
+      GoRoute(path: AppRoutes.splash, builder: (_, _) => const SplashScreen()),
+      GoRoute(path: AppRoutes.login, builder: (_, _) => const LoginScreen()),
       GoRoute(
         path: AppRoutes.register,
-        builder: (_, __) => const RegisterScreen(),
+        builder: (_, _) => const RegisterScreen(),
       ),
       GoRoute(
         path: AppRoutes.onboarding,
-        builder: (_, __) => const OnboardingScreen(),
+        builder: (_, _) => const OnboardingScreen(),
       ),
       GoRoute(
         path: '${AppRoutes.exercise}/:id',
@@ -158,13 +158,13 @@ final routerProvider = Provider<GoRouter>((ref) {
             WorkoutCompleteScreen(summary: state.extra as WorkoutSummary?),
       ),
       StatefulShellRoute.indexedStack(
-        builder: (_, __, shell) => ScaffoldWithNav(shell: shell),
+        builder: (_, _, shell) => ScaffoldWithNav(shell: shell),
         branches: [
           StatefulShellBranch(
             routes: [
               GoRoute(
                 path: AppRoutes.home,
-                builder: (_, __) => const TodayScreen(),
+                builder: (_, _) => const TodayScreen(),
               ),
             ],
           ),
@@ -172,11 +172,11 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.plan,
-                builder: (_, __) => const PlanScreen(),
+                builder: (_, _) => const PlanScreen(),
                 routes: [
                   GoRoute(
                     path: 'exercises',
-                    builder: (_, __) => const ExercisesScreen(),
+                    builder: (_, _) => const ExercisesScreen(),
                     routes: [
                       GoRoute(
                         path: ':muscle',
@@ -197,7 +197,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'history',
-                    builder: (_, __) => const PlanHistoryScreen(),
+                    builder: (_, _) => const PlanHistoryScreen(),
                     routes: [
                       GoRoute(
                         path: ':id',
@@ -215,7 +215,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.progress,
-                builder: (_, __) => const ProgressScreen(),
+                builder: (_, _) => const ProgressScreen(),
               ),
             ],
           ),
@@ -223,7 +223,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             routes: [
               GoRoute(
                 path: AppRoutes.settings,
-                builder: (_, __) => const SettingsScreen(),
+                builder: (_, _) => const SettingsScreen(),
                 routes: [
                   GoRoute(
                     path: 'profile',
@@ -235,7 +235,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                   ),
                   GoRoute(
                     path: 'schedule',
-                    builder: (_, __) => const ScheduleScreen(),
+                    builder: (_, _) => const ScheduleScreen(),
                   ),
                 ],
               ),
