@@ -22,7 +22,8 @@
     "analytics:rebuild": "tsx scripts/analytics-rebuild.ts",
     "audit:cleanup": "tsx scripts/audit-cleanup.ts",
     "openapi:generate": "tsx scripts/openapi.ts write",
-    "openapi:check": "tsx scripts/openapi.ts check"
+    "openapi:check": "tsx scripts/openapi.ts check",
+    "vercel-build": "pnpm --filter \"@pipos/api^...\" run build && prisma generate && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma migrate deploy && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma db seed && pnpm run build"
   },
   "dependencies": {
     "@nestjs/common": "^12.4.2",
