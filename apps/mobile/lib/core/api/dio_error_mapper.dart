@@ -10,6 +10,7 @@ ApiFailure mapDioException(DioException e) {
     case DioExceptionType.connectionTimeout:
     case DioExceptionType.sendTimeout:
     case DioExceptionType.receiveTimeout:
+    case DioExceptionType.transformTimeout:
       return const ApiFailure(
         type: ApiFailureType.timeout,
         message: 'Request timed out. Please try again.',

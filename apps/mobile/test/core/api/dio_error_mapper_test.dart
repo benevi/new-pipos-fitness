@@ -30,6 +30,14 @@ void main() {
       expect(mapDioException(e).type, ApiFailureType.timeout);
     });
 
+    test('maps transformTimeout to timeout failure', () {
+      final e = DioException(
+        type: DioExceptionType.transformTimeout,
+        requestOptions: RequestOptions(path: '/test'),
+      );
+      expect(mapDioException(e).type, ApiFailureType.timeout);
+    });
+
     test('maps connectionError to network failure', () {
       final e = DioException(
         type: DioExceptionType.connectionError,
