@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserRole } from '@prisma/client';
+import { Role } from '@prisma/client';
 import { Roles } from './roles.decorator';
 import { RolesGuard } from './roles.guard';
 import type { AuthenticatedUser } from './authenticated-user';
@@ -11,15 +11,15 @@ class OpenController {
 }
 
 class AdminHandlerController {
-  @Roles(UserRole.ADMIN)
+  @Roles(Role.admin)
   handler() {}
 }
 
-@Roles(UserRole.ADMIN)
+@Roles(Role.admin)
 class AdminClassController {
   handler() {}
 
-  @Roles(UserRole.USER, UserRole.ADMIN)
+  @Roles(Role.user, Role.admin)
   relaxed() {}
 }
 
@@ -36,8 +36,8 @@ function contextFor(
   } as unknown as ExecutionContext;
 }
 
-const admin: AuthenticatedUser = { id: 'a', email: 'a@x.com', role: UserRole.ADMIN };
-const user: AuthenticatedUser = { id: 'u', email: 'u@x.com', role: UserRole.USER };
+const admin: AuthenticatedUser = { id: 'a', email: 'a@x.com', role: Role.admin };
+const user: AuthenticatedUser = { id: 'u', email: 'u@x.com', role: Role.user };
 
 describe('RolesGuard', () => {
   const guard = new RolesGuard(new Reflector());

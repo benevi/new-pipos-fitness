@@ -39,14 +39,14 @@ describe('Rate limiting (e2e, Postgres real)', () => {
     await request(server()).post('/auth/refresh').send({ refreshToken: 'bad-final' }).expect(429);
   });
 
-  it(`POST /training-plans/generate devuelve 429 tras ${THROTTLE_LIMITS.PLAN_GENERATION.limit} peticiones por minuto`, async () => {
+  it(`POST /plans/generate devuelve 429 tras ${THROTTLE_LIMITS.PLAN_GENERATION.limit} peticiones por minuto`, async () => {
     const u = await registerUser(ctx.app);
     const { limit } = THROTTLE_LIMITS.PLAN_GENERATION;
     for (let i = 0; i < limit; i++) {
-      const res = await request(server()).post('/training-plans/generate').set(bearer(u.accessToken));
+      const res = await request(server()).post('/plans/generate').set(bearer(u.accessToken));
       expect(res.status).not.toBe(429);
     }
-    await request(server()).post('/training-plans/generate').set(bearer(u.accessToken)).expect(429);
+    await request(server()).post('/plans/generate').set(bearer(u.accessToken)).expect(429);
   });
 
   it('los límites son por ruta: agotar login no bloquea GET /health', async () => {
