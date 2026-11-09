@@ -4,10 +4,7 @@ import '../../../app/theme.dart';
 import '../../../models/exercise_media.dart';
 
 class ExerciseVideoCard extends StatelessWidget {
-  const ExerciseVideoCard({
-    super.key,
-    required this.media,
-  });
+  const ExerciseVideoCard({super.key, required this.media});
 
   final ExerciseMedia media;
 
@@ -48,7 +45,11 @@ class ExerciseVideoCard extends StatelessWidget {
                   color: AppColors.error,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                 ),
-                child: const Icon(Icons.play_arrow, color: Colors.white, size: 32),
+                child: const Icon(
+                  Icons.play_arrow,
+                  color: Colors.white,
+                  size: 32,
+                ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
@@ -59,8 +60,8 @@ class ExerciseVideoCard extends StatelessWidget {
                     Text(
                       label,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: AppColors.onSurface,
-                          ),
+                        color: AppColors.onSurface,
+                      ),
                     ),
                   ],
                 ),

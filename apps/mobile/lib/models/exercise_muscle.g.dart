@@ -17,10 +17,10 @@ _$ExerciseMuscleImpl _$$ExerciseMuscleImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$ExerciseMuscleImplToJson(
-        _$ExerciseMuscleImpl instance) =>
-    <String, dynamic>{
-      'exerciseId': instance.exerciseId,
-      'muscleId': instance.muscleId,
-      'role': instance.role,
-      'muscle': instance.muscle,
-    };
+  _$ExerciseMuscleImpl instance,
+) => <String, dynamic>{
+  'exerciseId': instance.exerciseId,
+  'muscleId': instance.muscleId,
+  'role': instance.role,
+  'muscle': instance.muscle,
+};

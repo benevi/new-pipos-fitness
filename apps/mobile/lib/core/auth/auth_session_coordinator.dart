@@ -1,74 +1,60 @@
-﻿/// Auth Session Coordinator
+/// Auth Session Coordinator
 ///
-/// Bridges the gap between the Dio [AuthInterceptor] (which lives outside
-/// Riverpod) and the Riverpod-managed [AuthNotifier] + protected providers.
+/// Punto único por el que termina una sesión, tanto si la cierra el usuario
+/// (logout) como si la fuerza el [AuthInterceptor] (refresh fallido o 401
+/// repetido tras reintentar).
 ///
-/// Why this exists:
-/// - The interceptor detects refresh failure but cannot access Riverpod Ref.
-/// - AuthNotifier manages auth state but doesn't know about data providers.
-/// - This coordinator owns the single "session lost" code path so that
-///   logout (user-initiated) and forced logout (refresh failure) both
-///   follow the exact same invalidation sequence.
+/// Cómo se resetea el estado:
+/// la app corre dentro de un `ProviderScope` cuya clave posee `PiposRoot`.
+/// Terminar la sesión llama a [SessionEndCallback], que hace que `PiposRoot`
+/// reconstruya el `ProviderScope` con una clave nueva. Así se descartan TODOS
+/// los providers (datos de usuario, cachés, router...) sin mantener una lista
+/// manual de providers a invalidar.
 ///
-/// Dependency direction (no cycles):
-///   AuthInterceptor â”€â”€callsâ”€â”€> AuthSessionCoordinator â”€â”€callsâ”€â”€> AuthNotifier
-///                                                     â”€â”€invalidatesâ”€â”€> data providers
+/// Dependencias (sin ciclos):
+///   AuthInterceptor ──llama──> AuthSessionCoordinator ──llama──> PiposRoot
+///   AuthNotifier.logout ──llama──> AuthSessionCoordinator
 ///
-/// The coordinator is created once and injected into both the interceptor
-/// and the auth provider setup. It holds a weak reference to the Ref via
-/// a callback list, not a direct Ref, so it can be instantiated before the
-/// provider tree is fully built.
+/// Cada `ProviderScope` tiene su propio coordinador (provider), de modo que
+/// la guarda de re-entrada es por sesión.
 library;
-import 'dart:async';
 
-typedef _InvalidateCallback = void Function();
+/// Motivo por el que terminó una sesión.
+enum SessionEndReason {
+  /// El usuario cerró sesión.
+  logout,
 
-class AuthSessionCoordinator {
-  void Function()? _onForceLogout;
-  final List<_InvalidateCallback> _invalidateCallbacks = [];
-  bool _isProcessingLogout = false;
-
-  /// Register the callback that sets auth state to unauthenticated.
-  /// Called once during auth provider initialization.
-  void setForceLogoutHandler(void Function() handler) {
-    _onForceLogout = handler;
-  }
-
-  /// Register a provider invalidation callback.
-  /// Each protected provider registers itself here via its build method.
-  void registerInvalidation(_InvalidateCallback cb) {
-    _invalidateCallbacks.add(cb);
-  }
-
-  /// Single entry point for session loss (forced or voluntary).
-  ///
-  /// Guarantees:
-  /// - Executes at most once per session-loss event (guard via [_isProcessingLogout])
-  /// - Sets auth state to unauthenticated
-  /// - Invalidates all registered protected providers
-  /// - Pending API requests that triggered this will fail with the original 401
-  void onSessionExpired() {
-    if (_isProcessingLogout) return;
-    _isProcessingLogout = true;
-
-    _onForceLogout?.call();
-
-    for (final cb in _invalidateCallbacks) {
-      cb();
-    }
-
-    // Allow re-entry for the next session (after login + logout cycle)
-    scheduleMicrotask(() {
-      _isProcessingLogout = false;
-    });
-  }
-
-  /// Reset the guard. Called when a new authenticated session begins.
-  void onSessionStarted() {
-    _isProcessingLogout = false;
-  }
+  /// El servidor rechazó la sesión (refresh inválido o 401 tras reintento).
+  expired,
 }
 
-/// Singleton coordinator shared between interceptor and providers.
-/// Created outside of Riverpod so the interceptor can access it without Ref.
-final authSessionCoordinator = AuthSessionCoordinator();
+typedef SessionEndCallback = void Function(SessionEndReason reason);
+
+class AuthSessionCoordinator {
+  AuthSessionCoordinator({required SessionEndCallback onSessionEnded})
+    : _onSessionEnded = onSessionEnded;
+
+  final SessionEndCallback _onSessionEnded;
+  bool _ended = false;
+
+  /// `true` cuando esta sesión ya ha terminado (y el reset está en curso).
+  bool get hasEnded => _ended;
+
+  /// El servidor invalidó la sesión. Idempotente: varias peticiones que
+  /// fallen a la vez solo provocan un reset.
+  void onSessionExpired() => _end(SessionEndReason.expired);
+
+  /// Logout explícito del usuario. Idempotente.
+  void onLoggedOut() => _end(SessionEndReason.logout);
+
+  /// Una sesión nueva empezó (login/registro) dentro del mismo scope.
+  void onSessionStarted() {
+    _ended = false;
+  }
+
+  void _end(SessionEndReason reason) {
+    if (_ended) return;
+    _ended = true;
+    _onSessionEnded(reason);
+  }
+}

@@ -4,8 +4,8 @@ import '../../models/exercise.dart';
 
 final exerciseCatalogProvider =
     AsyncNotifierProvider<ExerciseCatalogNotifier, Map<String, Exercise>>(
-  ExerciseCatalogNotifier.new,
-);
+      ExerciseCatalogNotifier.new,
+    );
 
 class ExerciseCatalogNotifier extends AsyncNotifier<Map<String, Exercise>> {
   @override

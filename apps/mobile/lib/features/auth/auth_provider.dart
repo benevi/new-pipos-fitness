@@ -1,170 +1,259 @@
 /// Auth State Lifecycle
 ///
 /// ```
-/// unknown ──(check storage)──> authenticated | unauthenticated
+/// unknown ──(sin token)──────────────> unauthenticated
+/// unknown ──(token + GET /me OK)─────> authenticated
+/// unknown ──(token + /me sin red)────> authenticated (isOffline = true)
+/// unknown ──(token + refresh inválido)> [reset del scope] → unauthenticated
 /// unauthenticated ──(login/register)──> loading ──> authenticated | error
-/// error ──(retry login/register)──> loading ──> authenticated | error
-/// authenticated ──(logout)──> unauthenticated
-/// authenticated ──(token refresh fail)──> unauthenticated (via coordinator)
+/// authenticated ──(logout | sesión expirada)──> [reset del scope]
 /// ```
 ///
-/// Session coordination:
-/// - On login/register success: coordinator.onSessionStarted()
-/// - On logout: coordinator.onSessionExpired() invalidates protected providers
-/// - On forced logout (interceptor refresh failure): coordinator calls
-///   forceUnauthenticated() on this notifier AND invalidates providers
-///
-/// The coordinator prevents duplicate logout execution via a re-entry guard.
+/// - Login/registro/logout usan el Dio público (sin AuthInterceptor): una
+///   contraseña incorrecta (401) es [AuthErrorCode.invalidCredentials] y
+///   nunca dispara refresh ni cierre de sesión.
+/// - Cerrar sesión NO invalida providers a mano: el [AuthSessionCoordinator]
+///   pide a `PiposRoot` que recree el `ProviderScope`, lo que descarta todo
+///   el estado de la app.
 library;
+
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import '../../app/constants.dart';
+
 import '../../core/api/api_client.dart';
-import '../../core/api/dio_error_mapper.dart';
+import '../../core/api/api_failure.dart';
+import '../../core/api/auth_interceptor.dart';
 import '../../core/auth/auth_session_coordinator.dart';
+import '../../core/auth/session_providers.dart';
+import '../../core/auth/token_storage.dart';
+import '../../core/offline/connectivity.dart';
+import '../../core/offline/offline_providers.dart';
 import '../../models/user.dart';
-import '../ai_coach/ai_coach_provider.dart';
-import '../dashboard/progress_provider.dart';
-import '../nutrition/nutrition_plan_provider.dart';
-import '../workouts/training_plan_provider.dart';
 
 enum AuthStatus { unknown, unauthenticated, loading, authenticated, error }
+
+/// Errores de autenticación; la UI los traduce con `AppLocalizations`.
+enum AuthErrorCode {
+  invalidCredentials,
+  emailAlreadyRegistered,
+  invalidInput,
+  network,
+  timeout,
+  server,
+  sessionExpired,
+  unknown,
+}
 
 class AuthState {
   final AuthStatus status;
   final AuthUser? user;
-  final String? error;
+  final AuthErrorCode? error;
+
+  /// Autenticado con datos cacheados porque no se pudo validar la sesión
+  /// contra el servidor (sin red al arrancar).
+  final bool isOffline;
 
   const AuthState({
     this.status = AuthStatus.unknown,
     this.user,
     this.error,
+    this.isOffline = false,
   });
 
   bool get isAuthenticated => status == AuthStatus.authenticated;
   bool get isLoading => status == AuthStatus.loading;
   bool get isResolved => status != AuthStatus.unknown;
 
-  AuthState copyWith({AuthStatus? status, AuthUser? user, String? error}) {
+  /// `error` se limpia salvo que se indique explícitamente.
+  AuthState copyWith({
+    AuthStatus? status,
+    AuthUser? user,
+    AuthErrorCode? error,
+    bool? isOffline,
+  }) {
     return AuthState(
       status: status ?? this.status,
       user: user ?? this.user,
       error: error,
+      isOffline: isOffline ?? this.isOffline,
     );
   }
 }
 
 class AuthNotifier extends StateNotifier<AuthState> {
+  AuthNotifier({
+    required Dio publicDio,
+    required Dio authenticatedDio,
+    required TokenStorage storage,
+    required AuthSessionCoordinator coordinator,
+    SessionEndReason? previousSessionEnd,
+    ConnectivitySource? connectivity,
+  }) : _publicDio = publicDio,
+       _connectivity = connectivity,
+       _dio = authenticatedDio,
+       _storage = storage,
+       _coordinator = coordinator,
+       _previousSessionEnd = previousSessionEnd,
+       super(const AuthState()) {
+    _restoreSession();
+  }
+
+  final Dio _publicDio;
   final Dio _dio;
-  final FlutterSecureStorage _storage;
-  final Ref _ref;
+  final TokenStorage _storage;
+  final AuthSessionCoordinator _coordinator;
+  final SessionEndReason? _previousSessionEnd;
+  final ConnectivitySource? _connectivity;
+  StreamSubscription<bool>? _reconnectSub;
 
-  AuthNotifier(this._dio, this._storage, this._ref) : super(const AuthState()) {
-    // Register with coordinator so forced logout can update this notifier
-    authSessionCoordinator.setForceLogoutHandler(_onForceLogout);
-    _checkAuth();
-  }
+  AuthState get _signedOut => AuthState(
+    status: AuthStatus.unauthenticated,
+    error: _previousSessionEnd == SessionEndReason.expired
+        ? AuthErrorCode.sessionExpired
+        : null,
+  );
 
-  Future<void> _checkAuth() async {
-    final token = await _storage.read(key: AppConstants.accessTokenKey);
-    state = token != null
-        ? state.copyWith(status: AuthStatus.authenticated)
-        : state.copyWith(status: AuthStatus.unauthenticated);
-  }
+  Future<void> _restoreSession() async {
+    final token = await _storage.readAccessToken();
+    if (!mounted) return;
+    if (token == null) {
+      state = _signedOut;
+      return;
+    }
 
-  Future<void> login(String email, String password) async {
-    state = state.copyWith(status: AuthStatus.loading, error: null);
+    final cachedUser = await _storage.readCachedUser();
     try {
-      final response = await _dio.post('/auth/login', data: {
-        'email': email,
-        'password': password,
-      });
-      final authResponse = AuthResponse.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-      await _persistTokens(authResponse);
-      authSessionCoordinator.onSessionStarted();
-      state = state.copyWith(
+      final response = await _dio.get<dynamic>('/me');
+      final user = AuthUser.fromJson(response.data as Map<String, dynamic>);
+      await _storage.saveCachedUser(user);
+      if (!mounted) return;
+      state = AuthState(status: AuthStatus.authenticated, user: user);
+    } catch (e) {
+      // Refresh inválido → el coordinador ya está reseteando el scope.
+      if (!mounted || _coordinator.hasEnded) return;
+      final failure = ApiFailure.from(e);
+      if (failure.type == ApiFailureType.unauthorized) {
+        await _storage.clear();
+        if (!mounted) return;
+        state = const AuthState(
+          status: AuthStatus.unauthenticated,
+          error: AuthErrorCode.sessionExpired,
+        );
+        return;
+      }
+      // Sin red / servidor caído / respuesta rara: dejamos entrar con los
+      // datos cacheados y marcamos la sesión como no verificada.
+      state = AuthState(
         status: AuthStatus.authenticated,
-        user: authResponse.user,
+        user: cachedUser,
+        isOffline: true,
       );
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
-      state = state.copyWith(status: AuthStatus.error, error: failure.message);
+      _revalidateWhenOnline();
     }
   }
 
-  Future<void> register(String email, String password) async {
+  /// En modo offline, al recuperar la red se vuelve a validar con /me.
+  void _revalidateWhenOnline() {
+    final connectivity = _connectivity;
+    if (connectivity == null || _reconnectSub != null) return;
+    _reconnectSub = connectivity.onlineChanges.where((o) => o).listen((_) {
+      _reconnectSub?.cancel();
+      _reconnectSub = null;
+      if (mounted && state.isOffline) _restoreSession();
+    });
+  }
+
+  @override
+  void dispose() {
+    _reconnectSub?.cancel();
+    super.dispose();
+  }
+
+  Future<void> login(String email, String password) =>
+      _authenticate('/auth/login', email, password);
+
+  Future<void> register(String email, String password) =>
+      _authenticate('/auth/register', email, password);
+
+  Future<void> _authenticate(String path, String email, String password) async {
     state = state.copyWith(status: AuthStatus.loading, error: null);
     try {
-      final response = await _dio.post('/auth/register', data: {
-        'email': email,
-        'password': password,
-      });
-      final authResponse = AuthResponse.fromJson(
-        response.data as Map<String, dynamic>,
+      final response = await _publicDio.post<dynamic>(
+        path,
+        data: {'email': email, 'password': password},
+        options: Options(extra: AuthExtra.public),
       );
-      await _persistTokens(authResponse);
-      authSessionCoordinator.onSessionStarted();
-      state = state.copyWith(
-        status: AuthStatus.authenticated,
-        user: authResponse.user,
+      final auth = AuthResponse.fromJson(response.data as Map<String, dynamic>);
+      await _storage.saveTokens(
+        accessToken: auth.accessToken,
+        refreshToken: auth.refreshToken,
       );
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
-      state = state.copyWith(status: AuthStatus.error, error: failure.message);
+      await _storage.saveCachedUser(auth.user);
+      _coordinator.onSessionStarted();
+      if (!mounted) return;
+      state = AuthState(status: AuthStatus.authenticated, user: auth.user);
+    } catch (e) {
+      if (!mounted) return;
+      state = AuthState(
+        status: AuthStatus.error,
+        error: _errorCodeFor(e, isRegister: path.endsWith('register')),
+      );
     }
   }
 
-  /// User-initiated logout. Clears tokens, invalidates providers, sets state.
+  static AuthErrorCode _errorCodeFor(Object error, {required bool isRegister}) {
+    final failure = ApiFailure.from(error);
+    final status = failure.statusCode;
+    if (!isRegister && (status == 401 || status == 403)) {
+      return AuthErrorCode.invalidCredentials;
+    }
+    if (isRegister && status == 409) {
+      return AuthErrorCode.emailAlreadyRegistered;
+    }
+    return switch (failure.type) {
+      ApiFailureType.network => AuthErrorCode.network,
+      ApiFailureType.timeout => AuthErrorCode.timeout,
+      ApiFailureType.server => AuthErrorCode.server,
+      ApiFailureType.badRequest => AuthErrorCode.invalidInput,
+      ApiFailureType.unauthorized => AuthErrorCode.invalidCredentials,
+      ApiFailureType.parse || ApiFailureType.unknown => AuthErrorCode.unknown,
+    };
+  }
+
+  /// Logout del usuario: revoca el refresh token (best effort, sin esperar a
+  /// la red), borra la sesión local y resetea TODO el estado de la app.
   Future<void> logout() async {
-    final refreshToken = await _storage.read(key: AppConstants.refreshTokenKey);
+    final refreshToken = await _storage.readRefreshToken();
     if (refreshToken != null) {
-      try {
-        await _dio.post('/auth/logout', data: {'refreshToken': refreshToken});
-      } catch (_) {}
+      unawaited(
+        _publicDio
+            .post<dynamic>(
+              '/auth/logout',
+              data: {'refreshToken': refreshToken},
+              options: Options(extra: AuthExtra.public),
+            )
+            .then<void>((_) {}, onError: (Object _) {}),
+      );
     }
-    await _clearTokens();
-    _invalidateProtectedProviders();
-    state = const AuthState(status: AuthStatus.unauthenticated);
-  }
-
-  /// Called by the coordinator when the interceptor detects an expired session.
-  void _onForceLogout() {
-    _invalidateProtectedProviders();
-    state = const AuthState(
-      status: AuthStatus.unauthenticated,
-      error: 'Your session has expired. Please log in again.',
-    );
-  }
-
-  void _invalidateProtectedProviders() {
-    _ref.invalidate(aiCoachProvider);
-    _ref.invalidate(progressProvider);
-    _ref.invalidate(trainingPlanProvider);
-    _ref.invalidate(nutritionPlanProvider);
-  }
-
-  Future<void> _persistTokens(AuthResponse auth) async {
-    await _storage.write(
-      key: AppConstants.accessTokenKey,
-      value: auth.accessToken,
-    );
-    await _storage.write(
-      key: AppConstants.refreshTokenKey,
-      value: auth.refreshToken,
-    );
-  }
-
-  Future<void> _clearTokens() async {
-    await _storage.delete(key: AppConstants.accessTokenKey);
-    await _storage.delete(key: AppConstants.refreshTokenKey);
+    await _storage.clear();
+    _coordinator.onLoggedOut();
   }
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-  final dio = ref.read(dioProvider);
-  final storage = ref.read(secureStorageProvider);
-  return AuthNotifier(dio, storage, ref);
+  return AuthNotifier(
+    publicDio: ref.read(publicDioProvider),
+    authenticatedDio: ref.read(dioProvider),
+    storage: ref.read(tokenStorageProvider),
+    coordinator: ref.read(authSessionCoordinatorProvider),
+    previousSessionEnd: ref.read(previousSessionEndProvider),
+    connectivity: ref.read(connectivitySourceProvider),
+  );
 });
+
+/// Usuario de la sesión actual (o `null`).
+final currentUserProvider = Provider<AuthUser?>(
+  (ref) => ref.watch(authProvider.select((s) => s.user)),
+);

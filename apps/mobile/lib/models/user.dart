@@ -36,10 +36,8 @@ class AuthResponse with _$AuthResponse {
 
 @freezed
 class AuthUser with _$AuthUser {
-  const factory AuthUser({
-    required String id,
-    required String email,
-  }) = _AuthUser;
+  const factory AuthUser({required String id, required String email}) =
+      _AuthUser;
 
   factory AuthUser.fromJson(Map<String, dynamic> json) =>
       _$AuthUserFromJson(json);

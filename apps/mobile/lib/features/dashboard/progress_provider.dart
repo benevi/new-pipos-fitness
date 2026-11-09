@@ -4,14 +4,15 @@
 /// for the session duration (keepAlive) so tab switches don't trigger re-fetches.
 /// Manual refresh is available via [refresh()].
 library;
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../models/progress_metrics.dart';
 
 final progressProvider =
     AsyncNotifierProvider<ProgressNotifier, ProgressMetrics?>(
-  ProgressNotifier.new,
-);
+      ProgressNotifier.new,
+    );
 
 class ProgressNotifier extends AsyncNotifier<ProgressMetrics?> {
   @override

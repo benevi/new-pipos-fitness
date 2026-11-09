@@ -183,11 +183,7 @@ void main() {
   group('NutritionPlan model parsing', () {
     test('fromJson full response', () {
       final json = {
-        'plan': {
-          'id': 'p1',
-          'userId': 'u1',
-          'currentVersionId': 'v1',
-        },
+        'plan': {'id': 'p1', 'userId': 'u1', 'currentVersionId': 'v1'},
         'version': {
           'id': 'v1',
           'planId': 'p1',
@@ -232,11 +228,7 @@ void main() {
 
     test('fromJson without calorie/macro targets', () {
       final json = {
-        'plan': {
-          'id': 'p1',
-          'userId': 'u1',
-          'currentVersionId': 'v1',
-        },
+        'plan': {'id': 'p1', 'userId': 'u1', 'currentVersionId': 'v1'},
         'version': {
           'id': 'v1',
           'planId': 'p1',
@@ -333,11 +325,7 @@ NutritionPlan _buildPlan({
 
 NutritionPlan _buildPlanWithItems() {
   return const NutritionPlan(
-    plan: NutritionPlanInfo(
-      id: 'p1',
-      userId: 'u1',
-      currentVersionId: 'v1',
-    ),
+    plan: NutritionPlanInfo(id: 'p1', userId: 'u1', currentVersionId: 'v1'),
     version: NutritionPlanVersion(
       id: 'v1',
       planId: 'p1',

@@ -35,8 +35,8 @@ class FilteredExercisesState {
 
 final filteredExercisesProvider =
     AsyncNotifierProvider<FilteredExercisesNotifier, FilteredExercisesState>(
-  FilteredExercisesNotifier.new,
-);
+      FilteredExercisesNotifier.new,
+    );
 
 class FilteredExercisesNotifier extends AsyncNotifier<FilteredExercisesState> {
   static const int _pageSize = 20;
@@ -93,12 +93,14 @@ class FilteredExercisesNotifier extends AsyncNotifier<FilteredExercisesState> {
           .map((e) => Exercise.fromJson(e as Map<String, dynamic>))
           .toList();
       final totalCount = data['totalCount'] as int;
-      state = AsyncData(FilteredExercisesState(
-        items: [...current.items, ...list],
-        totalCount: totalCount,
-        page: nextPage,
-        isLoadingMore: false,
-      ));
+      state = AsyncData(
+        FilteredExercisesState(
+          items: [...current.items, ...list],
+          totalCount: totalCount,
+          page: nextPage,
+          isLoadingMore: false,
+        ),
+      );
     } catch (_) {
       state = AsyncData(current.copyWith(isLoadingMore: false));
     }

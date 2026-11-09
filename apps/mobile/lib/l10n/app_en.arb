@@ -1,0 +1,47 @@
+{
+  "@@locale": "en",
+
+  "appTitle": "Pipos Fitness",
+  "splashLoading": "Loading your session…",
+
+  "navHome": "Home",
+  "navWorkouts": "Workouts",
+  "navNutrition": "Nutrition",
+  "navCoach": "AI Coach",
+  "navProfile": "Profile",
+
+  "offlineBanner": "Offline: showing saved data",
+  "pendingSyncCount": "{count, plural, =1{1 set waiting to sync} other{{count} sets waiting to sync}}",
+
+  "fieldEmail": "Email",
+  "fieldPassword": "Password",
+  "fieldConfirmPassword": "Confirm password",
+
+  "validationEmailInvalid": "Enter a valid email",
+  "validationPasswordRequired": "Enter your password",
+  "validationPasswordTooShort": "Password must be at least {min} characters",
+  "validationPasswordsDontMatch": "Passwords do not match",
+
+  "loginSubmit": "Log in",
+  "loginGoToRegister": "Don't have an account? Sign up",
+
+  "registerTitle": "Create account",
+  "registerSubmit": "Create account",
+  "registerGoToLogin": "Already have an account? Log in",
+
+  "authErrorInvalidCredentials": "Incorrect email or password.",
+  "authErrorEmailAlreadyRegistered": "An account with this email already exists.",
+  "authErrorInvalidInput": "Please check the data you entered.",
+  "authErrorSessionExpired": "Your session has expired. Please log in again.",
+
+  "errorNetwork": "No internet connection.",
+  "errorTimeout": "The request took too long. Please try again.",
+  "errorServer": "Server error. Please try again later.",
+  "errorUnauthorized": "Your session has expired. Please log in again.",
+  "errorBadRequest": "The request is not valid.",
+  "errorParse": "The server returned an unexpected response.",
+  "errorUnknown": "An unexpected error occurred.",
+
+  "configErrorTitle": "Incomplete configuration",
+  "configErrorBody": "This build does not define the API URL. Rebuild with --dart-define=API_BASE_URL=https://…"
+}

@@ -31,7 +31,7 @@ class WorkoutPlayerScreen extends ConsumerWidget {
     // Match by order for robust lookup, fall back to positional index
     final workoutExercise =
         exercises.where((e) => e.order == idx).firstOrNull ??
-            exercises.elementAtOrNull(idx);
+        exercises.elementAtOrNull(idx);
 
     if (workoutExercise == null) {
       return Scaffold(
@@ -54,12 +54,14 @@ class WorkoutPlayerScreen extends ConsumerWidget {
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(AppSpacing.sm),
-              color: AppColors.error.withOpacity(0.2),
+              color: AppColors.error.withValues(alpha: 0.2),
               child: Row(
                 children: [
                   Expanded(
-                    child: Text(ws.error!,
-                        style: const TextStyle(color: AppColors.error)),
+                    child: Text(
+                      ws.error!,
+                      style: const TextStyle(color: AppColors.error),
+                    ),
                   ),
                   IconButton(
                     icon: const Icon(Icons.close, size: 16),
@@ -92,10 +94,7 @@ class WorkoutPlayerScreen extends ConsumerWidget {
               ),
             ),
           ),
-          _BottomBar(
-            currentIndex: idx,
-            totalExercises: totalEx,
-          ),
+          _BottomBar(currentIndex: idx, totalExercises: totalEx),
         ],
       ),
     );
@@ -107,7 +106,8 @@ class WorkoutPlayerScreen extends ConsumerWidget {
       builder: (ctx) => AlertDialog(
         title: const Text('Leave Workout?'),
         content: const Text(
-            'Your logged sets are saved, but the workout will remain unfinished.'),
+          'Your logged sets are saved, but the workout will remain unfinished.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
@@ -178,8 +178,8 @@ class _ExerciseHeader extends StatelessWidget {
               Text(
                 'RIR target: ${planExercise!.rirTarget}',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ],
           ],
@@ -226,10 +226,9 @@ class _LoggedSetsList extends StatelessWidget {
     if (sets.isEmpty) {
       return Text(
         'No sets logged yet',
-        style: Theme.of(context)
-            .textTheme
-            .bodyMedium
-            ?.copyWith(color: AppColors.onSurfaceVariant),
+        style: Theme.of(
+          context,
+        ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
       );
     }
 
@@ -238,44 +237,46 @@ class _LoggedSetsList extends StatelessWidget {
       children: [
         Text('Logged Sets', style: Theme.of(context).textTheme.titleMedium),
         const SizedBox(height: AppSpacing.sm),
-        ...sets.map((s) => Container(
-              margin: const EdgeInsets.only(bottom: AppSpacing.xs),
-              padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-              decoration: BoxDecoration(
-                color: AppColors.surfaceVariant,
-                borderRadius: BorderRadius.circular(AppRadius.sm),
-              ),
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 32,
-                    child: Text(
-                      '#${s.setIndex + 1}',
-                      style: const TextStyle(
-                        color: AppColors.accent,
-                        fontWeight: FontWeight.w600,
-                      ),
+        ...sets.map(
+          (s) => Container(
+            margin: const EdgeInsets.only(bottom: AppSpacing.xs),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppSpacing.md,
+              vertical: AppSpacing.sm,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceVariant,
+              borderRadius: BorderRadius.circular(AppRadius.sm),
+            ),
+            child: Row(
+              children: [
+                SizedBox(
+                  width: 32,
+                  child: Text(
+                    '#${s.setIndex + 1}',
+                    style: const TextStyle(
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  Expanded(
-                    child: Text(
-                      '${s.weightKg ?? 0} kg × ${s.reps ?? 0} reps'
-                      '${s.rir != null ? ' @ RIR ${s.rir}' : ''}',
-                    ),
+                ),
+                Expanded(
+                  child: Text(
+                    '${s.weightKg ?? 0} kg × ${s.reps ?? 0} reps'
+                    '${s.rir != null ? ' @ RIR ${s.rir}' : ''}',
                   ),
-                  Icon(
-                    s.completed ? Icons.check_circle : Icons.circle_outlined,
-                    color: s.completed
-                        ? AppColors.success
-                        : AppColors.onSurfaceVariant,
-                    size: 20,
-                  ),
-                ],
-              ),
-            )),
+                ),
+                Icon(
+                  s.completed ? Icons.check_circle : Icons.circle_outlined,
+                  color: s.completed
+                      ? AppColors.success
+                      : AppColors.onSurfaceVariant,
+                  size: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -316,7 +317,9 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
     final reps = int.tryParse(_repsController.text);
     final rir = int.tryParse(_rirController.text);
 
-    final success = await ref.read(workoutSessionProvider.notifier).logSet(
+    final success = await ref
+        .read(workoutSessionProvider.notifier)
+        .logSet(
           workoutExerciseId: widget.workoutExerciseId,
           weightKg: weight,
           reps: reps,
@@ -342,7 +345,7 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
       return Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: AppColors.success.withOpacity(0.1),
+          color: AppColors.success.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: const Row(
@@ -378,8 +381,9 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
                   child: TextField(
                     controller: _weightController,
                     decoration: const InputDecoration(labelText: 'Weight (kg)'),
-                    keyboardType:
-                        const TextInputType.numberWithOptions(decimal: true),
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -424,10 +428,7 @@ class _SetInputFormState extends ConsumerState<_SetInputForm> {
 class _BottomBar extends ConsumerWidget {
   final int currentIndex;
   final int totalExercises;
-  const _BottomBar({
-    required this.currentIndex,
-    required this.totalExercises,
-  });
+  const _BottomBar({required this.currentIndex, required this.totalExercises});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -438,7 +439,7 @@ class _BottomBar extends ConsumerWidget {
       decoration: BoxDecoration(
         color: AppColors.surfaceVariant,
         border: Border(
-          top: BorderSide(color: AppColors.onSurfaceVariant.withOpacity(0.2)),
+          top: BorderSide(color: AppColors.onSurfaceVariant.withValues(alpha: 0.2)),
         ),
       ),
       child: SafeArea(
@@ -447,8 +448,9 @@ class _BottomBar extends ConsumerWidget {
           children: [
             if (currentIndex > 0)
               OutlinedButton.icon(
-                onPressed: () =>
-                    ref.read(workoutSessionProvider.notifier).previousExercise(),
+                onPressed: () => ref
+                    .read(workoutSessionProvider.notifier)
+                    .previousExercise(),
                 icon: const Icon(Icons.arrow_back),
                 label: const Text('Prev'),
               )
@@ -458,8 +460,10 @@ class _BottomBar extends ConsumerWidget {
             if (isLast)
               FilledButton.icon(
                 onPressed: () async {
-                  final startedAt =
-                      ref.read(workoutSessionProvider).session?.startedAt;
+                  final startedAt = ref
+                      .read(workoutSessionProvider)
+                      .session
+                      ?.startedAt;
                   int? duration;
                   if (startedAt != null) {
                     final start = DateTime.tryParse(startedAt);

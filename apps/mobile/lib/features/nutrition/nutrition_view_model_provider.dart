@@ -80,10 +80,7 @@ NutritionViewModel buildNutritionViewModel({
   final days = v.days;
 
   if (days.isEmpty) {
-    return NutritionViewModel(
-      versionNumber: v.version,
-      versions: versions,
-    );
+    return NutritionViewModel(versionNumber: v.version, versions: versions);
   }
 
   final clampedDay = selectedDay.clamp(0, days.length - 1);
@@ -102,11 +99,13 @@ NutritionViewModel buildNutritionViewModel({
       return NutritionMealVM(
         name: m.name,
         items: m.items
-            .map((i) => NutritionMealItemVM(
-                  foodId: i.foodId,
-                  displayName: foodDisplayName(foodCatalog, i.foodId),
-                  quantityG: i.quantityG,
-                ))
+            .map(
+              (i) => NutritionMealItemVM(
+                foodId: i.foodId,
+                displayName: foodDisplayName(foodCatalog, i.foodId),
+                quantityG: i.quantityG,
+              ),
+            )
             .toList(),
       );
     }).toList(),

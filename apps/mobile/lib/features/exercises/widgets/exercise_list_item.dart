@@ -33,9 +33,9 @@ class ExerciseListItem extends StatelessWidget {
               Text(
                 exercise.name,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      color: AppColors.onSurface,
-                      fontWeight: FontWeight.w600,
-                    ),
+                  color: AppColors.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
               const SizedBox(height: AppSpacing.xs),
               ExerciseMetadataChips(

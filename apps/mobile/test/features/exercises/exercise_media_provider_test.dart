@@ -28,9 +28,7 @@ void main() {
         ],
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -44,9 +42,7 @@ void main() {
     test('build returns empty list when API returns null', () async {
       final fakeApi = _FakeMediaApi(response: null);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -58,9 +54,7 @@ void main() {
     test('build throws when API throws', () async {
       final fakeApi = _FakeMediaApi(throwOnGet: true);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -75,11 +69,7 @@ void main() {
 }
 
 class _FakeMediaApi extends ApiClient {
-  _FakeMediaApi({
-    List<dynamic>? response,
-    this.throwOnGet = false,
-  })  : response = response,
-        super(Dio());
+  _FakeMediaApi({this.response, this.throwOnGet = false}) : super(Dio());
 
   final List<dynamic>? response;
   final bool throwOnGet;

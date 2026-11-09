@@ -95,8 +95,11 @@ class _WorkoutsScreenState extends ConsumerState<WorkoutsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.fitness_center,
-                      size: 64, color: AppColors.onSurfaceVariant),
+                  const Icon(
+                    Icons.fitness_center,
+                    size: 64,
+                    color: AppColors.onSurfaceVariant,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   const Text('No training plan yet'),
                   const SizedBox(height: AppSpacing.md),
@@ -159,32 +162,27 @@ class _SessionCard extends ConsumerWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              session.name,
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text(session.name, style: Theme.of(context).textTheme.titleLarge),
             const SizedBox(height: AppSpacing.xs),
             Text(
               '${session.exercises.length} exercises · ${session.targetDurationMinutes} min',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             Wrap(
               spacing: AppSpacing.sm,
-              children: session.exercises
-                  .map((e) {
-                    final name = exerciseName(catalogMap, e.exerciseId);
-                    final display = name.length > 16
-                        ? '${name.substring(0, 16)}…'
-                        : name;
-                    return Chip(
-                      label: Text(display, style: const TextStyle(fontSize: 11)),
-                      visualDensity: VisualDensity.compact,
-                    );
-                  })
-                  .toList(),
+              children: session.exercises.map((e) {
+                final name = exerciseName(catalogMap, e.exerciseId);
+                final display = name.length > 16
+                    ? '${name.substring(0, 16)}…'
+                    : name;
+                return Chip(
+                  label: Text(display, style: const TextStyle(fontSize: 11)),
+                  visualDensity: VisualDensity.compact,
+                );
+              }).toList(),
             ),
             const SizedBox(height: AppSpacing.md),
             if (workoutState.status == WorkoutStatus.error &&
@@ -196,8 +194,10 @@ class _SessionCard extends ConsumerWidget {
                   children: [
                     Text(
                       workoutState.error!,
-                      style:
-                          const TextStyle(color: AppColors.error, fontSize: 13),
+                      style: const TextStyle(
+                        color: AppColors.error,
+                        fontSize: 13,
+                      ),
                     ),
                     if (workoutState.session != null &&
                         workoutState.planSession != null)
@@ -205,10 +205,10 @@ class _SessionCard extends ConsumerWidget {
                         padding: const EdgeInsets.only(top: AppSpacing.xs),
                         child: TextButton(
                           onPressed: () async {
-                            final notifier =
-                                ref.read(workoutSessionProvider.notifier);
-                            final success =
-                                await notifier.retryAddExercises();
+                            final notifier = ref.read(
+                              workoutSessionProvider.notifier,
+                            );
+                            final success = await notifier.retryAddExercises();
                             if (success && context.mounted) {
                               context.push('/workout-player');
                             }
@@ -225,8 +225,9 @@ class _SessionCard extends ConsumerWidget {
                 onPressed: isBusy
                     ? null
                     : () async {
-                        final notifier =
-                            ref.read(workoutSessionProvider.notifier);
+                        final notifier = ref.read(
+                          workoutSessionProvider.notifier,
+                        );
                         final success = await notifier.startWorkout(session);
                         if (success && context.mounted) {
                           context.push('/workout-player');
@@ -237,15 +238,17 @@ class _SessionCard extends ConsumerWidget {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Colors.white),
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
                       )
                     : const Icon(Icons.play_arrow),
                 label: Text(
                   workoutState.isStarting
                       ? 'Starting…'
                       : workoutState.isActive
-                          ? 'Workout in Progress'
-                          : 'Start Workout',
+                      ? 'Workout in Progress'
+                      : 'Start Workout',
                 ),
               ),
             ),

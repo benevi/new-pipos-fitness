@@ -22,40 +22,40 @@ _$WorkoutSessionImpl _$$WorkoutSessionImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$WorkoutSessionImplToJson(
-        _$WorkoutSessionImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'userId': instance.userId,
-      'planSessionId': instance.planSessionId,
-      'planVersionId': instance.planVersionId,
-      'startedAt': instance.startedAt,
-      'completedAt': instance.completedAt,
-      'durationMinutes': instance.durationMinutes,
-      'notes': instance.notes,
-      'exercises': instance.exercises,
-    };
+  _$WorkoutSessionImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'userId': instance.userId,
+  'planSessionId': instance.planSessionId,
+  'planVersionId': instance.planVersionId,
+  'startedAt': instance.startedAt,
+  'completedAt': instance.completedAt,
+  'durationMinutes': instance.durationMinutes,
+  'notes': instance.notes,
+  'exercises': instance.exercises,
+};
 
 _$WorkoutExerciseImpl _$$WorkoutExerciseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$WorkoutExerciseImpl(
-      id: json['id'] as String,
-      workoutSessionId: json['workoutSessionId'] as String,
-      exerciseId: json['exerciseId'] as String,
-      order: (json['order'] as num).toInt(),
-      sets: (json['sets'] as List<dynamic>)
-          .map((e) => WorkoutSet.fromJson(e as Map<String, dynamic>))
-          .toList(),
-    );
+  Map<String, dynamic> json,
+) => _$WorkoutExerciseImpl(
+  id: json['id'] as String,
+  workoutSessionId: json['workoutSessionId'] as String,
+  exerciseId: json['exerciseId'] as String,
+  order: (json['order'] as num).toInt(),
+  sets: (json['sets'] as List<dynamic>)
+      .map((e) => WorkoutSet.fromJson(e as Map<String, dynamic>))
+      .toList(),
+);
 
 Map<String, dynamic> _$$WorkoutExerciseImplToJson(
-        _$WorkoutExerciseImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'workoutSessionId': instance.workoutSessionId,
-      'exerciseId': instance.exerciseId,
-      'order': instance.order,
-      'sets': instance.sets,
-    };
+  _$WorkoutExerciseImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'workoutSessionId': instance.workoutSessionId,
+  'exerciseId': instance.exerciseId,
+  'order': instance.order,
+  'sets': instance.sets,
+};
 
 _$WorkoutSetImpl _$$WorkoutSetImplFromJson(Map<String, dynamic> json) =>
     _$WorkoutSetImpl(

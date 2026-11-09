@@ -12,7 +12,8 @@ part of 'muscle.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 Muscle _$MuscleFromJson(Map<String, dynamic> json) {
   return _Muscle.fromJson(json);
@@ -62,32 +63,36 @@ class _$MuscleCopyWithImpl<$Res, $Val extends Muscle>
     Object? region = null,
     Object? meshRegionId = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      region: null == region
-          ? _value.region
-          : region // ignore: cast_nullable_to_non_nullable
-              as String,
-      meshRegionId: freezed == meshRegionId
-          ? _value.meshRegionId
-          : meshRegionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            region: null == region
+                ? _value.region
+                : region // ignore: cast_nullable_to_non_nullable
+                      as String,
+            meshRegionId: freezed == meshRegionId
+                ? _value.meshRegionId
+                : meshRegionId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$MuscleImplCopyWith<$Res> implements $MuscleCopyWith<$Res> {
   factory _$$MuscleImplCopyWith(
-          _$MuscleImpl value, $Res Function(_$MuscleImpl) then) =
-      __$$MuscleImplCopyWithImpl<$Res>;
+    _$MuscleImpl value,
+    $Res Function(_$MuscleImpl) then,
+  ) = __$$MuscleImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String name, String region, String? meshRegionId});
@@ -98,8 +103,9 @@ class __$$MuscleImplCopyWithImpl<$Res>
     extends _$MuscleCopyWithImpl<$Res, _$MuscleImpl>
     implements _$$MuscleImplCopyWith<$Res> {
   __$$MuscleImplCopyWithImpl(
-      _$MuscleImpl _value, $Res Function(_$MuscleImpl) _then)
-      : super(_value, _then);
+    _$MuscleImpl _value,
+    $Res Function(_$MuscleImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Muscle
   /// with the given fields replaced by the non-null parameter values.
@@ -111,35 +117,38 @@ class __$$MuscleImplCopyWithImpl<$Res>
     Object? region = null,
     Object? meshRegionId = freezed,
   }) {
-    return _then(_$MuscleImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      region: null == region
-          ? _value.region
-          : region // ignore: cast_nullable_to_non_nullable
-              as String,
-      meshRegionId: freezed == meshRegionId
-          ? _value.meshRegionId
-          : meshRegionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$MuscleImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        region: null == region
+            ? _value.region
+            : region // ignore: cast_nullable_to_non_nullable
+                  as String,
+        meshRegionId: freezed == meshRegionId
+            ? _value.meshRegionId
+            : meshRegionId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$MuscleImpl implements _Muscle {
-  const _$MuscleImpl(
-      {required this.id,
-      required this.name,
-      required this.region,
-      this.meshRegionId});
+  const _$MuscleImpl({
+    required this.id,
+    required this.name,
+    required this.region,
+    this.meshRegionId,
+  });
 
   factory _$MuscleImpl.fromJson(Map<String, dynamic> json) =>
       _$$MuscleImplFromJson(json);
@@ -184,18 +193,17 @@ class _$MuscleImpl implements _Muscle {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MuscleImplToJson(
-      this,
-    );
+    return _$$MuscleImplToJson(this);
   }
 }
 
 abstract class _Muscle implements Muscle {
-  const factory _Muscle(
-      {required final String id,
-      required final String name,
-      required final String region,
-      final String? meshRegionId}) = _$MuscleImpl;
+  const factory _Muscle({
+    required final String id,
+    required final String name,
+    required final String region,
+    final String? meshRegionId,
+  }) = _$MuscleImpl;
 
   factory _Muscle.fromJson(Map<String, dynamic> json) = _$MuscleImpl.fromJson;
 

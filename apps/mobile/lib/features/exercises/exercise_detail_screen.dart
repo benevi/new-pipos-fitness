@@ -29,11 +29,14 @@ class ExerciseDetailScreen extends ConsumerWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 'Failed to load exercise',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.error),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(color: AppColors.error),
               ),
               const SizedBox(height: AppSpacing.md),
               FilledButton(
-                onPressed: () => ref.invalidate(exerciseDetailProvider(exerciseId)),
+                onPressed: () =>
+                    ref.invalidate(exerciseDetailProvider(exerciseId)),
                 child: const Text('Retry'),
               ),
             ],
@@ -51,7 +54,10 @@ class ExerciseDetailScreen extends ConsumerWidget {
 }
 
 class _ExerciseDetailContent extends ConsumerWidget {
-  const _ExerciseDetailContent({required this.detail, required this.exerciseId});
+  const _ExerciseDetailContent({
+    required this.detail,
+    required this.exerciseId,
+  });
 
   final ExerciseDetail detail;
   final String exerciseId;
@@ -69,9 +75,9 @@ class _ExerciseDetailContent extends ConsumerWidget {
           Text(
             detail.name,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: AppColors.onSurface,
-                  fontWeight: FontWeight.bold,
-                ),
+              color: AppColors.onSurface,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
           ExerciseMetadataChips(
@@ -84,15 +90,15 @@ class _ExerciseDetailContent extends ConsumerWidget {
             Text(
               'Description',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               detail.description!,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurface,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurface),
             ),
           ],
           if (detail.muscles.isNotEmpty) ...[
@@ -100,30 +106,32 @@ class _ExerciseDetailContent extends ConsumerWidget {
             Text(
               'Muscles',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.xs),
             Wrap(
               spacing: AppSpacing.xs,
               runSpacing: AppSpacing.xs,
               children: detail.muscles
-                  .map((em) => Chip(
-                        label: Text(
-                          em.muscle?.name ??
-                              muscleName(muscleCatalog, em.muscleId),
-                        ),
-                        materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ))
+                  .map(
+                    (em) => Chip(
+                      label: Text(
+                        em.muscle?.name ??
+                            muscleName(muscleCatalog, em.muscleId),
+                      ),
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  )
                   .toList(),
             ),
           ],
           const SizedBox(height: AppSpacing.lg),
           Text(
             'Videos',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                  color: AppColors.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleSmall?.copyWith(color: AppColors.onSurfaceVariant),
           ),
           const SizedBox(height: AppSpacing.sm),
           mediaAsync.when(
@@ -146,7 +154,9 @@ class _ExerciseDetailContent extends ConsumerWidget {
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: mediaList.map((m) => ExerciseVideoCard(media: m)).toList(),
+                children: mediaList
+                    .map((m) => ExerciseVideoCard(media: m))
+                    .toList(),
               );
             },
           ),
@@ -199,8 +209,8 @@ class _MediaErrorCard extends StatelessWidget {
             Text(
               'Couldn\'t load videos',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.onSurfaceVariant,
-                  ),
+                color: AppColors.onSurfaceVariant,
+              ),
             ),
             const SizedBox(height: AppSpacing.sm),
             TextButton(onPressed: onRetry, child: const Text('Retry')),

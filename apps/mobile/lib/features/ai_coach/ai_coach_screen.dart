@@ -41,7 +41,8 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_scrollController.hasClients) return;
       final position = _scrollController.position;
-      final shouldScroll = force ||
+      final shouldScroll =
+          force ||
           isNearBottom(
             position.pixels,
             position.maxScrollExtent,
@@ -104,8 +105,8 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
                         child: InkWell(
                           onTap: () => _scrollToBottom(force: true),
                           borderRadius: BorderRadius.circular(AppRadius.lg),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
                               horizontal: AppSpacing.md,
                               vertical: AppSpacing.sm,
                             ),
@@ -117,7 +118,7 @@ class _AiCoachScreenState extends ConsumerState<AiCoachScreen> {
                                   size: 20,
                                   color: AppColors.accent,
                                 ),
-                                const SizedBox(width: AppSpacing.xs),
+                                SizedBox(width: AppSpacing.xs),
                                 Text(
                                   'New response',
                                   style: TextStyle(
@@ -177,8 +178,9 @@ class _ChatBubble extends StatelessWidget {
             maxWidth: MediaQuery.sizeOf(context).width * 0.85,
           ),
           child: Column(
-            crossAxisAlignment:
-                isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            crossAxisAlignment: isUser
+                ? CrossAxisAlignment.end
+                : CrossAxisAlignment.start,
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
@@ -186,9 +188,7 @@ class _ChatBubble extends StatelessWidget {
                   vertical: AppSpacing.sm,
                 ),
                 decoration: BoxDecoration(
-                  color: isUser
-                      ? AppColors.accent
-                      : AppColors.surfaceVariant,
+                  color: isUser ? AppColors.accent : AppColors.surfaceVariant,
                   borderRadius: BorderRadius.only(
                     topLeft: const Radius.circular(AppRadius.md),
                     topRight: const Radius.circular(AppRadius.md),
@@ -204,7 +204,8 @@ class _ChatBubble extends StatelessWidget {
                   ),
                 ),
               ),
-              if (message.responseType == 'proposal' && message.proposal != null)
+              if (message.responseType == 'proposal' &&
+                  message.proposal != null)
                 Padding(
                   padding: const EdgeInsets.only(top: AppSpacing.xs),
                   child: AiProposalCard(
@@ -297,21 +298,12 @@ class _ErrorBar extends StatelessWidget {
           Expanded(
             child: Text(
               message,
-              style: const TextStyle(
-                color: AppColors.error,
-                fontSize: 13,
-              ),
+              style: const TextStyle(color: AppColors.error, fontSize: 13),
             ),
           ),
           if (canRetry)
-            TextButton(
-              onPressed: onRetry,
-              child: const Text('Retry'),
-            ),
-          TextButton(
-            onPressed: onDismiss,
-            child: const Text('Dismiss'),
-          ),
+            TextButton(onPressed: onRetry, child: const Text('Retry')),
+          TextButton(onPressed: onDismiss, child: const Text('Dismiss')),
         ],
       ),
     );

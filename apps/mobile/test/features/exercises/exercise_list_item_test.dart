@@ -18,10 +18,7 @@ void main() {
         MaterialApp(
           theme: AppTheme.dark,
           home: Scaffold(
-            body: ExerciseListItem(
-              exercise: exercise,
-              onTap: () {},
-            ),
+            body: ExerciseListItem(exercise: exercise, onTap: () {}),
           ),
         ),
       );

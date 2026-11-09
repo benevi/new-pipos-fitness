@@ -12,11 +12,7 @@ void main() {
     });
 
     test('copyWith adds messages and sending', () {
-      const msg = AIChatMessage(
-        id: '1',
-        role: AIChatRole.user,
-        content: 'Hi',
-      );
+      const msg = AIChatMessage(id: '1', role: AIChatRole.user, content: 'Hi');
       final state = const AIConversationState().copyWith(
         messages: [msg],
         sending: true,

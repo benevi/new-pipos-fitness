@@ -15,26 +15,28 @@ _$ExerciseDetailImpl _$$ExerciseDetailImplFromJson(Map<String, dynamic> json) =>
       difficulty: (json['difficulty'] as num).toInt(),
       movementPattern: json['movementPattern'] as String?,
       place: json['place'] as String,
-      muscles: (json['muscles'] as List<dynamic>?)
+      muscles:
+          (json['muscles'] as List<dynamic>?)
               ?.map((e) => ExerciseMuscle.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
-      media: (json['media'] as List<dynamic>?)
+      media:
+          (json['media'] as List<dynamic>?)
               ?.map((e) => ExerciseMedia.fromJson(e as Map<String, dynamic>))
               .toList() ??
           const [],
     );
 
 Map<String, dynamic> _$$ExerciseDetailImplToJson(
-        _$ExerciseDetailImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'slug': instance.slug,
-      'name': instance.name,
-      'description': instance.description,
-      'difficulty': instance.difficulty,
-      'movementPattern': instance.movementPattern,
-      'place': instance.place,
-      'muscles': instance.muscles,
-      'media': instance.media,
-    };
+  _$ExerciseDetailImpl instance,
+) => <String, dynamic>{
+  'id': instance.id,
+  'slug': instance.slug,
+  'name': instance.name,
+  'description': instance.description,
+  'difficulty': instance.difficulty,
+  'movementPattern': instance.movementPattern,
+  'place': instance.place,
+  'muscles': instance.muscles,
+  'media': instance.media,
+};

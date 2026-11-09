@@ -4,8 +4,8 @@ import '../../models/food.dart';
 
 final foodCatalogProvider =
     AsyncNotifierProvider<FoodCatalogNotifier, Map<String, String>>(
-  FoodCatalogNotifier.new,
-);
+      FoodCatalogNotifier.new,
+    );
 
 class FoodCatalogNotifier extends AsyncNotifier<Map<String, String>> {
   static const _staleThreshold = Duration(hours: 1);

@@ -48,9 +48,7 @@ ApiFailure _mapBadResponse(DioException e) {
   final statusCode = e.response?.statusCode ?? 0;
   final data = e.response?.data;
 
-  final serverMessage = (data is Map<String, dynamic> && data.containsKey('message'))
-      ? data['message'] as String
-      : null;
+  final serverMessage = _extractServerMessage(data);
 
   if (statusCode == 401) {
     return ApiFailure(
@@ -81,4 +79,13 @@ ApiFailure _mapBadResponse(DioException e) {
     message: serverMessage ?? 'An unexpected error occurred.',
     statusCode: statusCode,
   );
+}
+
+/// Nest devuelve `message` como String o como lista (errores de validación).
+String? _extractServerMessage(Object? data) {
+  if (data is! Map) return null;
+  final raw = data['message'];
+  if (raw is String) return raw;
+  if (raw is List) return raw.whereType<String>().join('\n');
+  return null;
 }

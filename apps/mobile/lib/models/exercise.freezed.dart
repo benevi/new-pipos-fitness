@@ -12,7 +12,8 @@ part of 'exercise.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 Exercise _$ExerciseFromJson(Map<String, dynamic> json) {
   return _Exercise.fromJson(json);
@@ -43,14 +44,15 @@ abstract class $ExerciseCopyWith<$Res> {
   factory $ExerciseCopyWith(Exercise value, $Res Function(Exercise) then) =
       _$ExerciseCopyWithImpl<$Res, Exercise>;
   @useResult
-  $Res call(
-      {String id,
-      String slug,
-      String name,
-      String? description,
-      int difficulty,
-      String? movementPattern,
-      String place});
+  $Res call({
+    String id,
+    String slug,
+    String name,
+    String? description,
+    int difficulty,
+    String? movementPattern,
+    String place,
+  });
 }
 
 /// @nodoc
@@ -76,36 +78,39 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
     Object? movementPattern = freezed,
     Object? place = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      slug: null == slug
-          ? _value.slug
-          : slug // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      difficulty: null == difficulty
-          ? _value.difficulty
-          : difficulty // ignore: cast_nullable_to_non_nullable
-              as int,
-      movementPattern: freezed == movementPattern
-          ? _value.movementPattern
-          : movementPattern // ignore: cast_nullable_to_non_nullable
-              as String?,
-      place: null == place
-          ? _value.place
-          : place // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            slug: null == slug
+                ? _value.slug
+                : slug // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: freezed == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            difficulty: null == difficulty
+                ? _value.difficulty
+                : difficulty // ignore: cast_nullable_to_non_nullable
+                      as int,
+            movementPattern: freezed == movementPattern
+                ? _value.movementPattern
+                : movementPattern // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            place: null == place
+                ? _value.place
+                : place // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -113,18 +118,20 @@ class _$ExerciseCopyWithImpl<$Res, $Val extends Exercise>
 abstract class _$$ExerciseImplCopyWith<$Res>
     implements $ExerciseCopyWith<$Res> {
   factory _$$ExerciseImplCopyWith(
-          _$ExerciseImpl value, $Res Function(_$ExerciseImpl) then) =
-      __$$ExerciseImplCopyWithImpl<$Res>;
+    _$ExerciseImpl value,
+    $Res Function(_$ExerciseImpl) then,
+  ) = __$$ExerciseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String slug,
-      String name,
-      String? description,
-      int difficulty,
-      String? movementPattern,
-      String place});
+  $Res call({
+    String id,
+    String slug,
+    String name,
+    String? description,
+    int difficulty,
+    String? movementPattern,
+    String place,
+  });
 }
 
 /// @nodoc
@@ -132,8 +139,9 @@ class __$$ExerciseImplCopyWithImpl<$Res>
     extends _$ExerciseCopyWithImpl<$Res, _$ExerciseImpl>
     implements _$$ExerciseImplCopyWith<$Res> {
   __$$ExerciseImplCopyWithImpl(
-      _$ExerciseImpl _value, $Res Function(_$ExerciseImpl) _then)
-      : super(_value, _then);
+    _$ExerciseImpl _value,
+    $Res Function(_$ExerciseImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of Exercise
   /// with the given fields replaced by the non-null parameter values.
@@ -148,50 +156,53 @@ class __$$ExerciseImplCopyWithImpl<$Res>
     Object? movementPattern = freezed,
     Object? place = null,
   }) {
-    return _then(_$ExerciseImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      slug: null == slug
-          ? _value.slug
-          : slug // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      description: freezed == description
-          ? _value.description
-          : description // ignore: cast_nullable_to_non_nullable
-              as String?,
-      difficulty: null == difficulty
-          ? _value.difficulty
-          : difficulty // ignore: cast_nullable_to_non_nullable
-              as int,
-      movementPattern: freezed == movementPattern
-          ? _value.movementPattern
-          : movementPattern // ignore: cast_nullable_to_non_nullable
-              as String?,
-      place: null == place
-          ? _value.place
-          : place // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$ExerciseImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        slug: null == slug
+            ? _value.slug
+            : slug // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: freezed == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        difficulty: null == difficulty
+            ? _value.difficulty
+            : difficulty // ignore: cast_nullable_to_non_nullable
+                  as int,
+        movementPattern: freezed == movementPattern
+            ? _value.movementPattern
+            : movementPattern // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        place: null == place
+            ? _value.place
+            : place // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ExerciseImpl implements _Exercise {
-  const _$ExerciseImpl(
-      {required this.id,
-      required this.slug,
-      required this.name,
-      this.description,
-      required this.difficulty,
-      this.movementPattern,
-      required this.place});
+  const _$ExerciseImpl({
+    required this.id,
+    required this.slug,
+    required this.name,
+    this.description,
+    required this.difficulty,
+    this.movementPattern,
+    required this.place,
+  });
 
   factory _$ExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseImplFromJson(json);
@@ -235,8 +246,16 @@ class _$ExerciseImpl implements _Exercise {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, slug, name, description,
-      difficulty, movementPattern, place);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    slug,
+    name,
+    description,
+    difficulty,
+    movementPattern,
+    place,
+  );
 
   /// Create a copy of Exercise
   /// with the given fields replaced by the non-null parameter values.
@@ -248,21 +267,20 @@ class _$ExerciseImpl implements _Exercise {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ExerciseImplToJson(
-      this,
-    );
+    return _$$ExerciseImplToJson(this);
   }
 }
 
 abstract class _Exercise implements Exercise {
-  const factory _Exercise(
-      {required final String id,
-      required final String slug,
-      required final String name,
-      final String? description,
-      required final int difficulty,
-      final String? movementPattern,
-      required final String place}) = _$ExerciseImpl;
+  const factory _Exercise({
+    required final String id,
+    required final String slug,
+    required final String name,
+    final String? description,
+    required final int difficulty,
+    final String? movementPattern,
+    required final String place,
+  }) = _$ExerciseImpl;
 
   factory _Exercise.fromJson(Map<String, dynamic> json) =
       _$ExerciseImpl.fromJson;
