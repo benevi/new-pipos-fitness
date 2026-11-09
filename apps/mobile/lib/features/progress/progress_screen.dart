@@ -181,11 +181,11 @@ class _VolumeSection extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
+                        Wrap(
+                          alignment: WrapAlignment.spaceBetween,
+                          spacing: AppSpacing.sm,
                           children: [
-                            Expanded(
-                              child: Text(l10n.groupLabel(g.group.wire)),
-                            ),
+                            Text(l10n.groupLabel(g.group.wire)),
                             Text(
                               g.targetMin == null
                                   ? l10n.number(g.effectiveSets)
