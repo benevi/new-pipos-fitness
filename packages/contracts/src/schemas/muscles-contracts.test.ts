@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  areExerciseMusclesOrdered,
   ExerciseMusclesSchema,
   PlanExerciseResponseSchema,
   sortExerciseMuscles,
@@ -68,16 +69,25 @@ describe('músculos del ejercicio (ADR-0014, Fase 1)', () => {
       { muscle: 'lower_back', role: 'secondary' },
       { muscle: 'adductors', role: 'secondary' },
     ];
+    expect(areExerciseMusclesOrdered(muscles as never)).toBe(true);
     expect(TodayExerciseSchema.parse({ ...OLD_TODAY, muscles }).muscles).toEqual(muscles);
     expect(PlanExerciseResponseSchema.parse({ ...OLD_PLAN_EXERCISE, muscles }).muscles).toEqual(muscles);
   });
 
-  it('rechaza un secundario antes que un principal, el orden del enum invertido y repetidos', () => {
-    const bad = (muscles: unknown) => ExerciseMusclesSchema.safeParse(muscles).success;
-    expect(bad([{ muscle: 'triceps', role: 'secondary' }, { muscle: 'chest', role: 'primary' }])).toBe(false);
-    expect(bad([{ muscle: 'quads', role: 'primary' }, { muscle: 'glutes', role: 'primary' }])).toBe(false);
-    expect(bad([{ muscle: 'chest', role: 'primary' }, { muscle: 'chest', role: 'secondary' }])).toBe(false);
-    expect(bad([{ muscle: 'chest', role: 'primary', fraction: 1 }])).toBe(false);
+  it('el orden exige principales primero, el orden del enum y sin repetidos', () => {
+    const ok = areExerciseMusclesOrdered;
+    expect(ok([])).toBe(true);
+    expect(ok([{ muscle: 'chest', role: 'primary' }, { muscle: 'triceps', role: 'secondary' }])).toBe(true);
+    expect(ok([{ muscle: 'triceps', role: 'secondary' }, { muscle: 'chest', role: 'primary' }])).toBe(false);
+    expect(ok([{ muscle: 'quads', role: 'primary' }, { muscle: 'glutes', role: 'primary' }])).toBe(false);
+    expect(ok([{ muscle: 'chest', role: 'primary' }, { muscle: 'chest', role: 'secondary' }])).toBe(false);
+  });
+
+  it('rechaza músculos o roles desconocidos y la fracción del motor', () => {
+    const valid = (muscles: unknown) => ExerciseMusclesSchema.safeParse(muscles).success;
+    expect(valid([{ muscle: 'neck', role: 'primary' }])).toBe(false);
+    expect(valid([{ muscle: 'chest', role: 'main' }])).toBe(false);
+    expect(valid([{ muscle: 'chest', role: 'primary', fraction: 1 }])).toBe(false);
   });
 
   it('sortExerciseMuscles ordena y quita la fracción', () => {
@@ -91,6 +101,6 @@ describe('músculos del ejercicio (ADR-0014, Fase 1)', () => {
       { muscle: 'front_delts', role: 'secondary' },
       { muscle: 'triceps', role: 'secondary' },
     ]);
-    expect(ExerciseMusclesSchema.safeParse(sorted).success).toBe(true);
+    expect(areExerciseMusclesOrdered(sorted)).toBe(true);
   });
 });

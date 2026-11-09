@@ -29,18 +29,21 @@ export function sortExerciseMuscles<T extends ExerciseMuscleRef>(muscles: readon
 }
 
 /**
- * Lista de músculos de un ejercicio (principales → secundarios, orden del enum, sin repetir).
- * El `default` mantiene válidas las respuestas y fixtures anteriores a la Fase 1.
+ * ¿Lista en orden de presentación y sin músculos repetidos? La API la construye con
+ * `sortExerciseMuscles`; los tests (contratos, e2e y fixtures) la comprueban con esto.
+ * No es un `refine` del esquema para no perder el tipo en `openapi.json`.
  */
-export const ExerciseMusclesSchema = z
-  .array(ExerciseMuscleRefSchema)
-  .max(MUSCLES.length)
-  .refine(
-    (list) => list.every((m, i) => i === 0 || muscleRank(list[i - 1]) < muscleRank(m)),
-    'Muscles must be ordered (primary first, then enum order) and not repeated',
-  )
-  .refine((list) => new Set(list.map((m) => m.muscle)).size === list.length, 'A muscle can only appear once')
-  .default([]);
+export function areExerciseMusclesOrdered(list: readonly ExerciseMuscleRef[]): boolean {
+  const unique = new Set(list.map((m) => m.muscle)).size === list.length;
+  return unique && list.every((m, i) => i === 0 || muscleRank(list[i - 1]) < muscleRank(m));
+}
+
+/**
+ * Músculos de un ejercicio: principales primero y, dentro de cada rol, en el orden del enum
+ * `MUSCLES` (ver `sortExerciseMuscles`). El `default` mantiene válidas las respuestas y fixtures
+ * anteriores a la Fase 1 (ADR-0014).
+ */
+export const ExerciseMusclesSchema = z.array(ExerciseMuscleRefSchema).max(MUSCLES.length).default([]);
 
 export const ExerciseListQuerySchema = PaginationQuerySchema.extend({
   movementPattern: MovementPatternSchema.optional(),
