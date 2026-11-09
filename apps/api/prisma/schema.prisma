@@ -7,9 +7,9 @@ generator client {
   provider = "prisma-client-js"
 }
 
+// Las URL de conexión están en prisma.config.ts (Prisma 7); la API conecta con @prisma/adapter-pg.
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 // ─────────────────────────────────────────────────────────────

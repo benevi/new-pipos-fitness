@@ -5,11 +5,13 @@
  *   pnpm --filter @pipos/api analytics:rebuild [userId]
  */
 import 'reflect-metadata';
-import { PrismaClient } from '@prisma/client';
+import { loadDotEnv } from '../src/config/dotenv';
+import { createPrismaClient } from '../src/prisma/prisma.service';
 import { AnalyticsService } from '../src/modules/analytics/analytics.service';
 
 async function main(): Promise<void> {
-  const prisma = new PrismaClient();
+  loadDotEnv();
+  const prisma = createPrismaClient();
   const analytics = new AnalyticsService();
   try {
     const only = process.argv[2];

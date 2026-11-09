@@ -2,11 +2,11 @@
  * Seed del catálogo de ejercicios desde @pipos/catalog (idempotente; borrado lógico).
  * Ejecutar: pnpm --filter @pipos/api prisma:seed
  */
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../src/prisma/prisma.service';
 import { seedCatalog } from '../src/catalog-seed/seed-catalog';
 
 async function main(): Promise<void> {
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient();
   try {
     const result = await seedCatalog(prisma);
     // eslint-disable-next-line no-console

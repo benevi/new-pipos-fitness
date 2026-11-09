@@ -1,11 +1,13 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { configureApp } from './app.setup';
+import { loadDotEnv } from './config/dotenv';
 import { InvalidEnvError, parseEnv, type Env } from './config/env';
 import { log } from './logging/logging';
 import { initMonitoring } from './monitoring/monitoring';
 
 function loadEnvOrExit(): Env {
+  loadDotEnv();
   try {
     return parseEnv(process.env);
   } catch (error) {
