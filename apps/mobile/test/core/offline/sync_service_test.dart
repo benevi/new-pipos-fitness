@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +16,13 @@ import '../../helpers/fake_backend.dart';
 const planSession = '00000000-0000-4000-8000-000000000020';
 const planExercise = '00000000-0000-4000-8000-000000000030';
 const exercise = '00000000-0000-4000-8000-000000000040';
+
+class _BrokenConnectivity extends ManualConnectivitySource {
+  _BrokenConnectivity() : super(online: true);
+
+  @override
+  Future<bool> isOnline() async => throw StateError('plugin roto');
+}
 
 /// Backend que falla las series con un error permanente.
 class _RejectingBackend extends FakeBackend {
@@ -394,6 +403,30 @@ void main() {
     await service.discardWorkout(set.workoutClientId);
     expect(await service.workoutByClientId(set.workoutClientId), isNull);
     expect(await service.setsOf(set.workoutClientId), isEmpty);
+  });
+
+  test('los syncNow lanzados sin esperar capturan y reportan el error '
+      '(no hay error no manejado)', () async {
+    final broken = _BrokenConnectivity();
+    final reported = <Object>[];
+    final uncaught = <Object>[];
+    await runZonedGuarded(() async {
+      final s = SyncService(
+        database: db,
+        api: backend,
+        connectivity: broken,
+        userId: 'user-1',
+        clock: () => now,
+        onError: (e, _) => reported.add(e),
+      );
+      await s.start();
+      await s.startWorkout(planSessionId: planSession);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await s.dispose();
+    }, (e, _) => uncaught.add(e));
+    await broken.dispose();
+    expect(uncaught, isEmpty);
+    expect(reported, isNotEmpty);
   });
 
   test('BackoffPolicy: exponencial y acotado', () {

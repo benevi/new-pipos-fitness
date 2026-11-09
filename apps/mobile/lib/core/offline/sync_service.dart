@@ -29,6 +29,7 @@ import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:uuid/uuid.dart';
 
 import '../../data/pipos_api.dart';
@@ -100,13 +101,16 @@ class SyncService {
     String Function()? idGenerator,
     this.backoff = const BackoffPolicy(),
     this.retention = const Duration(days: 14),
-  }) : _db = database,
+    void Function(Object error, StackTrace stack)? onError,
+  }) : _onError = onError ?? _logError,
+       _db = database,
        _api = api,
        _connectivity = connectivity,
        _userId = userId,
        _clock = clock ?? DateTime.now,
        _newId = idGenerator ?? const Uuid().v4;
 
+  final void Function(Object error, StackTrace stack) _onError;
   final AppDatabase _db;
   final WorkoutApi _api;
   final ConnectivitySource _connectivity;
@@ -141,9 +145,27 @@ class SyncService {
     await recoverInterrupted();
     await _purgeOld();
     _connectivitySub ??= _connectivity.onlineChanges.listen((online) {
-      if (online) unawaited(syncNow());
+      if (online) _kick();
     });
-    unawaited(syncNow());
+    _kick();
+  }
+
+  /// Lanza una pasada sin esperarla, capturando cualquier error (BD
+  /// cerrada, plugin de conectividad...) para que no acabe como error no
+  /// manejado de la zona.
+  void _kick() {
+    unawaited(
+      syncNow().then<void>(
+        (_) {},
+        onError: (Object e, StackTrace st) {
+          if (!_disposed) _onError(e, st);
+        },
+      ),
+    );
+  }
+
+  static void _logError(Object error, StackTrace stack) {
+    debugPrint('SyncService: pasada fallida: $error\n$stack');
   }
 
   // ── Escrituras locales (la UI) ──
@@ -169,7 +191,7 @@ class SyncService {
       ),
     );
     _notify();
-    unawaited(syncNow());
+    _kick();
     return row;
   }
 
@@ -283,7 +305,7 @@ class SyncService {
             updatedAt: now,
           ),
         );
-    unawaited(syncNow());
+    _kick();
     return row;
   }
 
@@ -307,7 +329,7 @@ class SyncService {
           );
       await _requeueFailedSets(userId, workoutClientId: workoutClientId);
     });
-    unawaited(syncNow());
+    _kick();
   }
 
   /// Series sin confirmar por la API (pendientes, en envío o fallidas) de
@@ -438,7 +460,7 @@ class SyncService {
         lastError: Value(null),
       ),
     );
-    unawaited(syncNow());
+    _kick();
   }
 
   Future<void> _requeueFailedSets(
@@ -838,7 +860,7 @@ class SyncService {
   void _scheduleRetry(Duration delay) {
     if (_disposed) return;
     _retryTimer?.cancel();
-    _retryTimer = Timer(delay, () => unawaited(syncNow()));
+    _retryTimer = Timer(delay, () => _kick());
   }
 
   Future<void> dispose() async {
