@@ -9,7 +9,6 @@
  */
 import type { engineV2 } from '@pipos/contracts';
 import { PROGRAMMING, type ProgrammingConfig } from '../config/programming.js';
-import { fmt } from '../training/labels.js';
 
 const DAY = 86_400_000;
 
@@ -18,6 +17,19 @@ function toMs(date: string): number {
 }
 
 const round = (n: number, d: number) => Math.round(n * 10 ** d) / 10 ** d;
+
+/** Número con hasta 2 decimales y coma decimal, sin ceros finales (0,25 · 0,5 · 1). */
+export function fmtPct(n: number): string {
+  const r = round(Math.abs(n), 2);
+  const s = String(r).replace('.', ',');
+  return n < 0 && r !== 0 ? `\u2212${s}` : s;
+}
+
+/** Ritmo con signo explícito: «+0,3» / «−0,5» / «0». */
+const signedPct = (n: number) => (round(n, 2) > 0 ? `+${fmtPct(n)}` : fmtPct(n));
+
+/** Por debajo de este ritmo (en valor absoluto, %/sem) el peso se considera estable. */
+const STABLE_PCT = 0.05;
 
 export const NOT_A_DIAGNOSIS =
   'Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario.';
@@ -92,14 +104,16 @@ export function weightTrend(
   }
   const meanKg = window.reduce((s, e) => s + e.weightKg, 0) / window.length;
   const rate = round(((slopeKgPerDay(window) * 7) / meanKg) * 100, 2);
-  const rateText = `${rate > 0 ? '+' : ''}${fmt(round(rate, 2))} % por semana`;
+  const rateText = `${signedPct(rate)} % por semana`;
   const rationale = [`En los últimos ${spanDays} días tu peso cambia a un ritmo de ${rateText} (tendencia de ${window.length} registros).`];
   if (!target) {
     rationale.push('Tu objetivo no fija un ritmo de cambio de peso: la tendencia es solo informativa.');
     return { status: 'no_target', weeklyRatePct: rate, target, movingAverage: movingAvg, spanDays, rationale };
   }
   const signed = target.direction === 'loss' ? -rate : rate; // ritmo en la dirección buscada
-  const range = `${fmt(target.minPct)}-${fmt(target.maxPct)} %`;
+  const range = `${fmtPct(target.minPct)}-${fmtPct(target.maxPct)} %`;
+  const between = `entre ${fmtPct(target.minPct)} y ${fmtPct(target.maxPct)} %`;
+  const review = 'Si se mantiene 2-3 semanas, revisa tus objetivos diarios.';
   let status: engineV2.WeightTrendStatus;
   if (signed > target.maxPct + 1e-9) {
     status = 'too_fast';
@@ -108,12 +122,23 @@ export function weightTrend(
         ? `Bajas más rápido que el ${range} semanal recomendado: a ese ritmo es más fácil perder masa muscular y rendimiento (§11.5).`
         : `Subes más rápido que el ${range} semanal orientativo: probablemente estás ganando más grasa de la necesaria (§11.5).`,
     );
-  } else if (signed < target.minPct - 1e-9) {
-    status = 'too_slow';
+  } else if (signed < -STABLE_PCT) {
+    // Se mueve en sentido contrario al objetivo: no es «ir lento», es ir al revés.
+    status = 'wrong_direction';
     rationale.push(
       target.direction === 'loss'
-        ? `Bajas más despacio que el ${range} semanal recomendado. Si se mantiene 2-3 semanas, revisa tus objetivos diarios.`
-        : `Subes más despacio que el ${range} semanal orientativo. Si se mantiene 2-3 semanas, revisa tus objetivos diarios.`,
+        ? `Estás ganando peso (${signedPct(rate)} %/semana) y tu objetivo es perder ${between} por semana. ${review}`
+        : `Estás perdiendo peso (${signedPct(rate)} %/semana) y tu objetivo es ganar ${between} por semana. ${review}`,
+    );
+  } else if (signed < target.minPct - 1e-9) {
+    status = 'too_slow';
+    const verb = target.direction === 'loss' ? 'perder' : 'ganar';
+    rationale.push(
+      Math.abs(rate) <= STABLE_PCT
+        ? `Tu peso se mantiene prácticamente estable y tu objetivo es ${verb} ${between} por semana. ${review}`
+        : target.direction === 'loss'
+          ? `Bajas más despacio que el ${range} semanal recomendado. ${review}`
+          : `Subes más despacio que el ${range} semanal orientativo. ${review}`,
     );
   } else {
     status = 'on_track';

@@ -1,6 +1,6 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { bmi, movingAverage, navyBodyFat, weightTrend } from './index.js';
+import { bmi, fmtPct, movingAverage, navyBodyFat, weightTrend } from './index.js';
 
 const DAY = 86_400_000;
 const day = (i: number) => new Date(Date.UTC(2026, 9, 1) + i * DAY).toISOString().slice(0, 10);
@@ -26,13 +26,39 @@ describe('weightTrend (§16.19)', () => {
     expect(ok.target).toEqual({ direction: 'loss', minPct: 0.5, maxPct: 1 });
     expect(weightTrend(series(28, 80, -1.5), 'fat_loss').status).toBe('too_fast');
     expect(weightTrend(series(28, 80, -0.2), 'fat_loss').status).toBe('too_slow');
-    expect(weightTrend(series(28, 80, 0.3), 'fat_loss').status).toBe('too_slow'); // sube en vez de bajar
+    expect(weightTrend(series(28, 80, 0.3), 'fat_loss').status).toBe('wrong_direction'); // sube en vez de bajar
+  });
+
+  it('dirección contraria al objetivo: wrong_direction con el texto correcto (no «subes más despacio»)', () => {
+    const gainButLosing = weightTrend(series(28, 80, -0.5), 'hypertrophy');
+    expect(gainButLosing.status).toBe('wrong_direction');
+    const text = gainButLosing.rationale.join(' ');
+    expect(text).toContain('Estás perdiendo peso (\u22120,5 %/semana) y tu objetivo es ganar entre 0,25 y 0,5 % por semana');
+    expect(text).not.toMatch(/Subes/);
+    const lossButGaining = weightTrend(series(28, 80, 0.3), 'fat_loss');
+    expect(lossButGaining.rationale.join(' ')).toContain('Estás ganando peso (+0,3 %/semana) y tu objetivo es perder entre 0,5 y 1 % por semana');
+  });
+
+  it('los rangos del texto coinciden exactamente con el objetivo (hasta 2 decimales, coma decimal)', () => {
+    const slow = weightTrend(series(28, 70, 0.15), 'hypertrophy');
+    expect(slow.status).toBe('too_slow');
+    expect(slow.target).toEqual({ direction: 'gain', minPct: 0.25, maxPct: 0.5 });
+    expect(slow.rationale.join(' ')).toContain('0,25-0,5 %');
+    expect(slow.rationale.join(' ')).not.toContain('0,3-0,5');
+    const flat = weightTrend(series(28, 70, 0), 'hypertrophy');
+    expect(flat.status).toBe('too_slow');
+    expect(flat.rationale.join(' ')).toMatch(/prácticamente estable/);
+    expect(fmtPct(0.25)).toBe('0,25');
+    expect(fmtPct(0.5)).toBe('0,5');
+    expect(fmtPct(1)).toBe('1');
+    expect(fmtPct(-0.456)).toBe('\u22120,46');
   });
 
   it('hipertrofia: 0,25-0,5 %/sem de ganancia', () => {
     expect(weightTrend(series(21, 70, 0.35), 'hypertrophy').status).toBe('on_track');
     expect(weightTrend(series(21, 70, 1), 'hypertrophy').status).toBe('too_fast');
-    expect(weightTrend(series(21, 70, -0.3), 'hypertrophy').status).toBe('too_slow');
+    expect(weightTrend(series(21, 70, 0.1), 'hypertrophy').status).toBe('too_slow');
+    expect(weightTrend(series(21, 70, -0.3), 'hypertrophy').status).toBe('wrong_direction');
   });
 
   it('metas sin ritmo objetivo: no_target (no se inventa uno)', () => {
@@ -63,7 +89,8 @@ describe('weightTrend (§16.19)', () => {
         expect(r.weeklyRatePct).not.toBeNull();
         expect(Math.abs(r.weeklyRatePct! - pct)).toBeLessThan(0.1);
         if (-r.weeklyRatePct! > 1 + 1e-9) expect(r.status).toBe('too_fast');
-        if (-r.weeklyRatePct! < 0.5 - 1e-9) expect(r.status).toBe('too_slow');
+        if (r.weeklyRatePct! > 0.05) expect(r.status).toBe('wrong_direction');
+        else if (-r.weeklyRatePct! < 0.5 - 1e-9) expect(r.status).toBe('too_slow');
       }),
       { numRuns: 200, seed: 16019 },
     );
