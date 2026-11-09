@@ -21,7 +21,7 @@ final _testRouterProvider = Provider<GoRouter>((ref) {
     routes: [
       GoRoute(
         path: '/',
-        builder: (_, __) => Consumer(
+        builder: (_, _) => Consumer(
           builder: (context, ref, _) {
             final user = ref.watch(currentUserProvider);
             final notes = ref.watch(_userNotesProvider);

@@ -85,7 +85,7 @@ class PiposApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     // Mantiene vivo el servicio de sincronización durante la sesión.
-    ref.listen(syncServiceProvider, (_, __) {});
+    ref.listen(syncServiceProvider, (_, _) {});
 
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
