@@ -201,4 +201,49 @@ void main() {
     expect(backend.calls.where((c) => c == 'POST /plans/generate'), isEmpty);
     await harness.drainAndUnmount(tester);
   });
+
+  group('Idempotency-Key al generar el plan', () {
+    Future<void> toGenerate(WidgetTester tester) async {
+      await fillUntilConsent(tester);
+      await tapKey(tester, 'consent-skip');
+      await tapKey(tester, 'onboarding-next'); // preferencias
+      await tapKey(tester, 'onboarding-next'); // datos corporales
+      await tapKey(tester, 'onboarding-next'); // revisión → generar
+    }
+
+    testWidgets('respuesta perdida: el reintento reenvía la MISMA clave y no '
+        'crea una segunda versión', (tester) async {
+      final backend = newUser()..loseNextGenerateResponse = true;
+      final harness = await openOnboarding(tester, backend);
+      await toGenerate(tester);
+      expect(find.text('Tu plan está listo'), findsNothing);
+      expect(backend.plansGenerated, 1, reason: 'la API ya la creó');
+
+      await tapKey(tester, 'onboarding-next'); // reintentar
+      expect(find.text('Tu plan está listo'), findsOneWidget);
+      expect(backend.generateKeys, hasLength(2));
+      expect(backend.generateKeys.first, isNotNull);
+      expect(backend.generateKeys.toSet(), hasLength(1));
+      expect(backend.plansGenerated, 1);
+      await harness.drainAndUnmount(tester);
+    });
+
+    testWidgets('422 IDEMPOTENCY_KEY_REUSED: clave nueva y un reintento', (
+      tester,
+    ) async {
+      final backend = newUser()..loseNextGenerateResponse = true;
+      final harness = await openOnboarding(tester, backend);
+      await toGenerate(tester);
+      final first = backend.generateKeys.single!;
+      // Entre medias el perfil cambió: la clave ya no vale.
+      backend.reserveKeyWithOtherProfile(first);
+
+      await tapKey(tester, 'onboarding-next');
+      expect(find.text('Tu plan está listo'), findsOneWidget);
+      expect(backend.generateKeys, hasLength(3));
+      expect(backend.generateKeys[1], first);
+      expect(backend.generateKeys[2], isNot(first));
+      await harness.drainAndUnmount(tester);
+    });
+  });
 }

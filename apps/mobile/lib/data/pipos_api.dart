@@ -43,7 +43,11 @@ abstract class ProfileApi {
 }
 
 abstract class PlanApi {
-  Future<PlanVersion> generatePlan();
+  /// `POST /plans/generate`. Con [idempotencyKey] (un UUID v4 por intento,
+  /// igual en cada reintento) repetir devuelve la misma versión (200) en vez
+  /// de crear otra; misma clave con otro perfil → `422
+  /// IDEMPOTENCY_KEY_REUSED`.
+  Future<PlanVersion> generatePlan({String? idempotencyKey});
 
   /// `null` si no hay plan (404 PLAN_REQUIRED).
   Future<PlanVersion?> getCurrentPlan();
@@ -229,9 +233,17 @@ class DioPiposApi
 
   // ── Planes ──
   @override
-  Future<PlanVersion> generatePlan() => _call(
-    () async =>
-        PlanVersion.fromJson(_json(await _client.post('/plans/generate'))),
+  Future<PlanVersion> generatePlan({String? idempotencyKey}) => _call(
+    () async => PlanVersion.fromJson(
+      _json(
+        await _client.post(
+          '/plans/generate',
+          headers: idempotencyKey == null
+              ? null
+              : {'Idempotency-Key': idempotencyKey},
+        ),
+      ),
+    ),
   );
 
   @override

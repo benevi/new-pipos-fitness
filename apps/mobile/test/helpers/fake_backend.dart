@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/data/pipos_api.dart';
@@ -156,6 +158,12 @@ class FakeBackend
     if (hasHealth && consent['granted'] != true && consentGrants.isEmpty) {
       throw _error(409, ApiErrorCode.healthConsentRequired);
     }
+    // Como la API: solo hay versión nueva del plan si el perfil cambió.
+    final changed =
+        !hasProfile ||
+        request.toJson().entries.any(
+          (e) => jsonEncode(profileJson[e.key]) != jsonEncode(e.value),
+        );
     profileJson = {
       ...profileJson,
       ...request.toJson(),
@@ -164,7 +172,7 @@ class FakeBackend
     };
     hasProfile = true;
     PlanVersionSummary? newVersion;
-    if (hasPlan) {
+    if (hasPlan && changed) {
       final v = (planJson['version'] as int) + 1;
       planJson = {...planJson, 'version': v};
       newVersion = PlanVersion.fromJson(planJson).summary;
@@ -241,13 +249,50 @@ class FakeBackend
   }
 
   // ── PlanApi ──
+  /// `Idempotency-Key` de cada `POST /plans/generate` (null = sin clave).
+  final List<String?> generateKeys = [];
+
+  /// Versiones creadas por `generatePlan` (una repetición con la misma clave
+  /// devuelve la misma, como la API).
+  int plansGenerated = 0;
+  final Map<String, ({String profile, Json plan})> _generatedByKey = {};
+
+  /// Simula que la API crea la versión pero la respuesta se pierde.
+  bool loseNextGenerateResponse = false;
+
   @override
-  Future<PlanVersion> generatePlan() async {
+  Future<PlanVersion> generatePlan({String? idempotencyKey}) async {
     _guard('POST /plans/generate');
+    generateKeys.add(idempotencyKey);
     if (!hasProfile) throw _error(409, ApiErrorCode.profileRequired);
+    final profile = profileJson.toString();
+    final previous = idempotencyKey == null
+        ? null
+        : _generatedByKey[idempotencyKey];
+    if (previous != null) {
+      if (previous.profile != profile) {
+        throw _error(422, ApiErrorCode.idempotencyKeyReused);
+      }
+      return PlanVersion.fromJson(previous.plan);
+    }
     hasPlan = true;
+    plansGenerated++;
+    if (idempotencyKey != null) {
+      _generatedByKey[idempotencyKey] = (profile: profile, plan: planJson);
+    }
+    if (loseNextGenerateResponse) {
+      loseNextGenerateResponse = false;
+      throw const ApiFailure(
+        type: ApiFailureType.timeout,
+        message: 'response lost (fake)',
+      );
+    }
     return PlanVersion.fromJson(planJson);
   }
+
+  /// La próxima clave usada se da por gastada con otro perfil (422).
+  void reserveKeyWithOtherProfile(String key) =>
+      _generatedByKey[key] = (profile: 'otro perfil', plan: planJson);
 
   @override
   Future<PlanVersion?> getCurrentPlan() async {
