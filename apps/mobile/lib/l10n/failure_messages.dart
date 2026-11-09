@@ -31,6 +31,22 @@ extension ApiFailureL10n on ApiFailure {
   }
 }
 
+/// Motivo legible de una serie que no se pudo enviar (`lastError` de la
+/// cola: código estable de la API o `HTTP nnn`).
+String setRejectionReason(AppLocalizations l10n, String? code) =>
+    switch (code) {
+      ApiErrorCode.validationFailed ||
+      ApiErrorCode.unknownExercise ||
+      'HTTP 400' ||
+      'HTTP 422' => l10n.setRejectedInvalid,
+      ApiErrorCode.workoutFinished => l10n.setRejectedFinished,
+      ApiErrorCode.notFound ||
+      ApiErrorCode.workoutInProgress ||
+      'WORKOUT_NOT_STARTED' => l10n.setRejectedNotStarted,
+      null => l10n.syncStatusFailed,
+      _ => l10n.setRejectedOther(code),
+    };
+
 extension AuthErrorCodeL10n on AuthErrorCode {
   String localized(AppLocalizations l10n) => switch (this) {
     AuthErrorCode.invalidCredentials => l10n.authErrorInvalidCredentials,

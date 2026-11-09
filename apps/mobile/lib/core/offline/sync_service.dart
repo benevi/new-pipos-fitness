@@ -414,6 +414,73 @@ class SyncService {
     return row;
   }
 
+  /// Borra una serie en local: «Descartar» una rechazada por la API (#21)
+  /// o «Borrar» una registrada (#22). Si pudo llegar al servidor queda como
+  /// lápida `pending` hasta que la API confirme el `DELETE`; si no (nunca se
+  /// envió o la API la rechazó al crearla), se borra la fila sin más.
+  Future<void> deleteSet(String clientId) async {
+    await _db.transaction(() async {
+      final row = await _setByClientId(clientId);
+      if (row == null || row.deleted) return;
+      final workout = await workoutByClientId(row.workoutClientId);
+      if (workout?.serverId == null || !mayBeOnServer(row)) {
+        await (_db.delete(
+          _sets,
+        )..where((t) => t.clientId.equals(clientId))).go();
+        return;
+      }
+      await (_db.update(
+        _sets,
+      )..where((t) => t.clientId.equals(clientId))).write(
+        LocalSetLogsCompanion(
+          deleted: const Value(true),
+          status: const Value(SetSyncStatus.pending),
+          attempts: const Value(0),
+          lastError: const Value(null),
+          nextAttemptAt: const Value(null),
+          updatedAt: Value(_editTime(row.updatedAt)),
+        ),
+      );
+    });
+    _notify();
+    _kick();
+  }
+
+  /// `true` si la serie puede existir en el servidor: confirmada, en envío o
+  /// con algún intento cuyo resultado no se conoce (timeout, 5xx...). Un
+  /// rechazo de validación al crearla garantiza que la API no la guardó (el
+  /// reenvío de una serie existente responde 200 antes de validar).
+  static bool mayBeOnServer(LocalSetLog s) {
+    if (s.confirmed || s.status == SetSyncStatus.syncing) return true;
+    if (s.attempts == 0) return false;
+    return !rejectionCodes.contains(s.lastError);
+  }
+
+  /// Motivos (`lastError`) de una serie que la API rechazó al crearla.
+  static const rejectionCodes = {
+    ApiErrorCode.validationFailed,
+    ApiErrorCode.unknownExercise,
+    ApiErrorCode.workoutFinished,
+    ApiErrorCode.notFound,
+    'HTTP 400',
+    'HTTP 422',
+  };
+
+  /// Momento de una edición local, siempre posterior a la anterior (drift
+  /// guarda las fechas con precisión de segundos y la API resuelve «gana la
+  /// última escritura» por `clientUpdatedAt`).
+  DateTime _editTime(DateTime previous) {
+    final now = _clock();
+    return now.difference(previous) >= const Duration(seconds: 1)
+        ? now
+        : previous.add(const Duration(seconds: 1));
+  }
+
+  Future<LocalSetLog?> _setByClientId(String clientId) =>
+      (_db.select(_sets)
+            ..where((t) => t.clientId.equals(clientId) & t.userId.equals(_uid)))
+          .getSingleOrNull();
+
   /// Marca el entrenamiento como terminado; el `finish` se envía cuando
   /// TODAS sus series estén sincronizadas. Las `failed` se vuelven a poner
   /// en cola antes (la API rechaza series nuevas con `409 WORKOUT_FINISHED`
@@ -800,14 +867,26 @@ class SyncService {
           deferred: items.length - i,
         );
       }
-      await _setStatus(item.clientId, SetSyncStatus.syncing);
+      // Solo si nadie la ha cambiado (editado, borrado) desde la lectura.
+      if (!await _claim(item)) continue;
       try {
-        await _api.upsertSet(serverId, _requestFor(item));
-        await _setStatus(item.clientId, SetSyncStatus.synced);
+        if (item.deleted) {
+          await _sendDelete(serverId, item);
+        } else {
+          await _api.upsertSet(serverId, _requestFor(item));
+          await _confirm(item);
+        }
         sent++;
       } catch (e) {
         final f = ApiFailure.from(e);
         final attempts = item.attempts + 1;
+        if (item.deleted && !_isTransient(f)) {
+          // Borrado rechazado de forma permanente: no hay nada más que
+          // hacer con la lápida (la UI ya no la pinta).
+          await _removeSet(item.clientId);
+          failed++;
+          continue;
+        }
         if (!_isTransient(f) || attempts >= backoff.maxAttempts) {
           await _markSetFailed(item, _reason(f), attempts);
           failed++;
@@ -1058,10 +1137,74 @@ class SyncService {
         );
   }
 
-  Future<void> _setStatus(String clientId, SetSyncStatus status) async {
-    await (_db.update(_sets)..where((t) => t.clientId.equals(clientId))).write(
-      LocalSetLogsCompanion(status: Value(status)),
-    );
+  /// `pending` → `syncing` solo si la fila sigue como se leyó (mismo
+  /// `updatedAt`, misma marca de borrado). Devuelve false si cambió.
+  Future<bool> _claim(LocalSetLog item) async {
+    final n =
+        await (_db.update(_sets)..where(
+              (t) =>
+                  t.clientId.equals(item.clientId) &
+                  t.status.equalsValue(SetSyncStatus.pending) &
+                  t.updatedAt.equals(item.updatedAt) &
+                  t.deleted.equals(item.deleted),
+            ))
+            .write(
+              const LocalSetLogsCompanion(status: Value(SetSyncStatus.syncing)),
+            );
+    _notify();
+    return n > 0;
+  }
+
+  /// La API confirmó la serie. Si se editó o borró mientras se enviaba, la
+  /// fila queda `pending` (con `confirmed`) y se envía otra vez: el reenvío
+  /// responde 200 con la versión del servidor y se corrige con `PATCH`.
+  Future<void> _confirm(LocalSetLog item) async {
+    final n =
+        await (_db.update(_sets)..where(
+              (t) =>
+                  t.clientId.equals(item.clientId) &
+                  t.updatedAt.equals(item.updatedAt) &
+                  t.deleted.equals(false),
+            ))
+            .write(
+              const LocalSetLogsCompanion(
+                status: Value(SetSyncStatus.synced),
+                confirmed: Value(true),
+                lastError: Value(null),
+                nextAttemptAt: Value(null),
+              ),
+            );
+    if (n == 0) {
+      await (_db.update(_sets)..where(
+            (t) =>
+                t.clientId.equals(item.clientId) &
+                t.status.equalsValue(SetSyncStatus.syncing),
+          ))
+          .write(
+            const LocalSetLogsCompanion(
+              status: Value(SetSyncStatus.pending),
+              confirmed: Value(true),
+            ),
+          );
+      await (_db.update(_sets)..where((t) => t.clientId.equals(item.clientId)))
+          .write(const LocalSetLogsCompanion(confirmed: Value(true)));
+      _runAgain = true;
+    }
+    _notify();
+  }
+
+  /// `DELETE` de una lápida; 404 = nunca llegó al servidor (también vale).
+  Future<void> _sendDelete(String serverId, LocalSetLog item) async {
+    try {
+      await _api.deleteSet(serverId, item.clientId);
+    } catch (e) {
+      if (ApiFailure.from(e).statusCode != 404) rethrow;
+    }
+    await _removeSet(item.clientId);
+  }
+
+  Future<void> _removeSet(String clientId) async {
+    await (_db.delete(_sets)..where((t) => t.clientId.equals(clientId))).go();
     _notify();
   }
 

@@ -64,6 +64,40 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncStatusFailed => 'Could not be sent';
 
   @override
+  String get setRejectedInvalid =>
+      'The server won\'t accept it: the exercise or the values aren\'t valid for this slot.';
+
+  @override
+  String get setRejectedFinished =>
+      'The server won\'t accept it: the workout was already finished.';
+
+  @override
+  String get setRejectedNotStarted =>
+      'Couldn\'t be sent: the workout never started on the server.';
+
+  @override
+  String setRejectedOther(String code) {
+    return 'Couldn\'t be sent ($code).';
+  }
+
+  @override
+  String get setDiscard => 'Discard';
+
+  @override
+  String setDiscardFor(int number) {
+    return 'Discard set $number';
+  }
+
+  @override
+  String setDiscardTitle(int number) {
+    return 'Discard set $number?';
+  }
+
+  @override
+  String get setDiscardBody =>
+      'It will be removed from this phone and won\'t count in the workout. This can\'t be undone.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Offline. Data saved on $date.';
   }

@@ -72,6 +72,10 @@ final localSetsProvider = StreamProvider.autoDispose
           ref.watch(syncServiceProvider).watchSets(workoutClientId),
     );
 
+/// Series locales visibles (sin las lápidas de las borradas).
+List<LocalSetLog> visibleSets(List<LocalSetLog> local) =>
+    local.where((s) => !s.deleted).toList();
+
 /// Serie registrada tal como se pinta (local o ya en la API).
 class LoggedSetView {
   const LoggedSetView({
@@ -81,6 +85,7 @@ class LoggedSetView {
     required this.loadKg,
     required this.rir,
     required this.status,
+    this.lastError,
   });
 
   final String clientId;
@@ -89,10 +94,14 @@ class LoggedSetView {
   final double loadKg;
   final int? rir;
   final SetSyncStatus status;
+
+  /// Motivo del último fallo de envío (código de la API o `HTTP nnn`).
+  final String? lastError;
 }
 
 /// Fusiona las series de la API (`loggedSets`) con las locales, sin
-/// duplicar por `clientId`. Las de calentamiento no cuentan.
+/// duplicar por `clientId`. Las de calentamiento no cuentan; las borradas
+/// en local (lápidas) ocultan la copia de la API.
 List<LoggedSetView> mergeSets(TodayExercise exercise, List<LocalSetLog> local) {
   final byClient = <String, LoggedSetView>{};
   for (final s in exercise.loggedSets) {
@@ -108,6 +117,10 @@ List<LoggedSetView> mergeSets(TodayExercise exercise, List<LocalSetLog> local) {
   }
   for (final s in local) {
     if (s.isWarmup || s.planExerciseId != exercise.planExerciseId) continue;
+    if (s.deleted) {
+      byClient.remove(s.clientId);
+      continue;
+    }
     byClient[s.clientId] = LoggedSetView(
       clientId: s.clientId,
       setIndex: s.setIndex,
@@ -115,6 +128,7 @@ List<LoggedSetView> mergeSets(TodayExercise exercise, List<LocalSetLog> local) {
       loadKg: s.loadKg,
       rir: s.rir,
       status: s.status,
+      lastError: s.lastError,
     );
   }
   final list = byClient.values.toList()

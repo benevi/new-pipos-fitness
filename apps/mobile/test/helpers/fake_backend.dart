@@ -474,6 +474,28 @@ class FakeBackend
     return done;
   }
 
+  /// Series borradas con `DELETE` (clientId).
+  final List<String> deletedSets = [];
+
+  @override
+  Future<SetLog> deleteSet(String workoutId, String clientId) async {
+    _guard('DELETE /workouts/$workoutId/sets/$clientId');
+    final existing = sets[clientId];
+    if (_byServerId(workoutId) == null ||
+        existing == null ||
+        existing.workoutId != workoutId) {
+      throw _error(404, ApiErrorCode.notFound);
+    }
+    if (existing.deletedAt != null) return existing;
+    deletedSets.add(clientId);
+    final deleted = SetLog.fromJson({
+      ...existing.toJson(),
+      'deletedAt': '2026-11-09T09:00:00.000Z',
+    });
+    sets[clientId] = deleted;
+    return deleted;
+  }
+
   @override
   Future<SubstitutesResponse> getSubstitutes(String exerciseId) async {
     _guard('GET /exercises/$exerciseId/substitutes');

@@ -234,7 +234,8 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
       '/workout-complete',
       extra: WorkoutSummary(
         workoutClientId: workout.clientId,
-        sets: allSets.where((s) => !s.isWarmup).length + serverSets,
+        sets:
+            visibleSets(allSets).where((s) => !s.isWarmup).length + serverSets,
         volumeKg: volume,
       ),
     );
@@ -252,7 +253,7 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         : ref.watch(localSetsProvider(workout.clientId)).valueOrNull ??
               const <LocalSetLog>[];
     final hasLogged =
-        local.isNotEmpty ||
+        visibleSets(local).isNotEmpty ||
         session.exercises.any((e) => e.loggedSets.isNotEmpty);
     final pendingNotes =
         ref.watch(pendingNotesProvider).valueOrNull ??
@@ -432,8 +433,9 @@ class _ConflictBanner extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
-    final count =
-        ref.watch(localSetsProvider(workout.clientId)).valueOrNull?.length ?? 0;
+    final count = visibleSets(
+      ref.watch(localSetsProvider(workout.clientId)).valueOrNull ?? const [],
+    ).length;
     return Container(
       key: Key('workout-conflict-${workout.clientId}'),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -817,10 +819,38 @@ class _LoggedSetRow extends ConsumerWidget {
   final int index;
   final LoggedSetView set;
 
+  /// «Descartar» una serie rechazada (#21): se pide confirmación y se quita
+  /// de la cola local (con `DELETE` si llegó a existir en el servidor).
+  Future<void> _discard(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.setDiscardTitle(index + 1)),
+        content: Text(l10n.setDiscardBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('set-discard-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.setDiscard),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(syncServiceProvider).deleteSet(set.clientId);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final failed = set.status == SetSyncStatus.failed;
     final (icon, label, color) = switch (set.status) {
       SetSyncStatus.synced => (
         Icons.cloud_done_outlined,
@@ -843,39 +873,88 @@ class _LoggedSetRow extends ConsumerWidget {
       l10n.kg(set.loadKg),
       set.rir == null ? '–' : '${set.rir}',
     );
-    return Semantics(
-      label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
-      excludeSemantics: set.status != SetSyncStatus.failed,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppSpacing.xxl),
-        child: Row(
-          children: [
-            SizedBox(
-              width: AppSpacing.xxl + AppSpacing.md,
-              child: Text(
-                l10n.todaySetLabel(index + 1),
-                style: theme.textTheme.labelLarge,
-              ),
+    const labelWidth = AppSpacing.xxl + AppSpacing.md;
+    final row = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSpacing.xxl),
+      child: Row(
+        children: [
+          SizedBox(
+            width: labelWidth,
+            child: Text(
+              l10n.todaySetLabel(index + 1),
+              style: theme.textTheme.labelLarge,
             ),
-            Expanded(child: Text(summary, style: theme.textTheme.bodyLarge)),
-            if (set.status == SetSyncStatus.failed)
-              IconButton(
-                tooltip: l10n.syncRetry,
-                icon: Icon(icon, color: color),
+          ),
+          Expanded(child: Text(summary, style: theme.textTheme.bodyLarge)),
+          Tooltip(
+            message: label,
+            child: Icon(
+              icon,
+              color: color,
+              key: Key('sync-${set.clientId}-${set.status.name}'),
+            ),
+          ),
+        ],
+      ),
+    );
+    if (!failed) {
+      return Semantics(
+        label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
+        excludeSemantics: true,
+        child: row,
+      );
+    }
+    final reason = setRejectionReason(l10n, set.lastError);
+    return Column(
+      key: Key('set-failed-${set.clientId}'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Semantics(
+          label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
+          excludeSemantics: true,
+          child: row,
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: labelWidth),
+          child: Text(
+            reason,
+            key: Key('set-reason-${set.clientId}'),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: labelWidth - AppSpacing.sm),
+          child: Wrap(
+            spacing: AppSpacing.xs,
+            children: [
+              TextButton.icon(
+                key: Key('set-retry-${set.clientId}'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                ),
                 onPressed: () => ref.read(syncServiceProvider).retryFailed(),
-              )
-            else
-              Tooltip(
-                message: label,
-                child: Icon(
-                  icon,
-                  color: color,
-                  key: Key('sync-${set.clientId}-${set.status.name}'),
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.syncRetry),
+              ),
+              TextButton.icon(
+                key: Key('set-discard-${set.clientId}'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                  foregroundColor: theme.colorScheme.error,
+                ),
+                onPressed: () => _discard(context, ref),
+                icon: const Icon(Icons.delete_outline),
+                label: Text(
+                  l10n.setDiscard,
+                  semanticsLabel: l10n.setDiscardFor(index + 1),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

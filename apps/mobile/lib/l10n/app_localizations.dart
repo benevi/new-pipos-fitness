@@ -176,6 +176,54 @@ abstract class AppLocalizations {
   /// **'No se pudo enviar'**
   String get syncStatusFailed;
 
+  /// No description provided for @setRejectedInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'La API no la acepta: el ejercicio o los datos no valen para este hueco.'**
+  String get setRejectedInvalid;
+
+  /// No description provided for @setRejectedFinished.
+  ///
+  /// In es, this message translates to:
+  /// **'La API no la acepta: el entrenamiento ya estaba terminado.'**
+  String get setRejectedFinished;
+
+  /// No description provided for @setRejectedNotStarted.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar: el entrenamiento no llegó a empezar en el servidor.'**
+  String get setRejectedNotStarted;
+
+  /// No description provided for @setRejectedOther.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar ({code}).'**
+  String setRejectedOther(String code);
+
+  /// No description provided for @setDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get setDiscard;
+
+  /// No description provided for @setDiscardFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar la serie {number}'**
+  String setDiscardFor(int number);
+
+  /// No description provided for @setDiscardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Descartar la serie {number}?'**
+  String setDiscardTitle(int number);
+
+  /// No description provided for @setDiscardBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.'**
+  String get setDiscardBody;
+
   /// No description provided for @cachedDataNotice.
   ///
   /// In es, this message translates to:

@@ -136,13 +136,14 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
 
-### [Móvil] Poder descartar una serie rechazada de forma permanente por la API
-- **Severidad:** Media
-- **Impacto:** una serie que la API rechaza con 400/422 (p. ej. desde la Fase 5, un ejercicio que no
-  es el del hueco ni su sustitución registrada) queda en `failed` y bloquea el cierre del
-  entrenamiento; el usuario no tiene forma de quitarla.
-- **Propuesta:** en la fila de la serie fallida, acción «descartar» que la borre de la cola local
-  (y, si llegó a existir en el servidor, `DELETE`), con el motivo del rechazo visible.
+### ~~[Móvil] Poder descartar una serie rechazada de forma permanente por la API~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #21.
+- **Qué se hizo:** la fila de la serie fallida muestra el motivo del rechazo y «Descartar» (con
+  confirmación). `SyncService.deleteSet` la quita de la cola; si pudo existir en el servidor
+  (confirmada o con un intento de resultado desconocido) queda como lápida hasta que la API
+  confirme `DELETE /workouts/:id/sets/:clientId` (404 también vale). Un rechazo de validación al
+  crearla garantiza que la API no la guardó, así que se borra sin petición. Después el finish sale.
+  Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/discard_set_test.dart`.
 
 ### [Móvil] Editar o borrar una serie ya registrada desde la interfaz
 - **Severidad:** Media

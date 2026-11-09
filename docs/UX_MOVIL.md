@@ -34,7 +34,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 |---|---|---|---|---|
 | Cuestionario | spinner con etiqueta «Generando tu plan…» en el botón | — | 422 → error en el campo y vuelta a su paso; aviso general arriba | aviso «Sin conexión»; no se pierde lo rellenado |
 | Hoy | spinner | «Aún no tienes plan» + «Empezar el cuestionario» | mensaje + Reintentar | abre la última sesión guardada con el aviso «Sin conexión. Datos guardados el …»; si nunca se descargó, lo explica |
-| Serie | — | — | «No se pudo enviar» por serie + Reintentar | icono «Pendiente de sincronizar»; la cola sobrevive al cierre |
+| Serie | — | — | «No se pudo enviar» por serie con el motivo («La API no la acepta: …») + «Reintentar» y «Descartar» (con confirmación) | icono «Pendiente de sincronizar»; la cola sobrevive al cierre |
 | Cambiar ejercicio | spinner en la hoja | «No hay alternativas compatibles…» | mensaje + Reintentar | «Necesitas conexión para hacer esto.» |
 | Fin | — | — | — | «Se sincronizará cuando haya conexión. No se perderá nada.» |
 | Plan | spinner | igual que Hoy | mensaje + Reintentar | plan en caché con aviso |
@@ -54,6 +54,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Movimiento reducido:** con `disableAnimations` la cuenta atrás es solo texto (sin barra de progreso). No hay animaciones decorativas; las transiciones son las de Material.
 - **Cambio de ejercicio:** hoja con las 3 alternativas ordenadas y su porqué; un botón «Usar …» por opción. Necesita red (el servidor valida material y limitaciones).
 - **Terminar** pide confirmación y dice cuántas series faltan; lo registrado se guarda siempre.
+- **Serie rechazada (#21).** Si la API rechaza una serie de forma permanente (400/422, p. ej. un ejercicio que no es el del hueco), la fila muestra el motivo bajo el resumen y dos acciones de 48 dp: «Reintentar» y «Descartar». Descartar pide confirmación («Se quitará de este móvil y no contará en el entrenamiento») y la quita de la cola; si pudo llegar al servidor (confirmada o con un intento de resultado desconocido) se envía además `DELETE`. Después, Terminar ya no la espera.
 - **Consentimiento de salud** en un paso propio, con el texto versionado (`health-2026-11-v2` desde ADR-0013; quien aceptó `health-2026-11` conserva sus ámbitos y Ajustes le ofrece la versión nueva), «Acepto» y «Continuar sin datos de salud» con el mismo peso visual. Si se salta, no se piden limitaciones ni peso/altura y la revisión explica la consecuencia. Retirarlo en Ajustes pide confirmación y explica qué se borra.
 - **Borrar cuenta:** diálogo con icono de aviso, consecuencias en una frase, contraseña obligatoria y botón destructivo con el color de error. Contraseña incorrecta (403) → error en el campo; la sesión sigue abierta.
 - **Cambiar el perfil** reutiliza el cuestionario. Si la API crea versión nueva, un diálogo lo explica («hemos creado la versión N… tu historial se conserva») y ofrece «Ver el plan».

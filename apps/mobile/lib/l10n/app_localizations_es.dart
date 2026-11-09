@@ -64,6 +64,40 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncStatusFailed => 'No se pudo enviar';
 
   @override
+  String get setRejectedInvalid =>
+      'La API no la acepta: el ejercicio o los datos no valen para este hueco.';
+
+  @override
+  String get setRejectedFinished =>
+      'La API no la acepta: el entrenamiento ya estaba terminado.';
+
+  @override
+  String get setRejectedNotStarted =>
+      'No se pudo enviar: el entrenamiento no llegó a empezar en el servidor.';
+
+  @override
+  String setRejectedOther(String code) {
+    return 'No se pudo enviar ($code).';
+  }
+
+  @override
+  String get setDiscard => 'Descartar';
+
+  @override
+  String setDiscardFor(int number) {
+    return 'Descartar la serie $number';
+  }
+
+  @override
+  String setDiscardTitle(int number) {
+    return '¿Descartar la serie $number?';
+  }
+
+  @override
+  String get setDiscardBody =>
+      'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Sin conexión. Datos guardados el $date.';
   }
