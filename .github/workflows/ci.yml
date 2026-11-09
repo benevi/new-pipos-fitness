@@ -100,6 +100,27 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: '17'
+          cache: 'gradle'
+          cache-dependency-path: |
+            apps/mobile/android/*.gradle*
+            apps/mobile/android/gradle/wrapper/gradle-wrapper.properties
+
+      # El build incluido del SDK de Flutter (flutter_tools/gradle) resuelve sus
+      # plugins desde plugins.gradle.org, que redirige a GitHub Releases. Este
+      # init script pone Maven Central y Google por delante en TODOS los builds,
+      # incluidos los del SDK, para no depender de esa redirección.
+      - name: Repositorios de Gradle (Maven Central primero)
+        run: |
+          mkdir -p ~/.gradle/init.d
+          cat > ~/.gradle/init.d/repos.init.gradle.kts <<'KTS'
+          beforeSettings {
+              pluginManagement.repositories {
+                  mavenCentral()
+                  google()
+                  gradlePluginPortal()
+              }
+          }
+          KTS
 
       - name: Comprobar versión de Flutter fijada
         run: test "$(python3 -c 'import json;print(json.load(open(".fvmrc"))["flutter"])')" = "3.38.10"
@@ -125,8 +146,15 @@ jobs:
       - name: Flutter integration test (headless)
         run: flutter test -d flutter-tester integration_test
 
+      # Solo se reintenta la descarga de dependencias de red (máx. 3 intentos);
+      # un fallo de compilación real falla igual las tres veces.
       - name: Build APK debug
-        run: flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:3000
+        run: |
+          for i in 1 2 3; do
+            flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:3000 && exit 0
+            echo "Intento $i fallido; reintento en $((i*20)) s"; sleep $((i*20))
+          done
+          exit 1
 
       - uses: actions/upload-artifact@v4
         with:
