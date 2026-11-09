@@ -265,6 +265,8 @@ export class SessionsService {
           note: notes.get(performedId) ?? null,
           // Del ejercicio realmente hecho (sustituto o fijado), desde la caché del catálogo.
           muscles: c.entry?.muscleRefs ?? [],
+          // Vídeo aprobado del ejercicio realmente hecho (ADR-0014, Fase 4); sin vídeo, sin botón.
+          hasVideo: c.entry?.hasVideo ?? false,
         },
       ];
     });

@@ -7,7 +7,7 @@ import type { PrismaService } from '../../prisma/prisma.service';
 import { catalogServiceMock, FixedClock, prismaMock, profileRow, rejectsWithCode, UID } from '../../test/unit/support';
 import { AuditService } from '../audit/audit.service';
 import type { AuthService } from '../auth/auth.service';
-import { CatalogService, toEngineExercise } from '../catalog/catalog.service';
+import { CatalogService, toEngineExercise, toExerciseMedia } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import type { ProfileService } from '../profile/profile.service';
 import { dailyTargetsInput, NutritionService, nutritionGoalFor } from '../nutrition/nutrition.service';
@@ -151,6 +151,15 @@ describe('CatalogService', () => {
     muscles: [{ muscle: 'quads', role: 'primary', fraction: new Prisma.Decimal(1) }, { muscle: 'glutes', role: 'secondary', fraction: new Prisma.Decimal(0.5) }],
     riskTags: [{ zone: 'knee', level: 'caution' }],
     substitutionGroup: { key: 'squat' },
+    media: [],
+    ...over,
+  });
+
+  /** Fila de medio aprobado con un vídeo FICTICIO (el catálogo real no lleva vídeos). */
+  const mediaRow = (over: Record<string, unknown> = {}) => ({
+    id: 'm1', exerciseId: 'id:a', kind: 'youtube', externalId: 'AAAAAAAAAA1', url: null, file: null, credit: null,
+    licence: null, channelName: 'Canal de prueba', startSeconds: 15, endSeconds: null, locale: 'es', isPrimary: true,
+    moderationStatus: 'approved', moderatedById: null, moderatedAt: NOW, createdAt: NOW,
     ...over,
   });
 
@@ -162,7 +171,7 @@ describe('CatalogService', () => {
 
   it('toEngineExercise mapea a la forma del motor', () => {
     expect(toEngineExercise(row('a') as never)).toMatchObject({
-      slug: 'a', substitutionGroup: 'squat', muscles: [{ fraction: 1 }, { fraction: 0.5 }], media: null,
+      slug: 'a', substitutionGroup: 'squat', muscles: [{ fraction: 1 }, { fraction: 0.5 }], media: [],
     });
     expect(toEngineExercise(row('a-b', { substitutionGroup: null }) as never).substitutionGroup).toBe('a_b');
   });
@@ -220,6 +229,32 @@ describe('CatalogService', () => {
     prisma.exercise.findFirst.mockResolvedValueOnce(row('a'));
     await service.get(uuid);
     expect(prisma.exercise.findFirst.mock.calls.at(-1)?.[0].where).toEqual({ id: uuid, deletedAt: null });
+  });
+
+  it('medios (ADR-0014, Fase 4): el detalle los mapea, Hoy sabe si hay vídeo y una fila incompleta se omite', async () => {
+    const image = mediaRow({
+      id: 'm2', kind: 'image', externalId: null, channelName: null, startSeconds: null, locale: null, isPrimary: false,
+      file: 'prueba.webp', credit: 'Equipo Pipos', licence: 'own-work',
+    });
+    expect(toExerciseMedia(mediaRow() as never)).toEqual({
+      kind: 'youtube', videoId: 'AAAAAAAAAA1', startSeconds: 15, endSeconds: null, channelName: 'Canal de prueba',
+      locale: 'es', isPrimary: true,
+    });
+    expect(toExerciseMedia(image as never)).toEqual({
+      kind: 'image', file: 'prueba.webp', credit: 'Equipo Pipos', licence: 'own-work', isPrimary: false,
+    });
+    expect(toExerciseMedia(mediaRow({ externalId: null }) as never)).toBeNull();
+    expect(toExerciseMedia({ ...image, licence: 'all-rights-reserved' } as never)).toBeNull();
+
+    const { prisma, service } = setup();
+    prisma.exercise.findMany.mockResolvedValueOnce([row('a', { media: [mediaRow(), image] }), row('b', { id: 'id:b', media: [image] })]);
+    const catalog = await service.engineCatalog();
+    expect(catalog.bySlug.get('a')?.hasVideo).toBe(true);
+    expect(catalog.bySlug.get('b')?.hasVideo).toBe(false);
+    expect(prisma.exercise.findMany.mock.calls[0][0].include.media.where).toEqual({ moderationStatus: 'approved' });
+
+    prisma.exercise.findFirst.mockResolvedValueOnce(row('a', { media: [mediaRow(), image] }));
+    expect((await service.get('a')).media.map((m) => m.kind)).toEqual(['youtube', 'image']);
   });
 
   it('catalogServiceMock está alineado con el catálogo real', () => {
