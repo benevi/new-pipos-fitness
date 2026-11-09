@@ -76,7 +76,7 @@ docs/             Plan, spec, CUJ, ADR, modelo de datos, seguridad, programació
 
 ## Ejecutar en local
 
-Requisitos: Node ≥ 20, pnpm 9 (`corepack enable`), Docker (o un Postgres 16 propio).
+Requisitos: Node ≥ 22.12 (lo exige Vitest 5), pnpm 9 (`corepack enable`), Docker (o un Postgres 16 propio).
 
 ```bash
 docker compose up -d                       # Postgres 16 con pipos_dev, pipos_e2e y pipos_shadow

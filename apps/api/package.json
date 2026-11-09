@@ -51,19 +51,19 @@
     "@swc/core": "^1.7.26",
     "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.6",
-    "@types/node": "^20.10.0",
+    "@types/node": "^22.20.5",
     "@types/passport-jwt": "^4.0.0",
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
-    "@vitest/coverage-v8": "2.1.9",
+    "@vitest/coverage-v8": "5.1.0",
     "eslint": "^8.56.0",
     "prisma": "^7.10.1",
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
     "tsx": "^4.19.0",
     "typescript": "^5.3.3",
-    "unplugin-swc": "^1.5.1",
-    "vitest": "^2.1.0"
+    "unplugin-swc": "^2.0.0",
+    "vitest": "^5.1.0"
   }
 }
