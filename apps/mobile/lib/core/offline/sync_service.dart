@@ -149,40 +149,33 @@ class SyncService {
 
   /// Entrenamiento local para [planSessionId]. Si ya hay uno abierto para esa
   /// sesión se reutiliza; si la API ya tiene uno en curso ([adopt]), se
-  /// registra con su `clientId` y su id.
+  /// registra con su `clientId` y su id (o se enlaza el local abierto que
+  /// aún no tenía id de la API).
+  ///
+  /// Las llamadas se serializan (mutex) y la comprobación + inserción va en
+  /// una transacción: dos confirmaciones casi simultáneas en ejercicios
+  /// distintos no crean dos entrenamientos.
   Future<LocalWorkout> startWorkout({
     required String planSessionId,
     TodayWorkoutRef? adopt,
   }) async {
     final userId = _uid;
-    if (adopt != null) {
-      final existing = await workoutByClientId(adopt.clientId);
-      if (existing != null) {
-        if (existing.serverId == null) {
-          await (_db.update(_workouts)
-                ..where((t) => t.clientId.equals(adopt.clientId)))
-              .write(LocalWorkoutsCompanion(serverId: Value(adopt.id)));
-        }
-        _notify();
-        return (await workoutByClientId(adopt.clientId))!;
-      }
-      final adopted = await _db
-          .into(_workouts)
-          .insertReturning(
-            LocalWorkoutsCompanion.insert(
-              clientId: adopt.clientId,
-              userId: userId,
-              planSessionId: planSessionId,
-              serverId: Value(adopt.id),
-              startedAt: adopt.startedAt,
-            ),
-          );
-      unawaited(syncNow());
-      return adopted;
-    }
+    final row = await _serialized(
+      () => _db.transaction(
+        () => adopt != null
+            ? _adoptTx(userId, planSessionId, adopt)
+            : _startTx(userId, planSessionId),
+      ),
+    );
+    _notify();
+    unawaited(syncNow());
+    return row;
+  }
+
+  Future<LocalWorkout> _startTx(String userId, String planSessionId) async {
     final open = await openWorkoutFor(planSessionId);
     if (open != null) return open;
-    final row = await _db
+    return _db
         .into(_workouts)
         .insertReturning(
           LocalWorkoutsCompanion.insert(
@@ -192,8 +185,49 @@ class SyncService {
             startedAt: _clock(),
           ),
         );
-    unawaited(syncNow());
-    return row;
+  }
+
+  Future<LocalWorkout> _adoptTx(
+    String userId,
+    String planSessionId,
+    TodayWorkoutRef adopt,
+  ) async {
+    final existing = await workoutByClientId(adopt.clientId);
+    if (existing != null) {
+      if (existing.serverId == null) {
+        await (_db.update(_workouts)
+              ..where((t) => t.clientId.equals(adopt.clientId)))
+            .write(LocalWorkoutsCompanion(serverId: Value(adopt.id)));
+      }
+      return (await workoutByClientId(adopt.clientId))!;
+    }
+    // Un entrenamiento local abierto para la misma sesión sin id de la API
+    // (o con ese mismo id) es el mismo: se enlaza en vez de duplicarlo.
+    final open = await openWorkoutFor(planSessionId);
+    if (open != null && (open.serverId == null || open.serverId == adopt.id)) {
+      await _saveServerId(open.clientId, adopt.id);
+      return (await workoutByClientId(open.clientId))!;
+    }
+    return _db
+        .into(_workouts)
+        .insertReturning(
+          LocalWorkoutsCompanion.insert(
+            clientId: adopt.clientId,
+            userId: userId,
+            planSessionId: planSessionId,
+            serverId: Value(adopt.id),
+            startedAt: adopt.startedAt,
+          ),
+        );
+  }
+
+  Future<void> _startLock = Future.value();
+
+  /// Ejecuta [body] cuando terminen las llamadas anteriores (mutex simple).
+  Future<T> _serialized<T>(Future<T> Function() body) {
+    final result = _startLock.then((_) => body());
+    _startLock = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
   }
 
   Future<LocalWorkout?> workoutByClientId(String clientId) =>

@@ -323,6 +323,17 @@ void main() {
     },
   );
 
+  test('dos confirmaciones casi simultáneas crean UN solo entrenamiento '
+      'local', () async {
+    final results = await Future.wait([
+      service.startWorkout(planSessionId: planSession),
+      service.startWorkout(planSessionId: planSession),
+      service.startWorkout(planSessionId: planSession),
+    ]);
+    expect(results.map((w) => w.clientId).toSet(), hasLength(1));
+    expect(await db.select(db.localWorkouts).get(), hasLength(1));
+  });
+
   test('BackoffPolicy: exponencial y acotado', () {
     const p = BackoffPolicy(
       baseDelay: Duration(seconds: 2),
