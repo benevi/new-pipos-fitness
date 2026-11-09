@@ -19,13 +19,16 @@ class RefreshLock {
 
     _completer = Completer<String?>();
 
-    action().then((result) {
-      _completer?.complete(result);
-    }).catchError((Object error) {
-      _completer?.completeError(error);
-    }).whenComplete(() {
-      _completer = null;
-    });
+    action()
+        .then((result) {
+          _completer?.complete(result);
+        })
+        .catchError((Object error) {
+          _completer?.completeError(error);
+        })
+        .whenComplete(() {
+          _completer = null;
+        });
 
     return _completer!.future;
   }

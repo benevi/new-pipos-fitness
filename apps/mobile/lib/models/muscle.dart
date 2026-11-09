@@ -12,6 +12,5 @@ class Muscle with _$Muscle {
     String? meshRegionId,
   }) = _Muscle;
 
-  factory Muscle.fromJson(Map<String, dynamic> json) =>
-      _$MuscleFromJson(json);
+  factory Muscle.fromJson(Map<String, dynamic> json) => _$MuscleFromJson(json);
 }

@@ -12,7 +12,8 @@ part of 'ai_response.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 AIResponse _$AIResponseFromJson(Map<String, dynamic> json) {
   return _AIResponse.fromJson(json);
@@ -39,15 +40,17 @@ mixin _$AIResponse {
 /// @nodoc
 abstract class $AIResponseCopyWith<$Res> {
   factory $AIResponseCopyWith(
-          AIResponse value, $Res Function(AIResponse) then) =
-      _$AIResponseCopyWithImpl<$Res, AIResponse>;
+    AIResponse value,
+    $Res Function(AIResponse) then,
+  ) = _$AIResponseCopyWithImpl<$Res, AIResponse>;
   @useResult
-  $Res call(
-      {String responseType,
-      String content,
-      Map<String, dynamic>? proposal,
-      String? proposalStatus,
-      String? rejectionReason});
+  $Res call({
+    String responseType,
+    String content,
+    Map<String, dynamic>? proposal,
+    String? proposalStatus,
+    String? rejectionReason,
+  });
 }
 
 /// @nodoc
@@ -71,28 +74,31 @@ class _$AIResponseCopyWithImpl<$Res, $Val extends AIResponse>
     Object? proposalStatus = freezed,
     Object? rejectionReason = freezed,
   }) {
-    return _then(_value.copyWith(
-      responseType: null == responseType
-          ? _value.responseType
-          : responseType // ignore: cast_nullable_to_non_nullable
-              as String,
-      content: null == content
-          ? _value.content
-          : content // ignore: cast_nullable_to_non_nullable
-              as String,
-      proposal: freezed == proposal
-          ? _value.proposal
-          : proposal // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      proposalStatus: freezed == proposalStatus
-          ? _value.proposalStatus
-          : proposalStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rejectionReason: freezed == rejectionReason
-          ? _value.rejectionReason
-          : rejectionReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            responseType: null == responseType
+                ? _value.responseType
+                : responseType // ignore: cast_nullable_to_non_nullable
+                      as String,
+            content: null == content
+                ? _value.content
+                : content // ignore: cast_nullable_to_non_nullable
+                      as String,
+            proposal: freezed == proposal
+                ? _value.proposal
+                : proposal // ignore: cast_nullable_to_non_nullable
+                      as Map<String, dynamic>?,
+            proposalStatus: freezed == proposalStatus
+                ? _value.proposalStatus
+                : proposalStatus // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            rejectionReason: freezed == rejectionReason
+                ? _value.rejectionReason
+                : rejectionReason // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -100,16 +106,18 @@ class _$AIResponseCopyWithImpl<$Res, $Val extends AIResponse>
 abstract class _$$AIResponseImplCopyWith<$Res>
     implements $AIResponseCopyWith<$Res> {
   factory _$$AIResponseImplCopyWith(
-          _$AIResponseImpl value, $Res Function(_$AIResponseImpl) then) =
-      __$$AIResponseImplCopyWithImpl<$Res>;
+    _$AIResponseImpl value,
+    $Res Function(_$AIResponseImpl) then,
+  ) = __$$AIResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String responseType,
-      String content,
-      Map<String, dynamic>? proposal,
-      String? proposalStatus,
-      String? rejectionReason});
+  $Res call({
+    String responseType,
+    String content,
+    Map<String, dynamic>? proposal,
+    String? proposalStatus,
+    String? rejectionReason,
+  });
 }
 
 /// @nodoc
@@ -117,8 +125,9 @@ class __$$AIResponseImplCopyWithImpl<$Res>
     extends _$AIResponseCopyWithImpl<$Res, _$AIResponseImpl>
     implements _$$AIResponseImplCopyWith<$Res> {
   __$$AIResponseImplCopyWithImpl(
-      _$AIResponseImpl _value, $Res Function(_$AIResponseImpl) _then)
-      : super(_value, _then);
+    _$AIResponseImpl _value,
+    $Res Function(_$AIResponseImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of AIResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -131,41 +140,43 @@ class __$$AIResponseImplCopyWithImpl<$Res>
     Object? proposalStatus = freezed,
     Object? rejectionReason = freezed,
   }) {
-    return _then(_$AIResponseImpl(
-      responseType: null == responseType
-          ? _value.responseType
-          : responseType // ignore: cast_nullable_to_non_nullable
-              as String,
-      content: null == content
-          ? _value.content
-          : content // ignore: cast_nullable_to_non_nullable
-              as String,
-      proposal: freezed == proposal
-          ? _value._proposal
-          : proposal // ignore: cast_nullable_to_non_nullable
-              as Map<String, dynamic>?,
-      proposalStatus: freezed == proposalStatus
-          ? _value.proposalStatus
-          : proposalStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-      rejectionReason: freezed == rejectionReason
-          ? _value.rejectionReason
-          : rejectionReason // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$AIResponseImpl(
+        responseType: null == responseType
+            ? _value.responseType
+            : responseType // ignore: cast_nullable_to_non_nullable
+                  as String,
+        content: null == content
+            ? _value.content
+            : content // ignore: cast_nullable_to_non_nullable
+                  as String,
+        proposal: freezed == proposal
+            ? _value._proposal
+            : proposal // ignore: cast_nullable_to_non_nullable
+                  as Map<String, dynamic>?,
+        proposalStatus: freezed == proposalStatus
+            ? _value.proposalStatus
+            : proposalStatus // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        rejectionReason: freezed == rejectionReason
+            ? _value.rejectionReason
+            : rejectionReason // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$AIResponseImpl implements _AIResponse {
-  const _$AIResponseImpl(
-      {required this.responseType,
-      required this.content,
-      final Map<String, dynamic>? proposal,
-      this.proposalStatus,
-      this.rejectionReason})
-      : _proposal = proposal;
+  const _$AIResponseImpl({
+    required this.responseType,
+    required this.content,
+    final Map<String, dynamic>? proposal,
+    this.proposalStatus,
+    this.rejectionReason,
+  }) : _proposal = proposal;
 
   factory _$AIResponseImpl.fromJson(Map<String, dynamic> json) =>
       _$$AIResponseImplFromJson(json);
@@ -212,12 +223,13 @@ class _$AIResponseImpl implements _AIResponse {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      responseType,
-      content,
-      const DeepCollectionEquality().hash(_proposal),
-      proposalStatus,
-      rejectionReason);
+    runtimeType,
+    responseType,
+    content,
+    const DeepCollectionEquality().hash(_proposal),
+    proposalStatus,
+    rejectionReason,
+  );
 
   /// Create a copy of AIResponse
   /// with the given fields replaced by the non-null parameter values.
@@ -229,19 +241,18 @@ class _$AIResponseImpl implements _AIResponse {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$AIResponseImplToJson(
-      this,
-    );
+    return _$$AIResponseImplToJson(this);
   }
 }
 
 abstract class _AIResponse implements AIResponse {
-  const factory _AIResponse(
-      {required final String responseType,
-      required final String content,
-      final Map<String, dynamic>? proposal,
-      final String? proposalStatus,
-      final String? rejectionReason}) = _$AIResponseImpl;
+  const factory _AIResponse({
+    required final String responseType,
+    required final String content,
+    final Map<String, dynamic>? proposal,
+    final String? proposalStatus,
+    final String? rejectionReason,
+  }) = _$AIResponseImpl;
 
   factory _AIResponse.fromJson(Map<String, dynamic> json) =
       _$AIResponseImpl.fromJson;

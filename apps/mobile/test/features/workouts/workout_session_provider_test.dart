@@ -81,37 +81,42 @@ void main() {
       expect(state.totalExercises, 2);
     });
 
-    test('totalExercises falls back to session exercises when no planSession',
-        () {
-      const state = WorkoutSessionState(
-        session: WorkoutSession(
-          id: 'w1',
-          userId: 'u1',
-          startedAt: '2026-03-09T10:00:00Z',
-          exercises: [
-            WorkoutExercise(
+    test(
+      'totalExercises falls back to session exercises when no planSession',
+      () {
+        const state = WorkoutSessionState(
+          session: WorkoutSession(
+            id: 'w1',
+            userId: 'u1',
+            startedAt: '2026-03-09T10:00:00Z',
+            exercises: [
+              WorkoutExercise(
                 id: 'we1',
                 workoutSessionId: 'w1',
                 exerciseId: 'bench-press',
                 order: 0,
-                sets: []),
-            WorkoutExercise(
+                sets: [],
+              ),
+              WorkoutExercise(
                 id: 'we2',
                 workoutSessionId: 'w1',
                 exerciseId: 'squat',
                 order: 1,
-                sets: []),
-            WorkoutExercise(
+                sets: [],
+              ),
+              WorkoutExercise(
                 id: 'we3',
                 workoutSessionId: 'w1',
                 exerciseId: 'deadlift',
                 order: 2,
-                sets: []),
-          ],
-        ),
-      );
-      expect(state.totalExercises, 3);
-    });
+                sets: [],
+              ),
+            ],
+          ),
+        );
+        expect(state.totalExercises, 3);
+      },
+    );
 
     test('setsForExercise returns sets for matching workout exercise', () {
       const state = WorkoutSessionState(
@@ -306,17 +311,19 @@ void main() {
           startedAt: '2026-03-09T10:00:00Z',
           exercises: [
             WorkoutExercise(
-                id: 'we1',
-                workoutSessionId: 'w1',
-                exerciseId: 'bench',
-                order: 0,
-                sets: []),
+              id: 'we1',
+              workoutSessionId: 'w1',
+              exerciseId: 'bench',
+              order: 0,
+              sets: [],
+            ),
             WorkoutExercise(
-                id: 'we2',
-                workoutSessionId: 'w1',
-                exerciseId: 'squat',
-                order: 1,
-                sets: []),
+              id: 'we2',
+              workoutSessionId: 'w1',
+              exerciseId: 'squat',
+              order: 1,
+              sets: [],
+            ),
           ],
         ),
       );
@@ -350,8 +357,7 @@ void main() {
         ),
       ];
 
-      final incomplete =
-          sessions.where((w) => w.completedAt == null).toList();
+      final incomplete = sessions.where((w) => w.completedAt == null).toList();
       expect(incomplete.length, 2);
 
       final mostRecent = incomplete.first;
@@ -368,13 +374,15 @@ void main() {
       expect(allDone, true);
     });
 
-    test('allows unlimited sets when plannedSets is 0 (resumed without plan)',
-        () {
-      const plannedSets = 0;
-      const setIndex = 5;
-      const allDone = plannedSets > 0 && setIndex >= plannedSets;
-      expect(allDone, false);
-    });
+    test(
+      'allows unlimited sets when plannedSets is 0 (resumed without plan)',
+      () {
+        const plannedSets = 0;
+        const setIndex = 5;
+        const allDone = plannedSets > 0 && setIndex >= plannedSets;
+        expect(allDone, false);
+      },
+    );
 
     test('allows more sets when under planned count', () {
       const plannedSets = 4;

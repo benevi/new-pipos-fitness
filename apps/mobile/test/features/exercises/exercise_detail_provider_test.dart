@@ -21,13 +21,13 @@ void main() {
         },
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
-      final detail = await container.read(exerciseDetailProvider('ex-1').future);
+      final detail = await container.read(
+        exerciseDetailProvider('ex-1').future,
+      );
 
       expect(detail, isNotNull);
       expect(detail!.name, 'Bench Press');
@@ -46,9 +46,7 @@ void main() {
     test('build throws when API throws', () async {
       final fakeApi = _FakeDetailApi(throwOnGet: true);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -63,11 +61,7 @@ void main() {
 }
 
 class _FakeDetailApi extends ApiClient {
-  _FakeDetailApi({
-    Map<String, dynamic>? response,
-    this.throwOnGet = false,
-  })  : response = response,
-        super(Dio());
+  _FakeDetailApi({this.response, this.throwOnGet = false}) : super(Dio());
 
   final Map<String, dynamic>? response;
   final bool throwOnGet;

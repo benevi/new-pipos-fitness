@@ -7,19 +7,19 @@ part of 'user.dart';
 // **************************************************************************
 
 _$UserImpl _$$UserImplFromJson(Map<String, dynamic> json) => _$UserImpl(
-      id: json['id'] as String,
-      email: json['email'] as String,
-      heightCm: (json['heightCm'] as num?)?.toDouble(),
-      weightKg: (json['weightKg'] as num?)?.toDouble(),
-      age: (json['age'] as num?)?.toInt(),
-      sex: json['sex'] as String?,
-      trainingLevel: json['trainingLevel'] as String?,
-      preferredTrainingDays: (json['preferredTrainingDays'] as num?)?.toInt(),
-      trainingLocation: json['trainingLocation'] as String?,
-      availableEquipment: (json['availableEquipment'] as List<dynamic>?)
-          ?.map((e) => e as String)
-          .toList(),
-    );
+  id: json['id'] as String,
+  email: json['email'] as String,
+  heightCm: (json['heightCm'] as num?)?.toDouble(),
+  weightKg: (json['weightKg'] as num?)?.toDouble(),
+  age: (json['age'] as num?)?.toInt(),
+  sex: json['sex'] as String?,
+  trainingLevel: json['trainingLevel'] as String?,
+  preferredTrainingDays: (json['preferredTrainingDays'] as num?)?.toInt(),
+  trainingLocation: json['trainingLocation'] as String?,
+  availableEquipment: (json['availableEquipment'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
+);
 
 Map<String, dynamic> _$$UserImplToJson(_$UserImpl instance) =>
     <String, dynamic>{
@@ -52,13 +52,7 @@ Map<String, dynamic> _$$AuthResponseImplToJson(_$AuthResponseImpl instance) =>
     };
 
 _$AuthUserImpl _$$AuthUserImplFromJson(Map<String, dynamic> json) =>
-    _$AuthUserImpl(
-      id: json['id'] as String,
-      email: json['email'] as String,
-    );
+    _$AuthUserImpl(id: json['id'] as String, email: json['email'] as String);
 
 Map<String, dynamic> _$$AuthUserImplToJson(_$AuthUserImpl instance) =>
-    <String, dynamic>{
-      'id': instance.id,
-      'email': instance.email,
-    };
+    <String, dynamic>{'id': instance.id, 'email': instance.email};

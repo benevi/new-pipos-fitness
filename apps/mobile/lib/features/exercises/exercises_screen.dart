@@ -42,15 +42,22 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.error_outline, size: 48, color: AppColors.error),
+                    const Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
                       'Failed to load exercises',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.error),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.titleMedium?.copyWith(color: AppColors.error),
                     ),
                     const SizedBox(height: AppSpacing.md),
                     FilledButton(
-                      onPressed: () => ref.invalidate(filteredExercisesProvider),
+                      onPressed: () =>
+                          ref.invalidate(filteredExercisesProvider),
                       child: const Text('Retry'),
                     ),
                   ],
@@ -65,14 +72,15 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                         Icon(
                           Icons.fitness_center_outlined,
                           size: 64,
-                          color: AppColors.onSurfaceVariant.withValues(alpha: 0.5),
+                          color: AppColors.onSurfaceVariant.withValues(
+                            alpha: 0.5,
+                          ),
                         ),
                         const SizedBox(height: AppSpacing.md),
                         Text(
                           'No exercises match your filters',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: AppColors.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(color: AppColors.onSurfaceVariant),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         TextButton(
@@ -87,10 +95,14 @@ class _ExercisesScreenState extends ConsumerState<ExercisesScreen> {
                   );
                 }
                 return RefreshIndicator(
-                  onRefresh: () => ref.read(filteredExercisesProvider.notifier).refresh(),
+                  onRefresh: () =>
+                      ref.read(filteredExercisesProvider.notifier).refresh(),
                   child: ListView.builder(
                     controller: _scrollController,
-                    padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
                     itemCount: state.items.length + (state.hasMore ? 1 : 0),
                     itemBuilder: (context, index) {
                       if (index >= state.items.length) {

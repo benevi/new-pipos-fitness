@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod/riverpod.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pipos_fitness/core/api/api_client.dart';
 import 'package:pipos_fitness/features/ai_coach/ai_coach_provider.dart';
@@ -26,9 +25,7 @@ void main() {
 
     test('sendQuestion does nothing when over 500 chars', () async {
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => _FakeApiClient()),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => _FakeApiClient())],
       );
       addTearDown(container.dispose);
       final long = 'x' * 501;
@@ -36,38 +33,34 @@ void main() {
       expect(container.read(aiCoachProvider).messages, isEmpty);
     });
 
-    test('sendQuestion appends user message and assistant on success', () async {
-      final fakeApi = _FakeApiClient(
-        response: {
-          'responseType': 'answer',
-          'content': 'Hello from AI',
-        },
-      );
-      final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'sendQuestion appends user message and assistant on success',
+      () async {
+        final fakeApi = _FakeApiClient(
+          response: {'responseType': 'answer', 'content': 'Hello from AI'},
+        );
+        final container = ProviderContainer(
+          overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
+        );
+        addTearDown(container.dispose);
 
-      await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
+        await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
 
-      final state = container.read(aiCoachProvider);
-      expect(state.sending, false);
-      expect(state.error, isNull);
-      expect(state.messages.length, 2);
-      expect(state.messages[0].role.name, 'user');
-      expect(state.messages[0].content, 'Hi');
-      expect(state.messages[1].role.name, 'assistant');
-      expect(state.messages[1].content, 'Hello from AI');
-    });
+        final state = container.read(aiCoachProvider);
+        expect(state.sending, false);
+        expect(state.error, isNull);
+        expect(state.messages.length, 2);
+        expect(state.messages[0].role.name, 'user');
+        expect(state.messages[0].content, 'Hi');
+        expect(state.messages[1].role.name, 'assistant');
+        expect(state.messages[1].content, 'Hello from AI');
+      },
+    );
 
     test('sendQuestion sets error on API failure', () async {
       final fakeApi = _FakeApiClient(throwException: true);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -82,9 +75,7 @@ void main() {
     test('clearError removes error', () async {
       final fakeApi = _FakeApiClient(throwException: true);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
       await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
@@ -94,40 +85,39 @@ void main() {
       expect(container.read(aiCoachProvider).error, isNull);
     });
 
-    test('retryLastQuestion resends without duplicating user message', () async {
-      final fakeApi = _FakeApiClient(
-        response: {'responseType': 'answer', 'content': 'Retry response'},
-        throwException: true,
-        throwUntilSuccessAfter: 1,
-      );
-      final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
-      );
-      addTearDown(container.dispose);
-      await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
-      expect(container.read(aiCoachProvider).error, isNotNull);
-      expect(container.read(aiCoachProvider).messages.length, 1);
-      expect(container.read(aiCoachProvider).lastFailedQuestion, 'Hi');
+    test(
+      'retryLastQuestion resends without duplicating user message',
+      () async {
+        final fakeApi = _FakeApiClient(
+          response: {'responseType': 'answer', 'content': 'Retry response'},
+          throwException: true,
+          throwUntilSuccessAfter: 1,
+        );
+        final container = ProviderContainer(
+          overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
+        );
+        addTearDown(container.dispose);
+        await container.read(aiCoachProvider.notifier).sendQuestion('Hi');
+        expect(container.read(aiCoachProvider).error, isNotNull);
+        expect(container.read(aiCoachProvider).messages.length, 1);
+        expect(container.read(aiCoachProvider).lastFailedQuestion, 'Hi');
 
-      await container.read(aiCoachProvider.notifier).retryLastQuestion();
+        await container.read(aiCoachProvider.notifier).retryLastQuestion();
 
-      final state = container.read(aiCoachProvider);
-      expect(state.error, isNull);
-      expect(state.messages.length, 2);
-      expect(state.messages[0].content, 'Hi');
-      expect(state.messages[1].content, 'Retry response');
-    });
+        final state = container.read(aiCoachProvider);
+        expect(state.error, isNull);
+        expect(state.messages.length, 2);
+        expect(state.messages[0].content, 'Hi');
+        expect(state.messages[1].content, 'Retry response');
+      },
+    );
 
     test('invalidate clears conversation (e.g. on logout)', () async {
       final fakeApi = _FakeApiClient(
         response: {'responseType': 'answer', 'content': 'Hi'},
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
       await container.read(aiCoachProvider.notifier).sendQuestion('Hello');
@@ -146,9 +136,7 @@ void main() {
         delay: const Duration(milliseconds: 50),
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -173,21 +161,19 @@ class _FakeApiClient extends ApiClient {
     this.throwException = false,
     this.throwUntilSuccessAfter = 0,
     this.delay = Duration.zero,
-    this.onCall,
   }) : super(Dio());
 
   final Map<String, dynamic>? response;
   final bool throwException;
   final int throwUntilSuccessAfter;
   final Duration delay;
-  final void Function()? onCall;
   int _callCount = 0;
 
   @override
   Future<Response<T>> post<T>(String path, {Object? data}) async {
-    onCall?.call();
     await Future.delayed(delay);
-    if (throwException && (throwUntilSuccessAfter == 0 || _callCount < throwUntilSuccessAfter)) {
+    if (throwException &&
+        (throwUntilSuccessAfter == 0 || _callCount < throwUntilSuccessAfter)) {
       _callCount++;
       throw DioException(
         requestOptions: RequestOptions(path: path),

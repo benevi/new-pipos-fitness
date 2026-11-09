@@ -12,7 +12,8 @@ part of 'training_plan.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 TrainingPlan _$TrainingPlanFromJson(Map<String, dynamic> json) {
   return _TrainingPlan.fromJson(json);
@@ -38,14 +39,16 @@ mixin _$TrainingPlan {
 /// @nodoc
 abstract class $TrainingPlanCopyWith<$Res> {
   factory $TrainingPlanCopyWith(
-          TrainingPlan value, $Res Function(TrainingPlan) then) =
-      _$TrainingPlanCopyWithImpl<$Res, TrainingPlan>;
+    TrainingPlan value,
+    $Res Function(TrainingPlan) then,
+  ) = _$TrainingPlanCopyWithImpl<$Res, TrainingPlan>;
   @useResult
-  $Res call(
-      {String id,
-      String userId,
-      String? currentVersionId,
-      TrainingPlanVersion version});
+  $Res call({
+    String id,
+    String userId,
+    String? currentVersionId,
+    TrainingPlanVersion version,
+  });
 
   $TrainingPlanVersionCopyWith<$Res> get version;
 }
@@ -70,24 +73,27 @@ class _$TrainingPlanCopyWithImpl<$Res, $Val extends TrainingPlan>
     Object? currentVersionId = freezed,
     Object? version = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      currentVersionId: freezed == currentVersionId
-          ? _value.currentVersionId
-          : currentVersionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as TrainingPlanVersion,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            currentVersionId: freezed == currentVersionId
+                ? _value.currentVersionId
+                : currentVersionId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            version: null == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                      as TrainingPlanVersion,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of TrainingPlan
@@ -105,15 +111,17 @@ class _$TrainingPlanCopyWithImpl<$Res, $Val extends TrainingPlan>
 abstract class _$$TrainingPlanImplCopyWith<$Res>
     implements $TrainingPlanCopyWith<$Res> {
   factory _$$TrainingPlanImplCopyWith(
-          _$TrainingPlanImpl value, $Res Function(_$TrainingPlanImpl) then) =
-      __$$TrainingPlanImplCopyWithImpl<$Res>;
+    _$TrainingPlanImpl value,
+    $Res Function(_$TrainingPlanImpl) then,
+  ) = __$$TrainingPlanImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String userId,
-      String? currentVersionId,
-      TrainingPlanVersion version});
+  $Res call({
+    String id,
+    String userId,
+    String? currentVersionId,
+    TrainingPlanVersion version,
+  });
 
   @override
   $TrainingPlanVersionCopyWith<$Res> get version;
@@ -124,8 +132,9 @@ class __$$TrainingPlanImplCopyWithImpl<$Res>
     extends _$TrainingPlanCopyWithImpl<$Res, _$TrainingPlanImpl>
     implements _$$TrainingPlanImplCopyWith<$Res> {
   __$$TrainingPlanImplCopyWithImpl(
-      _$TrainingPlanImpl _value, $Res Function(_$TrainingPlanImpl) _then)
-      : super(_value, _then);
+    _$TrainingPlanImpl _value,
+    $Res Function(_$TrainingPlanImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of TrainingPlan
   /// with the given fields replaced by the non-null parameter values.
@@ -137,35 +146,38 @@ class __$$TrainingPlanImplCopyWithImpl<$Res>
     Object? currentVersionId = freezed,
     Object? version = null,
   }) {
-    return _then(_$TrainingPlanImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      currentVersionId: freezed == currentVersionId
-          ? _value.currentVersionId
-          : currentVersionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as TrainingPlanVersion,
-    ));
+    return _then(
+      _$TrainingPlanImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        currentVersionId: freezed == currentVersionId
+            ? _value.currentVersionId
+            : currentVersionId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        version: null == version
+            ? _value.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as TrainingPlanVersion,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$TrainingPlanImpl implements _TrainingPlan {
-  const _$TrainingPlanImpl(
-      {required this.id,
-      required this.userId,
-      required this.currentVersionId,
-      required this.version});
+  const _$TrainingPlanImpl({
+    required this.id,
+    required this.userId,
+    required this.currentVersionId,
+    required this.version,
+  });
 
   factory _$TrainingPlanImpl.fromJson(Map<String, dynamic> json) =>
       _$$TrainingPlanImplFromJson(json);
@@ -211,18 +223,17 @@ class _$TrainingPlanImpl implements _TrainingPlan {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TrainingPlanImplToJson(
-      this,
-    );
+    return _$$TrainingPlanImplToJson(this);
   }
 }
 
 abstract class _TrainingPlan implements TrainingPlan {
-  const factory _TrainingPlan(
-      {required final String id,
-      required final String userId,
-      required final String? currentVersionId,
-      required final TrainingPlanVersion version}) = _$TrainingPlanImpl;
+  const factory _TrainingPlan({
+    required final String id,
+    required final String userId,
+    required final String? currentVersionId,
+    required final TrainingPlanVersion version,
+  }) = _$TrainingPlanImpl;
 
   factory _TrainingPlan.fromJson(Map<String, dynamic> json) =
       _$TrainingPlanImpl.fromJson;
@@ -271,17 +282,19 @@ mixin _$TrainingPlanVersion {
 /// @nodoc
 abstract class $TrainingPlanVersionCopyWith<$Res> {
   factory $TrainingPlanVersionCopyWith(
-          TrainingPlanVersion value, $Res Function(TrainingPlanVersion) then) =
-      _$TrainingPlanVersionCopyWithImpl<$Res, TrainingPlanVersion>;
+    TrainingPlanVersion value,
+    $Res Function(TrainingPlanVersion) then,
+  ) = _$TrainingPlanVersionCopyWithImpl<$Res, TrainingPlanVersion>;
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion,
-      double objectiveScore,
-      List<TrainingSession> sessions});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+    double objectiveScore,
+    List<TrainingSession> sessions,
+  });
 }
 
 /// @nodoc
@@ -307,64 +320,70 @@ class _$TrainingPlanVersionCopyWithImpl<$Res, $Val extends TrainingPlanVersion>
     Object? objectiveScore = null,
     Object? sessions = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-      objectiveScore: null == objectiveScore
-          ? _value.objectiveScore
-          : objectiveScore // ignore: cast_nullable_to_non_nullable
-              as double,
-      sessions: null == sessions
-          ? _value.sessions
-          : sessions // ignore: cast_nullable_to_non_nullable
-              as List<TrainingSession>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            planId: null == planId
+                ? _value.planId
+                : planId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            version: null == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                      as int,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            engineVersion: null == engineVersion
+                ? _value.engineVersion
+                : engineVersion // ignore: cast_nullable_to_non_nullable
+                      as String,
+            objectiveScore: null == objectiveScore
+                ? _value.objectiveScore
+                : objectiveScore // ignore: cast_nullable_to_non_nullable
+                      as double,
+            sessions: null == sessions
+                ? _value.sessions
+                : sessions // ignore: cast_nullable_to_non_nullable
+                      as List<TrainingSession>,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$TrainingPlanVersionImplCopyWith<$Res>
     implements $TrainingPlanVersionCopyWith<$Res> {
-  factory _$$TrainingPlanVersionImplCopyWith(_$TrainingPlanVersionImpl value,
-          $Res Function(_$TrainingPlanVersionImpl) then) =
-      __$$TrainingPlanVersionImplCopyWithImpl<$Res>;
+  factory _$$TrainingPlanVersionImplCopyWith(
+    _$TrainingPlanVersionImpl value,
+    $Res Function(_$TrainingPlanVersionImpl) then,
+  ) = __$$TrainingPlanVersionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion,
-      double objectiveScore,
-      List<TrainingSession> sessions});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+    double objectiveScore,
+    List<TrainingSession> sessions,
+  });
 }
 
 /// @nodoc
 class __$$TrainingPlanVersionImplCopyWithImpl<$Res>
     extends _$TrainingPlanVersionCopyWithImpl<$Res, _$TrainingPlanVersionImpl>
     implements _$$TrainingPlanVersionImplCopyWith<$Res> {
-  __$$TrainingPlanVersionImplCopyWithImpl(_$TrainingPlanVersionImpl _value,
-      $Res Function(_$TrainingPlanVersionImpl) _then)
-      : super(_value, _then);
+  __$$TrainingPlanVersionImplCopyWithImpl(
+    _$TrainingPlanVersionImpl _value,
+    $Res Function(_$TrainingPlanVersionImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of TrainingPlanVersion
   /// with the given fields replaced by the non-null parameter values.
@@ -379,51 +398,53 @@ class __$$TrainingPlanVersionImplCopyWithImpl<$Res>
     Object? objectiveScore = null,
     Object? sessions = null,
   }) {
-    return _then(_$TrainingPlanVersionImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-      objectiveScore: null == objectiveScore
-          ? _value.objectiveScore
-          : objectiveScore // ignore: cast_nullable_to_non_nullable
-              as double,
-      sessions: null == sessions
-          ? _value._sessions
-          : sessions // ignore: cast_nullable_to_non_nullable
-              as List<TrainingSession>,
-    ));
+    return _then(
+      _$TrainingPlanVersionImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        planId: null == planId
+            ? _value.planId
+            : planId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        version: null == version
+            ? _value.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        engineVersion: null == engineVersion
+            ? _value.engineVersion
+            : engineVersion // ignore: cast_nullable_to_non_nullable
+                  as String,
+        objectiveScore: null == objectiveScore
+            ? _value.objectiveScore
+            : objectiveScore // ignore: cast_nullable_to_non_nullable
+                  as double,
+        sessions: null == sessions
+            ? _value._sessions
+            : sessions // ignore: cast_nullable_to_non_nullable
+                  as List<TrainingSession>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$TrainingPlanVersionImpl implements _TrainingPlanVersion {
-  const _$TrainingPlanVersionImpl(
-      {required this.id,
-      required this.planId,
-      required this.version,
-      required this.createdAt,
-      required this.engineVersion,
-      required this.objectiveScore,
-      required final List<TrainingSession> sessions})
-      : _sessions = sessions;
+  const _$TrainingPlanVersionImpl({
+    required this.id,
+    required this.planId,
+    required this.version,
+    required this.createdAt,
+    required this.engineVersion,
+    required this.objectiveScore,
+    required final List<TrainingSession> sessions,
+  }) : _sessions = sessions;
 
   factory _$TrainingPlanVersionImpl.fromJson(Map<String, dynamic> json) =>
       _$$TrainingPlanVersionImplFromJson(json);
@@ -473,14 +494,15 @@ class _$TrainingPlanVersionImpl implements _TrainingPlanVersion {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      planId,
-      version,
-      createdAt,
-      engineVersion,
-      objectiveScore,
-      const DeepCollectionEquality().hash(_sessions));
+    runtimeType,
+    id,
+    planId,
+    version,
+    createdAt,
+    engineVersion,
+    objectiveScore,
+    const DeepCollectionEquality().hash(_sessions),
+  );
 
   /// Create a copy of TrainingPlanVersion
   /// with the given fields replaced by the non-null parameter values.
@@ -489,26 +511,26 @@ class _$TrainingPlanVersionImpl implements _TrainingPlanVersion {
   @pragma('vm:prefer-inline')
   _$$TrainingPlanVersionImplCopyWith<_$TrainingPlanVersionImpl> get copyWith =>
       __$$TrainingPlanVersionImplCopyWithImpl<_$TrainingPlanVersionImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TrainingPlanVersionImplToJson(
-      this,
-    );
+    return _$$TrainingPlanVersionImplToJson(this);
   }
 }
 
 abstract class _TrainingPlanVersion implements TrainingPlanVersion {
-  const factory _TrainingPlanVersion(
-          {required final String id,
-          required final String planId,
-          required final int version,
-          required final String createdAt,
-          required final String engineVersion,
-          required final double objectiveScore,
-          required final List<TrainingSession> sessions}) =
-      _$TrainingPlanVersionImpl;
+  const factory _TrainingPlanVersion({
+    required final String id,
+    required final String planId,
+    required final int version,
+    required final String createdAt,
+    required final String engineVersion,
+    required final double objectiveScore,
+    required final List<TrainingSession> sessions,
+  }) = _$TrainingPlanVersionImpl;
 
   factory _TrainingPlanVersion.fromJson(Map<String, dynamic> json) =
       _$TrainingPlanVersionImpl.fromJson;
@@ -563,16 +585,18 @@ mixin _$TrainingSession {
 /// @nodoc
 abstract class $TrainingSessionCopyWith<$Res> {
   factory $TrainingSessionCopyWith(
-          TrainingSession value, $Res Function(TrainingSession) then) =
-      _$TrainingSessionCopyWithImpl<$Res, TrainingSession>;
+    TrainingSession value,
+    $Res Function(TrainingSession) then,
+  ) = _$TrainingSessionCopyWithImpl<$Res, TrainingSession>;
   @useResult
-  $Res call(
-      {String id,
-      String planVersionId,
-      int sessionIndex,
-      String name,
-      int targetDurationMinutes,
-      List<TrainingSessionExercise> exercises});
+  $Res call({
+    String id,
+    String planVersionId,
+    int sessionIndex,
+    String name,
+    int targetDurationMinutes,
+    List<TrainingSessionExercise> exercises,
+  });
 }
 
 /// @nodoc
@@ -597,50 +621,55 @@ class _$TrainingSessionCopyWithImpl<$Res, $Val extends TrainingSession>
     Object? targetDurationMinutes = null,
     Object? exercises = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planVersionId: null == planVersionId
-          ? _value.planVersionId
-          : planVersionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionIndex: null == sessionIndex
-          ? _value.sessionIndex
-          : sessionIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      targetDurationMinutes: null == targetDurationMinutes
-          ? _value.targetDurationMinutes
-          : targetDurationMinutes // ignore: cast_nullable_to_non_nullable
-              as int,
-      exercises: null == exercises
-          ? _value.exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<TrainingSessionExercise>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            planVersionId: null == planVersionId
+                ? _value.planVersionId
+                : planVersionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sessionIndex: null == sessionIndex
+                ? _value.sessionIndex
+                : sessionIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            targetDurationMinutes: null == targetDurationMinutes
+                ? _value.targetDurationMinutes
+                : targetDurationMinutes // ignore: cast_nullable_to_non_nullable
+                      as int,
+            exercises: null == exercises
+                ? _value.exercises
+                : exercises // ignore: cast_nullable_to_non_nullable
+                      as List<TrainingSessionExercise>,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$TrainingSessionImplCopyWith<$Res>
     implements $TrainingSessionCopyWith<$Res> {
-  factory _$$TrainingSessionImplCopyWith(_$TrainingSessionImpl value,
-          $Res Function(_$TrainingSessionImpl) then) =
-      __$$TrainingSessionImplCopyWithImpl<$Res>;
+  factory _$$TrainingSessionImplCopyWith(
+    _$TrainingSessionImpl value,
+    $Res Function(_$TrainingSessionImpl) then,
+  ) = __$$TrainingSessionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String planVersionId,
-      int sessionIndex,
-      String name,
-      int targetDurationMinutes,
-      List<TrainingSessionExercise> exercises});
+  $Res call({
+    String id,
+    String planVersionId,
+    int sessionIndex,
+    String name,
+    int targetDurationMinutes,
+    List<TrainingSessionExercise> exercises,
+  });
 }
 
 /// @nodoc
@@ -648,8 +677,9 @@ class __$$TrainingSessionImplCopyWithImpl<$Res>
     extends _$TrainingSessionCopyWithImpl<$Res, _$TrainingSessionImpl>
     implements _$$TrainingSessionImplCopyWith<$Res> {
   __$$TrainingSessionImplCopyWithImpl(
-      _$TrainingSessionImpl _value, $Res Function(_$TrainingSessionImpl) _then)
-      : super(_value, _then);
+    _$TrainingSessionImpl _value,
+    $Res Function(_$TrainingSessionImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of TrainingSession
   /// with the given fields replaced by the non-null parameter values.
@@ -663,46 +693,48 @@ class __$$TrainingSessionImplCopyWithImpl<$Res>
     Object? targetDurationMinutes = null,
     Object? exercises = null,
   }) {
-    return _then(_$TrainingSessionImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planVersionId: null == planVersionId
-          ? _value.planVersionId
-          : planVersionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionIndex: null == sessionIndex
-          ? _value.sessionIndex
-          : sessionIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      targetDurationMinutes: null == targetDurationMinutes
-          ? _value.targetDurationMinutes
-          : targetDurationMinutes // ignore: cast_nullable_to_non_nullable
-              as int,
-      exercises: null == exercises
-          ? _value._exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<TrainingSessionExercise>,
-    ));
+    return _then(
+      _$TrainingSessionImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        planVersionId: null == planVersionId
+            ? _value.planVersionId
+            : planVersionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sessionIndex: null == sessionIndex
+            ? _value.sessionIndex
+            : sessionIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        targetDurationMinutes: null == targetDurationMinutes
+            ? _value.targetDurationMinutes
+            : targetDurationMinutes // ignore: cast_nullable_to_non_nullable
+                  as int,
+        exercises: null == exercises
+            ? _value._exercises
+            : exercises // ignore: cast_nullable_to_non_nullable
+                  as List<TrainingSessionExercise>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$TrainingSessionImpl implements _TrainingSession {
-  const _$TrainingSessionImpl(
-      {required this.id,
-      required this.planVersionId,
-      required this.sessionIndex,
-      required this.name,
-      required this.targetDurationMinutes,
-      required final List<TrainingSessionExercise> exercises})
-      : _exercises = exercises;
+  const _$TrainingSessionImpl({
+    required this.id,
+    required this.planVersionId,
+    required this.sessionIndex,
+    required this.name,
+    required this.targetDurationMinutes,
+    required final List<TrainingSessionExercise> exercises,
+  }) : _exercises = exercises;
 
   factory _$TrainingSessionImpl.fromJson(Map<String, dynamic> json) =>
       _$$TrainingSessionImplFromJson(json);
@@ -743,20 +775,23 @@ class _$TrainingSessionImpl implements _TrainingSession {
             (identical(other.name, name) || other.name == name) &&
             (identical(other.targetDurationMinutes, targetDurationMinutes) ||
                 other.targetDurationMinutes == targetDurationMinutes) &&
-            const DeepCollectionEquality()
-                .equals(other._exercises, _exercises));
+            const DeepCollectionEquality().equals(
+              other._exercises,
+              _exercises,
+            ));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      planVersionId,
-      sessionIndex,
-      name,
-      targetDurationMinutes,
-      const DeepCollectionEquality().hash(_exercises));
+    runtimeType,
+    id,
+    planVersionId,
+    sessionIndex,
+    name,
+    targetDurationMinutes,
+    const DeepCollectionEquality().hash(_exercises),
+  );
 
   /// Create a copy of TrainingSession
   /// with the given fields replaced by the non-null parameter values.
@@ -765,25 +800,25 @@ class _$TrainingSessionImpl implements _TrainingSession {
   @pragma('vm:prefer-inline')
   _$$TrainingSessionImplCopyWith<_$TrainingSessionImpl> get copyWith =>
       __$$TrainingSessionImplCopyWithImpl<_$TrainingSessionImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TrainingSessionImplToJson(
-      this,
-    );
+    return _$$TrainingSessionImplToJson(this);
   }
 }
 
 abstract class _TrainingSession implements TrainingSession {
-  const factory _TrainingSession(
-          {required final String id,
-          required final String planVersionId,
-          required final int sessionIndex,
-          required final String name,
-          required final int targetDurationMinutes,
-          required final List<TrainingSessionExercise> exercises}) =
-      _$TrainingSessionImpl;
+  const factory _TrainingSession({
+    required final String id,
+    required final String planVersionId,
+    required final int sessionIndex,
+    required final String name,
+    required final int targetDurationMinutes,
+    required final List<TrainingSessionExercise> exercises,
+  }) = _$TrainingSessionImpl;
 
   factory _TrainingSession.fromJson(Map<String, dynamic> json) =
       _$TrainingSessionImpl.fromJson;
@@ -810,7 +845,8 @@ abstract class _TrainingSession implements TrainingSession {
 }
 
 TrainingSessionExercise _$TrainingSessionExerciseFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _TrainingSessionExercise.fromJson(json);
 }
 
@@ -837,24 +873,28 @@ mixin _$TrainingSessionExercise {
 
 /// @nodoc
 abstract class $TrainingSessionExerciseCopyWith<$Res> {
-  factory $TrainingSessionExerciseCopyWith(TrainingSessionExercise value,
-          $Res Function(TrainingSessionExercise) then) =
-      _$TrainingSessionExerciseCopyWithImpl<$Res, TrainingSessionExercise>;
+  factory $TrainingSessionExerciseCopyWith(
+    TrainingSessionExercise value,
+    $Res Function(TrainingSessionExercise) then,
+  ) = _$TrainingSessionExerciseCopyWithImpl<$Res, TrainingSessionExercise>;
   @useResult
-  $Res call(
-      {String id,
-      String sessionId,
-      String exerciseId,
-      int sets,
-      int repRangeMin,
-      int repRangeMax,
-      int restSeconds,
-      int rirTarget});
+  $Res call({
+    String id,
+    String sessionId,
+    String exerciseId,
+    int sets,
+    int repRangeMin,
+    int repRangeMax,
+    int restSeconds,
+    int rirTarget,
+  });
 }
 
 /// @nodoc
-class _$TrainingSessionExerciseCopyWithImpl<$Res,
-        $Val extends TrainingSessionExercise>
+class _$TrainingSessionExerciseCopyWithImpl<
+  $Res,
+  $Val extends TrainingSessionExercise
+>
     implements $TrainingSessionExerciseCopyWith<$Res> {
   _$TrainingSessionExerciseCopyWithImpl(this._value, this._then);
 
@@ -877,40 +917,43 @@ class _$TrainingSessionExerciseCopyWithImpl<$Res,
     Object? restSeconds = null,
     Object? rirTarget = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sets: null == sets
-          ? _value.sets
-          : sets // ignore: cast_nullable_to_non_nullable
-              as int,
-      repRangeMin: null == repRangeMin
-          ? _value.repRangeMin
-          : repRangeMin // ignore: cast_nullable_to_non_nullable
-              as int,
-      repRangeMax: null == repRangeMax
-          ? _value.repRangeMax
-          : repRangeMax // ignore: cast_nullable_to_non_nullable
-              as int,
-      restSeconds: null == restSeconds
-          ? _value.restSeconds
-          : restSeconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      rirTarget: null == rirTarget
-          ? _value.rirTarget
-          : rirTarget // ignore: cast_nullable_to_non_nullable
-              as int,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sessionId: null == sessionId
+                ? _value.sessionId
+                : sessionId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            exerciseId: null == exerciseId
+                ? _value.exerciseId
+                : exerciseId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            sets: null == sets
+                ? _value.sets
+                : sets // ignore: cast_nullable_to_non_nullable
+                      as int,
+            repRangeMin: null == repRangeMin
+                ? _value.repRangeMin
+                : repRangeMin // ignore: cast_nullable_to_non_nullable
+                      as int,
+            repRangeMax: null == repRangeMax
+                ? _value.repRangeMax
+                : repRangeMax // ignore: cast_nullable_to_non_nullable
+                      as int,
+            restSeconds: null == restSeconds
+                ? _value.restSeconds
+                : restSeconds // ignore: cast_nullable_to_non_nullable
+                      as int,
+            rirTarget: null == rirTarget
+                ? _value.rirTarget
+                : rirTarget // ignore: cast_nullable_to_non_nullable
+                      as int,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -918,31 +961,35 @@ class _$TrainingSessionExerciseCopyWithImpl<$Res,
 abstract class _$$TrainingSessionExerciseImplCopyWith<$Res>
     implements $TrainingSessionExerciseCopyWith<$Res> {
   factory _$$TrainingSessionExerciseImplCopyWith(
-          _$TrainingSessionExerciseImpl value,
-          $Res Function(_$TrainingSessionExerciseImpl) then) =
-      __$$TrainingSessionExerciseImplCopyWithImpl<$Res>;
+    _$TrainingSessionExerciseImpl value,
+    $Res Function(_$TrainingSessionExerciseImpl) then,
+  ) = __$$TrainingSessionExerciseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String sessionId,
-      String exerciseId,
-      int sets,
-      int repRangeMin,
-      int repRangeMax,
-      int restSeconds,
-      int rirTarget});
+  $Res call({
+    String id,
+    String sessionId,
+    String exerciseId,
+    int sets,
+    int repRangeMin,
+    int repRangeMax,
+    int restSeconds,
+    int rirTarget,
+  });
 }
 
 /// @nodoc
 class __$$TrainingSessionExerciseImplCopyWithImpl<$Res>
-    extends _$TrainingSessionExerciseCopyWithImpl<$Res,
-        _$TrainingSessionExerciseImpl>
+    extends
+        _$TrainingSessionExerciseCopyWithImpl<
+          $Res,
+          _$TrainingSessionExerciseImpl
+        >
     implements _$$TrainingSessionExerciseImplCopyWith<$Res> {
   __$$TrainingSessionExerciseImplCopyWithImpl(
-      _$TrainingSessionExerciseImpl _value,
-      $Res Function(_$TrainingSessionExerciseImpl) _then)
-      : super(_value, _then);
+    _$TrainingSessionExerciseImpl _value,
+    $Res Function(_$TrainingSessionExerciseImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of TrainingSessionExercise
   /// with the given fields replaced by the non-null parameter values.
@@ -958,55 +1005,58 @@ class __$$TrainingSessionExerciseImplCopyWithImpl<$Res>
     Object? restSeconds = null,
     Object? rirTarget = null,
   }) {
-    return _then(_$TrainingSessionExerciseImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      sessionId: null == sessionId
-          ? _value.sessionId
-          : sessionId // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      sets: null == sets
-          ? _value.sets
-          : sets // ignore: cast_nullable_to_non_nullable
-              as int,
-      repRangeMin: null == repRangeMin
-          ? _value.repRangeMin
-          : repRangeMin // ignore: cast_nullable_to_non_nullable
-              as int,
-      repRangeMax: null == repRangeMax
-          ? _value.repRangeMax
-          : repRangeMax // ignore: cast_nullable_to_non_nullable
-              as int,
-      restSeconds: null == restSeconds
-          ? _value.restSeconds
-          : restSeconds // ignore: cast_nullable_to_non_nullable
-              as int,
-      rirTarget: null == rirTarget
-          ? _value.rirTarget
-          : rirTarget // ignore: cast_nullable_to_non_nullable
-              as int,
-    ));
+    return _then(
+      _$TrainingSessionExerciseImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sessionId: null == sessionId
+            ? _value.sessionId
+            : sessionId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        exerciseId: null == exerciseId
+            ? _value.exerciseId
+            : exerciseId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        sets: null == sets
+            ? _value.sets
+            : sets // ignore: cast_nullable_to_non_nullable
+                  as int,
+        repRangeMin: null == repRangeMin
+            ? _value.repRangeMin
+            : repRangeMin // ignore: cast_nullable_to_non_nullable
+                  as int,
+        repRangeMax: null == repRangeMax
+            ? _value.repRangeMax
+            : repRangeMax // ignore: cast_nullable_to_non_nullable
+                  as int,
+        restSeconds: null == restSeconds
+            ? _value.restSeconds
+            : restSeconds // ignore: cast_nullable_to_non_nullable
+                  as int,
+        rirTarget: null == rirTarget
+            ? _value.rirTarget
+            : rirTarget // ignore: cast_nullable_to_non_nullable
+                  as int,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$TrainingSessionExerciseImpl implements _TrainingSessionExercise {
-  const _$TrainingSessionExerciseImpl(
-      {required this.id,
-      required this.sessionId,
-      required this.exerciseId,
-      required this.sets,
-      required this.repRangeMin,
-      required this.repRangeMax,
-      required this.restSeconds,
-      required this.rirTarget});
+  const _$TrainingSessionExerciseImpl({
+    required this.id,
+    required this.sessionId,
+    required this.exerciseId,
+    required this.sets,
+    required this.repRangeMin,
+    required this.repRangeMax,
+    required this.restSeconds,
+    required this.rirTarget,
+  });
 
   factory _$TrainingSessionExerciseImpl.fromJson(Map<String, dynamic> json) =>
       _$$TrainingSessionExerciseImplFromJson(json);
@@ -1056,8 +1106,17 @@ class _$TrainingSessionExerciseImpl implements _TrainingSessionExercise {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, sessionId, exerciseId, sets,
-      repRangeMin, repRangeMax, restSeconds, rirTarget);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    sessionId,
+    exerciseId,
+    sets,
+    repRangeMin,
+    repRangeMax,
+    restSeconds,
+    rirTarget,
+  );
 
   /// Create a copy of TrainingSessionExercise
   /// with the given fields replaced by the non-null parameter values.
@@ -1065,27 +1124,28 @@ class _$TrainingSessionExerciseImpl implements _TrainingSessionExercise {
   @override
   @pragma('vm:prefer-inline')
   _$$TrainingSessionExerciseImplCopyWith<_$TrainingSessionExerciseImpl>
-      get copyWith => __$$TrainingSessionExerciseImplCopyWithImpl<
-          _$TrainingSessionExerciseImpl>(this, _$identity);
+  get copyWith =>
+      __$$TrainingSessionExerciseImplCopyWithImpl<
+        _$TrainingSessionExerciseImpl
+      >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$TrainingSessionExerciseImplToJson(
-      this,
-    );
+    return _$$TrainingSessionExerciseImplToJson(this);
   }
 }
 
 abstract class _TrainingSessionExercise implements TrainingSessionExercise {
-  const factory _TrainingSessionExercise(
-      {required final String id,
-      required final String sessionId,
-      required final String exerciseId,
-      required final int sets,
-      required final int repRangeMin,
-      required final int repRangeMax,
-      required final int restSeconds,
-      required final int rirTarget}) = _$TrainingSessionExerciseImpl;
+  const factory _TrainingSessionExercise({
+    required final String id,
+    required final String sessionId,
+    required final String exerciseId,
+    required final int sets,
+    required final int repRangeMin,
+    required final int repRangeMax,
+    required final int restSeconds,
+    required final int rirTarget,
+  }) = _$TrainingSessionExerciseImpl;
 
   factory _TrainingSessionExercise.fromJson(Map<String, dynamic> json) =
       _$TrainingSessionExerciseImpl.fromJson;
@@ -1112,5 +1172,5 @@ abstract class _TrainingSessionExercise implements TrainingSessionExercise {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$TrainingSessionExerciseImplCopyWith<_$TrainingSessionExerciseImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

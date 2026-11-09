@@ -7,11 +7,11 @@ part of 'muscle.dart';
 // **************************************************************************
 
 _$MuscleImpl _$$MuscleImplFromJson(Map<String, dynamic> json) => _$MuscleImpl(
-      id: json['id'] as String,
-      name: json['name'] as String,
-      region: json['region'] as String,
-      meshRegionId: json['meshRegionId'] as String?,
-    );
+  id: json['id'] as String,
+  name: json['name'] as String,
+  region: json['region'] as String,
+  meshRegionId: json['meshRegionId'] as String?,
+);
 
 Map<String, dynamic> _$$MuscleImplToJson(_$MuscleImpl instance) =>
     <String, dynamic>{

@@ -33,16 +33,20 @@ class NutritionSummaryCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                const Icon(Icons.restaurant_menu,
-                    color: AppColors.accent, size: 22),
+                const Icon(
+                  Icons.restaurant_menu,
+                  color: AppColors.accent,
+                  size: 22,
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 Text('Daily Targets', style: tt.titleMedium),
                 const Spacer(),
                 if (versionNumber != null)
                   Text(
                     'v$versionNumber',
-                    style: tt.bodySmall
-                        ?.copyWith(color: AppColors.onSurfaceVariant),
+                    style: tt.bodySmall?.copyWith(
+                      color: AppColors.onSurfaceVariant,
+                    ),
                   ),
               ],
             ),
@@ -50,20 +54,35 @@ class NutritionSummaryCard extends StatelessWidget {
             if (calories != null)
               _CalorieRow(calories: calories!)
             else
-              Text('Calorie target not available',
-                  style:
-                      tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant)),
+              Text(
+                'Calorie target not available',
+                style: tt.bodySmall?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
+              ),
             const SizedBox(height: AppSpacing.md),
             Row(
               children: [
                 _MacroItem(
-                    label: 'Protein', value: proteinG, unit: 'g', color: const Color(0xFF4FC3F7)),
+                  label: 'Protein',
+                  value: proteinG,
+                  unit: 'g',
+                  color: const Color(0xFF4FC3F7),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 _MacroItem(
-                    label: 'Carbs', value: carbsG, unit: 'g', color: const Color(0xFFFFB74D)),
+                  label: 'Carbs',
+                  value: carbsG,
+                  unit: 'g',
+                  color: const Color(0xFFFFB74D),
+                ),
                 const SizedBox(width: AppSpacing.sm),
                 _MacroItem(
-                    label: 'Fat', value: fatG, unit: 'g', color: const Color(0xFFE57373)),
+                  label: 'Fat',
+                  value: fatG,
+                  unit: 'g',
+                  color: const Color(0xFFE57373),
+                ),
               ],
             ),
           ],
@@ -86,17 +105,16 @@ class _CalorieRow extends StatelessWidget {
         Text(
           calories.toStringAsFixed(0),
           style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: AppColors.accent,
-                fontWeight: FontWeight.bold,
-              ),
+            color: AppColors.accent,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(width: 4),
         Text(
           'kcal',
-          style: Theme.of(context)
-              .textTheme
-              .bodyMedium
-              ?.copyWith(color: AppColors.onSurfaceVariant),
+          style: Theme.of(
+            context,
+          ).textTheme.bodyMedium?.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
     );
@@ -139,9 +157,10 @@ class _MacroItem extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 2),
-            Text(label,
-                style:
-                    tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant)),
+            Text(
+              label,
+              style: tt.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
+            ),
           ],
         ),
       ),

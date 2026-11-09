@@ -29,8 +29,8 @@ class ProgressListItem extends StatelessWidget {
                   Text(
                     exercise.displayName,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
+                      fontWeight: FontWeight.w600,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -40,7 +40,10 @@ class ProgressListItem extends StatelessWidget {
                       padding: const EdgeInsets.only(top: 2),
                       child: Text(
                         'Fatigue: ${(exercise.fatigueScore! * 100).toStringAsFixed(0)}%',
-                        style: const TextStyle(fontSize: 11, color: AppColors.error),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.error,
+                        ),
                       ),
                     ),
                 ],
@@ -60,7 +63,9 @@ class ProgressListItem extends StatelessWidget {
                     Text(
                       '${exercise.volumeLastWeek!.toStringAsFixed(0)} kg vol',
                       style: const TextStyle(
-                          fontSize: 12, color: AppColors.onSurfaceVariant),
+                        fontSize: 12,
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                 ],
               ),

@@ -89,20 +89,19 @@ class _LoadedNutrition extends ConsumerWidget {
             child: Center(
               child: Text(
                 'No meals for this day',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ),
           )
         else
           ...vm.meals.asMap().entries.map(
-                (e) => Padding(
-                  padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-                  child: MealCard(meal: e.value, index: e.key),
-                ),
-              ),
+            (e) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: MealCard(meal: e.value, index: e.key),
+            ),
+          ),
       ],
     );
   }
@@ -116,26 +115,27 @@ class _EmptyView extends StatelessWidget {
     return ListView(
       children: [
         const SizedBox(height: 120),
-        Icon(Icons.restaurant_outlined,
-            size: 64, color: AppColors.onSurfaceVariant.withValues(alpha: 0.4)),
+        Icon(
+          Icons.restaurant_outlined,
+          size: 64,
+          color: AppColors.onSurfaceVariant.withValues(alpha: 0.4),
+        ),
         const SizedBox(height: AppSpacing.md),
         Center(
           child: Text(
             'No nutrition plan yet',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: AppColors.onSurfaceVariant),
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: AppColors.onSurfaceVariant,
+            ),
           ),
         ),
         const SizedBox(height: AppSpacing.sm),
         Center(
           child: Text(
             'Generate a plan from your profile to get started.',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(color: AppColors.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
           ),
         ),
       ],
@@ -157,18 +157,14 @@ class _ErrorView extends StatelessWidget {
         Center(
           child: Text(
             'Failed to load nutrition plan',
-            style: Theme.of(context)
-                .textTheme
-                .titleMedium
-                ?.copyWith(color: AppColors.error),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(color: AppColors.error),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
         Center(
-          child: OutlinedButton(
-            onPressed: onRetry,
-            child: const Text('Retry'),
-          ),
+          child: OutlinedButton(onPressed: onRetry, child: const Text('Retry')),
         ),
       ],
     );

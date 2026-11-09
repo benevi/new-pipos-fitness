@@ -9,7 +9,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: Scaffold(
+          home: const Scaffold(
             body: AiProposalCard(
               proposal: {
                 'type': 'exercise_swap',
@@ -29,9 +29,13 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: Scaffold(
+          home: const Scaffold(
             body: AiProposalCard(
-              proposal: {'type': 'nutrition_swap', 'fromFoodId': 'f1', 'toFoodId': 'f2'},
+              proposal: {
+                'type': 'nutrition_swap',
+                'fromFoodId': 'f1',
+                'toFoodId': 'f2',
+              },
               status: 'rejected',
             ),
           ),
@@ -45,9 +49,13 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: Scaffold(
+          home: const Scaffold(
             body: AiProposalCard(
-              proposal: {'type': 'exercise_swap', 'fromExerciseId': 'a', 'toExerciseId': 'b'},
+              proposal: {
+                'type': 'exercise_swap',
+                'fromExerciseId': 'a',
+                'toExerciseId': 'b',
+              },
               status: 'rejected',
               rejectionReason: 'Equipment not available for replacement',
             ),
@@ -55,14 +63,17 @@ void main() {
         ),
       );
       expect(find.text('Rejected'), findsOneWidget);
-      expect(find.text('Equipment not available for replacement'), findsOneWidget);
+      expect(
+        find.text('Equipment not available for replacement'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('does not crash when rejectionReason is null', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
           theme: AppTheme.dark,
-          home: Scaffold(
+          home: const Scaffold(
             body: AiProposalCard(
               proposal: {'type': 'exercise_swap'},
               status: 'rejected',

@@ -22,7 +22,11 @@ void main() {
         content: 'Here is a proposal',
         responseType: 'proposal',
         proposalStatus: 'valid',
-        proposal: {'type': 'exercise_swap', 'fromExerciseId': 'a', 'toExerciseId': 'b'},
+        proposal: {
+          'type': 'exercise_swap',
+          'fromExerciseId': 'a',
+          'toExerciseId': 'b',
+        },
       );
       expect(msg.role, AIChatRole.assistant);
       expect(msg.responseType, 'proposal');

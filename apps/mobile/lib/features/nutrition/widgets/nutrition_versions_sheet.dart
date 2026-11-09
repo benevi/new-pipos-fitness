@@ -7,7 +7,10 @@ class NutritionVersionsSheet extends StatelessWidget {
 
   const NutritionVersionsSheet({super.key, required this.versions});
 
-  static void show(BuildContext context, List<NutritionVersionSummary> versions) {
+  static void show(
+    BuildContext context,
+    List<NutritionVersionSummary> versions,
+  ) {
     showModalBottomSheet(
       context: context,
       backgroundColor: AppColors.surface,
@@ -45,9 +48,12 @@ class NutritionVersionsSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               child: Center(
-                child: Text('No versions available',
-                    style: tt.bodyMedium
-                        ?.copyWith(color: AppColors.onSurfaceVariant)),
+                child: Text(
+                  'No versions available',
+                  style: tt.bodyMedium?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                ),
               ),
             )
           else
@@ -77,13 +83,15 @@ class NutritionVersionsSheet extends StatelessWidget {
                     title: Text('Version ${v.version}', style: tt.bodyMedium),
                     subtitle: Text(
                       'Engine ${v.engineVersion}',
-                      style: tt.bodySmall
-                          ?.copyWith(color: AppColors.onSurfaceVariant),
+                      style: tt.bodySmall?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                     trailing: Text(
                       _formatDate(v.createdAt),
-                      style: tt.bodySmall
-                          ?.copyWith(color: AppColors.onSurfaceVariant),
+                      style: tt.bodySmall?.copyWith(
+                        color: AppColors.onSurfaceVariant,
+                      ),
                     ),
                   );
                 },

@@ -76,7 +76,8 @@ DashboardViewModel _buildViewModel(
   Map<String, Muscle>? muscleCatalog,
 ) {
   final hasExercises = progress != null && progress.exercises.isNotEmpty;
-  final hasVolume = volume != null &&
+  final hasVolume =
+      volume != null &&
       (volume.byExercise.isNotEmpty || volume.byMuscle.isNotEmpty);
   final hasAdherence = progress?.adherenceScore != null;
 
