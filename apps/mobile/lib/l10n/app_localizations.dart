@@ -1217,8 +1217,15 @@ abstract class AppLocalizations {
   /// No description provided for @progressE1rmTrend.
   ///
   /// In es, this message translates to:
-  /// **'Tendencia de {name}: de {first} a {last} kg en {count} sesiones'**
-  String progressE1rmTrend(String name, String first, String last, int count);
+  /// **'{name}: de {first} a {last} kg entre el {since} y el {until} ({count} sesiones)'**
+  String progressE1rmTrend(
+    String name,
+    String first,
+    String last,
+    String since,
+    String until,
+    int count,
+  );
 
   /// No description provided for @progressVolumeTitle.
   ///
@@ -2231,13 +2238,13 @@ abstract class AppLocalizations {
   /// No description provided for @bodyChartLabel.
   ///
   /// In es, this message translates to:
-  /// **'Media de 7 días: de {first} a {last} en {count} registros'**
-  String bodyChartLabel(String first, String last, int count);
+  /// **'Peso: de {first} a {last} kg en {period}'**
+  String bodyChartLabel(String first, String last, String period);
 
   /// No description provided for @bodyChartTitle.
   ///
   /// In es, this message translates to:
-  /// **'Media de 7 días'**
+  /// **'Peso (kg): media móvil de 7 días en cada pesada'**
   String get bodyChartTitle;
 
   /// No description provided for @bodyEstimateLabel.
@@ -2437,6 +2444,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'cm'**
   String get measureUnitCm;
+
+  /// No description provided for @chartPeriodWeeks.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 semana} other{{count} semanas}}'**
+  String chartPeriodWeeks(int count);
+
+  /// No description provided for @chartPeriodDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String chartPeriodDays(int count);
+
+  /// No description provided for @progressVolumeSets.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{{sets} serie} other{{sets} series}}'**
+  String progressVolumeSets(num count, String sets);
+
+  /// No description provided for @progressVolumeTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'objetivo {min}–{max}'**
+  String progressVolumeTarget(String min, String max);
+
+  /// No description provided for @progressVolumeLegendBelow.
+  ///
+  /// In es, this message translates to:
+  /// **'Por debajo del rango'**
+  String get progressVolumeLegendBelow;
+
+  /// No description provided for @progressVolumeLegendWithin.
+  ///
+  /// In es, this message translates to:
+  /// **'Dentro del rango'**
+  String get progressVolumeLegendWithin;
+
+  /// No description provided for @progressVolumeLegendAbove.
+  ///
+  /// In es, this message translates to:
+  /// **'Por encima del rango'**
+  String get progressVolumeLegendAbove;
+
+  /// No description provided for @progressVolumeLegendBand.
+  ///
+  /// In es, this message translates to:
+  /// **'La franja marca el rango objetivo de series efectivas.'**
+  String get progressVolumeLegendBand;
 }
 
 class _AppLocalizationsDelegate

@@ -735,8 +735,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String progressE1rmTrend(String name, String first, String last, int count) {
-    return 'Tendencia de $name: de $first a $last kg en $count sesiones';
+  String progressE1rmTrend(
+    String name,
+    String first,
+    String last,
+    String since,
+    String until,
+    int count,
+  ) {
+    return '$name: de $first a $last kg entre el $since y el $until ($count sesiones)';
   }
 
   @override
@@ -1609,12 +1616,13 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String bodyChartLabel(String first, String last, int count) {
-    return 'Media de 7 días: de $first a $last en $count registros';
+  String bodyChartLabel(String first, String last, String period) {
+    return 'Peso: de $first a $last kg en $period';
   }
 
   @override
-  String get bodyChartTitle => 'Media de 7 días';
+  String get bodyChartTitle =>
+      'Peso (kg): media móvil de 7 días en cada pesada';
 
   @override
   String get bodyEstimateLabel => 'Estimación — no es un diagnóstico';
@@ -1784,4 +1792,55 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get measureUnitCm => 'cm';
+
+  @override
+  String chartPeriodWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas',
+      one: '1 semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chartPeriodDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeSets(num count, String sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$sets series',
+      one: '$sets serie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeTarget(String min, String max) {
+    return 'objetivo $min–$max';
+  }
+
+  @override
+  String get progressVolumeLegendBelow => 'Por debajo del rango';
+
+  @override
+  String get progressVolumeLegendWithin => 'Dentro del rango';
+
+  @override
+  String get progressVolumeLegendAbove => 'Por encima del rango';
+
+  @override
+  String get progressVolumeLegendBand =>
+      'La franja marca el rango objetivo de series efectivas.';
 }

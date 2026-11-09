@@ -732,8 +732,15 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String progressE1rmTrend(String name, String first, String last, int count) {
-    return '$name trend: from $first to $last kg over $count sessions';
+  String progressE1rmTrend(
+    String name,
+    String first,
+    String last,
+    String since,
+    String until,
+    int count,
+  ) {
+    return '$name: from $first to $last kg between $since and $until ($count sessions)';
   }
 
   @override
@@ -1605,12 +1612,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String bodyChartLabel(String first, String last, int count) {
-    return '7-day average: from $first to $last over $count entries';
+  String bodyChartLabel(String first, String last, String period) {
+    return 'Weight: from $first to $last kg over $period';
   }
 
   @override
-  String get bodyChartTitle => '7-day average';
+  String get bodyChartTitle =>
+      'Weight (kg): 7-day moving average at each weigh-in';
 
   @override
   String get bodyEstimateLabel => 'Estimate — not a diagnosis';
@@ -1779,4 +1787,55 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get measureUnitCm => 'cm';
+
+  @override
+  String chartPeriodWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count weeks',
+      one: '1 week',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chartPeriodDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeSets(num count, String sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$sets sets',
+      one: '$sets set',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeTarget(String min, String max) {
+    return 'target $min–$max';
+  }
+
+  @override
+  String get progressVolumeLegendBelow => 'Below range';
+
+  @override
+  String get progressVolumeLegendWithin => 'Within range';
+
+  @override
+  String get progressVolumeLegendAbove => 'Above range';
+
+  @override
+  String get progressVolumeLegendBand =>
+      'The band marks the target range of effective sets.';
 }

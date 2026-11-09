@@ -13,6 +13,7 @@ import '../../data/pipos_api.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
+import '../../models/notes_breaks.dart' show parseCalendarDate;
 import '../../models/progress.dart';
 import '../../shared/widgets.dart';
 import 'body_view.dart';
@@ -130,6 +131,29 @@ class _E1rmSection extends StatelessWidget {
 
   final List<E1rmSeries> series;
 
+  /// Tendencia con fechas primera/última y mínimo/máximo en kg.
+  Widget _e1rmChart(AppLocalizations l10n, E1rmSeries s) {
+    final values = [for (final p in s.points) p.e1rmKg];
+    final first = parseCalendarDate(s.points.first.date);
+    final last = parseCalendarDate(s.points.last.date);
+    return Sparkline(
+      key: Key('e1rm-chart-${s.exerciseId}'),
+      values: values,
+      minLabel: l10n.kg(values.reduce(math.min)),
+      maxLabel: l10n.kg(values.reduce(math.max)),
+      firstLabel: l10n.dayMonth(first),
+      lastLabel: l10n.dayMonth(last),
+      semanticLabel: l10n.progressE1rmTrend(
+        s.nameEs,
+        l10n.number(values.first),
+        l10n.number(values.last),
+        l10n.dayMonth(first),
+        l10n.dayMonth(last),
+        s.points.length,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -145,32 +169,18 @@ class _E1rmSection extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(
                       vertical: AppSpacing.xs,
                     ),
-                    child: Row(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(s.nameEs, style: theme.textTheme.titleSmall),
-                              Text(
-                                l10n.progressE1rmValue(
-                                  l10n.number(s.latestE1rmKg),
-                                ),
-                                style: theme.textTheme.titleMedium,
-                              ),
-                            ],
-                          ),
+                        Text(s.nameEs, style: theme.textTheme.titleSmall),
+                        Text(
+                          l10n.progressE1rmValue(l10n.number(s.latestE1rmKg)),
+                          style: theme.textTheme.titleMedium,
                         ),
-                        if (s.points.length > 1)
-                          Sparkline(
-                            values: [for (final p in s.points) p.e1rmKg],
-                            semanticLabel: l10n.progressE1rmTrend(
-                              s.nameEs,
-                              l10n.number(s.points.first.e1rmKg),
-                              l10n.number(s.points.last.e1rmKg),
-                              s.points.length,
-                            ),
-                          ),
+                        if (s.points.length > 1) ...[
+                          const SizedBox(height: AppSpacing.xs),
+                          _e1rmChart(l10n, s),
+                        ],
                       ],
                     ),
                   ),
@@ -202,56 +212,129 @@ class _VolumeSection extends StatelessWidget {
       child: !hasData
           ? Text(l10n.progressVolumeEmpty, style: theme.textTheme.bodyMedium)
           : Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                for (final g in groups)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(
-                      vertical: AppSpacing.xs,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Wrap(
-                          alignment: WrapAlignment.spaceBetween,
-                          spacing: AppSpacing.sm,
-                          children: [
-                            Text(l10n.groupLabel(g.group.wire)),
-                            Text(
-                              g.targetMin == null
-                                  ? l10n.number(g.effectiveSets)
-                                  : l10n.planVolumeRange(
-                                      l10n.number(g.effectiveSets),
-                                      l10n.number(g.targetMin!),
-                                      l10n.number(g.targetMax!),
-                                    ),
-                              style: theme.textTheme.bodySmall,
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: AppSpacing.xs),
-                        VolumeRangeBar(
-                          value: g.effectiveSets,
-                          min: g.targetMin,
-                          max: g.targetMax,
-                          scaleMax: scale,
-                          inRange: g.status == VolumeStatus.within,
-                          semanticLabel: l10n.progressVolumeBar(
-                            l10n.groupLabel(g.group.wire),
-                            l10n.number(g.effectiveSets),
-                            g.targetMin == null
-                                ? '–'
-                                : l10n.number(g.targetMin!),
-                            g.targetMax == null
-                                ? '–'
-                                : l10n.number(g.targetMax!),
-                            l10n.volumeStatusLabel(g.status.wire),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                const _VolumeLegend(),
+                for (final g in groups) _VolumeRow(group: g, scale: scale),
               ],
             ),
+    );
+  }
+}
+
+/// Qué significa cada color de la barra (siempre con icono y texto).
+class _VolumeLegend extends StatelessWidget {
+  const _VolumeLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    Widget item(VolumeStatus status, String label) {
+      final style = volumeStatusStyle(status, scheme);
+      return Row(
+        key: Key('volume-legend-${status.wire}'),
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(style.icon, size: AppSpacing.md, color: style.color),
+          const SizedBox(width: AppSpacing.xs),
+          Text(label, style: theme.textTheme.bodySmall),
+        ],
+      );
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: AppSpacing.md,
+            runSpacing: AppSpacing.xs,
+            children: [
+              item(VolumeStatus.below, l10n.progressVolumeLegendBelow),
+              item(VolumeStatus.within, l10n.progressVolumeLegendWithin),
+              item(VolumeStatus.above, l10n.progressVolumeLegendAbove),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(l10n.progressVolumeLegendBand, style: theme.textTheme.bodySmall),
+        ],
+      ),
+    );
+  }
+}
+
+class _VolumeRow extends StatelessWidget {
+  const _VolumeRow({required this.group, required this.scale});
+
+  final GroupWeekVolume group;
+  final double scale;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final g = group;
+    final style = volumeStatusStyle(g.status, theme.colorScheme);
+    final sets = l10n.progressVolumeSets(
+      g.effectiveSets,
+      l10n.number(g.effectiveSets),
+    );
+    final detail = g.targetMin == null || g.targetMax == null
+        ? sets
+        : '$sets · ${l10n.progressVolumeTarget(l10n.number(g.targetMin!), l10n.number(g.targetMax!))}';
+    // Una sola lectura para el lector de pantalla (grupo, series, objetivo y
+    // estado); lo visible repite lo mismo con texto e icono.
+    return Semantics(
+      key: Key('volume-${g.group.wire}'),
+      container: true,
+      excludeSemantics: true,
+      label: l10n.progressVolumeBar(
+        l10n.groupLabel(g.group.wire),
+        l10n.number(g.effectiveSets),
+        g.targetMin == null ? '–' : l10n.number(g.targetMin!),
+        g.targetMax == null ? '–' : l10n.number(g.targetMax!),
+        l10n.volumeStatusLabel(g.status.wire),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.groupLabel(g.group.wire),
+                    style: theme.textTheme.titleSmall,
+                  ),
+                ),
+                Icon(style.icon, size: AppSpacing.md, color: style.color),
+                const SizedBox(width: AppSpacing.xs),
+                Flexible(
+                  child: Text(
+                    l10n.volumeStatusLabel(g.status.wire),
+                    style: theme.textTheme.bodySmall,
+                    textAlign: TextAlign.end,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            VolumeRangeBar(
+              value: g.effectiveSets,
+              min: g.targetMin,
+              max: g.targetMax,
+              scaleMax: scale,
+              status: g.status,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(detail, style: theme.textTheme.bodySmall),
+          ],
+        ),
+      ),
     );
   }
 }

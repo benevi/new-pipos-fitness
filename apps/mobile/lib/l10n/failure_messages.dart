@@ -61,6 +61,17 @@ extension L10nFormat on AppLocalizations {
   /// Con hasta 2 decimales (discos de 1,25 kg, cargas de 62,25 kg).
   String kgPrecise(num value) => loadKgValue(number(value, maxDecimals: 2));
 
+  /// Día y mes («12 oct.»), para los ejes de las gráficas.
+  String dayMonth(DateTime d) => DateFormat.MMMd(localeName).format(d);
+
+  /// Periodo entre dos fechas: en semanas desde 14 días, si no en días.
+  String period(DateTime from, DateTime to) {
+    final days = to.difference(from).inDays.abs();
+    return days >= 14
+        ? chartPeriodWeeks((days / 7).round())
+        : chartPeriodDays(days);
+  }
+
   String shortDate(DateTime d) =>
       DateFormat.yMMMd(localeName).format(d.toLocal());
 

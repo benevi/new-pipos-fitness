@@ -53,6 +53,24 @@ void main() {
       findsOneWidget,
     );
 
+    // Gráfica del peso: título honesto, ejes y resumen para el lector.
+    expect(
+      find.text('Peso (kg): media móvil de 7 días en cada pesada'),
+      findsOneWidget,
+    );
+    Finder inWeight(String key) => find.descendant(
+      of: find.byKey(const Key('weight-chart')),
+      matching: find.byKey(Key(key)),
+    );
+    expect(tester.widget<Text>(inWeight('chart-min')).data, '80,5 kg');
+    expect(tester.widget<Text>(inWeight('chart-max')).data, '82 kg');
+    expect(tester.widget<Text>(inWeight('chart-first')).data, '12 oct');
+    expect(tester.widget<Text>(inWeight('chart-last')).data, '9 nov');
+    expect(
+      find.bySemanticsLabel('Peso: de 82 a 80,5 kg en 4 semanas'),
+      findsOneWidget,
+    );
+
     await _scrollTo(tester, find.byKey(const Key('bmi-value')));
     expect(find.text('24,8'), findsOneWidget);
     expect(find.text('Peso normal'), findsOneWidget);

@@ -5,6 +5,8 @@
 /// semanas. Las explicaciones vienen de la API (castellano).
 library;
 
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -252,13 +254,27 @@ class _WeightCard extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(l10n.bodyChartTitle, style: theme.textTheme.labelLarge),
             const SizedBox(height: AppSpacing.xs),
-            TrendChart(
+            // `movingAverage` de la API: media de los 7 días que terminan en
+            // cada fecha con peso (un punto por pesada), no puntos semanales.
+            Sparkline(
               key: const Key('weight-chart'),
+              height: AppSpacing.xxl * 2,
               values: [for (final p in avg) p.value],
+              minLabel: l10n.kgPrecise(
+                avg.map((p) => p.value).reduce(math.min),
+              ),
+              maxLabel: l10n.kgPrecise(
+                avg.map((p) => p.value).reduce(math.max),
+              ),
+              firstLabel: l10n.dayMonth(parseCalendarDate(avg.first.date)),
+              lastLabel: l10n.dayMonth(parseCalendarDate(avg.last.date)),
               semanticLabel: l10n.bodyChartLabel(
-                l10n.kgPrecise(avg.first.value),
-                l10n.kgPrecise(avg.last.value),
-                avg.length,
+                l10n.number(avg.first.value, maxDecimals: 2),
+                l10n.number(avg.last.value, maxDecimals: 2),
+                l10n.period(
+                  parseCalendarDate(avg.first.date),
+                  parseCalendarDate(avg.last.date),
+                ),
               ),
             ),
           ],
