@@ -80,10 +80,23 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 - **Propuesta:** tabla `AuditEvent` append-only sin datos personales (tipo, userId, fecha) con
   retención limitada; registrar login, refresh reutilizado, cambio/borrado de datos de salud.
 
-### [CI] Dependabot y `pnpm audit` / `flutter pub outdated` en CI
+### ~~[CI] Dependabot y `pnpm audit` / `flutter pub outdated` en CI~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #18.
+- **Qué se hizo:** `.github/dependabot.yml` (npm en la raíz, pub en `apps/mobile`, github-actions;
+  semanal, agrupado por menores/parches) y paso de CI `pnpm audit --prod --audit-level high`, que
+  falla con vulnerabilidades altas o críticas. Para dejarlo en verde: `bcrypt` 5 → 6 (quita
+  `node-pre-gyp`, `tar` y `brace-expansion`) y `pnpm.overrides` mínimos a la versión parcheada
+  dentro de la misma mayor (multer, body-parser, path-to-regexp, proxy-addr, lodash, js-yaml).
+  Excepción documentada en SECURITY §6.3: `zod` (GHSA-mrhx-c7xc-m3w5, solo parcheado en zod 4;
+  entrada acotada por el límite de cuerpo). `flutter pub outdated` no se añade: Dependabot de pub
+  cubre las actualizaciones de la app.
+
+### [CI] Migrar a zod 4 (excepción de `pnpm audit`)
 - **Severidad:** Media
-- **Impacto:** solo hay `--frozen-lockfile`; nada avisa de dependencias vulnerables.
-- **Propuesta:** `.github/dependabot.yml` (npm, pub, actions) y un paso `pnpm audit --prod --audit-level high`.
+- **Impacto:** `pnpm audit` ignora GHSA-mrhx-c7xc-m3w5 (zod 3) porque el parche solo existe en zod 4.
+- **Propuesta:** migrar `packages/contracts` y la API a zod 4 (o a `zod/v4`), sustituir
+  `zod-to-json-schema` por `z.toJSONSchema`, regenerar OpenAPI y validar los fixtures móviles;
+  después quitar la excepción de `package.json`.
 
 ### [Catálogo] Pullover en polea frente al jalón con hombro limitado
 - **Severidad:** Baja

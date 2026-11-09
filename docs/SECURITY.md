@@ -142,8 +142,20 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | I | Errores de configuración que filtran secretos | `parseEnv` informa claves y reglas, nunca valores | ✅ |
 | T | Rate limiting desactivado en producción por error | `THROTTLE_ENABLED=false` rechazado con `NODE_ENV=production` | ✅ |
 | D | Proceso corrupto tras `uncaughtException` | Se registra y `exit(1)` (el orquestador reinicia) | ✅ |
-| T | Dependencias comprometidas | `--frozen-lockfile` en CI; sin Dependabot ni `pnpm audit` | ⏳ deuda |
+| T | Dependencias comprometidas o vulnerables | `--frozen-lockfile`; `pnpm audit --prod --audit-level high` en CI (falla con altas/críticas); Dependabot semanal agrupado (npm, pub, actions). Excepción documentada abajo | ✅ CI (issue #18) |
 | T | CI con permisos amplios | `permissions: contents: read` | ✅ |
+
+#**Excepciones de `pnpm audit`** (`package.json` → `pnpm.auditConfig.ignoreGhsas`; revisar en
+cada actualización de dependencias y quitarlas en cuanto haya parche aplicable):
+
+| Aviso | Paquete | Por qué se acepta | Salida |
+|---|---|---|---|
+| GHSA-mrhx-c7xc-m3w5 (alta) | `zod` 3.25 (contratos y validación de toda la API) | Solo hay parche en zod ≥ 4.6.6 (versión mayor, con cambios de API en todos los contratos y en `zod-to-json-schema`). El ataque necesita colecciones enormes en la entrada; los cuerpos JSON están limitados por `body-parser` (100 kB por defecto), así que el consumo de memoria por petición queda acotado; además hay rate limiting por IP | Migrar a zod 4 en un PR propio (contratos + OpenAPI + fixtures móviles) |
+
+Las demás vulnerabilidades altas/críticas transitivas (multer, body-parser, path-to-regexp,
+proxy-addr de `@nestjs/platform-express`; lodash y js-yaml de `@nestjs/swagger`) se corrigen con
+`pnpm.overrides` a la versión parcheada más cercana dentro de la misma mayor; tar y brace-expansion
+desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato de hash `$2b$`).
 
 ### 6.4 App móvil
 
