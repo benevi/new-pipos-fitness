@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 import { loadCatalog } from '@pipos/catalog';
+import { ExerciseDetailSchema } from '@pipos/contracts';
 import { FEATURE_MODULES } from '../../app.module';
 import { setLogSink } from '../../logging/logging';
 import { collectRoutes } from '../../openapi/openapi';
@@ -159,6 +160,33 @@ describe('Observabilidad, GET sin escrituras y catálogo (e2e, Postgres real)', 
       expect((await request(server()).get('/exercises').expect(200)).body.total).toBe(total - 1);
     } finally {
       await ctx.prisma.exercise.update({ where: { id: detail.body.id }, data: { deletedAt: null } });
+    }
+  });
+
+  it('ficha del ejercicio: descripción, errores comunes y medios por id y por slug; retirado → 404', async () => {
+    const source = loadCatalog().find((e) => e.slug === 'press-banca-barra');
+    expect(source).toBeDefined();
+    const bySlug = await request(server()).get('/exercises/press-banca-barra').expect(200);
+    expect(ExerciseDetailSchema.safeParse(bySlug.body).success).toBe(true);
+    expect(bySlug.body).toMatchObject({
+      slug: 'press-banca-barra',
+      descriptionEs: source?.descriptionEs,
+      mistakesEs: source?.mistakesEs,
+      cuesEs: source?.cuesEs,
+      media: [],
+    });
+    const byId = await request(server()).get(`/exercises/${bySlug.body.id}`).expect(200);
+    expect(byId.body).toEqual(bySlug.body);
+
+    await request(server()).get('/exercises/no-existe-este-ejercicio').expect(404);
+    await request(server()).get('/exercises/Press_Banca').expect(400);
+
+    await ctx.prisma.exercise.update({ where: { id: bySlug.body.id }, data: { deletedAt: new Date() } });
+    try {
+      await request(server()).get('/exercises/press-banca-barra').expect(404);
+      await request(server()).get(`/exercises/${bySlug.body.id}`).expect(404);
+    } finally {
+      await ctx.prisma.exercise.update({ where: { id: bySlug.body.id }, data: { deletedAt: null } });
     }
   });
 });

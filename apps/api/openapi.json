@@ -2226,6 +2226,107 @@
             "items": {
               "type": "string"
             }
+          },
+          "descriptionEs": {
+            "type": "string",
+            "nullable": true,
+            "default": null
+          },
+          "mistakesEs": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "anyOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "youtube"
+                      ]
+                    },
+                    "videoId": {
+                      "type": "string",
+                      "pattern": "^[A-Za-z0-9_-]{11}$"
+                    },
+                    "startSeconds": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "endSeconds": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "minimum": 0,
+                      "nullable": true
+                    },
+                    "channelName": {
+                      "type": "string"
+                    },
+                    "locale": {
+                      "type": "string",
+                      "enum": [
+                        "es",
+                        "en"
+                      ]
+                    },
+                    "isPrimary": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "videoId",
+                    "startSeconds",
+                    "endSeconds",
+                    "channelName",
+                    "locale",
+                    "isPrimary"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "kind": {
+                      "type": "string",
+                      "enum": [
+                        "image"
+                      ]
+                    },
+                    "url": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "credit": {
+                      "type": "string"
+                    },
+                    "licence": {
+                      "type": "string"
+                    },
+                    "isPrimary": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "kind",
+                    "url",
+                    "credit",
+                    "licence",
+                    "isPrimary"
+                  ],
+                  "additionalProperties": false
+                }
+              ]
+            },
+            "default": []
           }
         },
         "required": [
@@ -6019,7 +6120,7 @@
         "tags": [
           "catalog"
         ],
-        "summary": "Detalle de un ejercicio",
+        "summary": "Ficha de un ejercicio (por id o por slug)",
         "security": [],
         "parameters": [
           {
@@ -6027,8 +6128,18 @@
             "in": "path",
             "required": true,
             "schema": {
-              "type": "string",
-              "format": "uuid"
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "string",
+                  "minLength": 2,
+                  "maxLength": 96,
+                  "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                }
+              ]
             }
           }
         ],

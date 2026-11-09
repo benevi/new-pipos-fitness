@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 import { z } from 'zod';
 import {
   ExerciseDetailSchema,
+  ExerciseIdOrSlugParamsSchema,
   ExerciseListQuerySchema,
   ExerciseListResponseSchema,
   IdSchema,
@@ -32,9 +33,9 @@ export class CatalogController {
   @Get(':id')
   @Contract({
     tag: 'catalog',
-    summary: 'Detalle de un ejercicio',
+    summary: 'Ficha de un ejercicio (por id o por slug)',
     auth: false,
-    params: IdParamsSchema,
+    params: ExerciseIdOrSlugParamsSchema,
     response: ExerciseDetailSchema,
     errors: [404],
   })
