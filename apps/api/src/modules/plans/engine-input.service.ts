@@ -64,7 +64,7 @@ type HistoryRow = {
   rir: number | null;
   isWarmup: boolean;
   exercise: { slug: string };
-  workoutSession: { startedAt: Date };
+  workoutSession: { startedAt: Date; adjustedMinutes?: number | null; reducedVolume?: boolean };
 };
 
 /** Agrupa series por (entrenamiento, ejercicio) en entradas del historial del motor. */
@@ -74,7 +74,14 @@ export function toTrainingHistory(rows: readonly HistoryRow[], timezone: string)
     const key = `${r.workoutSessionId}:${r.exercise.slug}`;
     let entry = entries.get(key);
     if (!entry) {
-      entry = { date: localDate(r.workoutSession.startedAt, timezone), exerciseId: r.exercise.slug, sets: [] };
+      const adjusted = (r.workoutSession.adjustedMinutes ?? null) !== null || r.workoutSession.reducedVolume === true;
+      entry = {
+        date: localDate(r.workoutSession.startedAt, timezone),
+        exerciseId: r.exercise.slug,
+        sets: [],
+        // Sesión ajustada (idea 4): no cuenta para descargas ni bajadas (PROGRAMACION.md §16.17).
+        ...(adjusted ? { adjusted: true } : {}),
+      };
       entries.set(key, entry);
     }
     entry.sets.push({
@@ -142,7 +149,7 @@ export class EngineInputService {
         rir: true,
         isWarmup: true,
         exercise: { select: { slug: true } },
-        workoutSession: { select: { startedAt: true } },
+        workoutSession: { select: { startedAt: true, adjustedMinutes: true, reducedVolume: true } },
       },
       orderBy: [{ completedAt: 'desc' }, { setIndex: 'asc' }],
       take: HISTORY_MAX_SETS,

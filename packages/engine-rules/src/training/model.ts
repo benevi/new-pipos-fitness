@@ -3,6 +3,7 @@
  */
 import type { engineV2 } from '@pipos/contracts';
 import type { ProgrammingConfig } from '../config/programming.js';
+import { loadImplement } from './load.js';
 
 export type CatalogExercise = engineV2.CatalogExercise;
 export type Profile = engineV2.EngineProfile;
@@ -30,6 +31,8 @@ export interface Ex {
   readonly slug: string;
   readonly pattern: MovementPattern;
   readonly weighted: boolean;
+  /** Material que fija el paso de carga (§16.16); null si no se carga en kg. */
+  readonly implement: engineV2.LoadImplement | null;
   /** Fracción por grupo de volumen = máxima fracción de sus músculos (PROGRAMACION.md §16.1). */
   readonly groups: ReadonlyMap<VolumeGroup, number>;
   readonly muscles: ReadonlyMap<Muscle, number>;
@@ -69,6 +72,7 @@ export function enrich(src: CatalogExercise, config: ProgrammingConfig): Ex {
     slug: src.slug,
     pattern: src.movementPattern,
     weighted: src.loadType === 'weighted',
+    implement: loadImplement(src),
     groups,
     muscles,
     primaryMuscles: primary,

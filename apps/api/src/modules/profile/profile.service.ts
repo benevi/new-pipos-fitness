@@ -61,6 +61,7 @@ export function toProfileResponse(
     heightCm: row.heightCm === null ? null : Number(row.heightCm),
     healthConsent: consent,
     updatedAt: row.updatedAt.toISOString(),
+    trainingWeekdays: [...(row.trainingWeekdays ?? [])].sort((a, b) => a - b),
   };
 }
 
@@ -165,7 +166,14 @@ export class ProfileService {
           );
         }
       }
-      await tx.trainingProfile.upsert({ where: { userId }, create: { userId, ...data }, update: data });
+      // Los días de entreno (PATCH /me/profile/schedule) se conservan salvo que ya no quepan en
+      // los días por semana nuevos: entonces se vacían (idea 6).
+      const weekdays = before?.profile.trainingWeekdays ?? [];
+      await tx.trainingProfile.upsert({
+        where: { userId },
+        create: { userId, ...data },
+        update: { ...data, ...(weekdays.length > input.daysPerWeek ? { trainingWeekdays: [] } : {}) },
+      });
       await tx.userExercisePreference.deleteMany({ where: { userId } });
       const prefs = [
         ...bannedIds.map((exerciseId) => ({ userId, exerciseId, kind: 'banned' as const })),

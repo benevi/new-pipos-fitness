@@ -1,7 +1,12 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
 import type { Response } from 'express';
 import { z } from 'zod';
 import {
+  ExerciseNoteListResponseSchema,
+  ExerciseNoteRequestSchema,
+  ExerciseNoteResponseSchema,
+  OkResponseSchema,
+  type ExerciseNoteRequest,
   FinishWorkoutRequestSchema,
   IdSchema,
   PatchSetRequestSchema,
@@ -10,7 +15,9 @@ import {
   SubstituteExerciseRequestSchema,
   SubstitutesResponseSchema,
   SubstitutionResponseSchema,
+  TodaySessionQuerySchema,
   TodaySessionResponseSchema,
+  type TodaySessionQuery,
   UpsertSetRequestSchema,
   WorkoutResponseSchema,
   type FinishWorkoutRequest,
@@ -24,6 +31,7 @@ import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { IdParamsSchema } from '../catalog/catalog.controller';
+import { NotesService } from './notes.service';
 import { SessionsService } from './sessions.service';
 import { WorkoutsService, type Upserted } from './workouts.service';
 
@@ -42,17 +50,21 @@ export class WorkoutsController {
   constructor(
     private readonly workouts: WorkoutsService,
     private readonly sessions: SessionsService,
+    private readonly notes: NotesService,
   ) {}
 
   @Get('sessions/today')
   @Contract({
     tag: 'workouts',
     summary: 'Sesión de hoy: calentamiento y prescripción con carga sugerida',
+    description:
+      'minutes (15-90) y mode=reduced ajustan la vista de hoy quitando ejercicios enteros de menor prioridad o una serie por ejercicio (PROGRAMACION.md §16.17). Solo lectura: no guarda nada ni crea una versión del plan.',
+    query: TodaySessionQuerySchema,
     response: TodaySessionResponseSchema,
     errors: [404, 409],
   })
-  today(@CurrentUser() user: AuthenticatedUser) {
-    return this.sessions.today(user.id);
+  today(@CurrentUser() user: AuthenticatedUser, @Query() query: TodaySessionQuery) {
+    return this.sessions.today(user.id, query);
   }
 
   @Post('workouts')
@@ -170,5 +182,34 @@ export class WorkoutsController {
   })
   substitutes(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.workouts.substitutesFor(user.id, id);
+  }
+
+  // ── Nota fija por ejercicio (idea 2, ADR-0013) ──
+
+  @Get('me/exercise-notes')
+  @Contract({ tag: 'workouts', summary: 'Mis notas fijas por ejercicio', response: ExerciseNoteListResponseSchema })
+  listNotes(@CurrentUser() user: AuthenticatedUser) {
+    return this.notes.list(user.id);
+  }
+
+  @Put('exercises/:id/note')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Guardar la nota fija de un ejercicio (gana la última escritura por clientUpdatedAt)',
+    description: 'Texto libre (máx. 280). Puede contener datos personales: se exporta, se borra con la cuenta y nunca se registra en logs.',
+    params: IdParamsSchema,
+    body: ExerciseNoteRequestSchema,
+    response: ExerciseNoteResponseSchema,
+    errors: [404],
+  })
+  putNote(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: ExerciseNoteRequest) {
+    return this.notes.put(user.id, id, body);
+  }
+
+  @Delete('exercises/:id/note')
+  @Contract({ tag: 'workouts', summary: 'Borrar la nota fija de un ejercicio (idempotente)', params: IdParamsSchema, response: OkResponseSchema })
+  async deleteNote(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    await this.notes.remove(user.id, id);
+    return { ok: true as const };
   }
 }

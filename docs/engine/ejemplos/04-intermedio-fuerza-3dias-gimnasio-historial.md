@@ -1,6 +1,6 @@
 # Intermedio, fuerza, 3 días × 75 min, gimnasio, con historial
 
-> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.0.0. No editar a mano.
+> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.1.0. No editar a mano.
 
 ## Entrada
 
@@ -52,10 +52,10 @@
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Sentadilla trasera con barra | 3 | 3-6 | 2 | 180 s | 117 kg | 8@50% 5@70% 3@85% | 10.8 |
-| 2 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 96 kg | 8@50% | 8.8 |
-| 3 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92 kg | 8@50% | 8.8 |
-| 4 | Peso muerto convencional con barra | 3 | 6-12 | 2 | 120 s | 147 kg (est.) | — | 6.6 |
+| 1 | Sentadilla trasera con barra | 3 | 3-6 | 2 | 180 s | 115 kg | 8@50% 5@70% 3@85% | 10.8 |
+| 2 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 95 kg | 8@50% | 8.8 |
+| 3 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92.5 kg | 8@50% | 8.8 |
+| 4 | Peso muerto convencional con barra | 3 | 6-12 | 2 | 120 s | 145 kg (est.) | — | 6.6 |
 | 5 | Elevación de talones de pie en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 6 | Curl con barra Z | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 7 | Pájaros en máquina (contractor inverso) | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
@@ -66,10 +66,10 @@
 
 <details><summary>Por qué cada ejercicio</summary>
 
-- **Sentadilla trasera con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 117 kg calculada con tu e1RM de 137 kg (2026-10-22) para 3 reps a RIR 2.
-- **Press de banca con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 96 kg calculada con tu e1RM de 112 kg (2026-10-22) para 3 reps a RIR 2.
-- **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
-- **Peso muerto convencional con barra**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Carga 147 kg calculada con tu e1RM de 186 kg (2026-10-22); en bisagras la fórmula infraestima, tómala como punto de partida.
+- **Sentadilla trasera con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 115 kg calculada con tu e1RM de 137 kg (2026-10-22) para 3 reps a RIR 2.
+- **Press de banca con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 95 kg calculada con tu e1RM de 112 kg (2026-10-22) para 3 reps a RIR 2.
+- **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92.5 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
+- **Peso muerto convencional con barra**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Carga 145 kg calculada con tu e1RM de 186 kg (2026-10-22); en bisagras la fórmula infraestima, tómala como punto de partida.
 - **Elevación de talones de pie en máquina**: Aislamiento para sumar volumen directo de gemelos. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Curl con barra Z**: Aislamiento para sumar volumen directo de bíceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Pájaros en máquina (contractor inverso)**: Aislamiento para sumar volumen directo de hombros. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
@@ -81,9 +81,9 @@
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Peso muerto convencional con barra | 3 | 3-6 | 2 | 180 s | 159 kg (est.) | 8@50% 5@70% 3@85% | 10.8 |
+| 1 | Peso muerto convencional con barra | 3 | 3-6 | 2 | 180 s | 157.5 kg (est.) | 8@50% 5@70% 3@85% | 10.8 |
 | 2 | Press de banca con mancuernas | 3 | 3-6 | 2 | 180 s | 46 kg | 8@50% | 8.8 |
-| 3 | Jalón al pecho en polea | 3 | 3-6 | 2 | 180 s | 86 kg | 8@50% | 8.8 |
+| 3 | Jalón al pecho en polea | 3 | 3-6 | 2 | 180 s | 85 kg | 8@50% | 8.8 |
 | 4 | Sentadilla búlgara con mancuernas | 2 | 6-12 | 2 | 120 s | a elegir | — | 5.1 |
 | 5 | Elevación de talones en máquina Smith (multipower) | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 6 | Elevaciones laterales con mancuernas | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
@@ -95,9 +95,9 @@
 
 <details><summary>Por qué cada ejercicio</summary>
 
-- **Peso muerto convencional con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 159 kg calculada con tu e1RM de 186 kg (2026-10-22); en bisagras la fórmula infraestima, tómala como punto de partida.
+- **Peso muerto convencional con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 157.5 kg calculada con tu e1RM de 186 kg (2026-10-22); en bisagras la fórmula infraestima, tómala como punto de partida.
 - **Press de banca con mancuernas**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 46 kg calculada con tu e1RM de 55 kg (2026-10-22) para 3 reps a RIR 2.
-- **Jalón al pecho en polea**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 86 kg calculada con tu e1RM de 101 kg (2026-10-22) para 3 reps a RIR 2.
+- **Jalón al pecho en polea**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 85 kg calculada con tu e1RM de 101 kg (2026-10-22) para 3 reps a RIR 2.
 - **Sentadilla búlgara con mancuernas**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 2 en reserva.
 - **Elevación de talones en máquina Smith (multipower)**: Aislamiento para sumar volumen directo de gemelos. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Elevaciones laterales con mancuernas**: Aislamiento para sumar volumen directo de hombros. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
@@ -110,9 +110,9 @@
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Sentadilla trasera con barra | 3 | 3-6 | 2 | 180 s | 117 kg | 8@50% 5@70% 3@85% | 10.8 |
-| 2 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 96 kg | 8@50% | 8.8 |
-| 3 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92 kg | 8@50% | 8.8 |
+| 1 | Sentadilla trasera con barra | 3 | 3-6 | 2 | 180 s | 115 kg | 8@50% 5@70% 3@85% | 10.8 |
+| 2 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 95 kg | 8@50% | 8.8 |
+| 3 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92.5 kg | 8@50% | 8.8 |
 | 4 | Peso muerto rumano con barra | 2 | 6-12 | 2 | 120 s | a elegir | — | 4.1 |
 | 5 | Flexiones diamante | 4 | 6-12 | 2 | 120 s | sin kg | — | 9.1 |
 | 6 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
@@ -124,9 +124,9 @@
 
 <details><summary>Por qué cada ejercicio</summary>
 
-- **Sentadilla trasera con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 117 kg calculada con tu e1RM de 137 kg (2026-10-22) para 3 reps a RIR 2.
-- **Press de banca con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 96 kg calculada con tu e1RM de 112 kg (2026-10-22) para 3 reps a RIR 2.
-- **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
+- **Sentadilla trasera con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 115 kg calculada con tu e1RM de 137 kg (2026-10-22) para 3 reps a RIR 2.
+- **Press de banca con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 95 kg calculada con tu e1RM de 112 kg (2026-10-22) para 3 reps a RIR 2.
+- **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92.5 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
 - **Peso muerto rumano con barra**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 2 en reserva.
 - **Flexiones diamante**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 - **Extensión de tríceps sobre la cabeza con mancuerna**: Aislamiento para sumar volumen directo de tríceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.

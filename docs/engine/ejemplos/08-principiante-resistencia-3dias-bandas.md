@@ -1,6 +1,6 @@
 # Principiante, resistencia muscular, 3 días × 40 min, bandas y barra de dominadas
 
-> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.0.0. No editar a mano.
+> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.1.0. No editar a mano.
 
 ## Entrada
 

@@ -18,6 +18,11 @@ export const ExerciseSessionLogSchema = z
     date: IsoDateSchema,
     exerciseId: z.string().min(1),
     sets: z.array(LoggedSetSchema).min(1),
+    /**
+     * Sesión ajustada por el usuario (poco tiempo o volumen reducido; idea 4, ADR-0013). No cuenta
+     * para la descarga reactiva ni para la bajada por rendimiento (PROGRAMACION.md §16.17).
+     */
+    adjusted: z.boolean().optional(),
   })
   .strict();
 export type ExerciseSessionLog = z.infer<typeof ExerciseSessionLogSchema>;

@@ -1,6 +1,6 @@
 # Intermedio, pérdida de grasa, 5 días × 45 min, gimnasio, lesión de hombro
 
-> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.0.0. No editar a mano.
+> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.1.0. No editar a mano.
 
 ## Entrada
 

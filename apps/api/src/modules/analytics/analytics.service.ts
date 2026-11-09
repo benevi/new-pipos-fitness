@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { dateColumn, localDate, weekRange, weekStartOf } from '../../common/time';
+import { plannedSessionsForWeek, type PlannedBreak } from '@pipos/engine-rules';
+import { addDays, dateColumn, fromDateColumn, isoWeekStart, localDate, weekRange, weekStartOf } from '../../common/time';
 import type { TransactionClient } from '../../prisma/prisma.service';
 import {
   bestE1rm,
@@ -113,18 +114,23 @@ export class AnalyticsService {
       });
     }
 
-    const [completedSessions, version] = await Promise.all([
+    const [completedSessions, version, schedule] = await Promise.all([
       tx.workoutSession.count({ where: { ...inWeek, status: 'completed' } }),
       tx.planVersion.findFirst({
         where: { userId, plan: { status: 'active' } },
         orderBy: { version: 'desc' },
         select: { id: true, sessions: { select: { exercises: { select: { sets: true } } } } },
       }),
+      this.scheduleOf(tx, userId, weekStart, addDays(weekStart, 6)),
     ]);
+    // Pausas planificadas (idea 6, PROGRAMACION.md §16.18): sus días no cuentan como previstos.
+    const sessionsPerWeek = version?.sessions.length ?? 0;
+    const totalSets = version?.sessions.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets, 0), 0) ?? 0;
+    const weekPlan = plannedSessionsForWeek(sessionsPerWeek, weekStart, schedule.breaks, schedule.trainingWeekdays);
     const adherence = {
-      plannedSessions: version?.sessions.length ?? 0,
+      plannedSessions: weekPlan.planned,
       completedSessions,
-      plannedSets: version?.sessions.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets, 0), 0) ?? 0,
+      plannedSets: sessionsPerWeek > 0 ? Math.round((totalSets * weekPlan.planned) / sessionsPerWeek) : 0,
       completedSets: sets.length,
       planVersionId: version?.id ?? null,
       computedAt: new Date(),
@@ -134,6 +140,40 @@ export class AnalyticsService {
       create: { userId, weekStart: week, ...adherence },
       update: adherence,
     });
+  }
+
+  /** Pausas que tocan [from, to] y días de entreno del usuario. */
+  async scheduleOf(
+    tx: TransactionClient,
+    userId: string,
+    from: string,
+    to: string,
+  ): Promise<{ breaks: PlannedBreak[]; trainingWeekdays: number[] }> {
+    const [rows, profile] = await Promise.all([
+      tx.trainingBreak.findMany({
+        where: { userId, startsOn: { lte: dateColumn(to) }, endsOn: { gte: dateColumn(from) } },
+        select: { startsOn: true, endsOn: true },
+      }),
+      tx.trainingProfile.findUnique({ where: { userId }, select: { trainingWeekdays: true } }),
+    ]);
+    return {
+      breaks: rows.map((b) => ({ startsOn: fromDateColumn(b.startsOn), endsOn: fromDateColumn(b.endsOn) })),
+      trainingWeekdays: profile?.trainingWeekdays ?? [],
+    };
+  }
+
+  /**
+   * Recalcula la adherencia de las semanas ya calculadas que tocan [from, to] (al crear o borrar
+   * una pausa, o al cambiar los días de entreno). No crea filas para semanas sin actividad.
+   */
+  async recomputeWeeksBetween(tx: TransactionClient, userId: string, from: string, to: string): Promise<number> {
+    const tz = await this.timezoneOf(tx, userId);
+    const rows = await tx.weeklyAdherence.findMany({
+      where: { userId, weekStart: { gte: dateColumn(isoWeekStart(from)), lte: dateColumn(to) } },
+      select: { weekStart: true },
+    });
+    for (const r of rows) await this.recomputeWeek(tx, userId, fromDateColumn(r.weekStart), tz);
+    return rows.length;
   }
 
   /** Reconstruye todas las proyecciones de un usuario desde SetLog (script analytics:rebuild). */

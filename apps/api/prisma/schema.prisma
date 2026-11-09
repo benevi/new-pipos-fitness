@@ -243,6 +243,10 @@ model User {
   weeklyMuscleVolume  WeeklyMuscleVolume[]
   weeklyGroupVolume   WeeklyGroupVolume[]
   weeklyAdherence     WeeklyAdherence[]
+  exerciseNotes       UserExerciseNote[]
+  planOverrides       PlanExerciseOverride[]
+  trainingBreaks      TrainingBreak[]
+  bodyMeasurements    BodyMeasurement[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -289,6 +293,9 @@ model TrainingProfile {
   weightKg          Decimal?       @db.Decimal(5, 2)
   heightCm          Decimal?       @db.Decimal(5, 1)
   // ── datos personales ordinarios ──
+  /// Días de entreno preferidos (ISO 1 = lunes … 7 = domingo), como mucho `daysPerWeek`. No es
+  /// una entrada del motor: solo recordatorio local y «hoy toca» (idea 6, ADR-0013).
+  trainingWeekdays  Int[]          @default([]) @db.SmallInt
   birthYear         Int?           @db.SmallInt
   sex               Sex?
   createdAt         DateTime       @default(now()) @db.Timestamptz(3)
@@ -302,6 +309,70 @@ model UserExercisePreference {
   exercise   Exercise               @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
   kind       ExercisePreferenceKind
   createdAt  DateTime               @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, exerciseId])
+  @@index([exerciseId])
+}
+
+/// Medidas corporales de un día (idea 7, ADR-0013). DATO DE SALUD (art. 9): solo con un
+/// consentimiento que cubra su ámbito; se exporta, se borra con la cuenta y al retirar el
+/// consentimiento, y nunca va a logs. Una fila por día local del usuario (upsert por fecha).
+/// Al menos una medida no nula (CHECK en la migración).
+model BodyMeasurement {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Fecha local del usuario (su zona horaria).
+  measuredOn DateTime @db.Date
+  weightKg   Decimal? @db.Decimal(5, 2)
+  /// Hombres: abdomen a la altura del ombligo; mujeres: parte más estrecha (método de la Marina).
+  waistCm    Decimal? @db.Decimal(5, 1)
+  /// Justo por debajo de la laringe.
+  neckCm     Decimal? @db.Decimal(5, 1)
+  /// Parte más ancha de los glúteos.
+  hipCm      Decimal? @db.Decimal(5, 1)
+  /// A la altura de los pezones, al final de una espiración normal.
+  chestCm    Decimal? @db.Decimal(5, 1)
+  /// Brazo relajado, punto medio entre hombro (acromion) y codo (olécranon).
+  armCm      Decimal? @db.Decimal(5, 1)
+  /// Muslo, punto medio entre ingle y rótula.
+  thighCm    Decimal? @db.Decimal(5, 1)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([userId, measuredOn])
+}
+
+/// Pausa planificada (vacaciones…; idea 6, ADR-0013). Fechas locales del usuario, ambas
+/// incluidas, como mucho 60 días. Sin motivo (sería dato de salud). Excluye sus días de la
+/// adherencia y de la ausencia que baja la carga (PROGRAMACION.md §16.18).
+model TrainingBreak {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Idempotencia offline (ADR-0007).
+  clientId  String   @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startsOn  DateTime @db.Date
+  endsOn    DateTime @db.Date
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, clientId])
+  @@index([userId, startsOn])
+}
+
+/// Nota fija del usuario para un ejercicio (ajustes de máquina, agarre…; idea 2, ADR-0013).
+/// Texto libre: puede contener datos de salud si el usuario los escribe. Va en la exportación,
+/// se borra con la cuenta y nunca se registra en logs (docs/SECURITY.md).
+model UserExerciseNote {
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId      String   @db.Uuid
+  exercise        Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  text            String   @db.VarChar(280)
+  /// Reloj del cliente: última escritura gana (ADR-0007).
+  clientUpdatedAt DateTime @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
 
   @@id([userId, exerciseId])
   @@index([exerciseId])
@@ -364,6 +435,8 @@ model Exercise {
   substitutions WorkoutSubstitution[]
   e1rmHistory   ExerciseE1rm[]
   preferences   UserExercisePreference[]
+  userNotes     UserExerciseNote[]
+  planOverrides PlanExerciseOverride[]
 
   @@index([movementPattern])
   @@index([substitutionGroupId])
@@ -493,8 +566,25 @@ model PlanExercise {
   rationale             Json?
   setLogs               SetLog[]
   substitutions         WorkoutSubstitution[]
+  override              PlanExerciseOverride?
 
   @@unique([planSessionId, order])
+  @@index([exerciseId])
+}
+
+/// Cambio de ejercicio fijado por el usuario para un hueco del plan (idea 3, ADR-0013). La
+/// versión del plan es inmutable: el cambio vive aparte y se hereda al generar la siguiente
+/// versión si sigue siendo válido (motor: resolvePins).
+model PlanExerciseOverride {
+  planExerciseId String       @id @db.Uuid
+  planExercise   PlanExercise @relation(fields: [planExerciseId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId     String       @db.Uuid
+  exercise       Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
   @@index([exerciseId])
 }
 
@@ -503,20 +593,24 @@ model PlanExercise {
 // ─────────────────────────────────────────────────────────────
 
 model WorkoutSession {
-  id            String                @id @default(uuid()) @db.Uuid
-  clientId      String                @db.Uuid
-  userId        String                @db.Uuid
-  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planSessionId String                @db.Uuid
-  planSession   PlanSession           @relation(fields: [planSessionId, userId], references: [id, userId], onDelete: NoAction)
-  status        WorkoutStatus         @default(in_progress)
-  startedAt     DateTime              @db.Timestamptz(3)
-  completedAt   DateTime?             @db.Timestamptz(3)
-  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
-  updatedAt     DateTime              @updatedAt @db.Timestamptz(3)
-  setLogs       SetLog[]
-  substitutions WorkoutSubstitution[]
-  e1rmEntries   ExerciseE1rm[]
+  id              String                @id @default(uuid()) @db.Uuid
+  clientId        String                @db.Uuid
+  userId          String                @db.Uuid
+  user            User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planSessionId   String                @db.Uuid
+  planSession     PlanSession           @relation(fields: [planSessionId, userId], references: [id, userId], onDelete: NoAction)
+  status          WorkoutStatus         @default(in_progress)
+  /// Ajuste elegido al empezar (idea 4, ADR-0013): minutos disponibles (null = sin límite) y
+  /// volumen reducido. Solo el modo, nunca el motivo (no es dato de salud).
+  adjustedMinutes Int?                  @db.SmallInt
+  reducedVolume   Boolean               @default(false)
+  startedAt       DateTime              @db.Timestamptz(3)
+  completedAt     DateTime?             @db.Timestamptz(3)
+  createdAt       DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime              @updatedAt @db.Timestamptz(3)
+  setLogs         SetLog[]
+  substitutions   WorkoutSubstitution[]
+  e1rmEntries     ExerciseE1rm[]
 
   @@unique([userId, clientId])
   @@unique([id, userId])

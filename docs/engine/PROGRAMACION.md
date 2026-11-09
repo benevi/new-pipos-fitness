@@ -763,7 +763,7 @@ Se implementó (60 iteraciones y 40.000 evaluaciones como máximo) y se midió e
 
 ### 16.10 Carga inicial desde el historial
 
-Se usa el e1RM de la **sesión más reciente** con series válidas (1-10 reps efectivas, §9). La carga se calcula para `repMin + RIR` reps efectivas y se redondea **hacia abajo a 1 kg** (`INCREMENTO_MIN_KG`, §7). Si `repMin + RIR > 10`, no se da carga (la fórmula no es fiable) y se marca como estimación.
+Se usa el e1RM de la **sesión más reciente** con series válidas (1-10 reps efectivas, §9). La carga se calcula para `repMin + RIR` reps efectivas y se redondea **hacia abajo al paso real del material** (§16.16; 1 kg si el ejercicio no tiene material de carga). Si `repMin + RIR > 10`, no se da carga (la fórmula no es fiable) y se marca como estimación.
 
 ### 16.11 Nutrición
 
@@ -790,3 +790,104 @@ El plan se versiona en mesociclos de **6 semanas**, igual a `DELOAD_CADA_SEMANAS
 ### 16.15 Afinidad en la selección de ejercicios
 
 Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`. Para llegar al suelo de un grupo, el relleno puede usar como último recurso una sesión de otros grupos (p. ej. gemelos al final del día de tirón).
+
+### 16.16 Incrementos reales por material y discos
+
+**Problema que resuelve.** Redondear todo a 1 kg proponía pesos que no existen (23 kg en mancuernas que van de 2 en 2, 47 kg en una máquina de placas de 5 kg). Va contra «nada falso» y contra la ejecución. Origen: idea 1 de `docs/IDEAS_EL_PLAN.md` (calculadora de discos de una app previa, adaptada).
+
+**Fuente y confianza.** No hay estudio que fije estos pasos: son `INCREMENTO_MIN_KG` de §7 («el siguiente peso disponible») concretado con el material típico de un gimnasio. **Decisión de diseño, heurística, confianza baja.** Los valores viven en `PROGRAMMING.load` (`heuristic: true`).
+
+| material (`loadImplement`) | paso (kg totales) | barra vacía |
+|---|---|---|
+| `barbell` | 2,5 (2 discos de 1,25) | 20 |
+| `trap_bar` | 2,5 | 25 |
+| `ez_bar` | 2,5 | 10 |
+| `smith_machine` | 2,5 | — (varía; no se desglosa) |
+| `dumbbell` | 2 (por mancuerna: el siguiente par disponible) | — |
+| `kettlebell` | 4 | — |
+| `machine` | 5 (placas del selector) | — |
+| `cable` | 2,5 | — |
+| `weight_plate` | 2,5 | — |
+
+Discos disponibles por defecto: 25, 20, 15, 10, 5, 2,5 y 1,25 kg.
+
+**Reglas.**
+1. El material de carga de un ejercicio con peso se deduce de su `equipment` con prioridad fija: barra > trap bar > barra EZ > multipower > mancuerna > kettlebell > máquina > polea > disco. Un test del catálogo exige que todo ejercicio `weighted` tenga uno.
+2. Carga inicial (§16.10) y series de aproximación (§16.5): **hacia abajo** al paso. En barra, la aproximación nunca baja de la barra vacía.
+3. Subida de carga (§7): el incremento es `max(INCREMENTO_CARGA_PCT × carga, paso)` y el resultado se redondea **hacia arriba** al siguiente múltiplo del paso.
+4. Bajada reactiva y vuelta tras pausa (§16.9): **hacia abajo** al paso, sin llegar a 0.
+5. Si la subida supera el **10 %** de la carga (p. ej. mancuernas de 8 a 10 kg, +25 %), la explicación avisa del salto. La regla de doble progresión no cambia.
+6. Desglose de discos (`plateBreakdown`): voraz de mayor a menor por lado; si no cuadra, se informa de los kg que sobran (`remainderKg`). Solo para barras con peso de barra conocido.
+
+Propiedad comprobada con fast-check: toda carga propuesta por la subida, la bajada o la vuelta tras pausa es múltiplo del paso del material.
+
+Fuera de alcance: microdiscos y pasos propios por usuario (`TrainingProfile.loadSteps`), anotado como LATER.
+
+### 16.17 Ajuste de la sesión de hoy: poco tiempo o volumen reducido
+
+Origen: idea 4 de `docs/IDEAS_EL_PLAN.md` (una app previa recortaba ejercicios del final con cortes fijos del 66 % y 50 % y subía series un 15 % con «energía alta»; se adapta sin esos cortes ni esa subida). Función pura `adjustSession`; no crea una versión del plan.
+
+**Poco tiempo** (`availableMinutes`, 15-90; incluye el calentamiento general):
+1. Se quitan ejercicios **enteros** por prioridad inversa de §6: core → accesorio → secundario; dentro de cada rol, del último al primero. **Nunca** el principal.
+2. Se para en cuanto la estimación de §8 cabe en el tiempo.
+3. Si con solo los principales sigue sin caber, cada principal baja una serie (del último al primero, mínimo 2) hasta caber; si aun así no cabe, se avisa.
+
+Apoyo: el volumen **semanal** es lo que más pesa en la hipertrofia (§1) y los multiarticulares van primero (§6). El criterio de descarte en sí es **heurístico, confianza baja**.
+
+**Volumen reducido** (opción voluntaria, nunca sugerida por un cuestionario de energía ni de sueño):
+- una serie menos por ejercicio (mínimo 2 en principal y secundarios, 1 en el resto);
+- RIR objetivo + 1;
+- sin subida de carga ese día (si tocaba subir, se mantiene la carga: `hold`).
+
+Apoyo: la autorregulación por RIR es eficaz (Graham y Cleather 2021; Helms 2018; §7, confianza media). Que reducir series por una escala de energía mejore los resultados **no tiene evidencia**: por eso no se pregunta por la energía y el usuario elige el modo. **No se adopta** subir series con «energía alta» (puede superar el techo de volumen de §1).
+
+**Progresión.** Las sesiones ajustadas (`ExerciseSessionLog.adjusted`) no cuentan para la descarga reactiva ni para la bajada por rendimiento (§7, §16.9): un día flojo elegido no provoca una descarga. Siguen contando para la carga actual y para la ausencia de §16.9.
+
+**Propiedades comprobadas** (fast-check): nunca se quita un principal; nunca aumenta el número de ejercicios ni de series; el resultado cabe en el tiempo o lo avisa; es determinista; con volumen reducido no sube la carga.
+
+| constante | valor | fuente | confianza |
+|---|---|---|---|
+| `adjust.dropOrder` | core, accesorio, secundario | §6 (orden inverso) | baja (heurística) |
+| `adjust.minMinutes` / `maxMinutes` | 15 / 90 | rango de `minutesPerSession` | baja (heurística) |
+| `adjust.minMainSets` | 2 | §16.3 `series.min` | baja (heurística) |
+| `adjust.reducedSetsDelta` | 1 | diseño | baja (heurística) |
+| `adjust.reducedExtraRir` | 1 | diseño; autorregulación §7 | baja (heurística) |
+
+### 16.18 Días de entreno y pausas planificadas
+
+Origen: idea 6 de `docs/IDEAS_EL_PLAN.md` (una app previa tenía «plan semanal por días» y «modo vacaciones» para congelar la racha). Aquí no hay rachas: la pausa sirve para que la adherencia no muestre un 0 % falso («nada falso»).
+
+- **Días de entreno** (`trainingWeekdays`, 1 = lunes … 7 = domingo, como mucho tantos como `daysPerWeek`): no son una entrada del motor. El plan sigue el orden del microciclo (CUJ-5); los días solo sirven para el recordatorio **local** del móvil y para decir «hoy no está entre tus días». Sin días elegidos, se usan los días por defecto del plan (§16.13).
+- **Pausa planificada** (inicio y fin, ambos incluidos, como mucho 60 días; sin motivo, porque «enfermedad» sería un dato de salud):
+  - **Adherencia:** las sesiones previstas de una semana descuentan los días en pausa. Con días elegidos (tantos como sesiones), se cuentan los elegidos fuera de pausa; sin ellos, `round(sesiones × días_sin_pausa / 7)`. El reparto proporcional es **heurístico, confianza baja**.
+  - **Ausencia ≥ 14 días (§16.9):** los días en pausa planificada **no cuentan** como ausencia: tras una pausa avisada no se aplica la bajada automática del 10 %. Es una **decisión de producto** (la pausa es intencionada y avisada; el RIR objetivo de cada serie sigue autorregulando la carga, §7). **No hay evidencia** de que esta excepción sea mejor que bajar la carga: confianza baja. Si la ausencia sin contar la pausa sigue siendo ≥ 14 días, la bajada se aplica igual.
+  - La descarga programada no se mueve (anclar `weeksSinceDeload` al final de una pausa queda anotado en DEUDA_TECNICA).
+
+Constantes: `PAUSA_MAX_DIAS = 60` (contrato de la API; diseño, baja).
+
+### 16.19 Medidas corporales: tendencia de peso, IMC y % de grasa estimado
+
+Origen: idea 7 (ADR-0013; decisión de producto). Son **datos de salud** (art. 9): solo con el consentimiento vigente que los cubra (versión `health-2026-12`). Ninguna regla del motor de entrenamiento los usa: son de seguimiento. Todos los textos dicen «estimación», «no es un diagnóstico» y remiten a un profesional.
+
+**Tendencia de peso** (`weightTrend`):
+- Media móvil de **7 días** para mostrar (heurística, baja).
+- Ritmo semanal = pendiente de mínimos cuadrados de los pesos de las **últimas 4 semanas** × 7 / peso medio, en % (heurística, baja; §11 regla 6 pide recalibrar con la tendencia real cada 2-3 semanas).
+- Datos insuficientes: menos de **4 registros** o menos de **14 días** entre el primero y el último de la ventana (heurística, baja).
+- Objetivo por meta (§11.5): pérdida de grasa **0,5-1 %/semana** (Helms 2014; Garthe 2011; confianza media-alta); hipertrofia **0,25-0,5 %/semana** (Iraki et al. 2019, cifra de resúmenes secundarios **[NO VERIFICADO textualmente]**, confianza baja). Fuerza, salud general y resistencia **no fijan ritmo** (`no_target`): no se inventa uno.
+- Estados: `on_track`, `too_fast`, `too_slow`, `no_target`, `insufficient_data`.
+
+**IMC** (`bmi`): kg/m², con las categorías de **adultos** de la OMS: < 18,5 bajo peso; 18,5-24,9 normal; 25-29,9 sobrepeso (preobesidad); 30-34,9 obesidad I; 35-39,9 obesidad II; ≥ 40 obesidad III.
+- Fuente: World Health Organization. *Obesity: preventing and managing the global epidemic. Report of a WHO consultation.* WHO Technical Report Series 894. Ginebra: OMS; 2000. Confianza **alta** en los cortes como convención poblacional. La cita no se ha releído en esta sesión (se cita de memoria).
+- Límites: no distingue músculo de grasa (en quien entrena fuerza puede sobrestimar la grasa); en poblaciones asiáticas se proponen cortes más bajos (WHO Expert Consultation, *Lancet* 2004;363:157-163); antes de los 18 años no se dan categorías (se usan percentiles).
+
+**% de grasa estimado** (`navyBodyFat`), método de circunferencias de la Marina de EE. UU.:
+- Hodgdon JA, Beckett MB. *Prediction of percent body fat for U.S. Navy men from body circumferences and height.* Naval Health Research Center, Report No. 84-11; 1984. Y *… for U.S. Navy women …*, Report No. 84-29; 1984. Conversión de densidad a % con Siri (1961): `% = 495 / D − 450`.
+- Hombres: `D = 1,0324 − 0,19077·log10(abdomen − cuello) + 0,15456·log10(altura)` (cm; abdomen a la altura del ombligo).
+- Mujeres: `D = 1,29579 − 0,35004·log10(cintura + cadera − cuello) + 0,22100·log10(altura)` (cm; cintura en su parte más estrecha, cadera en la más ancha).
+- Comprobación: la forma en pulgadas que reproduce el Departamento de Defensa (hombres `86,010·log10(abdomen − cuello) − 70,041·log10(altura) + 36,76`) da el mismo resultado con menos de 1 punto de diferencia en rangos realistas (test con fast-check).
+- Solo para sexo hombre o mujer (otro valor o sin dato: `not_applicable`). Entradas inválidas (cintura ≤ cuello, faltan medidas o resultado fuera de 2-60 %): `invalid_input`.
+- Error: **no he podido verificar** una cifra de error de validación en esta sesión. Se dice «error típico de varios puntos porcentuales», sin número (heurística). Confianza **media** en la fórmula, **baja** en su exactitud individual.
+- **No se dan categorías de % de grasa** (rangos tipo ACE): no tienen una fuente con la solidez de la OMS para el IMC.
+
+**Otros perímetros** (pecho, brazo y muslo): solo seguimiento (último valor y cambio a 4 y 12 semanas). Ninguna regla los usa ni hay umbrales.
+

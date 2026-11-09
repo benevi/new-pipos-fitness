@@ -9,6 +9,9 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { AuthService } from '../auth/auth.service';
 import { planVersionInclude, toVersionResponse } from '../plans/plan-mapper';
 import { ProfileService } from '../profile/profile.service';
+import { toMeasurementResponse } from '../profile/measurements.service';
+import { toBreakResponse } from '../profile/schedule.service';
+import { toNoteResponse } from '../workouts/notes.service';
 import { toWorkoutResponse, workoutInclude } from '../workouts/workout-mapper';
 
 /**
@@ -34,7 +37,7 @@ export class AccountService {
 
   /** Todos los datos del usuario (sin passwordHash ni hashes de tokens). Solo lectura. */
   async export(userId: string): Promise<AccountExport> {
-    const [user, profile, consentEvents, plans, workouts, e1rm, volume, adherence] = await Promise.all([
+    const [user, profile, consentEvents, plans, workouts, e1rm, volume, adherence, notes, breaks, measurements] = await Promise.all([
       this.me(userId),
       this.profiles.find(userId),
       this.prisma.consentEvent.findMany({ where: { userId }, orderBy: { occurredAt: 'asc' } }),
@@ -51,6 +54,13 @@ export class AccountService {
       }),
       this.prisma.weeklyMuscleVolume.findMany({ where: { userId }, orderBy: [{ weekStart: 'asc' }, { muscle: 'asc' }] }),
       this.prisma.weeklyAdherence.findMany({ where: { userId }, orderBy: { weekStart: 'asc' } }),
+      this.prisma.userExerciseNote.findMany({
+        where: { userId },
+        orderBy: { exerciseId: 'asc' },
+        include: { exercise: { select: { slug: true } } },
+      }),
+      this.prisma.trainingBreak.findMany({ where: { userId }, orderBy: [{ startsOn: 'asc' }, { id: 'asc' }] }),
+      this.prisma.bodyMeasurement.findMany({ where: { userId }, orderBy: { measuredOn: 'asc' } }),
     ]);
     return {
       formatVersion: 1,
@@ -75,6 +85,9 @@ export class AccountService {
         })),
       })),
       workouts: workouts.map(toWorkoutResponse),
+      exerciseNotes: notes.map(toNoteResponse),
+      trainingBreaks: breaks.map(toBreakResponse),
+      bodyMeasurements: measurements.map(toMeasurementResponse),
       analytics: {
         e1rm: e1rm.map((r) => ({
           exerciseId: r.exerciseId,

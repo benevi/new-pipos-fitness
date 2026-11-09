@@ -36,14 +36,13 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   `PlanVersion`) que la app envíe; o devolver la última versión si su `inputSnapshot` es idéntico
   y se creó hace < 10 s. Ojo: hay un e2e que espera dos versiones con dos generaciones simultáneas.
 
-### [Motor] Redondear la carga a los incrementos reales del material (mancuernas, máquinas)
-- **Severidad:** Media
-- **Impacto:** el motor redondea todas las cargas a 1 kg (`e1rm.loadRoundingKg`); con mancuernas
-  (saltos de 2–2,5 kg) o máquinas de placas propone pesos que no existen (PROGRAMACION §7,
-  `INCREMENTO_MIN_KG`: «mancuernas: el siguiente peso disponible»).
-- **Propuesta:** incremento por tipo de material en el catálogo o en la configuración
-  (`barbell` 2,5 kg en total, `dumbbell` 2 kg, `machine` 5 kg), aplicado al subir carga y a las
-  cargas iniciales; test de propiedad «la carga propuesta es múltiplo del incremento».
+### ~~[Motor] Redondear la carga a los incrementos reales del material (mancuernas, máquinas)~~ — RESUELTO
+- **Estado:** resuelto con ADR-0013 (idea 1); cierra el issue #12.
+- **Qué se hizo:** paso de carga por material en `PROGRAMMING.load` (barra 2,5 kg en total,
+  mancuernas 2 kg, kettlebell 4 kg, máquina 5 kg…; heurística, PROGRAMACION §16.16), aplicado a
+  cargas iniciales, aproximaciones, subidas (al siguiente peso disponible, con aviso si el salto
+  supera el 10 %) y bajadas; desglose de discos por lado en la sesión de hoy. Test de propiedad
+  «la carga propuesta es múltiplo del paso del material».
 
 ### [API] Estado `abandoned` sin flujo: un entreno en curso olvidado bloquea los siguientes
 - **Severidad:** Media
@@ -98,6 +97,40 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 - **Propuesta:** solo si hubiera datos previos: migración que marque como `health` las notas que
   empiecen por «Precaución por tu limitación» / «Por tu limitación» y los avisos con
   `data.reason = 'limitation'`.
+
+### [Motor] Pasos de carga propios del usuario (microdiscos, mancuernas de 1 kg)
+- **Severidad:** Baja
+- **Impacto:** el paso por material es el típico de un gimnasio (ADR-0013, idea 1); quien tenga
+  microdiscos o mancuernas de 1 en 1 recibe saltos mayores de lo necesario.
+- **Propuesta:** `TrainingProfile.loadSteps Json?` opcional que sustituya a `PROGRAMMING.load` por
+  material, con el mismo test de propiedad.
+
+### [API] La adherencia de una sesión ajustada cuenta las series del plan completo
+- **Severidad:** Baja
+- **Impacto:** con «poco tiempo» o «volumen reducido» (ADR-0013, idea 4) las series previstas de
+  la semana siguen siendo las del plan, así que la adherencia de series baja aunque el usuario hizo
+  todo lo que eligió.
+- **Propuesta:** guardar las series previstas ajustadas al empezar el entreno y usarlas en
+  `recomputeWeek`.
+
+### [API] Ejercicios quitados por el ajuste de hoy con series ya registradas
+- **Severidad:** Baja
+- **Impacto:** si se registran series de un ejercicio y después se aplica un ajuste que lo quita,
+  `GET /sessions/today` deja de mostrarlo (las series siguen guardadas y cuentan).
+- **Propuesta:** no quitar nunca un ejercicio con series registradas en el entreno en curso.
+
+### [Motor] Anclar la descarga programada al final de una pausa planificada
+- **Severidad:** Baja
+- **Impacto:** tras una pausa de 7 días o más (ADR-0013, idea 6) la descarga programada puede caer
+  poco después de volver. Se cruza con «La descarga reactiva no reinicia el ciclo».
+- **Propuesta:** reiniciar `weeksSinceDeload` al terminar una pausa de 7 días o más.
+
+### [RGPD] DPIA: medidas corporales, estimaciones derivadas y notas de texto libre
+- **Severidad:** Media (bloquea el lanzamiento público junto con la DPIA pendiente)
+- **Impacto:** ADR-0013 añade medidas corporales (peso y perímetros), IMC y % de grasa estimado
+  (art. 9) y notas de texto libre que podrían contener datos de salud.
+- **Propuesta:** incluirlos en la DPIA y en el registro de actividades; revisión legal del texto
+  `health-2026-11-v2` del consentimiento. La idea 5 (dolor) necesitará otra versión del texto.
 
 ## App móvil
 

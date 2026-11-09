@@ -78,6 +78,7 @@ Fronteras de confianza:
 | `POST /plans/generate`, `GET /plans/current`, `GET /plans/versions[/:id]` | JWT | Generar: 10 req/min; recursos de otro usuario → 404 |
 | `GET /sessions/today`, `POST /workouts`, `GET /workouts/:id`, `POST/PATCH/DELETE /workouts/:id/sets[/:clientId]`, `POST /workouts/:id/finish`, `POST /workouts/:id/exercises/:planExerciseId/substitute`, `GET /exercises/:id/substitutes` | JWT | Idempotencia por `clientId`; propiedad en servicio + FK compuestas `(id, userId)` en BD |
 | `GET /progress/e1rm`, `/progress/volume`, `/progress/adherence` | JWT | Solo leen tablas resumen (e2e: ningún GET escribe) |
+| ADR-0013: `PUT/DELETE /exercises/:id/note`, `GET /me/exercise-notes`, `PUT/DELETE /plans/current/exercises/:planExerciseId/override`, `PATCH /me/profile/schedule`, `GET/POST/DELETE /me/breaks`, `GET/PUT /me/measurements`, `DELETE /me/measurements/:date`, `GET /progress/body`, `GET /sessions/today?minutes=&mode=` | JWT | Todo filtrado por `userId` (otro usuario → 404 o sin efecto); medidas solo con el ámbito del consentimiento (409 `HEALTH_CONSENT_REQUIRED`); pausas idempotentes por `clientId`; los GET no escriben (e2e) |
 | `GET /exercises`, `GET /exercises/:id` | No | Catálogo de solo lectura, paginado (`pageSize ≤ 100`) |
 | `GET /health`, `GET /health/ready` | No | 60 req/min; `ready` comprueba Postgres (503 si falla) |
 | `GET /docs` (Swagger desde los contratos) | No | **Solo** si `NODE_ENV !== 'production'` |
@@ -159,6 +160,9 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 |---|---|---|---|
 | `TrainingProfile.limitations`, `weightKg`, `heightCm` | **Restringido** | Sí — salud (art. 9) | RGPD art. 9, LOPDGDD |
 | `PlanVersion.inputSnapshot` (copia del perfil) y explicaciones derivadas de la limitación (`healthNotes`, avisos `health: true`, notas `{ text, health: true }` de cada ejercicio) | **Restringido** | Sí — salud | RGPD art. 9 |
+| `BodyMeasurement` (peso y perímetros de cintura, cuello, cadera, pecho, brazo y muslo) y lo que se deriva al leer en `GET /progress/body` (tendencia de peso, IMC, % de grasa estimado) — ADR-0013 | **Restringido** | Sí — salud | RGPD art. 9 (ámbitos `weight`, `body_measurements` y `derived_estimates` del consentimiento) |
+| `UserExerciseNote.text` (nota fija por ejercicio, texto libre) — ADR-0013 | **Restringido** (por precaución) | Sí; **puede contener datos de salud** si el usuario los escribe | RGPD; riesgo residual en la DPIA |
+| `TrainingBreak` (fechas de pausa, sin motivo), `TrainingProfile.trainingWeekdays`, `PlanExerciseOverride`, ajuste de la sesión (`WorkoutSession.adjustedMinutes`, `reducedVolume`) — ADR-0013 | Confidencial | Sí | RGPD (no se guarda ningún motivo: sería dato de salud) |
 | Resto del perfil, preferencias, planes, entrenos, series, analítica | Confidencial | Sí | RGPD |
 | `User.email`, `emailNormalized` | Confidencial | Sí | RGPD |
 | `ConsentEvent` (acción, versión, hash del texto, idioma, fecha) | Confidencial | Sí | RGPD (prueba del consentimiento) |
@@ -187,6 +191,7 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 | Consentimiento explícito, versionado (versión + SHA-256 del texto), registrado append-only antes de aceptar datos de salud | ✅ (`ConsentEvent`, e2e) |
 | Retirada del consentimiento: en una transacción borra limitaciones/peso/altura, redacta `inputSnapshot` de todas las versiones, **borra las explicaciones derivadas de la limitación** de todas las versiones y ejercicios, y regenera el plan sin ellos | ✅ e2e (Fase 5: versión antigua, `/me/export` y BD sin rastro de la zona) |
 | Acceso/portabilidad: `GET /me/export` (JSON con todo, sin hashes) | ✅ e2e |
+| ADR-0013: consentimiento por ámbitos (`health-2026-11-v2` cubre perímetros y estimaciones; la versión anterior solo peso, altura y limitaciones); la retirada borra `BodyMeasurement`; notas, pausas, cambios fijados y medidas en la exportación y en `DELETE /me` | ✅ e2e (`ideas.e2e-spec.ts`) |
 | Supresión: `DELETE /me` con contraseña; borrado real en cascada | ✅ e2e (0 filas del usuario) |
 | Minimización: sin IP ni user-agent | ✅ (Fase 5) |
 | Política de privacidad y texto legal del consentimiento revisados por un jurista | ⏳ antes de producción |
@@ -203,6 +208,13 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 - **Access token válido hasta caducar** (15 min) tras logout/revocación; el rol y la
   existencia del usuario sí se comprueban en BD en cada petición.
 - **Enumeración de emails** por el 409 del registro, mitigada solo por rate limiting.
+- **Notas de texto libre** (`UserExerciseNote`, ADR-0013): el usuario podría escribir datos de salud
+  («me duele la rodilla»). No se pide consentimiento del art. 9 porque la finalidad no es tratar
+  salud. Mitigación: la ayuda orienta a ajustes de máquina y agarre, límite de 280 caracteres,
+  se incluyen en la exportación y en el borrado y **nunca se registran en logs** (los logs no
+  guardan cuerpos de petición). Anotado para la DPIA.
+- **Estimaciones corporales** (IMC, % de grasa; ADR-0013): se presentan como estimación, con sus
+  límites y «no es un diagnóstico»; no se dan categorías de % de grasa.
 - **Base local del móvil sin cifrar** (sandbox de la app; excluida de las copias de seguridad).
 - **Historial de git** conserva binarios antiguos (`.tools/`), sin secretos; no se reescribe.
 - Los textos de las explicaciones de planes **anteriores a la Fase 5** no marcaban los

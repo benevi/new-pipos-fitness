@@ -64,7 +64,14 @@ export class WorkoutsService {
     try {
       // La FK compuesta (planSessionId, userId) impide en BD apuntar a la sesión de otro usuario.
       const created = await this.prisma.workoutSession.create({
-        data: { userId, clientId: input.clientId, planSessionId: input.planSessionId, startedAt: new Date(input.startedAt) },
+        data: {
+          userId,
+          clientId: input.clientId,
+          planSessionId: input.planSessionId,
+          startedAt: new Date(input.startedAt),
+          adjustedMinutes: input.adjustment?.availableMinutes ?? null,
+          reducedVolume: input.adjustment?.reducedVolume ?? false,
+        },
         include: workoutInclude,
       });
       return { value: toWorkoutResponse(created), created: true };
@@ -206,34 +213,42 @@ export class WorkoutsService {
     this.assertInProgress(workout.status);
     const slot = await this.prisma.planExercise.findFirst({
       where: { id: planExerciseId, planSessionId: workout.planSessionId },
-      select: { id: true, exercise: { select: { id: true, slug: true, nameEs: true } } },
+      select: {
+        id: true,
+        exercise: { select: { id: true, slug: true, nameEs: true } },
+        override: { select: { exercise: { select: { id: true, slug: true, nameEs: true } } } },
+      },
     });
     if (!slot) throw ApiError.notFound('Plan exercise not found in this workout');
 
-    if (exerciseId === slot.exercise.id) {
-      // Volver al ejercicio original deshace el cambio.
+    // Lo que toca por defecto en este hueco: el cambio fijado del plan (idea 3) o el original.
+    const byDefault = slot.override?.exercise ?? slot.exercise;
+    if (exerciseId === byDefault.id) {
+      // Volver al ejercicio por defecto deshace el cambio puntual.
       await this.prisma.workoutSubstitution.deleteMany({ where: { workoutSessionId: workoutId, planExerciseId } });
-      return { workoutId, planExerciseId, exercise: slot.exercise, substitutedFrom: slot.exercise };
+      return { workoutId, planExerciseId, exercise: byDefault, substitutedFrom: slot.exercise };
     }
-    const allowed = await this.substitutesFor(userId, slot.exercise.id, SUBSTITUTE_VALIDATION_LIMIT);
-    const target = allowed.substitutes.find((s) => s.exerciseId === exerciseId);
-    if (!target) {
-      throw ApiError.validation(
-        [{ path: 'body.exerciseId', message: 'Not a valid substitute for your profile' }],
-        'Exercise is not a valid substitute',
-      );
+    let target: { id: string; slug: string; nameEs: string };
+    if (exerciseId === slot.exercise.id) {
+      // Con un cambio fijado, hoy se puede volver al ejercicio original del plan.
+      target = slot.exercise;
+    } else {
+      const allowed = await this.substitutesFor(userId, slot.exercise.id, SUBSTITUTE_VALIDATION_LIMIT);
+      const found = allowed.substitutes.find((s) => s.exerciseId === exerciseId);
+      if (!found) {
+        throw ApiError.validation(
+          [{ path: 'body.exerciseId', message: 'Not a valid substitute for your profile' }],
+          'Exercise is not a valid substitute',
+        );
+      }
+      target = { id: found.exerciseId, slug: found.slug, nameEs: found.nameEs };
     }
     await this.prisma.workoutSubstitution.upsert({
       where: { workoutSessionId_planExerciseId: { workoutSessionId: workoutId, planExerciseId } },
       create: { userId, workoutSessionId: workoutId, planExerciseId, exerciseId },
       update: { exerciseId },
     });
-    return {
-      workoutId,
-      planExerciseId,
-      exercise: { id: target.exerciseId, slug: target.slug, nameEs: target.nameEs },
-      substitutedFrom: slot.exercise,
-    };
+    return { workoutId, planExerciseId, exercise: target, substitutedFrom: slot.exercise };
   }
 
   private replayStart(existing: Parameters<typeof toWorkoutResponse>[0], input: StartWorkoutRequest): Upserted<WorkoutResponse> {
@@ -274,8 +289,8 @@ export class WorkoutsService {
   }
 
   /**
-   * La serie de un hueco del plan solo puede ser del ejercicio del hueco o del de su sustitución
-   * registrada en este entrenamiento (CUJ-4). Se admite el original aunque haya sustitución:
+   * La serie de un hueco del plan solo puede ser del ejercicio del hueco, del de su sustitución
+   * registrada en este entrenamiento (CUJ-4) o del cambio fijado del plan (idea 3). Se admite el original aunque haya sustitución:
    * la cola offline puede entregar tarde series hechas antes del cambio.
    */
   private async assertExerciseUsable(
@@ -290,12 +305,21 @@ export class WorkoutsService {
     if (planExerciseId === null) return;
     const slot = await tx.planExercise.findFirst({
       where: { id: planExerciseId, planSessionId },
-      select: { exerciseId: true, substitutions: { where: { workoutSessionId: workoutId }, select: { exerciseId: true } } },
+      select: {
+        exerciseId: true,
+        substitutions: { where: { workoutSessionId: workoutId }, select: { exerciseId: true } },
+        override: { select: { exerciseId: true } },
+      },
     });
     if (!slot) {
       throw ApiError.validation([{ path: 'body.planExerciseId', message: 'Plan exercise does not belong to this workout' }]);
     }
-    const allowed = new Set([slot.exerciseId, ...slot.substitutions.map((s) => s.exerciseId)]);
+    // También el cambio fijado del plan (idea 3).
+    const allowed = new Set([
+      slot.exerciseId,
+      ...slot.substitutions.map((s) => s.exerciseId),
+      ...(slot.override ? [slot.override.exerciseId] : []),
+    ]);
     if (!allowed.has(exerciseId)) {
       throw ApiError.validation([
         { path: 'body.exerciseId', message: 'Exercise is neither the planned one nor its recorded substitution' },

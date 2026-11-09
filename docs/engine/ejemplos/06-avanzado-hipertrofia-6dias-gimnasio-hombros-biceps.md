@@ -1,6 +1,6 @@
 # Avanzado, hipertrofia, 6 días × 90 min, gimnasio, prioridad deltoides lateral y bíceps
 
-> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.0.0. No editar a mano.
+> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.1.0. No editar a mano.
 
 ## Entrada
 

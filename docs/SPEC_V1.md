@@ -45,7 +45,7 @@ La mayoría de quienes entrenan fuerza sin entrenador siguen rutinas genéricas 
 | Generación de plan determinista | Mismo input → mismo plan. Cumple todos los invariantes de `docs/engine/PROGRAMACION.md`. Menos de 200 ms. Explicación por plan, sesión y ejercicio en castellano. |
 | Sesión de hoy | Calentamiento, series objetivo (reps, RIR, descanso, carga sugerida o «estimación inicial»), temporizador de descanso, registro de reps, carga y RIR, sustituir ejercicio. |
 | Registro offline-first | Cola local persistente; sincronización idempotente por UUID de cliente; sobrevive al cierre de la app. |
-| Progresión | Doble progresión, autorregulación por RIR, deload programado y reactivo, ajuste tras ausencia de 14 días o más. |
+| Progresión | Doble progresión, autorregulación por RIR, deload programado y reactivo, ajuste tras ausencia de 14 días o más. Las cargas propuestas son pesos que existen con el material (paso por material y discos por lado; ADR-0013, idea 1). |
 | Sustitución | 3 alternativas ordenadas que respetan patrón, músculos, material y limitaciones. |
 | Nueva versión de plan | Al cambiar el perfil se crea una versión nueva; la anterior y el historial se conservan. |
 | Progreso | e1RM por ejercicio, series semanales por grupo frente al rango objetivo y adherencia, calculados al escribir. |
@@ -54,7 +54,14 @@ La mayoría de quienes entrenan fuerza sin entrenador siguen rutinas genéricas 
 
 ### P1 (mejora clara, siguiente iteración)
 - Objetivos nutricionales diarios (tarjeta en ajustes), si se confirma ADR-0004.
-- Recordatorio local del día de entreno (notificación del dispositivo, sin servidor).
+- Recordatorio local del día de entreno (notificación del dispositivo, sin servidor). La API ya expone los días elegidos (`PATCH /me/profile/schedule`, ADR-0013).
+- **Ideas recuperadas (ADR-0013; API hecha, app pendiente):**
+  - nota fija por ejercicio (ajustes de máquina, agarre);
+  - cambio de ejercicio permanente dentro del plan, heredado en las versiones siguientes;
+  - ajuste de hoy: poco tiempo o volumen reducido, sin crear versión del plan (CUJ-9);
+  - pausas planificadas que no cuentan en la adherencia ni como ausencia;
+  - medidas corporales con tendencia de peso, IMC (OMS) y % de grasa estimado, con el consentimiento que las cubra (CUJ-10; el progreso para pérdida de grasa amplía CUJ-7).
+- Monitor de dolor por zona y ejercicio: aplazado hasta tener texto de consentimiento, DPIA y revisión legal (ADR-0013).
 - Gráficas de tendencia de e1RM.
 - Inglés completo (el castellano es el idioma principal desde el día 1).
 

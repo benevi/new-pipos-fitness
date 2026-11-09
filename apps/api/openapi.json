@@ -223,6 +223,20 @@
                   },
                   "currentVersion": {
                     "type": "string"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "weight",
+                        "height",
+                        "limitations",
+                        "body_measurements",
+                        "derived_estimates"
+                      ]
+                    },
+                    "default": []
                   }
                 },
                 "required": [
@@ -236,6 +250,15 @@
               "updatedAt": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "trainingWeekdays": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                },
+                "default": []
               }
             },
             "required": [
@@ -416,7 +439,8 @@
                                 "PRIORITY_UNCOVERED",
                                 "PUSH_PULL_IMBALANCE",
                                 "DAYS_ABOVE_LEVEL_GUIDE",
-                                "FAVOURITE_EXCLUDED"
+                                "FAVOURITE_EXCLUDED",
+                                "PINNED_SUBSTITUTION_DROPPED"
                               ]
                             },
                             "message": {
@@ -640,6 +664,45 @@
                                   },
                                   "initialLoadIsEstimate": {
                                     "type": "boolean"
+                                  },
+                                  "loadImplement": {
+                                    "type": "string",
+                                    "enum": [
+                                      "barbell",
+                                      "trap_bar",
+                                      "ez_bar",
+                                      "smith_machine",
+                                      "dumbbell",
+                                      "kettlebell",
+                                      "machine",
+                                      "cable",
+                                      "weight_plate"
+                                    ],
+                                    "nullable": true,
+                                    "default": null
+                                  },
+                                  "pinned": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "slug": {
+                                        "type": "string"
+                                      },
+                                      "nameEs": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "slug",
+                                      "nameEs"
+                                    ],
+                                    "additionalProperties": false,
+                                    "nullable": true,
+                                    "default": null
                                   },
                                   "warmupSets": {
                                     "type": "array",
@@ -921,6 +984,25 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "adjustment": {
+                  "type": "object",
+                  "properties": {
+                    "availableMinutes": {
+                      "type": "integer",
+                      "minimum": 15,
+                      "maximum": 90,
+                      "nullable": true,
+                      "default": null
+                    },
+                    "reducedVolume": {
+                      "type": "boolean",
+                      "default": false
+                    }
+                  },
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "default": null
                 }
               },
               "required": [
@@ -935,6 +1017,126 @@
               ],
               "additionalProperties": false
             }
+          },
+          "exerciseNotes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "exerciseId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "clientUpdatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "exerciseId",
+                "slug",
+                "text",
+                "clientUpdatedAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
+          "trainingBreaks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "clientId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "startsOn": {},
+                "endsOn": {},
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "clientId",
+                "startsOn",
+                "endsOn",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
+          "bodyMeasurements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "measuredOn": {},
+                "weightKg": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "waistCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "neckCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "hipCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "chestCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "armCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "thighCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "measuredOn",
+                "weightKg",
+                "waistCm",
+                "neckCm",
+                "hipCm",
+                "chestCm",
+                "armCm",
+                "thighCm",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
           },
           "analytics": {
             "type": "object",
@@ -1097,6 +1299,12 @@
                 "sessionRatio": {
                   "type": "number",
                   "minimum": 0
+                },
+                "breakDays": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 7,
+                  "default": 0
                 }
               },
               "required": [
@@ -1172,6 +1380,493 @@
           "refreshToken",
           "expiresIn",
           "user"
+        ],
+        "additionalProperties": false
+      },
+      "BodyMeasurementListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "measuredOn": {},
+                "weightKg": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "waistCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "neckCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "hipCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "chestCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "armCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "thighCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "measuredOn",
+                "weightKg",
+                "waistCm",
+                "neckCm",
+                "hipCm",
+                "chestCm",
+                "armCm",
+                "thighCm",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 400
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "BodyMeasurementResponse": {
+        "type": "object",
+        "properties": {
+          "measuredOn": {},
+          "weightKg": {
+            "type": "number",
+            "nullable": true
+          },
+          "waistCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "neckCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "hipCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "chestCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "armCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "thighCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "measuredOn",
+          "weightKg",
+          "waistCm",
+          "neckCm",
+          "hipCm",
+          "chestCm",
+          "armCm",
+          "thighCm",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BodyProgressResponse": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "object",
+            "properties": {
+              "latest": {
+                "type": "object",
+                "properties": {
+                  "date": {},
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "date",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "trend": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "on_track",
+                      "too_fast",
+                      "too_slow",
+                      "no_target",
+                      "insufficient_data"
+                    ]
+                  },
+                  "weeklyRatePct": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "direction": {
+                        "type": "string",
+                        "enum": [
+                          "loss",
+                          "gain"
+                        ]
+                      },
+                      "minPct": {
+                        "type": "number"
+                      },
+                      "maxPct": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "direction",
+                      "minPct",
+                      "maxPct"
+                    ],
+                    "additionalProperties": false,
+                    "nullable": true
+                  },
+                  "movingAverage": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "kg": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "kg"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "spanDays": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rationale": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "weeklyRatePct",
+                  "target",
+                  "movingAverage",
+                  "spanDays",
+                  "rationale"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "latest",
+              "trend"
+            ],
+            "additionalProperties": false
+          },
+          "bmi": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "insufficient_data",
+                  "consent_required",
+                  "invalid_input"
+                ]
+              },
+              "measuredOn": {
+                "nullable": true
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "invalid_input"
+                    ]
+                  },
+                  "value": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "underweight",
+                      "normal",
+                      "pre_obese",
+                      "obese_class_1",
+                      "obese_class_2",
+                      "obese_class_3"
+                    ],
+                    "nullable": true
+                  },
+                  "categoryEs": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "caveats": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "value",
+                  "category",
+                  "categoryEs",
+                  "caveats"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "measuredOn",
+              "result",
+              "series"
+            ],
+            "additionalProperties": false
+          },
+          "bodyFat": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "insufficient_data",
+                  "consent_required",
+                  "not_applicable",
+                  "invalid_input"
+                ]
+              },
+              "measuredOn": {
+                "nullable": true
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "not_applicable",
+                      "invalid_input"
+                    ]
+                  },
+                  "percent": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "navy_hodgdon_beckett_1984"
+                    ]
+                  },
+                  "issues": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "caveats": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "percent",
+                  "method",
+                  "issues",
+                  "caveats"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "percent": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "percent"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "measuredOn",
+              "result",
+              "series"
+            ],
+            "additionalProperties": false
+          },
+          "circumferences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "waistCm",
+                    "neckCm",
+                    "hipCm",
+                    "chestCm",
+                    "armCm",
+                    "thighCm"
+                  ]
+                },
+                "latest": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "value"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "change4w": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "change12w": {
+                  "type": "number",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "field",
+                "latest",
+                "change4w",
+                "change12w"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "disclaimer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "timezone",
+          "weight",
+          "bmi",
+          "bodyFat",
+          "circumferences",
+          "disclaimer"
+        ],
+        "additionalProperties": false
+      },
+      "CreateTrainingBreakRequest": {
+        "type": "object",
+        "properties": {
+          "clientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "endsOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          }
+        },
+        "required": [
+          "clientId",
+          "startsOn",
+          "endsOn"
         ],
         "additionalProperties": false
       },
@@ -1676,6 +2371,99 @@
         ],
         "additionalProperties": false
       },
+      "ExerciseNoteListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "exerciseId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "slug": {
+                  "type": "string"
+                },
+                "text": {
+                  "type": "string"
+                },
+                "clientUpdatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "exerciseId",
+                "slug",
+                "text",
+                "clientUpdatedAt",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "ExerciseNoteRequest": {
+        "type": "object",
+        "properties": {
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 280
+          },
+          "clientUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "text",
+          "clientUpdatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "ExerciseNoteResponse": {
+        "type": "object",
+        "properties": {
+          "exerciseId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "text": {
+            "type": "string"
+          },
+          "clientUpdatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "exerciseId",
+          "slug",
+          "text",
+          "clientUpdatedAt",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
       "FinishWorkoutRequest": {
         "type": "object",
         "properties": {
@@ -1728,6 +2516,20 @@
           },
           "currentVersion": {
             "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "weight",
+                "height",
+                "limitations",
+                "body_measurements",
+                "derived_estimates"
+              ]
+            },
+            "default": []
           }
         },
         "required": [
@@ -1958,6 +2760,86 @@
         ],
         "additionalProperties": false
       },
+      "PlanExerciseOverrideRequest": {
+        "type": "object",
+        "properties": {
+          "exerciseId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "exerciseId"
+        ],
+        "additionalProperties": false
+      },
+      "PlanExerciseOverrideResponse": {
+        "type": "object",
+        "properties": {
+          "planVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planExerciseIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "original": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "nameEs": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "nameEs"
+            ],
+            "additionalProperties": false
+          },
+          "pinned": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "nameEs": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "nameEs"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "planVersionId",
+          "planExerciseIds",
+          "original",
+          "pinned"
+        ],
+        "additionalProperties": false
+      },
       "PlanVersionListResponse": {
         "type": "object",
         "properties": {
@@ -2126,7 +3008,8 @@
                     "PRIORITY_UNCOVERED",
                     "PUSH_PULL_IMBALANCE",
                     "DAYS_ABOVE_LEVEL_GUIDE",
-                    "FAVOURITE_EXCLUDED"
+                    "FAVOURITE_EXCLUDED",
+                    "PINNED_SUBSTITUTION_DROPPED"
                   ]
                 },
                 "message": {
@@ -2350,6 +3233,45 @@
                       },
                       "initialLoadIsEstimate": {
                         "type": "boolean"
+                      },
+                      "loadImplement": {
+                        "type": "string",
+                        "enum": [
+                          "barbell",
+                          "trap_bar",
+                          "ez_bar",
+                          "smith_machine",
+                          "dumbbell",
+                          "kettlebell",
+                          "machine",
+                          "cable",
+                          "weight_plate"
+                        ],
+                        "nullable": true,
+                        "default": null
+                      },
+                      "pinned": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "nameEs": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "nameEs"
+                        ],
+                        "additionalProperties": false,
+                        "nullable": true,
+                        "default": null
                       },
                       "warmupSets": {
                         "type": "array",
@@ -2601,6 +3523,20 @@
               },
               "currentVersion": {
                 "type": "string"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "weight",
+                    "height",
+                    "limitations",
+                    "body_measurements",
+                    "derived_estimates"
+                  ]
+                },
+                "default": []
               }
             },
             "required": [
@@ -2614,6 +3550,15 @@
           "updatedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "trainingWeekdays": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            },
+            "default": []
           }
         },
         "required": [
@@ -2634,6 +3579,24 @@
           "heightCm",
           "healthConsent",
           "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "ProfileScheduleRequest": {
+        "type": "object",
+        "properties": {
+          "trainingWeekdays": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 7
+            },
+            "maxItems": 6
+          }
+        },
+        "required": [
+          "trainingWeekdays"
         ],
         "additionalProperties": false
       },
@@ -2798,6 +3761,20 @@
                   },
                   "currentVersion": {
                     "type": "string"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "weight",
+                        "height",
+                        "limitations",
+                        "body_measurements",
+                        "derived_estimates"
+                      ]
+                    },
+                    "default": []
                   }
                 },
                 "required": [
@@ -2811,6 +3788,15 @@
               "updatedAt": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "trainingWeekdays": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 7
+                },
+                "default": []
               }
             },
             "required": [
@@ -3230,6 +4216,23 @@
           "startedAt": {
             "type": "string",
             "format": "date-time"
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "availableMinutes": {
+                "type": "integer",
+                "minimum": 15,
+                "maximum": 90,
+                "nullable": true,
+                "default": null
+              },
+              "reducedVolume": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false
           }
         },
         "required": [
@@ -3718,6 +4721,67 @@
                     ],
                     "additionalProperties": false
                   }
+                },
+                "loadImplement": {
+                  "type": "string",
+                  "enum": [
+                    "barbell",
+                    "trap_bar",
+                    "ez_bar",
+                    "smith_machine",
+                    "dumbbell",
+                    "kettlebell",
+                    "machine",
+                    "cable",
+                    "weight_plate"
+                  ],
+                  "nullable": true,
+                  "default": null
+                },
+                "loadStepKg": {
+                  "type": "number",
+                  "exclusiveMinimum": true,
+                  "minimum": 0,
+                  "nullable": true,
+                  "default": null
+                },
+                "plates": {
+                  "type": "object",
+                  "properties": {
+                    "barKg": {
+                      "type": "number",
+                      "minimum": 0
+                    },
+                    "perSide": {
+                      "type": "array",
+                      "items": {
+                        "type": "number",
+                        "exclusiveMinimum": true,
+                        "minimum": 0
+                      }
+                    },
+                    "remainderKg": {
+                      "type": "number",
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "barKg",
+                    "perSide",
+                    "remainderKg"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "default": null
+                },
+                "pinned": {
+                  "type": "boolean",
+                  "default": false
+                },
+                "note": {
+                  "type": "string",
+                  "nullable": true,
+                  "default": null
                 }
               },
               "required": [
@@ -3736,6 +4800,114 @@
               ],
               "additionalProperties": false
             }
+          },
+          "scheduledToday": {
+            "type": "boolean",
+            "default": true
+          },
+          "activeBreak": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "startsOn": {
+                "type": "string"
+              },
+              "endsOn": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "startsOn",
+              "endsOn"
+            ],
+            "additionalProperties": false,
+            "nullable": true,
+            "default": null
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "source": {
+                "type": "string",
+                "enum": [
+                  "query",
+                  "workout"
+                ]
+              },
+              "availableMinutes": {
+                "type": "integer",
+                "nullable": true
+              },
+              "reducedVolume": {
+                "type": "boolean"
+              },
+              "estimatedMinutes": {
+                "type": "number"
+              },
+              "fits": {
+                "type": "boolean"
+              },
+              "dropped": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "planExerciseId": {
+                      "type": "string",
+                      "format": "uuid"
+                    },
+                    "exercise": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid"
+                        },
+                        "slug": {
+                          "type": "string"
+                        },
+                        "nameEs": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "slug",
+                        "nameEs"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "planExerciseId",
+                    "exercise"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "rationale": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "source",
+              "availableMinutes",
+              "reducedVolume",
+              "estimatedMinutes",
+              "fits",
+              "dropped",
+              "rationale"
+            ],
+            "additionalProperties": false,
+            "nullable": true,
+            "default": null
           }
         },
         "required": [
@@ -3752,6 +4924,135 @@
           "today",
           "workout",
           "exercises"
+        ],
+        "additionalProperties": false
+      },
+      "TrainingBreakListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "clientId": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "startsOn": {},
+                "endsOn": {},
+                "createdAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "id",
+                "clientId",
+                "startsOn",
+                "endsOn",
+                "createdAt"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 200
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "TrainingBreakResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "clientId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "startsOn": {},
+          "endsOn": {},
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "clientId",
+          "startsOn",
+          "endsOn",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "UpsertBodyMeasurementRequest": {
+        "type": "object",
+        "properties": {
+          "measuredOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "weightKg": {
+            "type": "number",
+            "minimum": 25,
+            "maximum": 400,
+            "nullable": true,
+            "default": null
+          },
+          "waistCm": {
+            "type": "number",
+            "minimum": 40,
+            "maximum": 250,
+            "nullable": true,
+            "default": null
+          },
+          "neckCm": {
+            "type": "number",
+            "minimum": 20,
+            "maximum": 70,
+            "nullable": true,
+            "default": null
+          },
+          "hipCm": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 250,
+            "nullable": true,
+            "default": null
+          },
+          "chestCm": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 220,
+            "nullable": true,
+            "default": null
+          },
+          "armCm": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 80,
+            "nullable": true,
+            "default": null
+          },
+          "thighCm": {
+            "type": "number",
+            "minimum": 25,
+            "maximum": 120,
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "measuredOn"
         ],
         "additionalProperties": false
       },
@@ -3960,6 +5261,20 @@
               },
               "currentVersion": {
                 "type": "string"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "weight",
+                    "height",
+                    "limitations",
+                    "body_measurements",
+                    "derived_estimates"
+                  ]
+                },
+                "default": []
               }
             },
             "required": [
@@ -4202,6 +5517,25 @@
               ],
               "additionalProperties": false
             }
+          },
+          "adjustment": {
+            "type": "object",
+            "properties": {
+              "availableMinutes": {
+                "type": "integer",
+                "minimum": 15,
+                "maximum": 90,
+                "nullable": true,
+                "default": null
+              },
+              "reducedVolume": {
+                "type": "boolean",
+                "default": false
+              }
+            },
+            "additionalProperties": false,
+            "nullable": true,
+            "default": null
           }
         },
         "required": [
@@ -4719,6 +6053,179 @@
         }
       }
     },
+    "/exercises/{id}/note": {
+      "delete": {
+        "operationId": "Workouts_deleteNote",
+        "tags": [
+          "workouts"
+        ],
+        "summary": "Borrar la nota fija de un ejercicio (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "Workouts_putNote",
+        "tags": [
+          "workouts"
+        ],
+        "summary": "Guardar la nota fija de un ejercicio (gana la última escritura por clientUpdatedAt)",
+        "description": "Texto libre (máx. 280). Puede contener datos personales: se exporta, se borra con la cuenta y nunca se registra en logs.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExerciseNoteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExerciseNoteResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/exercises/{id}/substitutes": {
       "get": {
         "operationId": "Workouts_substitutes",
@@ -5077,6 +6584,263 @@
         }
       }
     },
+    "/me/breaks": {
+      "get": {
+        "operationId": "Profile_listBreaks",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Pausas planificadas (las que terminan en `from` o después)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingBreakListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "Profile_createBreak",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Crear una pausa planificada (idempotente por clientId; 409 si se solapa con otra)",
+        "description": "Sin motivo (sería un dato de salud). Excluye esos días de la adherencia y de la ausencia que baja la carga.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTrainingBreakRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingBreakResponse"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrainingBreakResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/breaks/{id}": {
+      "delete": {
+        "operationId": "Profile_deleteBreak",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Borrar una pausa planificada (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/consents/health": {
       "delete": {
         "operationId": "Profile_withdraw",
@@ -5294,6 +7058,73 @@
         }
       }
     },
+    "/me/exercise-notes": {
+      "get": {
+        "operationId": "Workouts_listNotes",
+        "tags": [
+          "workouts"
+        ],
+        "summary": "Mis notas fijas por ejercicio",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ExerciseNoteListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/export": {
       "get": {
         "operationId": "Account_export",
@@ -5314,6 +7145,279 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/AccountExport"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/measurements": {
+      "get": {
+        "operationId": "Profile_listMeasurements",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Medidas corporales en un rango de fechas (por defecto, el último año)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyMeasurementListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "Profile_putMeasurement",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Guardar las medidas corporales de un día (sustituye las de ese día; idempotente)",
+        "description": "Dato de salud: el peso requiere el ámbito weight y los perímetros body_measurements del consentimiento (409 HEALTH_CONSENT_REQUIRED si no). El peso más reciente actualiza weightKg del perfil.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertBodyMeasurementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyMeasurementResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/measurements/{date}": {
+      "delete": {
+        "operationId": "Profile_deleteMeasurement",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Borrar las medidas de un día (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponse"
                 }
               }
             }
@@ -5621,6 +7725,104 @@
         }
       }
     },
+    "/me/profile/schedule": {
+      "patch": {
+        "operationId": "Profile_setSchedule",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Días de entreno preferidos (no crea versión del plan)",
+        "description": "ISO 1 = lunes … 7 = domingo, como mucho daysPerWeek (422 si hay más). Solo sirven para el recordatorio local del móvil y para «hoy toca».",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfileScheduleRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Unprocessable (ver code e issues)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/plans/current": {
       "get": {
         "operationId": "Plans_current",
@@ -5667,6 +7869,199 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plans/current/exercises/{planExerciseId}/override": {
+      "delete": {
+        "operationId": "Plans_unpin",
+        "tags": [
+          "plans"
+        ],
+        "summary": "Volver al ejercicio original del plan (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planExerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanExerciseOverrideResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "Plans_pin",
+        "tags": [
+          "plans"
+        ],
+        "summary": "Fijar un cambio de ejercicio en el plan vigente (se hereda en las versiones siguientes)",
+        "description": "Debe ser una alternativa válida del ejercicio original para tu perfil (400 si no). Se aplica a todos los huecos de la versión vigente con ese ejercicio y no crea una versión nueva. Si exerciseId es el original, equivale a DELETE.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planExerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanExerciseOverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanExerciseOverrideResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
             "content": {
               "application/json": {
                 "schema": {
@@ -6041,6 +8436,84 @@
         }
       }
     },
+    "/progress/body": {
+      "get": {
+        "operationId": "Progress_body",
+        "tags": [
+          "progress"
+        ],
+        "summary": "Medidas corporales: tendencia de peso, IMC (OMS) y % de grasa estimado (Marina)",
+        "description": "Solo lectura: se calcula al leer. IMC y % de grasa requieren el ámbito derived_estimates del consentimiento de salud. Estimaciones orientativas, no un diagnóstico.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyProgressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/progress/e1rm": {
       "get": {
         "operationId": "Progress_e1rm",
@@ -6243,12 +8716,50 @@
           "workouts"
         ],
         "summary": "Sesión de hoy: calentamiento y prescripción con carga sugerida",
+        "description": "minutes (15-90) y mode=reduced ajustan la vista de hoy quitando ejercicios enteros de menor prioridad o una serie por ejercicio (PROGRAMACION.md §16.17). Solo lectura: no guarda nada ni crea una versión del plan.",
         "security": [
           {
             "bearer": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "minutes",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "integer",
+                  "minimum": 15,
+                  "maximum": 90
+                }
+              ]
+            }
+          },
+          {
+            "name": "mode",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "normal",
+                    "reduced"
+                  ]
+                }
+              ]
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "OK",

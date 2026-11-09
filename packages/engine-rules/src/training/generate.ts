@@ -19,6 +19,7 @@ import {
   list,
 } from './labels.js';
 import { cmpStr, CORE_PATTERNS, round1, type Ex, type MovementPattern, type Profile, type VolumeGroup } from './model.js';
+import { resolvePins } from './pins.js';
 import { initialLoad, warmupSets } from './prescription.js';
 import { chooseSplit, sessionsPerGroup } from './split.js';
 import {
@@ -34,6 +35,8 @@ import {
 
 export interface GenerateOptions {
   config?: ProgrammingConfig;
+  /** Cambios de ejercicio fijados por el usuario (idea 3, ADR-0013). No alteran la generación. */
+  pinnedSubstitutions?: readonly engineV2.PinnedSubstitutionInput[];
 }
 
 type Warning = engineV2.EngineWarning;
@@ -160,6 +163,10 @@ export function generatePlan(
     effectiveSets: round1(muscleTotals.get(m) ?? 0),
   }));
 
+  // 9. Cambios fijados por el usuario: se aplican después y nunca cambian la elección del motor.
+  const pins = resolvePins(sessions, options.pinnedSubstitutions ?? [], catalog, profile, config);
+  warnings.push(...pins.warnings);
+
   const plan: engineV2.PlanDraft = {
     engineVersion: ENGINE_VERSION,
     split: { type: split.type, rationale: split.rationale },
@@ -171,6 +178,7 @@ export function generatePlan(
     rationale: planRationale(ctx, weeklyVolume),
     healthNotes: planHealthNotes(ctx),
     score: roundScore(score),
+    pinnedSubstitutions: pins.pinned,
     meta: {
       catalogSize: catalog.length,
       eligibleExercises: usable.length,
@@ -198,7 +206,7 @@ function renderSession(s: DraftSession, agg: SessionAgg, order: number, ctx: Ctx
     const sc = agg.schemes[i];
     const load = initialLoad(it.ex, sc, ctx.profile, ctx.config);
     const w = agg.warmups[i];
-    const warm = it.ex.weighted ? warmupSets(w, load.loadKg, ctx.config) : [];
+    const warm = it.ex.weighted ? warmupSets(w, load.loadKg, ctx.config, it.ex.implement) : [];
     return {
       order: i,
       exerciseId: it.ex.slug,

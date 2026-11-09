@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { HEALTH_CONSENT_POLICY, ProfileUpsertRequestSchema } from '@pipos/contracts';
+import { coversScopes } from './consent-status';
 import type { PrismaService } from '../../prisma/prisma.service';
 import {
   catalogServiceMock,
@@ -137,6 +138,24 @@ describe('ConsentService', () => {
     expect(data).not.toHaveProperty('ip');
     expect(data).not.toHaveProperty('userAgent');
     expect(data.textHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('grant con un consentimiento de la versión anterior registra la nueva (ámbitos nuevos, ADR-0013)', async () => {
+    const { prisma, consents } = setup();
+    prisma.consentEvent.findFirst.mockResolvedValueOnce(grantedEvent('health-2026-11')).mockResolvedValueOnce(grantedEvent());
+    const status = await consents.grant(UID, { version: HEALTH_CONSENT_POLICY.version, locale: 'es' });
+    expect(prisma.consentEvent.create).toHaveBeenCalledTimes(1);
+    expect(prisma.consentEvent.create.mock.calls[0][0].data.policyVersion).toBe(HEALTH_CONSENT_POLICY.version);
+    expect(status.scopes).toContain('body_measurements');
+  });
+
+  it('una versión anterior sigue vigente solo para sus ámbitos', () => {
+    const old = healthConsentStatus(grantedEvent('health-2026-11') as never);
+    expect(old).toMatchObject({ granted: true, version: 'health-2026-11', currentVersion: HEALTH_CONSENT_POLICY.version });
+    expect(old.scopes).toEqual(['weight', 'height', 'limitations']);
+    expect(coversScopes(old, ['weight'])).toBe(true);
+    expect(coversScopes(old, ['body_measurements'])).toBe(false);
+    expect(healthConsentStatus(grantedEvent('desconocida') as never).granted).toBe(false);
   });
 
   it('withdraw: registra la retirada, borra salud, redacta y regenera si hay plan', async () => {

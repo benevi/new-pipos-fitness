@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import { loadCatalog } from '@pipos/catalog';
 import { FEATURE_MODULES } from '../../app.module';
 import { setLogSink } from '../../logging/logging';
@@ -40,6 +41,23 @@ describe('Observabilidad, GET sin escrituras y catálogo (e2e, Postgres real)', 
     const plan = await request(server()).post('/plans/generate').set(bearer(u.accessToken)).expect(201);
     const { today, workout } = await startToday(ctx.app, u.accessToken);
     await request(server()).post(`/workouts/${workout.id}/sets`).set(bearer(u.accessToken)).send(setBody(today.exercises[0])).expect(201);
+    // Datos de ADR-0013 para que sus GET lean filas reales.
+    await request(server())
+      .put(`/exercises/${today.exercises[0].exercise.id}/note`)
+      .set(bearer(u.accessToken))
+      .send({ text: 'Asiento en el 4', clientUpdatedAt: new Date().toISOString() })
+      .expect(200);
+    await request(server()).patch('/me/profile/schedule').set(bearer(u.accessToken)).send({ trainingWeekdays: [1, 3, 5] }).expect(200);
+    await request(server())
+      .post('/me/breaks')
+      .set(bearer(u.accessToken))
+      .send({ clientId: randomUUID(), startsOn: '2026-08-01', endsOn: '2026-08-15' })
+      .expect(201);
+    await request(server())
+      .put('/me/measurements')
+      .set(bearer(u.accessToken))
+      .send({ measuredOn: '2026-08-01', weightKg: 80, waistCm: 85, neckCm: 38 })
+      .expect(200);
 
     const ids: Record<string, string> = {
       '/exercises/:id': today.exercises[0].exercise.id,

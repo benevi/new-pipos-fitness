@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MovementPatternSchema } from './enums.js';
+import { LoadImplementSchema, MovementPatternSchema } from './enums.js';
 import { ExerciseSessionLogSchema, IsoDateSchema } from './history.js';
 
 export const CurrentPrescriptionSchema = z
@@ -12,10 +12,22 @@ export const CurrentPrescriptionSchema = z
     repMax: z.number().int().min(1).max(50),
     targetRir: z.number().int().min(0).max(5),
     loadKg: z.number().min(0).nullable(),
+    /**
+     * Material que fija el paso de carga (PROGRAMACION.md §16.16). Omitido o null: paso genérico
+     * de `INCREMENTO_MIN_KG` (1 kg), el comportamiento anterior.
+     */
+    implement: LoadImplementSchema.nullable().optional(),
   })
   .strict()
   .refine((p) => p.repMin <= p.repMax, { message: 'repMin > repMax', path: ['repMin'] });
 export type CurrentPrescription = z.infer<typeof CurrentPrescriptionSchema>;
+
+/** Pausa planificada (idea 6, ADR-0013): fechas locales del usuario, ambas incluidas. */
+export const PlannedBreakSchema = z
+  .object({ startsOn: IsoDateSchema, endsOn: IsoDateSchema })
+  .strict()
+  .refine((b) => b.endsOn >= b.startsOn, { message: 'endsOn < startsOn', path: ['endsOn'] });
+export type PlannedBreak = z.infer<typeof PlannedBreakSchema>;
 
 export const NextPrescriptionInputSchema = z
   .object({
@@ -25,6 +37,11 @@ export const NextPrescriptionInputSchema = z
     today: IsoDateSchema,
     /** Semanas completas desde la última descarga (o desde el inicio del plan). */
     weeksSinceDeload: z.number().int().min(0).max(52),
+    /**
+     * Pausas planificadas: sus días no cuentan como ausencia para la vuelta tras ≥ 14 días
+     * (PROGRAMACION.md §16.18).
+     */
+    breaks: z.array(PlannedBreakSchema).max(200).optional(),
   })
   .strict();
 export type NextPrescriptionInput = z.infer<typeof NextPrescriptionInputSchema>;

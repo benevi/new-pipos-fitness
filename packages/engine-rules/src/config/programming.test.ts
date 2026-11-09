@@ -24,8 +24,8 @@ function looseValues(node: unknown, path: string[] = []): string[] {
 describe('config/programming', () => {
   const all = leaves(PROGRAMMING);
 
-  it('tiene un único ENGINE_VERSION 2.0.0', () => {
-    expect(ENGINE_VERSION).toBe('2.0.0');
+  it('tiene un único ENGINE_VERSION 2.1.0', () => {
+    expect(ENGINE_VERSION).toBe('2.1.0');
   });
 
   it('contiene un número razonable de constantes', () => {

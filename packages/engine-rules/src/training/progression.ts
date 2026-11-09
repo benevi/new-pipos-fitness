@@ -6,7 +6,8 @@
 import { engineV2 } from '@pipos/contracts';
 import { PROGRAMMING, type ProgrammingConfig } from '../config/programming.js';
 import { fmt } from './labels.js';
-import { roundDown } from './prescription.js';
+import { loadStepKg, roundLoad } from './load.js';
+import { daysAwayExcludingBreaks } from './schedule.js';
 
 type Log = engineV2.ExerciseSessionLog;
 
@@ -69,7 +70,14 @@ export function nextPrescription(
   }
   const { prescription: p, today, weeksSinceDeload } = parsed.data;
   const pr = config.progression;
-  const step = config.e1rm.loadRoundingKg.value;
+  const implement = p.implement ?? null;
+  const step = loadStepKg(implement, config);
+  /** Bajada al peso disponible inmediatamente inferior (§16.16), sin llegar a 0 ni subir. */
+  const lower = (kg: number, current: number): number => {
+    const down = roundLoad(kg, implement, 'down', config);
+    if (down > 0) return Math.min(down, current);
+    return Math.min(current, step);
+  };
   const history = parsed.data.history
     .filter((h) => h.exerciseId === p.exerciseId && h.date <= today && workSets(h).length > 0)
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -104,10 +112,11 @@ export function nextPrescription(
   const currentLoad = weighted ? (p.loadKg ?? (lastLoad > 0 ? lastLoad : null)) : p.loadKg;
 
   // 1. Vuelta tras una pausa larga (CUJ-5).
-  const gap = daysBetween(last.date, today);
+  // Los días en pausa planificada no cuentan como ausencia (§16.18).
+  const gap = daysAwayExcludingBreaks(last.date, today, parsed.data.breaks ?? []);
   if (gap >= pr.breakDays.value) {
     const reduced =
-      weighted && currentLoad !== null ? roundDown(currentLoad * (1 - pr.breakLoadReductionPct.value / 100), step) : currentLoad;
+      weighted && currentLoad !== null ? lower(currentLoad * (1 - pr.breakLoadReductionPct.value / 100), currentLoad) : currentLoad;
     return {
       ok: true,
       next: {
@@ -130,9 +139,12 @@ export function nextPrescription(
 
   // 3. Descarga reactiva: estancamiento o regresión N sesiones seguidas (PROGRAMACION.md §7),
   //    comparando solo lo comparable (misma carga, o e1RM si la carga bajó).
+  // Las sesiones ajustadas (poco tiempo o volumen reducido, §16.17) no cuentan: un día flojo
+  // elegido no debe provocar una descarga ni una bajada de carga.
+  const comparable = history.filter((h) => !h.adjusted);
   const n = pr.stagnationSessions.value;
-  if (history.length >= n + 1) {
-    const recent = history.slice(-(n + 1));
+  if (comparable.length >= n + 1) {
+    const recent = comparable.slice(-(n + 1));
     let stalled = true;
     for (let i = 1; i < recent.length; i++) {
       if (!notImproving(recent[i - 1], recent[i], config.e1rm.epleyDivisor.value)) stalled = false;
@@ -146,10 +158,11 @@ export function nextPrescription(
   }
 
   // 4. Rendimiento por debajo del objetivo dos sesiones seguidas → bajar la carga.
-  const prev = history.length >= 2 ? history[history.length - 2] : null;
-  if (underperformed(last, p)) {
+  const lastComparable = comparable.length > 0 ? comparable[comparable.length - 1] : null;
+  const prev = comparable.length >= 2 ? comparable[comparable.length - 2] : null;
+  if (lastComparable === last && underperformed(last, p)) {
     if (prev && underperformed(prev, p) && weighted && currentLoad !== null) {
-      const reduced = roundDown(currentLoad * (1 - pr.reactiveDecreasePct.value / 100), step);
+      const reduced = lower(currentLoad * (1 - pr.reactiveDecreasePct.value / 100), currentLoad);
       return {
         ok: true,
         next: {
@@ -191,19 +204,30 @@ export function nextPrescription(
         },
       };
     }
-    const lower = pr.lowerBodyPatterns.value.includes(p.movementPattern);
-    const pct = lower ? pr.loadIncrementPctLower.value : pr.loadIncrementPctUpper.value;
-    const inc = Math.max(pr.minIncrementKg.value, roundUp((currentLoad * pct) / 100, step));
-    const next = currentLoad + inc;
+    const lowerBody = pr.lowerBodyPatterns.value.includes(p.movementPattern);
+    const pct = lowerBody ? pr.loadIncrementPctLower.value : pr.loadIncrementPctUpper.value;
+    const rawInc = Math.max(pr.minIncrementKg.value, step, roundUp((currentLoad * pct) / 100, step));
+    // El siguiente peso que existe con este material (§16.16): múltiplo del paso, por encima.
+    const next = roundLoad(currentLoad + rawInc, implement, 'up', config);
+    const inc = Math.round((next - currentLoad) * 100) / 100;
+    const rationale = [
+      implement
+        ? `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lowerBody ? 'inferior' : 'superior'}, redondeado al siguiente peso disponible, de ${fmt(step)} en ${fmt(step)} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`
+        : `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lowerBody ? 'inferior' : 'superior'}, mínimo ${pr.minIncrementKg.value} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`,
+    ];
+    const jumpPct = (inc / currentLoad) * 100;
+    if (jumpPct > config.load.bigJumpPct.value + 1e-9) {
+      rationale.push(
+        `El siguiente peso disponible es un salto grande (+${Math.round(jumpPct)} %): con ${fmt(next)} kg empieza por la parte baja del rango (${p.repMin} reps) y es normal tardar más sesiones en volver a ${p.repMax}.`,
+      );
+    }
     return {
       ok: true,
       next: {
         ...base,
         loadKg: next,
         action: 'increase_load',
-        rationale: [
-          `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lower ? 'inferior' : 'superior'}, mínimo ${pr.minIncrementKg.value} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`,
-        ],
+        rationale,
       },
     };
   }

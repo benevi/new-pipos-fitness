@@ -186,9 +186,9 @@ describe('ProgressService (lectura)', () => {
     });
     const res = await progress.adherence(UID, 3);
     expect(res.weeks).toEqual([
-      { weekStart: '2026-10-26', plannedSessions: 0, completedSessions: 0, plannedSets: 0, completedSets: 0, sessionRatio: 0 },
-      { weekStart: '2026-11-02', plannedSessions: 3, completedSessions: 0, plannedSets: 5, completedSets: 0, sessionRatio: 0 },
-      { weekStart: '2026-11-09', plannedSessions: 3, completedSessions: 2, plannedSets: 30, completedSets: 18, sessionRatio: 0.667 },
+      { weekStart: '2026-10-26', plannedSessions: 0, completedSessions: 0, plannedSets: 0, completedSets: 0, sessionRatio: 0, breakDays: 0 },
+      { weekStart: '2026-11-02', plannedSessions: 3, completedSessions: 0, plannedSets: 5, completedSets: 0, sessionRatio: 0, breakDays: 0 },
+      { weekStart: '2026-11-09', plannedSessions: 3, completedSessions: 2, plannedSets: 30, completedSets: 18, sessionRatio: 0.667, breakDays: 0 },
     ]);
     expect(res.totals).toEqual({ plannedSessions: 6, completedSessions: 2, sessionRatio: 0.333 });
     prisma.weeklyAdherence.findMany.mockResolvedValueOnce([]);

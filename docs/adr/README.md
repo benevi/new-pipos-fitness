@@ -18,3 +18,4 @@ Fase 0 aprobada. Estado de cada ADR en su cabecera; resumen en la última column
 | [0010](0010-e2e-postgres-real.md) | e2e contra Postgres real en CI, sin mocks de Prisma | Aceptado, implementado |
 | [0011](0011-datos-salud-gdpr.md) | Datos de salud como categoría especial: consentimiento explícito, exportar y borrar | Aceptado (API implementada; DPIA pendiente) |
 | [0012](0012-flutter-version-fijada.md) | Versión de Flutter fijada en un único sitio y Android como objetivo primario | Aceptado |
+| [0013](0013-ideas-recuperadas.md) | Ideas recuperadas de una app previa: carga real por material, nota por ejercicio, cambio fijado, ajuste de hoy, días y pausas, medidas corporales; dolor aplazado ([resumen](../IDEAS_EL_PLAN.md)) | Aceptado (API implementada; móvil pendiente; idea 5 aplazada) |

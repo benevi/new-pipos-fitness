@@ -10,3 +10,4 @@ export {
 } from './config/programming.js';
 export * from './training/index.js';
 export * from './nutrition/index.js';
+export * from './body/index.js';

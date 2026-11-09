@@ -1,13 +1,27 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { daysBetween, nextPendingSession, nextPrescription, PROGRAMMING } from '@pipos/engine-rules';
-import type { engineV2, ExerciseRef, TodayExercise, TodaySessionResponse } from '@pipos/contracts';
+import {
+  activeBreak,
+  adjustedPrescription,
+  adjustSession,
+  barKgFor,
+  daysBetween,
+  isScheduledDay,
+  loadImplement,
+  loadStepKg,
+  nextPendingSession,
+  nextPrescription,
+  plateBreakdown,
+  PROGRAMMING,
+} from '@pipos/engine-rules';
+import type { engineV2, ExerciseRef, TodayExercise, TodaySessionQuery, TodaySessionResponse } from '@pipos/contracts';
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
-import { localDate } from '../../common/time';
+import { addDays, dateColumn, fromDateColumn, localDate } from '../../common/time';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CatalogService } from '../catalog/catalog.service';
-import { EngineInputService } from '../plans/engine-input.service';
+import { EngineInputService, HISTORY_DAYS } from '../plans/engine-input.service';
 import { warmupsFor } from '../plans/plan-mapper';
+import { NotesService } from './notes.service';
 import { toSetResponse } from './workout-mapper';
 
 /**
@@ -32,6 +46,13 @@ export function currentLoad(
   return top > 0 ? top : initialLoadKg;
 }
 
+/** Desglose de discos por lado (solo barras con peso conocido; idea 1, §16.16). */
+export function platesFor(implement: engineV2.LoadImplement | null, loadKg: number | null) {
+  const bar = barKgFor(implement);
+  if (bar === null || loadKg === null) return null;
+  return plateBreakdown(loadKg, bar);
+}
+
 /**
  * GET /sessions/today (CUJ-2, CUJ-3, CUJ-5): el entrenamiento en curso o, si no hay, la
  * siguiente sesión pendiente del microciclo (nunca se salta una), con la prescripción de
@@ -45,9 +66,10 @@ export class SessionsService {
     private readonly catalog: CatalogService,
     private readonly engineInput: EngineInputService,
     private readonly clock: Clock,
+    private readonly notes: NotesService,
   ) {}
 
-  async today(userId: string): Promise<TodaySessionResponse> {
+  async today(userId: string, query: TodaySessionQuery = {}): Promise<TodaySessionResponse> {
     const ctx = await this.engineInput.load(userId);
     if (!ctx) throw new ApiError(HttpStatus.CONFLICT, 'PROFILE_REQUIRED', 'Complete your training profile first');
     const tz = ctx.profile.timezone;
@@ -55,7 +77,7 @@ export class SessionsService {
     const version = await this.prisma.planVersion.findFirst({
       where: { userId, plan: { status: 'active' } },
       orderBy: { version: 'desc' },
-      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true }, orderBy: { order: 'asc' } } },
+      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true, dayIndex: true }, orderBy: { order: 'asc' } } },
     });
     if (!version || version.sessions.length === 0) {
       throw new ApiError(HttpStatus.NOT_FOUND, 'PLAN_REQUIRED', 'No training plan yet');
@@ -87,32 +109,47 @@ export class SessionsService {
       include: {
         exercises: {
           orderBy: { order: 'asc' },
-          include: { exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true } } },
+          include: {
+            exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true, equipment: true } },
+            override: { select: { exerciseId: true } },
+          },
         },
       },
     });
 
     const catalog = await this.catalog.engineCatalog();
     const swaps = new Map(workout?.substitutions.map((s) => [s.planExerciseId, s.exerciseId]) ?? []);
-    const performedIds = session.exercises.map((e) => swaps.get(e.id) ?? e.exerciseId);
-    const refs = await this.catalog.refs(performedIds);
+    // Ejercicio de hoy: cambio puntual del entrenamiento > cambio fijado del plan > el del plan.
+    const performedOf = (e: (typeof session.exercises)[number]) => swaps.get(e.id) ?? e.override?.exerciseId ?? e.exerciseId;
+    const performedIds = session.exercises.map(performedOf);
+    const [refs, notes] = await Promise.all([this.catalog.refs(performedIds), this.notes.byExercise(userId, performedIds)]);
     const history = await this.engineInput.history(userId, tz, {
       exerciseIds: performedIds,
       ...(workout ? { excludeWorkoutId: workout.id } : {}),
     });
     const today = localDate(this.clock.now(), tz);
     const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
+    // Pausas planificadas recientes y vigentes (idea 6): no cuentan como ausencia (§16.18).
+    const breakRows = await this.prisma.trainingBreak.findMany({
+      where: { userId, endsOn: { gte: dateColumn(addDays(today, -HISTORY_DAYS)) } },
+      orderBy: { startsOn: 'asc' },
+      select: { id: true, startsOn: true, endsOn: true },
+    });
+    const breaks = breakRows.map((b) => ({ id: b.id, startsOn: fromDateColumn(b.startsOn), endsOn: fromDateColumn(b.endsOn) }));
+    const plannedBreaks = breaks.map(({ startsOn, endsOn }) => ({ startsOn, endsOn }));
 
-    const exercises: TodayExercise[] = session.exercises.map((slot) => {
-      const performedId = swaps.get(slot.id) ?? slot.exerciseId;
+    const computed = session.exercises.map((slot) => {
+      const performedId = performedOf(slot);
       const original: ExerciseRef = { id: slot.exercise.id, slug: slot.exercise.slug, nameEs: slot.exercise.nameEs };
       const performed = refs.get(performedId) ?? original;
       const entry = catalog.byId.get(performedId);
       const movementPattern = entry?.movementPattern ?? slot.exercise.movementPattern;
       const loadType = entry?.loadType ?? slot.exercise.loadType;
+      const implement = entry ? entry.loadImplement : loadImplement(slot.exercise);
       const own = history.entries.filter((h) => h.exerciseId === performed.slug);
       const substituted = performedId !== slot.exerciseId;
       const initial = substituted || slot.initialLoadKg === null ? null : Number(slot.initialLoadKg);
+      const current = currentLoad(loadType, initial, own);
       const result = nextPrescription({
         prescription: {
           exerciseId: performed.slug,
@@ -122,40 +159,85 @@ export class SessionsService {
           repMin: slot.repMin,
           repMax: slot.repMax,
           targetRir: slot.targetRir,
-          loadKg: currentLoad(loadType, initial, own),
+          loadKg: current,
+          implement,
         },
         history: own,
         today,
         weeksSinceDeload: weeks,
+        ...(plannedBreaks.length > 0 ? { breaks: plannedBreaks } : {}),
       });
       if (!result.ok) {
         throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, 'INTERNAL', 'Could not compute the prescription');
       }
-      const next = result.next;
-      return {
-        planExerciseId: slot.id,
-        order: slot.order,
-        exercise: performed,
-        substitutedFrom: substituted ? original : null,
-        cuesEs: entry?.cuesEs ?? slot.exercise.cuesEs,
-        movementPattern,
-        loadType,
-        role: slot.role,
-        restSeconds: slot.restSeconds,
-        prescription: {
-          action: next.action,
-          sets: next.sets,
-          repMin: next.repMin,
-          repMax: next.repMax,
-          targetRir: next.targetRir,
-          loadKg: next.loadKg,
-          isDeload: next.isDeload,
-          rationale: next.rationale,
-        },
-        warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null),
-        loggedSets: (workout?.setLogs ?? []).filter((s) => s.planExerciseId === slot.id).map(toSetResponse),
-      };
+      return { slot, performedId, original, performed, entry, movementPattern, loadType, implement, substituted, current, next: result.next };
     });
+
+    // Ajuste de hoy (idea 4): parámetros de la petición o, si no hay, el guardado al empezar.
+    const requested = query.minutes !== undefined || query.mode !== undefined;
+    const adjustment = requested
+      ? { source: 'query' as const, availableMinutes: query.minutes ?? null, reducedVolume: query.mode === 'reduced' }
+      : workout && (workout.adjustedMinutes !== null || workout.reducedVolume)
+        ? { source: 'workout' as const, availableMinutes: workout.adjustedMinutes, reducedVolume: workout.reducedVolume }
+        : null;
+    const active = adjustment && (adjustment.availableMinutes !== null || adjustment.reducedVolume) ? adjustment : null;
+    const adjusted = active
+      ? adjustSession(
+          computed.map((c) => ({
+            id: c.slot.id,
+            nameEs: c.performed.nameEs,
+            role: c.slot.role,
+            order: c.slot.order,
+            sets: c.next.sets,
+            repMin: c.next.repMin,
+            repMax: c.next.repMax,
+            targetRir: c.next.targetRir,
+            restSeconds: c.slot.restSeconds,
+            isUnilateral: c.entry?.isUnilateral ?? false,
+            warmupSets: Array.isArray(c.slot.warmupSets) ? c.slot.warmupSets.length : 0,
+          })),
+          { availableMinutes: active.availableMinutes, reducedVolume: active.reducedVolume },
+        )
+      : null;
+    const keptById = new Map(adjusted?.kept.map((k) => [k.id, k]) ?? []);
+
+    const exercises: TodayExercise[] = computed.flatMap((c) => {
+      const { slot, performedId, loadType, implement } = c;
+      const kept = keptById.get(slot.id);
+      if (adjusted && !kept) return [];
+      const next = kept && active ? adjustedPrescription(c.next, kept, active.reducedVolume, c.current) : c.next;
+      return [
+        {
+          planExerciseId: slot.id,
+          order: slot.order,
+          exercise: c.performed,
+          substitutedFrom: c.substituted ? c.original : null,
+          cuesEs: c.entry?.cuesEs ?? slot.exercise.cuesEs,
+          movementPattern: c.movementPattern,
+          loadType,
+          role: slot.role,
+          restSeconds: slot.restSeconds,
+          prescription: {
+            action: next.action,
+            sets: next.sets,
+            repMin: next.repMin,
+            repMax: next.repMax,
+            targetRir: next.targetRir,
+            loadKg: next.loadKg,
+            isDeload: next.isDeload,
+            rationale: next.rationale,
+          },
+          warmupSets: warmupsFor(slot.warmupSets, loadType === 'weighted' ? next.loadKg : null, implement),
+          loggedSets: (workout?.setLogs ?? []).filter((s) => s.planExerciseId === slot.id).map(toSetResponse),
+          loadImplement: implement,
+          loadStepKg: implement ? loadStepKg(implement) : null,
+          plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
+          pinned: !swaps.has(slot.id) && slot.override !== null && performedId !== slot.exerciseId,
+          note: notes.get(performedId) ?? null,
+        },
+      ];
+    });
+    const byId = new Map(computed.map((c) => [c.slot.id, c]));
 
     return {
       planVersionId: version.id,
@@ -173,6 +255,25 @@ export class SessionsService {
         ? { id: workout.id, clientId: workout.clientId, status: workout.status, startedAt: workout.startedAt.toISOString() }
         : null,
       exercises,
+      scheduledToday: isScheduledDay(
+        today,
+        ctx.profile.trainingWeekdays,
+        version.sessions.map((s) => s.dayIndex + 1),
+        plannedBreaks,
+      ),
+      activeBreak: activeBreak(today, breaks),
+      adjustment:
+        active && adjusted
+          ? {
+              source: active.source,
+              availableMinutes: active.availableMinutes,
+              reducedVolume: active.reducedVolume,
+              estimatedMinutes: adjusted.estimatedMinutes,
+              fits: adjusted.fits,
+              dropped: adjusted.dropped.map((id) => ({ planExerciseId: id, exercise: byId.get(id)!.performed })),
+              rationale: adjusted.rationale,
+            }
+          : null,
     };
   }
 }

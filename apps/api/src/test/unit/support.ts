@@ -1,5 +1,7 @@
 import { vi, type Mock } from 'vitest';
 import { loadCatalog } from '@pipos/catalog';
+import { loadImplement } from '@pipos/engine-rules';
+import { HEALTH_CONSENT_POLICY } from '@pipos/contracts';
 import type { TrainingProfile } from '@prisma/client';
 import { Clock } from '../../common/clock';
 import type { CatalogEntry, EngineCatalog } from '../../modules/catalog/catalog.service';
@@ -25,7 +27,9 @@ export function prismaMock(): PrismaMock {
       const fns = new Map<string, Mock>();
       m = new Proxy({} as Record<string, Mock>, {
         get: (_t, method: string) => {
-          if (!fns.has(method)) fns.set(method, vi.fn());
+          // `findMany` devuelve [] por defecto: una tabla sin filas (las lecturas nuevas no rompen
+          // los tests que no las configuran).
+          if (!fns.has(method)) fns.set(method, method === 'findMany' ? vi.fn().mockResolvedValue([]) : vi.fn());
           return fns.get(method);
         },
       });
@@ -76,6 +80,7 @@ export function fakeEngineCatalog(): EngineCatalog {
     isUnilateral: e.isUnilateral,
     cuesEs: e.cuesEs,
     muscles: e.muscles.map((m) => ({ muscle: m.muscle, fraction: m.fraction })),
+    loadImplement: loadImplement(e),
   }));
   return { exercises, bySlug: new Map(entries.map((e) => [e.slug, e])), byId: new Map(entries.map((e) => [e.id, e])) };
 }
@@ -107,6 +112,7 @@ export function profileRow(overrides: Partial<TrainingProfile> = {}): TrainingPr
     timezone: 'Europe/Madrid',
     activityLevel: null,
     limitations: [],
+    trainingWeekdays: [],
     weightKg: null,
     heightCm: null,
     birthYear: null,
@@ -117,7 +123,7 @@ export function profileRow(overrides: Partial<TrainingProfile> = {}): TrainingPr
   } as TrainingProfile;
 }
 
-export function grantedEvent(version = 'health-2026-11') {
+export function grantedEvent(version: string = HEALTH_CONSENT_POLICY.version) {
   return {
     id: 'c1',
     userId: UID,

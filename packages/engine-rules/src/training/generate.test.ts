@@ -287,7 +287,7 @@ describe('split, volumen y explicaciones', () => {
 
   it('versión del motor y mesociclo', () => {
     const pl = plan(profile());
-    expect(pl.engineVersion).toBe('2.0.0');
+    expect(pl.engineVersion).toBe('2.1.0');
     expect(pl.mesocycleWeeks).toBe(6);
     expect(pl.score.total).toBeGreaterThan(0.8);
   });

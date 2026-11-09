@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { plannedSessionsForWeek } from '@pipos/engine-rules';
 import type { AdherenceResponse, E1rmQuery, E1rmResponse, engineV2, VolumeResponse } from '@pipos/contracts';
 import { Clock } from '../../common/clock';
 import { addDays, dateColumn, fromDateColumn, weekStartOf } from '../../common/time';
@@ -113,7 +114,7 @@ export class ProgressService {
   async adherence(userId: string, weeks: number): Promise<AdherenceResponse> {
     const tz = await this.timezone(userId);
     const range = lastWeeks(weekStartOf(this.clock.now(), tz), weeks);
-    const [rows, version] = await Promise.all([
+    const [rows, version, breaks, profile] = await Promise.all([
       this.prisma.weeklyAdherence.findMany({
         where: { userId, weekStart: { gte: dateColumn(range[0]), lte: dateColumn(range[range.length - 1]) } },
       }),
@@ -133,7 +134,13 @@ export class ProgressService {
           },
         },
       }),
+      this.prisma.trainingBreak.findMany({
+        where: { userId, startsOn: { lte: dateColumn(addDays(range[range.length - 1], 6)) }, endsOn: { gte: dateColumn(range[0]) } },
+        select: { startsOn: true, endsOn: true },
+      }),
+      this.prisma.trainingProfile.findUnique({ where: { userId }, select: { trainingWeekdays: true } }),
     ]);
+    const plannedBreaks = breaks.map((b) => ({ startsOn: fromDateColumn(b.startsOn), endsOn: fromDateColumn(b.endsOn) }));
     // Semanas sin actividad: planificado = plan vigente (desde la semana en que se creó el primero).
     const firstWeek = version ? weekStartOf(version.createdAt, tz) : null;
     const latest = version?.plan.versions[0];
@@ -145,15 +152,19 @@ export class ProgressService {
     const out = range.map((weekStart) => {
       const r = byWeek.get(weekStart);
       const active = firstWeek !== null && weekStart >= firstWeek;
-      const plannedSessions = r?.plannedSessions ?? (active ? planned.sessions : 0);
+      // Pausas planificadas (idea 6): sus días no cuentan como previstos (§16.18).
+      const week = plannedSessionsForWeek(planned.sessions, weekStart, plannedBreaks, profile?.trainingWeekdays ?? []);
+      const plannedSessions = r?.plannedSessions ?? (active ? week.planned : 0);
       const completedSessions = r?.completedSessions ?? 0;
+      const setsIfIdle = planned.sessions > 0 ? Math.round((planned.sets * week.planned) / planned.sessions) : 0;
       return {
         weekStart,
         plannedSessions,
         completedSessions,
-        plannedSets: r?.plannedSets ?? (active ? planned.sets : 0),
+        plannedSets: r?.plannedSets ?? (active ? setsIfIdle : 0),
         completedSets: r?.completedSets ?? 0,
         sessionRatio: plannedSessions > 0 ? Math.round((completedSessions / plannedSessions) * 1000) / 1000 : 0,
+        breakDays: week.breakDays,
       };
     });
     const totalPlanned = out.reduce((n, w) => n + w.plannedSessions, 0);

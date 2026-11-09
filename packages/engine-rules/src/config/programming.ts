@@ -8,7 +8,7 @@
  */
 import type { engineV2 } from '@pipos/contracts';
 
-export const ENGINE_VERSION = '2.0.0';
+export const ENGINE_VERSION = '2.1.0';
 
 export type Confidence = 'alta' | 'media-alta' | 'media' | 'baja-media' | 'baja';
 export type Source = `PROGRAMACION.md §${string}`;
@@ -37,6 +37,7 @@ type Goal = engineV2.TrainingGoal;
 type Muscle = engineV2.Muscle;
 type VolumeGroup = engineV2.VolumeGroup;
 type MovementPattern = engineV2.MovementPattern;
+type LoadImplement = engineV2.LoadImplement;
 
 export interface RepScheme {
   readonly repMin: number;
@@ -251,6 +252,88 @@ export const PROGRAMMING = {
       note: 'Epley infraestima el peso muerto (LeSuer 1997): la carga se marca como estimación',
     }),
     loadRoundingKg: k(1, 'PROGRAMACION.md §16.10', 'baja', { heuristic: true, unit: 'kg' }),
+  },
+  /** Pasos reales de carga por material y discos (idea 1 de docs/IDEAS_EL_PLAN.md). */
+  load: {
+    stepKgByImplement: k<Record<LoadImplement, number>>(
+      {
+        barbell: 2.5,
+        trap_bar: 2.5,
+        ez_bar: 2.5,
+        smith_machine: 2.5,
+        dumbbell: 2,
+        kettlebell: 4,
+        machine: 5,
+        cable: 2.5,
+        weight_plate: 2.5,
+      },
+      'PROGRAMACION.md §16.16',
+      'baja',
+      {
+        heuristic: true,
+        unit: 'kg totales',
+        note: 'INCREMENTO_MIN_KG §7 («el siguiente peso disponible»); material típico de gimnasio, decisión de diseño',
+      },
+    ),
+    barKg: k<Partial<Record<LoadImplement, number>>>(
+      { barbell: 20, ez_bar: 10, trap_bar: 25 },
+      'PROGRAMACION.md §16.16',
+      'baja',
+      { heuristic: true, unit: 'kg', note: 'barras estándar; la guiada (smith) varía y no se desglosa' },
+    ),
+    platesKg: k<readonly number[]>([25, 20, 15, 10, 5, 2.5, 1.25], 'PROGRAMACION.md §16.16', 'baja', {
+      heuristic: true,
+      unit: 'kg por disco',
+    }),
+    bigJumpPct: k(10, 'PROGRAMACION.md §16.16', 'baja', {
+      heuristic: true,
+      unit: '%',
+      note: 'por encima, la explicación avisa de que el siguiente peso disponible es un salto grande',
+    }),
+  },
+  /** Ajuste de la sesión de hoy: poco tiempo o volumen reducido (idea 4, ADR-0013). */
+  adjust: {
+    dropOrder: k(['core', 'accessory', 'secondary'] as const, 'PROGRAMACION.md §16.17', 'baja', {
+      heuristic: true,
+      note: 'orden inverso de prioridad de §6; nunca se quita el principal',
+    }),
+    minMinutes: k(15, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'min' }),
+    maxMinutes: k(90, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'min' }),
+    minMainSets: k(2, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedSetsDelta: k(1, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedMinSetsMain: k(2, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedMinSetsOther: k(1, 'PROGRAMACION.md §16.17', 'baja', { heuristic: true, unit: 'series' }),
+    reducedExtraRir: k(1, 'PROGRAMACION.md §16.17', 'baja', {
+      heuristic: true,
+      note: 'apoyo: autorregulación por RIR (Graham y Cleather 2021; Helms 2018, §7)',
+    }),
+  },
+  /** Medidas corporales: tendencia de peso, IMC y % de grasa estimado (idea 7, ADR-0013). */
+  body: {
+    movingAverageDays: k(7, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'días' }),
+    trendWindowDays: k(28, 'PROGRAMACION.md §16.19', 'baja', {
+      heuristic: true,
+      unit: 'días',
+      note: '§11 regla 6: recalibrar con la tendencia real cada 2-3 semanas; se usan las 4 últimas',
+    }),
+    minSpanDays: k(14, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'días' }),
+    minEntries: k(4, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'registros' }),
+    gainRatePctPerWeek: k(0.25, 'PROGRAMACION.md §11', 'baja', {
+      unit: '% peso/sem',
+      range: [0.25, 0.5],
+      note: 'Iraki et al. 2019, cifra de resúmenes secundarios [NO VERIFICADO textualmente]',
+    }),
+    bmiCutoffs: k<readonly [number, number, number, number, number]>([18.5, 25, 30, 35, 40], 'PROGRAMACION.md §16.19', 'alta', {
+      unit: 'kg/m²',
+      note: 'WHO 2000 (TRS 894): adultos; poblaciones asiáticas usan cortes más bajos (WHO 2004)',
+    }),
+    bmiAdultAge: k(18, 'PROGRAMACION.md §16.19', 'alta', { unit: 'años' }),
+    navyMale: k({ c: 1.0324, abdomenNeck: 0.19077, height: 0.15456 }, 'PROGRAMACION.md §16.19', 'media', {
+      note: 'Hodgdon y Beckett 1984 (NHRC 84-11): densidad corporal en cm y log10; % = 495/D − 450 (Siri 1961)',
+    }),
+    navyFemale: k({ c: 1.29579, waistHipNeck: 0.35004, height: 0.221 }, 'PROGRAMACION.md §16.19', 'media', {
+      note: 'Hodgdon y Beckett 1984 (NHRC 84-29); % = 495/D − 450 (Siri 1961)',
+    }),
   },
   balance: {
     pullPushRatioMin: k(1, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),

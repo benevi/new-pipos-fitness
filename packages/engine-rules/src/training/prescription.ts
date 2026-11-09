@@ -4,6 +4,7 @@
  */
 import type { engineV2 } from '@pipos/contracts';
 import { schemeGoal, type ProgrammingConfig, type RepScheme } from '../config/programming.js';
+import { barKgFor, roundLoad, type LoadImplement } from './load.js';
 import type { Ex, ExerciseRole, Profile } from './model.js';
 
 export interface Scheme extends RepScheme {
@@ -132,7 +133,15 @@ export function initialLoad(
     };
   }
   const raw = best.e1rm / (1 + eff / config.e1rm.epleyDivisor.value);
-  const load = roundDown(raw, config.e1rm.loadRoundingKg.value);
+  // Hacia abajo al paso real del material (§16.16): nunca un peso que no existe.
+  const load = roundLoad(raw, ex.implement, 'down', config);
+  if (load <= 0) {
+    return {
+      loadKg: null,
+      isEstimate: true,
+      note: `Tu e1RM da una carga menor que el peso más ligero de este material: elige el peso que te deje ${scheme.rir} en reserva.`,
+    };
+  }
   const unreliable = config.e1rm.unreliablePatterns.value.includes(ex.pattern);
   return {
     loadKg: load,
@@ -147,11 +156,17 @@ export function warmupSets(
   count: number,
   workingLoad: number | null,
   config: ProgrammingConfig,
+  implement: LoadImplement | null = null,
 ): engineV2.WarmupSet[] {
   const ramp = config.prescription.warmup.ramp.value.slice(0, count);
+  // En barra, la aproximación nunca baja de la barra vacía (no existe un peso menor).
+  const bar = barKgFor(implement, config) ?? 0;
   return ramp.map((r) => ({
     reps: r.reps,
     loadPct: r.pct,
-    loadKg: workingLoad === null ? null : roundDown((workingLoad * r.pct) / 100, config.e1rm.loadRoundingKg.value),
+    loadKg:
+      workingLoad === null
+        ? null
+        : Math.min(workingLoad, Math.max(bar, roundLoad((workingLoad * r.pct) / 100, implement, 'down', config))),
   }));
 }
