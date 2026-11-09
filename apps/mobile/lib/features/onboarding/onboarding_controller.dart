@@ -26,7 +26,7 @@ enum ProfileFormMode { onboarding, edit }
 /// Zona horaria IANA del dispositivo (sustituible en tests).
 final deviceTimezoneProvider = FutureProvider<String>((ref) async {
   try {
-    final tz = await FlutterTimezone.getLocalTimezone();
+    final tz = (await FlutterTimezone.getLocalTimezone()).identifier;
     return tz.isEmpty ? 'UTC' : tz;
   } catch (_) {
     return 'UTC';
