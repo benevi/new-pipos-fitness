@@ -65,6 +65,7 @@ Concurrencia, permisos y zonas horarias no aplican al motor (función pura); per
 | Solución inicial | Patrón sin candidatos | Alta | Alternativas de patrón por hueco y aviso `PATTERN_UNCOVERED` | Aviso |
 | Búsqueda local | No termina o tarda | Media | Máximo de iteraciones y evaluaciones; corte por tiempo como red de seguridad con aviso `LOCAL_SEARCH_TIME_LIMIT` | `meta.localSearch` |
 | Búsqueda local | Empeora restricciones duras | Alta | Solo se aceptan vecinos que mantienen I1–I7; los movimientos solo usan candidatos filtrados | Tests de propiedades |
+| Búsqueda local | Erosiona suelos o la calidad de los ejercicios para ganar balance o variedad | Alta | No acepta movimientos que dejen un grupo bajo su suelo o con < 2 sesiones, ni intercambios a un ejercicio de menor calidad estática (§16.8) | Revisión de ejemplos; I4, I8 |
 | Scoring | Pesos que premian sesiones cortas | Media | `timeFit` penaliza pasarse y quedarse corto | Test de scoring |
 | Determinismo | Desempate por UUID o `localeCompare` dependiente del locale | Alta | Desempate por `slug` con comparación por código (`<`) | I9 |
 | Explicaciones | Texto genérico | Baja | Plantillas con datos del usuario (días, minutos, objetivo, e1RM) | Revisión en `ejemplos/REVISION.md` |

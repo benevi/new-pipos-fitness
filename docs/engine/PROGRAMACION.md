@@ -717,6 +717,8 @@ Un grupo cuenta como «entrenado» en una sesión si recibe **≥ 1 serie efecti
 
 Dos ejercicios del mismo grupo de sustitución no van en la misma sesión, salvo que trabajen un músculo prioritario.
 
+Al rellenar tiempo libre, **core y gemelos solo se llevan hasta el suelo** (salvo que sean prioritarios) y una sesión lleva **como mucho 2 ejercicios de core**: el tiempo sobrante se reparte primero entre los grupos grandes.
+
 ### 16.4 Prescripción por objetivo
 
 - Aislamiento en hipertrofia: 10-15 reps (dentro de `REPS_HIPERTROFIA_RANGO` 5-30, §3) a RIR 1 (§4).
@@ -727,6 +729,8 @@ Dos ejercicios del mismo grupo de sustitución no van en la misma sesión, salvo
 ### 16.5 Series de aproximación
 
 Primer multiarticular con carga de la sesión: 2 series (3 si el objetivo es fuerza) al **50 % × 8, 70 % × 5 y 85 % × 3** de la carga de trabajo. Los porcentajes son práctica habitual; no hay estudio que los fije.
+
+El resto de multiarticulares pesados (esquema de fuerza a 3-6 reps) llevan **1** serie de aproximación al 50 % (`N_SERIES_APROX_OTROS` 0-1, §8).
 
 ### 16.6 Tiempo
 
@@ -742,13 +746,15 @@ Primer multiarticular con carga de la sesión: 2 series (3 si el objetivo es fue
 | ajuste de volumen | 0,20 | dentro de [suelo, techo]; los prioritarios puntúan más cerca del techo |
 | ajuste de tiempo | 0,20 | penaliza pasarse (pendiente 5) y quedarse corto (pendiente 1, fuera de la tolerancia) |
 | frecuencia | 0,10 | grupos con ≥ 2 sesiones/semana (§2) |
-| balance tirón/empuje | 0,10 | ratio dentro de [1,0; 1,5] (§10) |
+| balance tirón/empuje | 0,10 | ratio dentro de [1,0; 1,5] (§10); no penaliza empujar si la espalda ya está en su techo |
 | variedad | 0,10 | penaliza repetir el mismo ejercicio en la semana |
 | preferencias | 0,05 | favoritos incluidos y pocos ejercicios con precaución en zonas limitadas (penalización 0,5) |
 
 ### 16.8 Búsqueda local
 
 Máximo **60 iteraciones** y **40.000 evaluaciones** (límites deterministas). El tope de **1.000 ms** es solo una red de seguridad: si salta, se avisa (`LOCAL_SEARCH_TIME_LIMIT`), porque el resultado podría depender de la máquina. Solo se aceptan intercambios que no empeoran la calidad estática del ejercicio (patrón, músculo natural, carga, precaución).
+
+Tampoco se acepta un movimiento que deje un grupo por debajo de su suelo de volumen o de 2 sesiones/semana si antes lo cumplía.
 
 ### 16.9 Progresión: bajadas y pausas
 
@@ -782,3 +788,7 @@ Los acarreos (`carry`) se prescriben por tiempo o distancia, no por repeticiones
 ### 16.14 Mesociclo
 
 El plan se versiona en mesociclos de **6 semanas**, igual a `DELOAD_CADA_SEMANAS` (§7).
+
+### 16.15 Afinidad en la selección de ejercicios
+
+Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`.
