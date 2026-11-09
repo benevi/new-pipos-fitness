@@ -152,12 +152,10 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | T | Dependencias comprometidas o vulnerables | `--frozen-lockfile`; `pnpm audit --prod --audit-level high` en CI (falla con altas/críticas); Dependabot semanal agrupado (npm, pub, actions). Excepción documentada abajo | ✅ CI (issue #18) |
 | T | CI con permisos amplios | `permissions: contents: read` | ✅ |
 
-#**Excepciones de `pnpm audit`** (`package.json` → `pnpm.auditConfig.ignoreGhsas`; revisar en
-cada actualización de dependencias y quitarlas en cuanto haya parche aplicable):
-
-| Aviso | Paquete | Por qué se acepta | Salida |
-|---|---|---|---|
-| GHSA-mrhx-c7xc-m3w5 (alta) | `zod` 3.25 (contratos y validación de toda la API) | Solo hay parche en zod ≥ 4.6.6 (versión mayor, con cambios de API en todos los contratos y en `zod-to-json-schema`). El ataque necesita colecciones enormes en la entrada; los cuerpos JSON están limitados por `body-parser` (100 kB por defecto), así que el consumo de memoria por petición queda acotado; además hay rate limiting por IP | Migrar a zod 4 en un PR propio (contratos + OpenAPI + fixtures móviles) |
+#**Excepciones de `pnpm audit`**: ninguna. Si alguna vez hiciera falta, se declara en `package.json`
+(`pnpm.auditConfig.ignoreGhsas`) con su motivo y su salida en esta sección. La última,
+GHSA-mrhx-c7xc-m3w5 (`zod` 3), se cerró al migrar a zod 4.6 (contratos, API y OpenAPI con
+`z.toJSONSchema`).
 
 Las demás vulnerabilidades altas/críticas transitivas se corrigen con `pnpm.overrides` a la versión
 parcheada más cercana dentro de la misma mayor: hoy solo `proxy-addr` (de Express 5) y `js-yaml` 4
