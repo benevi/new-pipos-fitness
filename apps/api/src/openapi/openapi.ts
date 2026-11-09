@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import * as contracts from '@pipos/contracts';
-import { ZodEffects, ZodObject, ZodType, type ZodRawShape, type ZodTypeAny } from 'zod';
+import type { ZodRawShape, ZodTypeAny } from 'zod';
 import { zodToJsonSchema } from 'zod-to-json-schema';
 import { CONTRACT_KEY, type ContractSpec } from '../common/contract';
 
@@ -58,11 +58,15 @@ export function collectRoutes(modules: readonly unknown[]): RouteContract[] {
   return routes.sort((a, b) => (a.path + a.method < b.path + b.method ? -1 : 1));
 }
 
+function isZod(v: unknown): v is ZodTypeAny {
+  return typeof v === 'object' && v !== null && typeof (v as any).safeParse === 'function' && '_def' in v;
+}
+
 /** Nombre exportado de cada esquema de @pipos/contracts (para $ref en components). */
 function schemaNames(): Map<ZodTypeAny, string> {
   const names = new Map<ZodTypeAny, string>();
   for (const [key, value] of Object.entries(contracts)) {
-    if (value instanceof ZodType && key.endsWith('Schema') && !names.has(value)) {
+    if (isZod(value) && key.endsWith('Schema') && !names.has(value)) {
       names.set(value, key.replace(/Schema$/, ''));
     }
   }
@@ -81,10 +85,11 @@ function toJsonSchema(schema: ZodTypeAny, io: 'input' | 'output'): Json {
 }
 
 function objectShape(schema: ZodTypeAny): ZodRawShape {
-  let s: ZodTypeAny = schema;
-  while (s instanceof ZodEffects) s = s.innerType();
-  if (!(s instanceof ZodObject)) throw new Error('params/query contracts must be Zod objects');
-  return s.shape;
+  // Sin instanceof: @pipos/contracts (CJS) y la API pueden cargar copias distintas de zod.
+  let s: any = schema;
+  while (s?._def?.typeName === 'ZodEffects') s = s._def.schema;
+  if (s?._def?.typeName !== 'ZodObject') throw new Error('params/query contracts must be Zod objects');
+  return s.shape as ZodRawShape;
 }
 
 function parameters(schema: ZodTypeAny | undefined, where: 'path' | 'query'): Json[] {
