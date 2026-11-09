@@ -21,6 +21,7 @@ import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
+import 'adjust_sheet.dart';
 import 'note_sheet.dart';
 import 'plates.dart';
 import 'rest_timer_bar.dart';
@@ -110,7 +111,11 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     if (open != null) return open;
     return ref
         .read(syncServiceProvider)
-        .startWorkout(planSessionId: session.planSessionId);
+        .startWorkout(
+          planSessionId: session.planSessionId,
+          adjustment:
+              ref.read(todayAdjustmentProvider) ?? session.adjustment?.request,
+        );
   }
 
   Future<void> _logSet(
@@ -298,6 +303,28 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             style: theme.textTheme.bodyMedium,
           ),
           RationaleExpander(lines: session.rationale),
+          if (session.adjustment != null)
+            AdjustmentBanner(
+              adjustment: session.adjustment!,
+              canRemove:
+                  !hasLogged &&
+                  session.workout == null &&
+                  session.adjustment!.source == 'query',
+            )
+          else if (!hasLogged && session.workout == null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                key: const Key('adjust-open'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                ),
+                onPressed: () => showAdjustSheet(context),
+                icon: const Icon(Icons.timer_outlined),
+                label: Text(l10n.adjustOpen),
+              ),
+            ),
+
           if (session.generalWarmupMinutes > 0)
             NoticeBanner(
               text: l10n.todayGeneralWarmup(

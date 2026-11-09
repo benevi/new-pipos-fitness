@@ -308,5 +308,25 @@
   "pinnedInsteadOf": "Pinned swap: instead of {name}",
   "unpinAction": "Go back to {name}",
   "unpinDone": "Back to {name}",
-  "pinDroppedTitle": "A pinned swap can no longer be applied."
+  "pinDroppedTitle": "A pinned swap can no longer be applied.",
+
+  "adjustOpen": "Short on time today?",
+  "adjustTitle": "Adjust today's session",
+  "adjustIntro": "Pick the time you have or a lighter version. It only changes today: your plan stays the same and it doesn't count as a drop in performance.",
+  "adjustMinutesLabel": "Time available",
+  "adjustMinutesChip": "{minutes} min",
+  "adjustReducedLabel": "Reduced volume",
+  "adjustReducedHelp": "One set fewer per exercise and 1 more rep in reserve, without increasing load.",
+  "adjustPreview": "See how it looks",
+  "adjustPickSomething": "Pick a time or turn on reduced volume.",
+  "adjustEstimated": "Estimated duration: {minutes} min",
+  "adjustDroppedTitle": "Dropped today:",
+  "adjustNothingDropped": "No exercise is dropped.",
+  "adjustDoesNotFit": "Even the essentials don't fit in that time: do what you can, starting with the main lift.",
+  "adjustApply": "Start with this adjustment",
+  "adjustBannerMinutes": "Session adjusted to {minutes} min",
+  "adjustBannerReduced": "Reduced-volume session",
+  "adjustBannerBoth": "Session adjusted to {minutes} min with reduced volume",
+  "adjustBannerDropped": "Skipped today: {names}",
+  "adjustRemove": "Back to the full session"
 }

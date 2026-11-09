@@ -1807,6 +1807,120 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Un cambio fijado ya no se puede aplicar.'**
   String get pinDroppedTitle;
+
+  /// No description provided for @adjustOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Poco tiempo hoy?'**
+  String get adjustOpen;
+
+  /// No description provided for @adjustTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar la sesión de hoy'**
+  String get adjustTitle;
+
+  /// No description provided for @adjustIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige el tiempo que tienes o una versión más ligera. Solo cambia hoy: tu plan sigue igual y no cuenta como bajada de rendimiento.'**
+  String get adjustIntro;
+
+  /// No description provided for @adjustMinutesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo disponible'**
+  String get adjustMinutesLabel;
+
+  /// No description provided for @adjustMinutesChip.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes} min'**
+  String adjustMinutesChip(int minutes);
+
+  /// No description provided for @adjustReducedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Volumen reducido'**
+  String get adjustReducedLabel;
+
+  /// No description provided for @adjustReducedHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Una serie menos por ejercicio y 1 repetición más en reserva, sin subir carga.'**
+  String get adjustReducedHelp;
+
+  /// No description provided for @adjustPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver cómo queda'**
+  String get adjustPreview;
+
+  /// No description provided for @adjustPickSomething.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un tiempo o activa el volumen reducido.'**
+  String get adjustPickSomething;
+
+  /// No description provided for @adjustEstimated.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración estimada: {minutes} min'**
+  String adjustEstimated(int minutes);
+
+  /// No description provided for @adjustDroppedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy se quitan:'**
+  String get adjustDroppedTitle;
+
+  /// No description provided for @adjustNothingDropped.
+  ///
+  /// In es, this message translates to:
+  /// **'No se quita ningún ejercicio.'**
+  String get adjustNothingDropped;
+
+  /// No description provided for @adjustDoesNotFit.
+  ///
+  /// In es, this message translates to:
+  /// **'Ni con lo esencial cabe en ese tiempo: haz lo que puedas, empezando por el principal.'**
+  String get adjustDoesNotFit;
+
+  /// No description provided for @adjustApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Empezar con este ajuste'**
+  String get adjustApply;
+
+  /// No description provided for @adjustBannerMinutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión ajustada a {minutes} min'**
+  String adjustBannerMinutes(int minutes);
+
+  /// No description provided for @adjustBannerReduced.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión con volumen reducido'**
+  String get adjustBannerReduced;
+
+  /// No description provided for @adjustBannerBoth.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión ajustada a {minutes} min y con volumen reducido'**
+  String adjustBannerBoth(int minutes);
+
+  /// No description provided for @adjustBannerDropped.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy sin: {names}'**
+  String adjustBannerDropped(String names);
+
+  /// No description provided for @adjustRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la sesión completa'**
+  String get adjustRemove;
 }
 
 class _AppLocalizationsDelegate

@@ -1322,4 +1322,75 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get pinDroppedTitle => 'Un cambio fijado ya no se puede aplicar.';
+
+  @override
+  String get adjustOpen => '¿Poco tiempo hoy?';
+
+  @override
+  String get adjustTitle => 'Ajustar la sesión de hoy';
+
+  @override
+  String get adjustIntro =>
+      'Elige el tiempo que tienes o una versión más ligera. Solo cambia hoy: tu plan sigue igual y no cuenta como bajada de rendimiento.';
+
+  @override
+  String get adjustMinutesLabel => 'Tiempo disponible';
+
+  @override
+  String adjustMinutesChip(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get adjustReducedLabel => 'Volumen reducido';
+
+  @override
+  String get adjustReducedHelp =>
+      'Una serie menos por ejercicio y 1 repetición más en reserva, sin subir carga.';
+
+  @override
+  String get adjustPreview => 'Ver cómo queda';
+
+  @override
+  String get adjustPickSomething =>
+      'Elige un tiempo o activa el volumen reducido.';
+
+  @override
+  String adjustEstimated(int minutes) {
+    return 'Duración estimada: $minutes min';
+  }
+
+  @override
+  String get adjustDroppedTitle => 'Hoy se quitan:';
+
+  @override
+  String get adjustNothingDropped => 'No se quita ningún ejercicio.';
+
+  @override
+  String get adjustDoesNotFit =>
+      'Ni con lo esencial cabe en ese tiempo: haz lo que puedas, empezando por el principal.';
+
+  @override
+  String get adjustApply => 'Empezar con este ajuste';
+
+  @override
+  String adjustBannerMinutes(int minutes) {
+    return 'Sesión ajustada a $minutes min';
+  }
+
+  @override
+  String get adjustBannerReduced => 'Sesión con volumen reducido';
+
+  @override
+  String adjustBannerBoth(int minutes) {
+    return 'Sesión ajustada a $minutes min y con volumen reducido';
+  }
+
+  @override
+  String adjustBannerDropped(String names) {
+    return 'Hoy sin: $names';
+  }
+
+  @override
+  String get adjustRemove => 'Volver a la sesión completa';
 }

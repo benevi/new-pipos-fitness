@@ -16,13 +16,21 @@ import '../../core/offline/offline_providers.dart';
 import '../../data/pipos_api.dart';
 import '../../models/workout.dart';
 
+/// Ajuste de hoy elegido antes de empezar (idea 4); null = sesión completa.
+/// Una vez empezado el entrenamiento, la API aplica el ajuste guardado.
+final todayAdjustmentProvider = StateProvider<WorkoutAdjustment?>((_) => null);
+
 /// Sesión de hoy con respaldo en caché. `null` = no hay plan/perfil.
 final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
   ref,
 ) async {
   final cache = ref.read(cacheStoreProvider);
+  final adjustment = ref.watch(todayAdjustmentProvider);
   try {
-    final session = await ref.watch(workoutApiProvider).getToday();
+    final session = await ref
+        .watch(workoutApiProvider)
+        .getToday(adjustment: adjustment);
+
     await cache.write(CacheKeys.today, session.toJson());
     return Cached(session);
   } on ApiFailure catch (f) {

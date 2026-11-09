@@ -1319,4 +1319,74 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get pinDroppedTitle => 'A pinned swap can no longer be applied.';
+
+  @override
+  String get adjustOpen => 'Short on time today?';
+
+  @override
+  String get adjustTitle => 'Adjust today\'s session';
+
+  @override
+  String get adjustIntro =>
+      'Pick the time you have or a lighter version. It only changes today: your plan stays the same and it doesn\'t count as a drop in performance.';
+
+  @override
+  String get adjustMinutesLabel => 'Time available';
+
+  @override
+  String adjustMinutesChip(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get adjustReducedLabel => 'Reduced volume';
+
+  @override
+  String get adjustReducedHelp =>
+      'One set fewer per exercise and 1 more rep in reserve, without increasing load.';
+
+  @override
+  String get adjustPreview => 'See how it looks';
+
+  @override
+  String get adjustPickSomething => 'Pick a time or turn on reduced volume.';
+
+  @override
+  String adjustEstimated(int minutes) {
+    return 'Estimated duration: $minutes min';
+  }
+
+  @override
+  String get adjustDroppedTitle => 'Dropped today:';
+
+  @override
+  String get adjustNothingDropped => 'No exercise is dropped.';
+
+  @override
+  String get adjustDoesNotFit =>
+      'Even the essentials don\'t fit in that time: do what you can, starting with the main lift.';
+
+  @override
+  String get adjustApply => 'Start with this adjustment';
+
+  @override
+  String adjustBannerMinutes(int minutes) {
+    return 'Session adjusted to $minutes min';
+  }
+
+  @override
+  String get adjustBannerReduced => 'Reduced-volume session';
+
+  @override
+  String adjustBannerBoth(int minutes) {
+    return 'Session adjusted to $minutes min with reduced volume';
+  }
+
+  @override
+  String adjustBannerDropped(String names) {
+    return 'Skipped today: $names';
+  }
+
+  @override
+  String get adjustRemove => 'Back to the full session';
 }
