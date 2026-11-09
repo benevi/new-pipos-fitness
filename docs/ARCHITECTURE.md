@@ -21,7 +21,9 @@ Y **tres paquetes TypeScript** compartidos:
   (ADR-0004, ADR-0006). Constantes citadas en `src/config/programming.ts`
   (fuentes en [engine/PROGRAMACION.md](engine/PROGRAMACION.md)).
 - `packages/catalog`: catálogo de ~144 ejercicios en JSON revisado en git, con músculos y
-  fracciones, material, nivel, tipo de carga y etiquetas de riesgo por zona (ADR-0005).
+  fracciones, material, nivel, tipo de carga y etiquetas de riesgo por zona (ADR-0005), y la
+  ficha de cada uno: descripción, claves técnicas y errores comunes (ADR-0014; contenido
+  pendiente de revisión por un entrenador titulado antes del lanzamiento).
 
 **No existen** en v1: worker ni colas (ADR-0002), coach de IA (ADR-0003), panel o rutas de
 administración (ADR-0005), alimentos ni comidas (ADR-0004), notificaciones ni pagos.
@@ -52,7 +54,7 @@ mobile ── HTTP/JSON ──▶ api   (los fixtures de la app se validan contr
 | `analytics` | Proyecciones calculadas **al escribir** en la misma transacción (ADR-0008): `ExerciseE1rm`, `WeeklyMuscleVolume`, `WeeklyGroupVolume`, `WeeklyAdherence`. Reconstruibles con `pnpm --filter @pipos/api analytics:rebuild`. |
 | `progress` | `GET /progress/*`: solo leen las proyecciones. |
 | `nutrition` | `GET /me/nutrition-targets`: cálculo puro, no se persiste. |
-| `catalog` | `GET /exercises[/:id]` y caché en memoria del catálogo para el motor. |
+| `catalog` | `GET /exercises` y `GET /exercises/:id` (ficha por id o slug, ADR-0014) y caché en memoria del catálogo para el motor. |
 | `common`, `config`, `logging`, `monitoring`, `health`, `openapi` | Errores tipados, interceptor de contratos (valida entrada y salida con Zod), reloj inyectable, entorno validado, logs JSON redactados, sondas, generación de OpenAPI. |
 
 ### Flujo de datos principal
@@ -85,7 +87,9 @@ mobile ── HTTP/JSON ──▶ api   (los fixtures de la app se validan contr
 - `core/auth`: tokens en `flutter_secure_storage`.
 - `core/offline`: base drift (SQLite) con la cola de entrenamientos/series y una caché de
   lecturas; `SyncService` sincroniza en orden con reintentos exponenciales (ADR-0007).
-- `features/`: `auth`, `onboarding`, `today`, `plan`, `progress`, `settings`.
+- `features/`: `auth`, `onboarding`, `today`, `plan`, `progress`, `settings` y `exercise`
+  (ficha del ejercicio, `/exercise/:id`: se guarda en la caché de lecturas y se precargan las
+  del plan vigente y de la sesión de hoy para verlas sin red; CUJ-11).
   UX documentada en [UX_MOVIL.md](UX_MOVIL.md).
 
 ### Sincronización offline

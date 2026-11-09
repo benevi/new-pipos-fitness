@@ -22,6 +22,8 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
     ├── profile ────── editar perfil (mismo cuestionario, sin consentimiento)
     └── schedule ───── días de entreno, pausas y recordatorio local (ADR-0013)
 /workout-complete ── pantalla completa, sin barra
+/exercise/:id ── ficha del ejercicio (id o slug), pantalla completa (CUJ-11, ADR-0014);
+                 se abre desde Hoy, Plan, el cambio de ejercicio y el onboarding
 ```
 
 - Cuatro destinos, etiquetados con texto e icono (Material `NavigationBar`). Pulsar el destino activo vuelve a su raíz.
@@ -45,6 +47,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | Nota fija (Hoy) | — | «Añadir nota» | — | se guarda en la cola y se ve con el icono «Pendiente de sincronizar» |
 | ¿Poco tiempo hoy? | spinner en el botón «Ver cómo queda» | sin elegir nada: «Elige un tiempo o activa el volumen reducido.» | mensaje en la hoja | «Necesitas conexión para hacer esto.»; una vez aceptada, la sesión ajustada queda en caché |
 | Días y pausas | barra lineal | «No tienes pausas planificadas.» | snackbar con el error (422 → «elige N como mucho») | «Necesitas conexión para hacer esto.»; el recordatorio usa las pausas en caché |
+| Ficha del ejercicio | spinner | sin descripción o sin errores comunes: esas secciones no se pintan (sin huecos) | 404 → «Este ejercicio ya no está en el catálogo.» (sin reintento); otros → mensaje + Reintentar | copia en caché con «Sin conexión. Datos guardados el …» (las del plan vigente y de la sesión de hoy se precargan); sin copia: «Necesitas conexión para ver esta ficha.» + Reintentar |
 | Cuerpo | spinner | sin consentimiento: explicación + «Leer y aceptar»; sin medidas: cómo pesarse | mensaje + Reintentar | última copia en caché; las medidas nuevas van a la cola |
 
 ## 3. Decisiones de interacción
@@ -63,6 +66,13 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Borrar cuenta:** diálogo con icono de aviso, consecuencias en una frase, contraseña obligatoria y botón destructivo con el color de error. Contraseña incorrecta (403) → error en el campo; la sesión sigue abierta.
 - **Cambiar el perfil** reutiliza el cuestionario. Si la API crea versión nueva, un diálogo lo explica («hemos creado la versión N… tu historial se conserva») y ofrece «Ver el plan».
 - **Tipografía.** Fuente del sistema de cada plataforma (Roboto en Android, San Francisco en iOS) vía `Typography.material2021`, sin fuentes empaquetadas. `AppTheme` fusiona la escala de `AppTypography` (tamaños, pesos, colores) sobre esa base, de modo que todos los estilos llevan `fontFamily`, y los estilos de botones, AppBar, pestañas y barra de navegación salen de ese `TextTheme` fusionado (nunca de `AppTypography` en crudo). Así no hay mezcla de familias en iOS. Lo comprueba `test/app/tokens_contrast_test.dart` (Android e iOS).
+
+### Ficha del ejercicio (CUJ-11, ADR-0014)
+
+- **Entrada.** El nombre del ejercicio en la tarjeta de Hoy y en cada sesión de Plan es un enlace (icono ⓘ, área táctil ≥ 48 dp; TalkBack: «Ver ficha de …», y en Hoy sigue siendo encabezado). En la hoja de cambiar ejercicio, el nombre de cada alternativa; en la búsqueda de favoritos y vetados del onboarding y de Editar perfil, el botón ⓘ de cada resultado. Desde las hojas, la ficha se apila encima y al volver la hoja sigue abierta.
+- **Contenido, en este orden.** Descripción (qué es y qué trabaja); «Músculos que trabaja» con chips de principales (resaltados) y secundarios; «Claves técnicas»; «Errores comunes»; «Qué necesitas» (material y nivel mínimo); «Zonas a vigilar».
+- **Zonas a vigilar.** Solo si el consentimiento de salud cubre las limitaciones y alguna limitación del perfil coincide con las `riskTags` del ejercicio («Rodilla: este ejercicio la carga»; las de «evitar» primero), con la nota «No es consejo médico…». Sin perfil disponible (sin red) no se muestran: nunca se adivinan.
+- **Idioma.** La descripción, las claves y los errores solo existen en castellano (deuda #29); la interfaz de la ficha sí está en es/en.
 
 ### Ideas recuperadas (ADR-0013)
 
@@ -105,6 +115,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | Lector de pantalla en dispositivo real (TalkBack) | pendiente | no hay SDK de Android en este entorno; queda para la QA de la Fase 5 |
 | Pantallas y hojas de ADR-0013 al 200 % (discos, nota, ajuste de hoy, días y pausas, Cuerpo, formulario de medidas) | ✓ | `test/a11y/text_scale_test.dart` |
 | Recordatorio: permiso explicado antes de pedirlo | ✓ | `test/features/settings/schedule_test.dart` |
+| Ficha del ejercicio al 200 %, objetivos ≥ 48 dp y enlaces con etiqueta «Ver ficha de …» | ✓ | `test/features/exercise/exercise_detail_test.dart` |
 
 ## 7. Skills consultadas
 
