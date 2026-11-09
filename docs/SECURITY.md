@@ -159,10 +159,12 @@ cada actualización de dependencias y quitarlas en cuanto haya parche aplicable)
 |---|---|---|---|
 | GHSA-mrhx-c7xc-m3w5 (alta) | `zod` 3.25 (contratos y validación de toda la API) | Solo hay parche en zod ≥ 4.6.6 (versión mayor, con cambios de API en todos los contratos y en `zod-to-json-schema`). El ataque necesita colecciones enormes en la entrada; los cuerpos JSON están limitados por `body-parser` (100 kB por defecto), así que el consumo de memoria por petición queda acotado; además hay rate limiting por IP | Migrar a zod 4 en un PR propio (contratos + OpenAPI + fixtures móviles) |
 
-Las demás vulnerabilidades altas/críticas transitivas (multer, body-parser, path-to-regexp,
-proxy-addr de `@nestjs/platform-express`; lodash y js-yaml de `@nestjs/swagger`) se corrigen con
-`pnpm.overrides` a la versión parcheada más cercana dentro de la misma mayor; tar y brace-expansion
-desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato de hash `$2b$`).
+Las demás vulnerabilidades altas/críticas transitivas se corrigen con `pnpm.overrides` a la versión
+parcheada más cercana dentro de la misma mayor: hoy solo `proxy-addr` (de Express 5) y `js-yaml` 4
+(herramientas de desarrollo). Las de multer, body-parser, path-to-regexp y lodash desaparecieron con
+NestJS 12 (Express 5 y `@nestjs/swagger` 12 ya traen versiones parcheadas) y sus overrides se
+quitaron; tar y brace-expansion desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato
+de hash `$2b$`).
 
 ### 6.4 App móvil
 
