@@ -2684,6 +2684,96 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Tu consentimiento de salud: versión {version} del texto, aceptada el {date}.'**
   String settingsLegalConsentVersion(String version, String date);
+
+  /// No description provided for @exerciseDetailTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ficha del ejercicio'**
+  String get exerciseDetailTitle;
+
+  /// No description provided for @exerciseDetailOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver ficha de {name}'**
+  String exerciseDetailOpen(String name);
+
+  /// No description provided for @exerciseDetailNeedsConnection.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesitas conexión para ver esta ficha.'**
+  String get exerciseDetailNeedsConnection;
+
+  /// No description provided for @exerciseDetailNotFound.
+  ///
+  /// In es, this message translates to:
+  /// **'Este ejercicio ya no está en el catálogo.'**
+  String get exerciseDetailNotFound;
+
+  /// No description provided for @exerciseDetailMuscles.
+  ///
+  /// In es, this message translates to:
+  /// **'Músculos que trabaja'**
+  String get exerciseDetailMuscles;
+
+  /// No description provided for @exerciseDetailPrimary.
+  ///
+  /// In es, this message translates to:
+  /// **'Principales'**
+  String get exerciseDetailPrimary;
+
+  /// No description provided for @exerciseDetailSecondary.
+  ///
+  /// In es, this message translates to:
+  /// **'Secundarios'**
+  String get exerciseDetailSecondary;
+
+  /// No description provided for @exerciseDetailCues.
+  ///
+  /// In es, this message translates to:
+  /// **'Claves técnicas'**
+  String get exerciseDetailCues;
+
+  /// No description provided for @exerciseDetailMistakes.
+  ///
+  /// In es, this message translates to:
+  /// **'Errores comunes'**
+  String get exerciseDetailMistakes;
+
+  /// No description provided for @exerciseDetailRequirements.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué necesitas'**
+  String get exerciseDetailRequirements;
+
+  /// No description provided for @exerciseDetailEquipment.
+  ///
+  /// In es, this message translates to:
+  /// **'Material'**
+  String get exerciseDetailEquipment;
+
+  /// No description provided for @exerciseDetailMinLevel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nivel mínimo'**
+  String get exerciseDetailMinLevel;
+
+  /// No description provided for @exerciseDetailWatchZones.
+  ///
+  /// In es, this message translates to:
+  /// **'Zonas a vigilar'**
+  String get exerciseDetailWatchZones;
+
+  /// No description provided for @exerciseDetailZoneLine.
+  ///
+  /// In es, this message translates to:
+  /// **'{zone}: {level, select, avoid{este ejercicio la carga mucho} other{este ejercicio la carga}}'**
+  String exerciseDetailZoneLine(String zone, String level);
+
+  /// No description provided for @exerciseDetailWatchZonesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.'**
+  String get exerciseDetailWatchZonesNote;
 }
 
 class _AppLocalizationsDelegate

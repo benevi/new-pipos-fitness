@@ -465,5 +465,20 @@
   "progressVolumeLegendAbove": "Above range",
   "progressVolumeLegendBand": "The band marks the target range of effective sets.",
   "settingsHealthGrantedNoDate": "Health consent given",
-  "settingsLegalConsentVersion": "Your health consent: text version {version}, accepted on {date}."
+  "settingsLegalConsentVersion": "Your health consent: text version {version}, accepted on {date}.",
+  "exerciseDetailTitle": "Exercise guide",
+  "exerciseDetailOpen": "Open the guide for {name}",
+  "exerciseDetailNeedsConnection": "You need a connection to see this guide.",
+  "exerciseDetailNotFound": "This exercise is no longer in the catalogue.",
+  "exerciseDetailMuscles": "Muscles worked",
+  "exerciseDetailPrimary": "Main",
+  "exerciseDetailSecondary": "Secondary",
+  "exerciseDetailCues": "Technique cues",
+  "exerciseDetailMistakes": "Common mistakes",
+  "exerciseDetailRequirements": "What you need",
+  "exerciseDetailEquipment": "Equipment",
+  "exerciseDetailMinLevel": "Minimum level",
+  "exerciseDetailWatchZones": "Areas to watch",
+  "exerciseDetailZoneLine": "{zone}: {level, select, avoid{this exercise loads it heavily} other{this exercise loads it}}",
+  "exerciseDetailWatchZonesNote": "Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional."
 }

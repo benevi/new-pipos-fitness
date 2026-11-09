@@ -590,5 +590,22 @@
   "progressVolumeLegendBand": "La franja marca el rango objetivo de series efectivas.",
   "settingsHealthGrantedNoDate": "Consentimiento de salud dado",
   "settingsLegalConsentVersion": "Tu consentimiento de salud: versión {version} del texto, aceptada el {date}.",
-  "@settingsLegalConsentVersion": {"placeholders": {"version": {"type": "String"}, "date": {"type": "String"}}}
+  "@settingsLegalConsentVersion": {"placeholders": {"version": {"type": "String"}, "date": {"type": "String"}}},
+  "exerciseDetailTitle": "Ficha del ejercicio",
+  "exerciseDetailOpen": "Ver ficha de {name}",
+  "@exerciseDetailOpen": {"placeholders": {"name": {"type": "String"}}},
+  "exerciseDetailNeedsConnection": "Necesitas conexión para ver esta ficha.",
+  "exerciseDetailNotFound": "Este ejercicio ya no está en el catálogo.",
+  "exerciseDetailMuscles": "Músculos que trabaja",
+  "exerciseDetailPrimary": "Principales",
+  "exerciseDetailSecondary": "Secundarios",
+  "exerciseDetailCues": "Claves técnicas",
+  "exerciseDetailMistakes": "Errores comunes",
+  "exerciseDetailRequirements": "Qué necesitas",
+  "exerciseDetailEquipment": "Material",
+  "exerciseDetailMinLevel": "Nivel mínimo",
+  "exerciseDetailWatchZones": "Zonas a vigilar",
+  "exerciseDetailZoneLine": "{zone}: {level, select, avoid{este ejercicio la carga mucho} other{este ejercicio la carga}}",
+  "@exerciseDetailZoneLine": {"placeholders": {"zone": {"type": "String"}, "level": {"type": "String"}}},
+  "exerciseDetailWatchZonesNote": "Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario."
 }

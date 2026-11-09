@@ -15,6 +15,7 @@ import '../../data/pipos_api.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/workout.dart';
+import '../exercise/exercise_detail_screen.dart';
 import '../../shared/widgets.dart';
 import '../plan/plan_providers.dart';
 import 'today_providers.dart';
@@ -246,9 +247,11 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
-                                        Text(
-                                          o.nameEs,
+                                        ExerciseNameLink(
+                                          idOrSlug: o.exerciseId,
+                                          name: o.nameEs,
                                           style: theme.textTheme.titleMedium,
+                                          fromModal: true,
                                         ),
                                         for (final line in o.rationale)
                                           Text(
