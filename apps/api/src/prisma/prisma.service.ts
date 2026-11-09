@@ -1,5 +1,20 @@
 import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
+import { PrismaPg } from '@prisma/adapter-pg';
 import { Prisma, PrismaClient } from '@prisma/client';
+
+/**
+ * Opciones del cliente: Prisma 7 conecta a Postgres con un driver adapter (`pg`) en lugar del
+ * motor nativo. La URL es la misma `DATABASE_URL` que valida `config/env.ts`.
+ */
+export function prismaClientOptions(databaseUrl = process.env.DATABASE_URL): Prisma.PrismaClientOptions {
+  if (!databaseUrl) throw new Error('DATABASE_URL is required');
+  return { adapter: new PrismaPg({ connectionString: databaseUrl }) };
+}
+
+/** Cliente de Prisma suelto para scripts y el setup de los e2e (la API usa `PrismaService`). */
+export function createPrismaClient(databaseUrl?: string): PrismaClient {
+  return new PrismaClient(prismaClientOptions(databaseUrl));
+}
 
 export const WRITE_ACTIONS: ReadonlySet<string> = new Set([
   'create',
@@ -31,14 +46,24 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
   private readonly writeListeners = new Set<(event: WriteEvent) => void>();
 
   constructor() {
-    super();
+    super(prismaClientOptions());
     // Observabilidad de escrituras: permite a los e2e comprobar que ningún GET escribe (ADR-0008).
-    this.$use(async (params, next) => {
-      if (this.writeListeners.size > 0 && WRITE_ACTIONS.has(params.action)) {
-        for (const listener of this.writeListeners) listener({ model: params.model, action: params.action });
-      }
-      return next(params);
+    // Prisma 7 ya no tiene `$use`: una extensión de consultas ve todas las operaciones (también
+    // dentro de `$transaction` y las crudas, `$executeRaw…`). `$extends` devuelve un proxy sobre
+    // este mismo objeto, así que los métodos de la clase (onWrite, hooks de Nest) siguen ahí.
+    const listeners = this.writeListeners;
+    const observed = this.$extends({
+      query: {
+        async $allOperations({ model, operation, args, query }) {
+          const action = operation.replace(/^\$/, '');
+          if (listeners.size > 0 && WRITE_ACTIONS.has(action)) {
+            for (const listener of listeners) listener({ model, action });
+          }
+          return query(args);
+        },
+      },
     });
+    return observed as unknown as PrismaService;
   }
 
   /** Registra un observador de escrituras; devuelve la función para quitarlo. */

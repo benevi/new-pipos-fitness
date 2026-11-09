@@ -1,6 +1,6 @@
 import { execFileSync } from 'child_process';
 import { resolve } from 'path';
-import { PrismaClient } from '@prisma/client';
+import { createPrismaClient } from '../../prisma/prisma.service';
 import { seedCatalog } from '../../catalog-seed/seed-catalog';
 
 /**
@@ -28,7 +28,7 @@ export default async function globalSetup(): Promise<void> {
     env: process.env,
   });
 
-  const prisma = new PrismaClient();
+  const prisma = createPrismaClient();
   try {
     await seedCatalog(prisma);
   } finally {

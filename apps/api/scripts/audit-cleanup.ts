@@ -6,9 +6,11 @@
 import 'reflect-metadata';
 import { Clock } from '../src/common/clock';
 import { AUDIT_RETENTION_DAYS, AuditService } from '../src/modules/audit/audit.service';
+import { loadDotEnv } from '../src/config/dotenv';
 import { PrismaService } from '../src/prisma/prisma.service';
 
 async function main(): Promise<void> {
+  loadDotEnv();
   const prisma = new PrismaService();
   try {
     const deleted = await new AuditService(prisma, new Clock()).cleanup();
