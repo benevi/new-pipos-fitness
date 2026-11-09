@@ -32,17 +32,17 @@
 
 ## Sesiones
 
-### 1. Cuerpo completo A (lunes) — 30.7 / 30 min
+### 1. Cuerpo completo A (lunes) — 28.6 / 30 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Sentadilla con peso corporal | 3 | 8-12 | 3 | 120 s | sin kg | — | 6.8 |
 | 2 | Flexiones | 2 | 8-12 | 3 | 120 s | sin kg | — | 4.2 |
 | 3 | Peso muerto rumano a una pierna sin carga | 2 | 8-12 | 3 | 120 s | sin kg | — | 5.3 |
-| 4 | Elevaciones Y-T-W tumbado boca abajo | 3 | 8-12 | 2 | 90 s | sin kg | — | 5.8 |
+| 4 | Elevaciones Y-T-W tumbado boca abajo | 2 | 8-12 | 2 | 90 s | sin kg | — | 3.7 |
 | 5 | Dead bug (bicho muerto) | 2 | 8-12 | 2 | 90 s | sin kg | — | 3.7 |
 
-- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 30,7 min estimados de tus 30 (incluye 5 min de calentamiento general).
+- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 28,6 min estimados de tus 30 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -81,8 +81,8 @@
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
 | pecho | 4 | 6-12 | 2 | **por debajo** |
-| espalda | 6 | 6-12 | 2 | dentro |
-| hombros | 6 | 6-12 | 2 | dentro |
+| espalda | 5 | 6-12 | 2 | **por debajo** |
+| hombros | 5 | 6-12 | 2 | **por debajo** |
 | bíceps | 0 | 6-12 | 0 | **por debajo** |
 | tríceps | 2 | 6-12 | 2 | **por debajo** |
 | cuádriceps | 5 | 6-12 | 2 | **por debajo** |
@@ -97,6 +97,8 @@
 - `PATTERN_UNCOVERED`: No hay ejercicios de tirón vertical: tu material no permite ninguna variante segura. Con banda elástica, barra de dominadas y polea se cubriría.
 - `PATTERN_UNCOVERED`: No hay ejercicios de empuje vertical: las variantes posibles con tu material piden más nivel (p. ej., flexiones en pica).
 - `VOLUME_BELOW_FLOOR`: pecho: 4 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: espalda: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: hombros: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `VOLUME_BELOW_FLOOR`: bíceps: 0 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `FREQUENCY_BELOW_MIN`: bíceps se trabaja 0 veces por semana; lo recomendado es al menos 2.
 - `VOLUME_BELOW_FLOOR`: tríceps: 2 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
@@ -105,7 +107,6 @@
 - `VOLUME_BELOW_FLOOR`: gemelos: 0 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `FREQUENCY_BELOW_MIN`: gemelos se trabaja 0 veces por semana; lo recomendado es al menos 2.
 - `VOLUME_BELOW_FLOOR`: core: 3 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
-- `TIME_OVER_BUDGET`: La sesión 1 se estima en 30,7 min, algo por encima de tus 30 (dentro de la tolerancia del 10 %).
 - `PUSH_PULL_IMBALANCE`: Relación tirón/empuje de 0 (0 series de tirón y 4 de empuje); lo orientativo es 1-1,5.
 
 ## Explicación del plan
@@ -113,14 +114,11 @@
 - Plan para salud general, nivel principiante, 2 días de 30 min con tu peso corporal.
 - Salud general: 8-12 repeticiones dejando margen (RIR 2-3) y hasta 3 series por ejercicio, con todos los grupos principales 2 veces por semana (OMS 2020; ACSM 2009).
 - Volumen objetivo: 6-12 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
-- Con 2 días de 30 min y este material, pecho, bíceps, tríceps, cuádriceps, isquiosurales, gemelos y core no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
+- Con 2 días de 30 min y este material, pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, gemelos y core no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 1 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.6959 | 0.76 | 0.45 | 0.9444 | 0.8 | 0 | 0.97 | 1 |
-
-Búsqueda local: 0.678667 → 0.695889 (+2.54 %), 1 movimientos, 30 evaluaciones, parada: converged.
+| 0.6787 | 0.74 | 0.3333 | 1 | 0.8 | 0 | 0.97 | 1 |

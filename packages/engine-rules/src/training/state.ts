@@ -1,6 +1,6 @@
 /**
  * Estado del plan en construcción, orden de ejercicios, modelo de tiempo y agregados por sesión.
- * Todo es puro y determinista; la búsqueda local evalúa miles de variantes con estas funciones.
+ * Todo es puro y determinista.
  */
 import type { engineV2 } from '@pipos/contracts';
 import type { ProgrammingConfig } from '../config/programming.js';

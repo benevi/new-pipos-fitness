@@ -67,24 +67,24 @@
 
 </details>
 
-### 2. Cuerpo completo B (jueves) — 59.3 / 60 min
+### 2. Cuerpo completo B (jueves) — 57.5 / 60 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Peso muerto rumano a una pierna sin carga | 3 | 8-12 | 3 | 120 s | sin kg | — | 8.5 |
-| 2 | Press de hombros a una mano con kettlebell | 3 | 8-12 | 3 | 120 s | a elegir | 8@50% 5@70% | 10.5 |
+| 1 | Peso muerto rumano con kettlebell | 3 | 8-12 | 3 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
+| 2 | Press de hombros a una mano con kettlebell | 3 | 8-12 | 3 | 120 s | a elegir | — | 8.5 |
 | 3 | Jalón con banda elástica | 3 | 8-12 | 3 | 120 s | sin kg | — | 6.8 |
 | 4 | Sentadilla dividida con peso corporal | 3 | 8-12 | 3 | 120 s | sin kg | — | 8.5 |
 | 5 | Flexiones declinadas con pies elevados | 3 | 8-12 | 3 | 120 s | sin kg | — | 6.8 |
 | 6 | Elevación de talones a una pierna | 3 | 8-12 | 2 | 90 s | sin kg | — | 7.5 |
 | 7 | Plancha alta con toques de hombro | 3 | 8-12 | 2 | 90 s | sin kg | — | 5.8 |
 
-- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 59,3 min estimados de tus 60 (incluye 5 min de calentamiento general).
+- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 57,5 min estimados de tus 60 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
-- **Peso muerto rumano a una pierna sin carga**: Multiarticular de bisagra de cadera al inicio, cuando estás más fresco. 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
-- **Press de hombros a una mano con kettlebell**: Multiarticular de empuje vertical al inicio, cuando estás más fresco. 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 3 en reserva.
+- **Peso muerto rumano con kettlebell**: Multiarticular de bisagra de cadera al inicio, cuando estás más fresco. 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 3 en reserva. Precaución por tu limitación de zona lumbar: usa un rango cómodo y para si aparece dolor.
+- **Press de hombros a una mano con kettlebell**: Multiarticular de empuje vertical al inicio, cuando estás más fresco. 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 3 en reserva.
 - **Jalón con banda elástica**: Multiarticular de tirón vertical al inicio, cuando estás más fresco. 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. Elige una banda con la que termines cada serie con unas 3 repeticiones en reserva.
 - **Sentadilla dividida con peso corporal**: 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 - **Flexiones declinadas con pies elevados**: 8-12 reps a RIR 3, descanso 120 s, según tu objetivo de salud general. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
@@ -122,12 +122,9 @@
 - Por tu limitación de zona lumbar se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
 - Con 2 días de 60 min y este material, tríceps no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 1 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9494 | 0.985 | 0.9375 | 1 | 1 | 0.6667 | 0.99 | 1 |
-
-Búsqueda local: 0.948083 → 0.949417 (+0.14 %), 1 movimientos, 72 evaluaciones, parada: converged.
+| 0.9481 | 0.985 | 0.9375 | 1 | 1 | 0.6667 | 0.99 | 0.9733 |

@@ -35,18 +35,18 @@
 
 ## Sesiones
 
-### 1. Cuerpo completo A (lunes) — 44.6 / 45 min
+### 1. Cuerpo completo A (lunes) — 42 / 45 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Sentadilla goblet con mancuerna | 3 | 8-12 | 3 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
 | 2 | Press de banca con mancuernas | 3 | 8-12 | 3 | 120 s | a elegir | — | 6.8 |
-| 3 | Remo con mancuernas con pecho apoyado | 4 | 8-12 | 3 | 120 s | a elegir | — | 9.3 |
+| 3 | Remo con mancuernas con pecho apoyado | 3 | 8-12 | 3 | 120 s | a elegir | — | 6.8 |
 | 4 | Peso muerto rumano con mancuernas | 2 | 8-12 | 3 | 120 s | a elegir | — | 4.2 |
 | 5 | Elevación de talones con mancuerna | 2 | 8-12 | 2 | 90 s | a elegir | — | 4.8 |
 | 6 | Dead bug (bicho muerto) | 3 | 8-12 | 2 | 90 s | sin kg | — | 5.8 |
 
-- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 44,6 min estimados de tus 45 (incluye 5 min de calentamiento general).
+- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 42 min estimados de tus 45 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -114,9 +114,9 @@
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
 | pecho | 9 | 6-12 | 3 | dentro |
-| espalda | 10 | 6-12 | 3 | dentro |
-| hombros | 5 | 6-12 | 3 | **por debajo** |
-| bíceps | 8 | 6-12 | 3 | dentro |
+| espalda | 9 | 6-12 | 3 | dentro |
+| hombros | 4.5 | 6-12 | 3 | **por debajo** |
+| bíceps | 7.5 | 6-12 | 3 | dentro |
 | tríceps | 4.5 | 6-12 | 3 | **por debajo** |
 | cuádriceps | 7 | 6-12 | 3 | dentro |
 | isquiosurales | 5 | 6-12 | 3 | **por debajo** |
@@ -127,7 +127,7 @@
 ## Avisos
 
 - `PATTERN_UNCOVERED`: No hay ejercicios de tirón vertical: las variantes posibles con tu material piden más nivel (p. ej., pullover con mancuerna).
-- `VOLUME_BELOW_FLOOR`: hombros: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: hombros: 4,5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `VOLUME_BELOW_FLOOR`: tríceps: 4,5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `VOLUME_BELOW_FLOOR`: isquiosurales: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 
@@ -138,12 +138,9 @@
 - Volumen objetivo: 6-12 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Con 3 días de 45 min y este material, hombros, tríceps y isquiosurales no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 1 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9356 | 0.8983 | 0.8208 | 1 | 1 | 1 | 0.9684 | 1 |
-
-Búsqueda local: 0.933509 → 0.935592 (+0.22 %), 1 movimientos, 87 evaluaciones, parada: converged.
+| 0.9335 | 0.8933 | 0.8167 | 1 | 1 | 1 | 0.9684 | 1 |

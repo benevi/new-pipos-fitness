@@ -750,11 +750,9 @@ El resto de multiarticulares pesados (esquema de fuerza a 3-6 reps) llevan **1**
 | variedad | 0,10 | penaliza repetir el mismo ejercicio en la semana |
 | preferencias | 0,05 | favoritos incluidos y pocos ejercicios con precaución en zonas limitadas (penalización 0,5) |
 
-### 16.8 Búsqueda local
+### 16.8 Búsqueda local (retirada)
 
-Máximo **60 iteraciones** y **40.000 evaluaciones** (límites deterministas). El tope de **1.000 ms** es solo una red de seguridad: si salta, se avisa (`LOCAL_SEARCH_TIME_LIMIT`), porque el resultado podría depender de la máquina. Solo se aceptan intercambios que no empeoran la calidad estática del ejercicio (patrón, músculo natural, carga, precaución).
-
-Tampoco se acepta un movimiento que deje un grupo por debajo de su suelo de volumen o de 2 sesiones/semana si antes lo cumplía.
+Se implementó (60 iteraciones y 40.000 evaluaciones como máximo) y se midió en los 10 perfiles de ejemplo: mejoraba el score un **1,83 %** de media, por debajo del umbral del 2 % de ADR-0006, así que se retiró. El plan es la solución por reglas; los pesos de §16.7 se usan solo para puntuar y comparar planes.
 
 ### 16.9 Progresión: bajadas y pausas
 
@@ -791,4 +789,4 @@ El plan se versiona en mesociclos de **6 semanas**, igual a `DELOAD_CADA_SEMANAS
 
 ### 16.15 Afinidad en la selección de ejercicios
 
-Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`.
+Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`. Para llegar al suelo de un grupo, el relleno puede usar como último recurso una sesión de otros grupos (p. ej. gemelos al final del día de tirón).

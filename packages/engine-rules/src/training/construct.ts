@@ -39,11 +39,7 @@ const PATTERN_TARGET: Partial<Record<Ex['pattern'], VolumeGroup>> = {
   hip_isolation: 'glutes',
 };
 
-/**
- * Calidad estática de un ejercicio para un hueco: no depende del resto del plan. La búsqueda local
- * solo acepta intercambios que no la empeoran, para no cambiar un peso muerto por una variante
- * más floja solo por ganar variedad.
- */
+/** Calidad estática de un ejercicio para un hueco: no depende del resto del plan. */
 export function staticQuality(ex: Ex, slot: SlotSpec | null, role: ExerciseRole, ctx: Ctx): number {
   let s = 0;
   if (slot) {
@@ -385,10 +381,15 @@ export function fillWeekly(sessions: DraftSession[], ctx: Ctx): DraftSession[] {
       let improved = false;
       for (const [g] of ranked) {
         // Sesiones que incluyen el grupo, la más holgada primero.
-        const order = [...cur.keys()]
+        const byTime = (a: number, b: number) => aggs[a].minutes - aggs[b].minutes || a - b;
+        const own = [...cur.keys()]
           .filter((i) => cur[i].template.groups.includes(g))
           .filter((i) => pass === 0 || aggs[i].minutes < tolLow)
-          .sort((a, b) => aggs[a].minutes - aggs[b].minutes || a - b);
+          .sort(byTime);
+        // Para llegar al suelo, como último recurso, también en sesiones de otros grupos
+        // (p. ej. gemelos al final de un día de tirón).
+        const others = pass === 0 ? [...cur.keys()].filter((i) => !cur[i].template.groups.includes(g)).sort(byTime) : [];
+        const order = [...own, ...others];
         for (const si of order) {
           const s = cur[si];
           // 1) +1 serie a un ejercicio que trabaje el grupo como primario (accesorios primero).

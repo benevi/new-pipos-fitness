@@ -48,20 +48,20 @@
 
 ## Sesiones
 
-### 1. Torso A (lunes) — 70.7 / 90 min
+### 1. Torso A (lunes) — 68.1 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 96 kg | 8@50% 5@70% 3@85% | 10.8 |
 | 2 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92 kg | 8@50% | 8.8 |
-| 3 | Press militar con barra de pie | 4 | 6-12 | 2 | 120 s | 61 kg | — | 9.1 |
+| 3 | Press militar con barra de pie | 3 | 6-12 | 2 | 120 s | 61 kg | — | 6.6 |
 | 4 | Jalón al pecho en polea | 3 | 6-12 | 2 | 120 s | 80 kg | — | 6.6 |
 | 5 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 6 | Elevaciones laterales con mancuernas | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 7 | Curl de bíceps con barra | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 8 | Face pull en polea | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 
-- Torso A: trabaja pecho, espalda, hombros, bíceps y tríceps; 70,7 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Torso A: trabaja pecho, espalda, hombros, bíceps y tríceps; 68,1 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -77,7 +77,7 @@
 
 </details>
 
-### 2. Pierna A (martes) — 57.4 / 90 min
+### 2. Pierna A (martes) — 55.3 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -85,11 +85,11 @@
 | 2 | Peso muerto convencional con barra | 4 | 6-12 | 2 | 120 s | 147 kg (est.) | — | 9.1 |
 | 3 | Sentadilla búlgara con mancuernas | 3 | 6-12 | 2 | 120 s | a elegir | — | 8.2 |
 | 4 | Curl femoral tumbado en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 5 | Elevación de talones de pie en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 5 | Elevación de talones de pie en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 6 | Extensión de cuádriceps en máquina | 2 | 6-12 | 1 | 90 s | a elegir | — | 3.6 |
 | 7 | Rollout con barra | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 
-- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 57,4 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 55,3 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -133,7 +133,7 @@
 
 </details>
 
-### 4. Pierna B (viernes) — 66 / 90 min
+### 4. Pierna B (viernes) — 61.9 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -142,11 +142,11 @@
 | 3 | Peso muerto rumano a una pierna con mancuerna | 2 | 6-12 | 2 | 120 s | a elegir | — | 5.1 |
 | 4 | Abducción de cadera en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 5 | Extensión de cuádriceps en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 6 | Elevación de talones en máquina Smith (multipower) | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 6 | Elevación de talones en máquina Smith (multipower) | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 7 | Curl femoral tumbado con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 8 | Press Pallof en polea | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 8 | Press Pallof en polea | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 
-- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 66 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 61,9 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -168,21 +168,21 @@
 |---|---|---|---|---|
 | pecho | 13 | 6-20 | 2 | dentro |
 | espalda | 20 | 6-20 | 4 | dentro |
-| hombros | 20 | 6-20 | 2 | dentro |
+| hombros | 19.5 | 6-20 | 2 | dentro |
 | bíceps | 12.5 | 6-20 | 2 | dentro |
-| tríceps | 15 | 6-20 | 2 | dentro |
+| tríceps | 14.5 | 6-20 | 2 | dentro |
 | cuádriceps | 19.5 | 6-20 | 2 | dentro |
 | isquiosurales | 17 | 6-20 | 2 | dentro |
 | glúteos | 20 | 6-20 | 2 | dentro |
-| gemelos | 10 | 6-20 | 2 | dentro |
-| core | 11 | 6-20 | 3 | dentro |
+| gemelos | 8 | 6-20 | 2 | dentro |
+| core | 9.5 | 6-20 | 3 | dentro |
 
 ## Avisos
 
-- `TIME_UNDERUSED`: La sesión 1 dura unos 70,7 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 2 dura unos 57,4 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 1 dura unos 68,1 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 2 dura unos 55,3 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
 - `TIME_UNDERUSED`: La sesión 3 dura unos 67,6 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 4 dura unos 66 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 4 dura unos 61,9 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
 
 ## Explicación del plan
 
@@ -192,12 +192,9 @@
 - Para fuerza basta con un volumen bajo o moderado (en fuerza los rendimientos decrecientes llegan antes), así que el mínimo baja a 6 series; si sobra tiempo se sube hacia el rango alto.
 - Todos los grupos musculares llegan al mínimo de volumen semanal.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 4 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9639 | 1 | 1 | 0.8267 | 1 | 1 | 0.9855 | 1 |
-
-Búsqueda local: 0.959104 → 0.963882 (+0.50 %), 4 movimientos, 650 evaluaciones, parada: converged.
+| 0.9591 | 1 | 1 | 0.8028 | 1 | 1 | 0.9855 | 1 |

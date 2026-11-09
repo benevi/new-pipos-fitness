@@ -48,7 +48,7 @@
 
 ## Sesiones
 
-### 1. Cuerpo completo A (lunes) — 68.3 / 75 min
+### 1. Cuerpo completo A (lunes) — 66.3 / 75 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -59,9 +59,10 @@
 | 5 | Elevación de talones de pie en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 6 | Curl con barra Z | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 7 | Pájaros en máquina (contractor inverso) | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 8 | Crunch en polea alta | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 8 | Crunch en polea alta | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 
-- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 68,3 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Cuerpo completo A: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 66,3 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -76,7 +77,7 @@
 
 </details>
 
-### 2. Cuerpo completo B (miércoles) — 68.3 / 75 min
+### 2. Cuerpo completo B (miércoles) — 66.3 / 75 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -87,9 +88,10 @@
 | 5 | Press de banca con mancuernas | 4 | 6-12 | 2 | 120 s | 43 kg | — | 9.1 |
 | 6 | Elevación de talones en máquina Smith (multipower) | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 7 | Curl de bíceps con barra | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 8 | Press Pallof en polea | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 8 | Press Pallof en polea | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 
-- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 68,3 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 66,3 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -104,7 +106,7 @@
 
 </details>
 
-### 3. Cuerpo completo C (viernes) — 67.8 / 75 min
+### 3. Cuerpo completo C (viernes) — 65.8 / 75 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -113,11 +115,12 @@
 | 3 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92 kg | 8@50% | 8.8 |
 | 4 | Peso muerto rumano con barra | 2 | 6-12 | 2 | 120 s | a elegir | — | 4.1 |
 | 5 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 6 | Face pull en polea | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 6 | Elevaciones laterales con mancuernas | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 7 | Curl femoral tumbado en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
-| 8 | Crunch abdominal | 4 | 6-12 | 1 | 90 s | sin kg | — | 7.6 |
+| 8 | Crunch abdominal | 3 | 6-12 | 1 | 90 s | sin kg | — | 5.6 |
 
-- Cuerpo completo C: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 67,8 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Cuerpo completo C: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 65,8 min estimados de tus 75 (incluye 5 min de calentamiento general).
+- Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -126,7 +129,7 @@
 - **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
 - **Peso muerto rumano con barra**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 2 en reserva.
 - **Extensión de tríceps sobre la cabeza con mancuerna**: Aislamiento para sumar volumen directo de tríceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
-- **Face pull en polea**: Aislamiento para sumar volumen directo de hombros. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
+- **Elevaciones laterales con mancuernas**: Aislamiento para sumar volumen directo de hombros. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Curl femoral tumbado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Crunch abdominal**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 
@@ -137,7 +140,7 @@
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
 | pecho | 10 | 6-16 | 3 | dentro |
-| espalda | 16 | 6-16 | 3 | dentro |
+| espalda | 14 | 6-16 | 3 | dentro |
 | hombros | 12.5 | 6-16 | 3 | dentro |
 | bíceps | 12.5 | 6-16 | 3 | dentro |
 | tríceps | 10.5 | 6-16 | 3 | dentro |
@@ -145,11 +148,14 @@
 | isquiosurales | 12 | 6-16 | 3 | dentro |
 | glúteos | 16 | 6-16 | 3 | dentro |
 | gemelos | 8 | 6-16 | 3 | dentro |
-| core | 13.5 | 6-16 | 3 | dentro |
+| core | 10.5 | 6-16 | 3 | dentro |
 
 ## Avisos
 
-- Ninguno.
+- `TIME_UNDERUSED`: La sesión 1 dura unos 66,3 min de tus 75: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 2 dura unos 66,3 min de tus 75: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 3 dura unos 65,8 min de tus 75: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `PUSH_PULL_IMBALANCE`: Relación tirón/empuje de 0,7 (9 series de tirón y 13 de empuje); lo orientativo es 1-1,5.
 
 ## Explicación del plan
 
@@ -159,12 +165,9 @@
 - Para fuerza basta con un volumen bajo o moderado (en fuerza los rendimientos decrecientes llegan antes), así que el mínimo baja a 6 series; si sobra tiempo se sube hacia el rango alto.
 - Todos los grupos musculares llegan al mínimo de volumen semanal.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 4 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9975 | 1 | 1 | 1 | 1 | 1 | 0.975 | 1 |
-
-Búsqueda local: 0.963075 → 0.9975 (+3.57 %), 4 movimientos, 414 evaluaciones, parada: converged.
+| 0.9631 | 1 | 1 | 0.9817 | 1 | 0.6923 | 0.975 | 1 |

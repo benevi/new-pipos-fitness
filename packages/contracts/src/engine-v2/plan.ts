@@ -88,7 +88,6 @@ export const WARNING_CODES = [
   'PUSH_PULL_IMBALANCE',
   'DAYS_ABOVE_LEVEL_GUIDE',
   'FAVOURITE_EXCLUDED',
-  'LOCAL_SEARCH_TIME_LIMIT',
 ] as const;
 export const WarningCodeSchema = z.enum(WARNING_CODES);
 export type WarningCode = z.infer<typeof WarningCodeSchema>;
@@ -116,17 +115,6 @@ export const ScoreBreakdownSchema = z
   .strict();
 export type ScoreBreakdown = z.infer<typeof ScoreBreakdownSchema>;
 
-export const LocalSearchMetaSchema = z
-  .object({
-    iterations: z.number().int().min(0),
-    evaluations: z.number().int().min(0),
-    acceptedMoves: z.number().int().min(0),
-    initialScore: z.number(),
-    finalScore: z.number(),
-    stoppedBy: z.enum(['converged', 'iterations', 'evaluations', 'time', 'disabled']),
-  })
-  .strict();
-export type LocalSearchMeta = z.infer<typeof LocalSearchMetaSchema>;
 
 export const PlanDraftSchema = z
   .object({
@@ -141,7 +129,6 @@ export const PlanDraftSchema = z
     score: ScoreBreakdownSchema,
     meta: z
       .object({
-        localSearch: LocalSearchMetaSchema,
         catalogSize: z.number().int().min(0),
         eligibleExercises: z.number().int().min(0),
       })

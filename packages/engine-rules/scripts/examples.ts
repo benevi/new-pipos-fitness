@@ -170,16 +170,12 @@ function render(ex: Example, plan: engineV2.PlanDraft): string {
   out.push('', '## Avisos', '');
   out.push(...(plan.warnings.length ? plan.warnings.map((w) => `- \`${w.code}\`: ${w.message}`) : ['- Ninguno.']), '');
   out.push('## Explicación del plan', '', ...plan.rationale.map((r) => `- ${r}`), '');
-  const ls = plan.meta.localSearch;
-  const gain = ((ls.finalScore - ls.initialScore) / ls.initialScore) * 100;
   out.push(
     '## Puntuación',
     '',
     `| total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |`,
     '|---|---|---|---|---|---|---|---|',
     `| ${plan.score.total} | ${plan.score.coverage} | ${plan.score.volumeFit} | ${plan.score.timeFit} | ${plan.score.frequency} | ${plan.score.balance} | ${plan.score.variety} | ${plan.score.preferences} |`,
-    '',
-    `Búsqueda local: ${ls.initialScore} → ${ls.finalScore} (${gain >= 0 ? '+' : ''}${gain.toFixed(2)} %), ${ls.acceptedMoves} movimientos, ${ls.evaluations} evaluaciones, parada: ${ls.stoppedBy}.`,
     '',
   );
   return out.join('\n');
@@ -191,28 +187,22 @@ const summary: string[] = [
   '',
   'Generados con `pnpm --filter @pipos/engine-rules examples` (10 perfiles que cubren todos los objetivos, niveles, 2-6 días, casa y gimnasio, y lesiones de hombro, rodilla y lumbar). La revisión como entrenador está en [REVISION.md](REVISION.md).',
   '',
-  '| Perfil | Split | Score inicial | Score final | Mejora búsqueda local | Avisos |',
-  '|---|---|---|---|---|---|',
+  '| Perfil | Split | Score | Avisos |',
+  '|---|---|---|---|',
 ];
-const gains: number[] = [];
 for (const ex of EXAMPLES) {
 
   const r = generatePlan(ex.profile, CATALOG);
 
   if (!r.ok) throw new Error(`${ex.file}: ${JSON.stringify(r.error)}`);
   writeFileSync(resolve(OUT, ex.file), render(ex, r.plan));
-  const ls = r.plan.meta.localSearch;
-  const gain = ((ls.finalScore - ls.initialScore) / ls.initialScore) * 100;
-  gains.push(gain);
   summary.push(
-    `| [${ex.title}](${ex.file}) | ${r.plan.split.type} | ${ls.initialScore.toFixed(4)} | ${ls.finalScore.toFixed(4)} | ${gain >= 0 ? '+' : ''}${gain.toFixed(2)} % | ${r.plan.warnings.map((w) => w.code).join(', ') || '—'} |`,
+    `| [${ex.title}](${ex.file}) | ${r.plan.split.type} | ${r.plan.score.total.toFixed(4)} | ${r.plan.warnings.map((w) => w.code).join(', ') || '—'} |`,
   );
 }
-const mean = gains.reduce((a, b) => a + b, 0) / gains.length;
-const above = gains.filter((g) => g > 2).length;
 summary.push(
   '',
-  `**Criterio de retirada de ADR-0006** (la búsqueda local se elimina si no mejora el score más de un 2 %): mejora media **${mean.toFixed(2)} %**; ${above} de ${gains.length} perfiles mejoran más de un 2 %; máxima ${Math.max(...gains).toFixed(2)} %.`,
+  'La búsqueda local se retiró tras medir su aportación en estos 10 perfiles (+1,83 % medio, umbral 2 %; ADR-0006): el plan es la solución determinista por reglas.',
   '',
 );
 writeFileSync(resolve(OUT, 'README.md'), summary.join('\n'));

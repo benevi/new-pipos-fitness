@@ -60,7 +60,7 @@
 |---|---|---|---|---|---|---|---|---|
 | 1 | Press en el suelo con mancuernas | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
 | 2 | Remo con barra | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
-| 3 | Press de hombros de pie con mancuernas | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
+| 3 | Press de hombros en máquina | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
 | 4 | Jalón con agarre estrecho | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
 | 5 | Flexiones | 2 | 8-12 | 2 | 120 s | sin kg | — | 4.2 |
 | 6 | Curl con barra Z | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
@@ -71,25 +71,25 @@
 
 - **Press en el suelo con mancuernas**: Multiarticular de empuje horizontal al inicio, cuando estás más fresco. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Remo con barra**: Multiarticular de tirón horizontal al inicio, cuando estás más fresco. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
-- **Press de hombros de pie con mancuernas**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva. Precaución por tu limitación de hombro: usa un rango cómodo y para si aparece dolor.
+- **Press de hombros en máquina**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva. Precaución por tu limitación de hombro: usa un rango cómodo y para si aparece dolor.
 - **Jalón con agarre estrecho**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Flexiones**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 - **Curl con barra Z**: Aislamiento para sumar volumen directo de bíceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 
 </details>
 
-### 2. Pierna A (martes) — 45 / 45 min
+### 2. Pierna A (martes) — 43.1 / 45 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Sentadilla trasera con barra | 2 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 6.2 |
+| 1 | Sentadilla trasera con barra | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
 | 2 | Peso muerto rumano con barra | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
 | 3 | Sentadilla búlgara con mancuernas | 3 | 8-12 | 2 | 120 s | a elegir | — | 8.5 |
-| 4 | Curl femoral tumbado en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
-| 5 | Elevación de talones de pie en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 4 | Curl femoral tumbado en máquina | 2 | 10-15 | 1 | 90 s | a elegir | — | 4 |
+| 5 | Elevación de talones de pie en máquina | 2 | 10-15 | 1 | 90 s | a elegir | — | 4 |
 | 6 | Crunch en polea alta | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 45 min estimados de tus 45 (incluye 5 min de calentamiento general).
+- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 43,1 min estimados de tus 45 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -126,17 +126,18 @@
 
 </details>
 
-### 4. Tirón A (viernes) — 43.5 / 45 min
+### 4. Tirón A (viernes) — 43 / 45 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Jalón al pecho en polea | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
 | 2 | Remo con mancuernas con pecho apoyado | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
-| 3 | Face pull en polea | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 4 | Curl de bíceps con barra | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 5 | Elevaciones laterales con mancuernas | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 3 | Face pull en polea | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 4 | Curl de bíceps con barra | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 5 | Elevación de talones sentado en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 6 | Crunch abdominal | 2 | 10-15 | 1 | 90 s | sin kg | — | 4 |
 
-- Tirón A: trabaja espalda, bíceps y hombros; 43,5 min estimados de tus 45 (incluye 5 min de calentamiento general).
+- Tirón A: trabaja espalda, bíceps y hombros; 43 min estimados de tus 45 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -144,22 +145,23 @@
 - **Remo con mancuernas con pecho apoyado**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Face pull en polea**: Aislamiento para sumar volumen directo de hombros. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Curl de bíceps con barra**: Aislamiento para sumar volumen directo de bíceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
-- **Elevaciones laterales con mancuernas**: Aislamiento para sumar volumen directo de hombros. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva. Precaución por tu limitación de hombro: usa un rango cómodo y para si aparece dolor.
+- **Elevación de talones sentado en máquina**: Aislamiento para sumar volumen directo de gemelos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Crunch abdominal**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de pérdida de grasa. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 
 </details>
 
-### 5. Pierna B (sábado) — 44.9 / 45 min
+### 5. Pierna B (sábado) — 43 / 45 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Peso muerto rumano con kettlebell | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
-| 2 | Prensa de piernas | 2 | 8-12 | 2 | 120 s | a elegir | — | 4.2 |
+| 2 | Prensa de piernas | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
 | 3 | Hip thrust con barra | 2 | 10-15 | 1 | 90 s | a elegir | — | 4 |
 | 4 | Extensión de cuádriceps en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
-| 5 | Elevación de talones en máquina Smith (multipower) | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 6 | Press Pallof en polea | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 5 | Elevación de talones en máquina Smith (multipower) | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 6 | Press Pallof en polea | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 44,9 min estimados de tus 45 (incluye 5 min de calentamiento general).
+- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 43 min estimados de tus 45 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -177,19 +179,21 @@
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
 | pecho | 11.5 | 10-16 | 2 | dentro |
-| espalda | 15.5 | 10-16 | 3 | dentro |
-| hombros | 16 | 10-16 | 3 | dentro |
-| bíceps | 13 | 10-16 | 2 | dentro |
+| espalda | 15 | 10-16 | 3 | dentro |
+| hombros | 12 | 10-16 | 3 | dentro |
+| bíceps | 12 | 10-16 | 2 | dentro |
 | tríceps | 13 | 10-16 | 2 | dentro |
-| cuádriceps | 10 | 10-16 | 2 | dentro |
-| isquiosurales | 10 | 10-16 | 2 | dentro |
-| glúteos | 14 | 10-16 | 2 | dentro |
-| gemelos | 8.5 | 10-16 | 2 | **por debajo** |
-| core | 10 | 10-16 | 4 | dentro |
+| cuádriceps | 12 | 10-16 | 2 | dentro |
+| isquiosurales | 9 | 10-16 | 2 | **por debajo** |
+| glúteos | 15.5 | 10-16 | 2 | dentro |
+| gemelos | 9 | 10-16 | 3 | **por debajo** |
+| core | 9.5 | 10-16 | 4 | **por debajo** |
 
 ## Avisos
 
-- `VOLUME_BELOW_FLOOR`: gemelos: 8,5 series efectivas/semana, por debajo del mínimo de 10 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: isquiosurales: 9 series efectivas/semana, por debajo del mínimo de 10 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: gemelos: 9 series efectivas/semana, por debajo del mínimo de 10 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: core: 9,5 series efectivas/semana, por debajo del mínimo de 10 para tu nivel (falta tiempo o material para más).
 - `DAYS_ABOVE_LEVEL_GUIDE`: Como intermedio, 5 días superan la guía orientativa de hasta 4; es válido, pero prioriza la recuperación.
 
 ## Explicación del plan
@@ -198,14 +202,11 @@
 - Pérdida de grasa: se entrena como para hipertrofia para conservar el músculo; el déficit lo marcan tus objetivos nutricionales, no el entrenamiento.
 - Volumen objetivo: 10-16 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Por tu limitación de hombro se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
-- Con 5 días de 45 min y este material, gemelos no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
+- Con 5 días de 45 min y este material, isquiosurales, gemelos y core no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 7 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.983 | 0.991 | 0.9425 | 1 | 1 | 1 | 0.9948 | 0.9448 |
-
-Búsqueda local: 0.948491 → 0.982974 (+3.64 %), 7 movimientos, 934 evaluaciones, parada: converged.
+| 0.9618 | 0.985 | 0.8375 | 1 | 1 | 1 | 1 | 0.96 |

@@ -39,9 +39,9 @@
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Sentadilla con banda elástica | 2 | 15-20 | 3 | 60 s | sin kg | — | 4 |
+| 1 | Sentadilla con banda elástica | 3 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
 | 2 | Flexiones | 3 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
-| 3 | Remo con banda elástica | 4 | 15-20 | 3 | 60 s | sin kg | — | 8.1 |
+| 3 | Remo con banda elástica | 3 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
 | 4 | Peso muerto rumano con banda elástica | 2 | 15-20 | 3 | 60 s | sin kg | — | 4 |
 | 5 | Elevación de talones a una pierna | 2 | 15-25 | 2 | 60 s | sin kg | — | 6.7 |
 | 6 | Dead bug (bicho muerto) | 2 | 15-25 | 2 | 60 s | sin kg | — | 4.3 |
@@ -59,17 +59,17 @@
 
 </details>
 
-### 2. Cuerpo completo B (miércoles) — 38.7 / 40 min
+### 2. Cuerpo completo B (miércoles) — 36.7 / 40 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Peso muerto rumano a una pierna sin carga | 3 | 15-20 | 3 | 60 s | sin kg | — | 9.1 |
-| 2 | Flexiones inclinadas con manos elevadas | 4 | 15-20 | 3 | 60 s | sin kg | — | 8.1 |
+| 2 | Flexiones inclinadas con manos elevadas | 3 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
 | 3 | Dominadas asistidas con banda | 3 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
 | 4 | Sentadilla dividida con peso corporal | 2 | 15-20 | 3 | 60 s | sin kg | — | 6.1 |
 | 5 | Press Pallof con banda elástica | 2 | 15-25 | 2 | 60 s | sin kg | — | 4.3 |
 
-- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 38,7 min estimados de tus 40 (incluye 5 min de calentamiento general).
+- Cuerpo completo B: trabaja pecho, espalda, hombros, bíceps, tríceps, cuádriceps, isquiosurales, glúteos, gemelos y core; 36,7 min estimados de tus 40 (incluye 5 min de calentamiento general).
 
 <details><summary>Por qué cada ejercicio</summary>
 
@@ -109,22 +109,22 @@
 
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
-| pecho | 10 | 6-12 | 3 | dentro |
-| espalda | 10 | 6-12 | 3 | dentro |
-| hombros | 3.5 | 6-12 | 2 | **por debajo** |
-| bíceps | 5 | 6-12 | 3 | **por debajo** |
-| tríceps | 5 | 6-12 | 3 | **por debajo** |
-| cuádriceps | 7 | 6-12 | 3 | dentro |
+| pecho | 9 | 6-12 | 3 | dentro |
+| espalda | 9 | 6-12 | 3 | dentro |
+| hombros | 3 | 6-12 | 2 | **por debajo** |
+| bíceps | 4.5 | 6-12 | 3 | **por debajo** |
+| tríceps | 4.5 | 6-12 | 3 | **por debajo** |
+| cuádriceps | 8 | 6-12 | 3 | dentro |
 | isquiosurales | 6 | 6-12 | 3 | dentro |
-| glúteos | 10.5 | 6-12 | 3 | dentro |
+| glúteos | 11 | 6-12 | 3 | dentro |
 | gemelos | 4 | 6-12 | 2 | **por debajo** |
 | core | 6 | 6-12 | 3 | dentro |
 
 ## Avisos
 
-- `VOLUME_BELOW_FLOOR`: hombros: 3,5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
-- `VOLUME_BELOW_FLOOR`: bíceps: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
-- `VOLUME_BELOW_FLOOR`: tríceps: 5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: hombros: 3 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: bíceps: 4,5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
+- `VOLUME_BELOW_FLOOR`: tríceps: 4,5 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 - `VOLUME_BELOW_FLOOR`: gemelos: 4 series efectivas/semana, por debajo del mínimo de 6 para tu nivel (falta tiempo o material para más).
 
 ## Explicación del plan
@@ -134,12 +134,9 @@
 - Volumen objetivo: 6-12 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Con 3 días de 40 min y este material, hombros, bíceps, tríceps y gemelos no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 3 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9169 | 0.8779 | 0.7458 | 1 | 1 | 1 | 0.9824 | 1 |
-
-Búsqueda local: 0.910616 → 0.916866 (+0.69 %), 3 movimientos, 166 evaluaciones, parada: converged.
+| 0.9106 | 0.8629 | 0.7333 | 1 | 1 | 1 | 0.9824 | 1 |

@@ -1,7 +1,7 @@
 /**
  * generatePlan(profile, catalog, config) → PlanDraft (PLAN §3).
- * validar → filtrar → split → volumen → solución inicial → prescripción → búsqueda local
- * → scoring → explicaciones. Función pura y determinista.
+ * validar → filtrar → split → volumen → solución por reglas → prescripción → scoring
+ * → explicaciones. Función pura y determinista.
  */
 import { engineV2 } from '@pipos/contracts';
 import { ENGINE_VERSION, PROGRAMMING, schemeGoal, type ProgrammingConfig } from '../config/programming.js';
@@ -20,7 +20,6 @@ import {
 } from './labels.js';
 import { cmpStr, CORE_PATTERNS, round1, type Ex, type MovementPattern, type Profile, type VolumeGroup } from './model.js';
 import { initialLoad, warmupSets } from './prescription.js';
-import { localSearch, type SearchOptions } from './search.js';
 import { chooseSplit, sessionsPerGroup } from './split.js';
 import {
   aggregateSession,
@@ -33,7 +32,7 @@ import {
   type SessionAgg,
 } from './state.js';
 
-export interface GenerateOptions extends SearchOptions {
+export interface GenerateOptions {
   config?: ProgrammingConfig;
 }
 
@@ -133,14 +132,12 @@ export function generatePlan(
   }));
   const initial = buildInitial(skeleton, ctx);
 
-  // 7. Búsqueda local acotada.
-  const searched = localSearch(initial.sessions, ctx, options);
-  const aggs = searched.sessions.map((s) => aggregateSession(s, ctx));
+  const aggs = initial.sessions.map((s) => aggregateSession(s, ctx));
   const score = scorePlan(aggs, ctx);
 
   // 6 + 8. Prescripción final y explicaciones.
-  const warnings = buildWarnings(ctx, aggs, initial.unfilled, catalog, excluded, weeklyPatterns, present, searched.meta);
-  const sessions = searched.sessions.map((s, i) => renderSession(s, aggs[i], i, ctx));
+  const warnings = buildWarnings(ctx, aggs, initial.unfilled, catalog, excluded, weeklyPatterns, present);
+  const sessions = initial.sessions.map((s, i) => renderSession(s, aggs[i], i, ctx));
   const weekly = weeklyGroups(aggs);
   const weeklyVolume: engineV2.GroupVolume[] = groups.map((g) => {
     const v = round1(weekly.get(g) ?? 0);
@@ -171,14 +168,9 @@ export function generatePlan(
     weeklyVolume,
     muscleVolume,
     warnings,
-    rationale: planRationale(ctx, weeklyVolume, searched.meta),
+    rationale: planRationale(ctx, weeklyVolume),
     score: roundScore(score),
     meta: {
-      localSearch: {
-        ...searched.meta,
-        initialScore: Math.round(searched.meta.initialScore * 1e6) / 1e6,
-        finalScore: Math.round(searched.meta.finalScore * 1e6) / 1e6,
-      },
       catalogSize: catalog.length,
       eligibleExercises: usable.length,
     },
@@ -307,7 +299,7 @@ const GOAL_RATIONALE: Record<engineV2.TrainingGoal, string> = {
     'Salud general: 8-12 repeticiones dejando margen (RIR 2-3) y hasta 3 series por ejercicio, con todos los grupos principales 2 veces por semana (OMS 2020; ACSM 2009).',
 };
 
-function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[], meta: engineV2.LocalSearchMeta): string[] {
+function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[]): string[] {
   const p = ctx.profile;
   const out: string[] = [];
   const equipmentText =
@@ -348,9 +340,6 @@ function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[], meta: engineV2.Loc
   out.push(
     `Cada ${ctx.config.plan.mesocycleWeeks.value} semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.`,
   );
-  if (meta.acceptedMoves > 0) {
-    out.push(`El optimizador hizo ${meta.acceptedMoves} ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.`);
-  }
   return out;
 }
 
@@ -403,7 +392,6 @@ function buildWarnings(
   excluded: ReadonlyMap<string, ExclusionReason>,
   weeklyPatterns: readonly MovementPattern[],
   presentPatterns: ReadonlySet<MovementPattern>,
-  meta: engineV2.LocalSearchMeta,
 ): Warning[] {
   const out: Warning[] = [];
   const p = ctx.profile;
@@ -529,12 +517,6 @@ function buildWarnings(
         data: { exerciseId: fav, reason },
       });
     }
-  }
-  if (meta.stoppedBy === 'time') {
-    out.push({
-      code: 'LOCAL_SEARCH_TIME_LIMIT',
-      message: 'La optimización se cortó por tiempo; el plan es válido pero podría no ser el mejor posible.',
-    });
   }
   return out;
 }

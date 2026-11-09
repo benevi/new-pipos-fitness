@@ -19,11 +19,11 @@ Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0), con criterio d
 ## Problemas encontrados en la revisión y corregidos en el motor
 
 1. **Sesgo hacia variantes difíciles.** La afinidad premiaba que el nivel mínimo del ejercicio coincidiera con el del usuario: un intermedio recibía press con agarre cerrado en vez de press de banca, y un avanzado buenos días como bisagra principal o sissy squat como extensión de rodilla. Se elimina ese bonus y se premia el músculo «natural» del patrón y la carga en kg.
-2. **La búsqueda local degradaba ejercicios.** Cambiaba peso muerto por peso muerto rumano a una pierna sin carga para ganar variedad o balance. Ahora solo acepta intercambios con calidad estática igual o mejor.
+2. **La búsqueda local degradaba ejercicios.** Cambiaba peso muerto por peso muerto rumano a una pierna sin carga para ganar variedad o balance. Se le pusieron salvaguardas y después se retiró (ver abajo).
 3. **Redundancia.** Dos curls o tres elevaciones de talones en la misma sesión. Ahora un grupo de sustitución por sesión (dos si es para un músculo prioritario).
 4. **Orden con prioridades.** Con bíceps y deltoides prioritarios salían tres curls antes del remo. Ahora solo un aislamiento prioritario puede adelantarse, y solo si no hay un multiarticular que ya trabaje ese músculo.
 5. **Relleno de tiempo con core y gemelos.** Con tiempo libre se acumulaban hasta 20 series de core. Ahora core y gemelos solo se llevan al suelo (salvo prioridad) y como mucho 2 ejercicios de core por sesión.
-6. **El balance tirón/empuje recortaba pecho por debajo del suelo.** La búsqueda local ya no puede dejar un grupo por debajo de su mínimo ni de 2 sesiones/semana, y el ratio no penaliza empujar si la espalda ya está en su techo.
+6. **El balance tirón/empuje recortaba pecho por debajo del suelo** (vía búsqueda local). El ratio ya no penaliza empujar si la espalda está en su techo, y la búsqueda local se retiró.
 7. **Deltoides anterior inflaba «hombros».** Contaba como hombro en cada press y saturaba el techo. Ahora el grupo hombros es deltoides lateral + posterior (el anterior recibe de sobra en los press).
 8. **Carga mal tipada.** El remo invertido en barra y las dominadas asistidas en máquina se trataban como ejercicios con carga en kg (en la máquina, más kg = más fácil). El catálogo lleva ahora `loadType` explícito.
 9. **Favorito eliminado.** El ajuste de techos quitaba el hip thrust favorito con glúteos prioritarios. Ahora primero se recortan series y los favoritos y el trabajo prioritario se quitan los últimos.
@@ -40,7 +40,7 @@ Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0), con criterio d
 - **Pequeños déficits bajo el suelo** en perfiles de casa con 45-50 min (hombros, tríceps, isquios a 4,5-5 de 6; cuádriceps a 8 de 10 con lesión de rodilla): avisados y razonables.
 - Los porcentajes de aproximación (50/70/85 %), la tolerancia del 10 % y los pesos del scoring son heurísticas de diseño (§16) pendientes de validar con usuarios reales.
 
-## Búsqueda local (criterio de retirada de ADR-0006)
+## Búsqueda local: medida y retirada (ADR-0006)
 
 | Perfil | Score inicial | Score final | Mejora |
 |---|---|---|---|
@@ -55,4 +55,4 @@ Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0), con criterio d
 | 9 | 0,9150 | 0,9506 | +3,89 % |
 | 10 | 0,9481 | 0,9494 | +0,14 % |
 
-Mejora media **1,83 %** (4 de 10 perfiles por encima del 2 %; máxima 3,89 %). Con la solución inicial ya corregida, la búsqueda local **no supera el umbral del 2 % de media**: según ADR-0006 procede retirarla. Se mantiene de momento porque es barata (mediana < 60 ms del plan completo), garantiza no empeorar (solo acepta mejoras y no puede romper suelos ni restricciones duras) y se puede desactivar con `generatePlan(…, { enabled: false })`; la decisión de borrarla queda para la Fase 3 con el equipo.
+Mejora media **1,83 %** (4 de 10 perfiles por encima del 2 %; máxima 3,89 %), por debajo del umbral del 2 % de ADR-0006: **se retiró**. Los planes de esta carpeta se regeneraron sin ella, solo con la solución por reglas. Al quitarla, el perfil 6 dejaba los gemelos en 10 de 12; se corrigió permitiendo que el relleno hasta el suelo use otra sesión como último recurso (gemelos al final del día de tirón). Tras la retirada, los perfiles 4, 7 y 9 quedan con déficits pequeños y avisados (isquios, gemelos o core a 9-9,5 de 10; cuádriceps a 8 de 10 con lesión de rodilla) y con avisos de balance tirón/empuje de 0,7-0,8; ninguno es grave.

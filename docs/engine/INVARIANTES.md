@@ -16,7 +16,7 @@ Todas son de seguridad (deben cumplirse en cada plan que devuelva `generatePlan`
 | I6 | Presupuesto de tiempo | `∀ sesión: est ≤ minutos × (1 + tolerancia)`; y `est ≥ minutos × (1 − tolerancia)` **o** aviso `TIME_UNDERUSED` | Modelo de tiempo heurístico (§8) |
 | I7 | Orden | En cada sesión, ningún multiarticular aparece después de un ejercicio de aislamiento o core, salvo el aislamiento del músculo prioritario en objetivo de hipertrofia (§6, `ORDEN_PERMITE_AISLAMIENTO_PRIMERO`) | `isCompound` explícito en catálogo |
 | I8 | Frecuencia | `días ≥ 2 ⇒ ∀ grupo: sesiones(grupo) ≥ 2` **o** aviso `FREQUENCY_BELOW_MIN` | El split elegido incluye cada grupo en ≥ 2 sesiones |
-| I9 | Determinismo | `generatePlan(x) ≡ generatePlan(x)` (igualdad profunda) y no depende del orden del catálogo | Sin `Math.random`, sin `Date.now` en la lógica; el corte por tiempo de la búsqueda local solo actúa como red de seguridad y se avisa |
+| I9 | Determinismo | `generatePlan(x) ≡ generatePlan(x)` (igualdad profunda) y no depende del orden del catálogo | Sin `Math.random` ni `Date.now`; catálogo ordenado por `slug` al entrar; sin límites por tiempo (la búsqueda local se retiró) |
 | I10 | Prescripción válida | `1 ≤ series ≤ 10`, `1 ≤ repMin ≤ repMax ≤ 50`, `0 ≤ RIR ≤ 5`, `descanso ≥ 60 s`, sin RIR 0 en multiarticulares | Rangos del modelo de datos |
 | I11 | Sin duplicados | Un ejercicio aparece como mucho una vez por sesión | — |
 | I12 | Progresión acotada | `nextPrescription` nunca sube la carga más del incremento configurado ni la baja por debajo de 0; en deload nunca deja 0 series | — |
@@ -63,11 +63,9 @@ Concurrencia, permisos y zonas horarias no aplican al motor (función pura); per
 | Split | Grupo entrenado 1 vez/semana | Media | Plantillas que incluyen cada grupo ≥ 2 veces; I8 | Aviso `FREQUENCY_BELOW_MIN` |
 | Volumen | Suelo inalcanzable en el tiempo dado | Media | Aviso por grupo con el déficit; nunca silencioso | `VOLUME_BELOW_FLOOR` |
 | Solución inicial | Patrón sin candidatos | Alta | Alternativas de patrón por hueco y aviso `PATTERN_UNCOVERED` | Aviso |
-| Búsqueda local | No termina o tarda | Media | Máximo de iteraciones y evaluaciones; corte por tiempo como red de seguridad con aviso `LOCAL_SEARCH_TIME_LIMIT` | `meta.localSearch` |
-| Búsqueda local | Empeora restricciones duras | Alta | Solo se aceptan vecinos que mantienen I1–I7; los movimientos solo usan candidatos filtrados | Tests de propiedades |
-| Búsqueda local | Erosiona suelos o la calidad de los ejercicios para ganar balance o variedad | Alta | No acepta movimientos que dejen un grupo bajo su suelo o con < 2 sesiones, ni intercambios a un ejercicio de menor calidad estática (§16.8) | Revisión de ejemplos; I4, I8 |
+| Búsqueda local | Degradaba ejercicios y volumen para ganar balance o variedad; aportaba +1,83 % | Media | **Retirada** (ADR-0006); el plan es la solución por reglas, con bucles acotados por contadores fijos | Tests de propiedades; ejemplos |
 | Scoring | Pesos que premian sesiones cortas | Media | `timeFit` penaliza pasarse y quedarse corto | Test de scoring |
 | Determinismo | Desempate por UUID o `localeCompare` dependiente del locale | Alta | Desempate por `slug` con comparación por código (`<`) | I9 |
 | Explicaciones | Texto genérico | Baja | Plantillas con datos del usuario (días, minutos, objetivo, e1RM) | Revisión en `ejemplos/REVISION.md` |
 
-Cascada: un fallo del filtro (I1/I2) contamina todo lo posterior; por eso las restricciones duras se aplican una sola vez, antes, y la búsqueda local trabaja solo sobre el catálogo filtrado. Reversión: `ENGINE_VERSION` se guarda en cada versión de plan; volver a la versión anterior del paquete regenera planes idénticos (I9).
+Cascada: un fallo del filtro (I1/I2) contamina todo lo posterior; por eso las restricciones duras se aplican una sola vez, antes, y todo lo posterior trabaja solo sobre el catálogo filtrado. Reversión: `ENGINE_VERSION` se guarda en cada versión de plan; volver a la versión anterior del paquete regenera planes idénticos (I9).

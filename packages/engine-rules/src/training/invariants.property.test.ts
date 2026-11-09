@@ -29,7 +29,6 @@ describe('invariantes del plan (fast-check)', () => {
           return;
         }
         assertPlanInvariants(p, r.plan);
-        expect(r.plan.meta.localSearch.stoppedBy).not.toBe('time');
       }),
       { numRuns: 200, seed: 20261109 },
     );

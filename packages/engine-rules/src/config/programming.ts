@@ -282,11 +282,6 @@ export const PROGRAMMING = {
     ),
     cautionPenalty: k(0.5, 'PROGRAMACION.md §16.7', 'baja', { heuristic: true }),
   },
-  localSearch: {
-    maxIterations: k(60, 'PROGRAMACION.md §16.8', 'baja', { heuristic: true }),
-    maxEvaluations: k(40000, 'PROGRAMACION.md §16.8', 'baja', { heuristic: true }),
-    maxMs: k(1000, 'PROGRAMACION.md §16.8', 'baja', { heuristic: true, unit: 'ms', note: 'red de seguridad; el límite operativo es el de evaluaciones' }),
-  },
   nutrition: {
     msjWeight: k(10, 'PROGRAMACION.md §11', 'alta', { unit: 'kcal/kg' }),
     msjHeight: k(6.25, 'PROGRAMACION.md §11', 'alta', { unit: 'kcal/cm' }),

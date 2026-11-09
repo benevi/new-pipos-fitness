@@ -50,19 +50,18 @@
 
 ## Sesiones
 
-### 1. Empuje A (lunes) — 54.2 / 90 min
+### 1. Empuje A (lunes) — 52.3 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
 | 1 | Elevaciones laterales con mancuernas | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
-| 2 | Press de banca con barra | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
-| 3 | Press de hombros en máquina | 4 | 8-12 | 2 | 120 s | a elegir | — | 9.3 |
-| 4 | Fondos en paralelas | 2 | 8-12 | 2 | 120 s | sin kg | — | 4.2 |
-| 5 | Aperturas con mancuernas | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
-| 6 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 7 | Elevaciones laterales en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 2 | Press de banca con barra | 4 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 11.3 |
+| 3 | Press de hombros en máquina | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
+| 4 | Aperturas con mancuernas | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 5 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 6 | Elevaciones laterales en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Empuje A: trabaja pecho, hombros y tríceps; 54,2 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Empuje A: trabaja pecho, hombros y tríceps; 52,3 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -70,14 +69,13 @@
 - **Elevaciones laterales con mancuernas**: Va primero porque deltoides lateral es prioridad para ti: el primer ejercicio acumula más volumen (Simão 2012). 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Press de banca con barra**: Multiarticular de empuje horizontal al inicio, cuando estás más fresco. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Press de hombros en máquina**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
-- **Fondos en paralelas**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 - **Aperturas con mancuernas**: Aislamiento para sumar volumen directo de pecho. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Extensión de tríceps sobre la cabeza con mancuerna**: Aislamiento para sumar volumen directo de tríceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Elevaciones laterales en máquina**: Trabaja deltoides lateral, tu músculo prioritario. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 
 </details>
 
-### 2. Tirón A (martes) — 53.6 / 90 min
+### 2. Tirón A (martes) — 51.3 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -86,9 +84,9 @@
 | 3 | Pájaros en máquina (contractor inverso) | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 4 | Elevación lateral en polea | 3 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 5 | Curl de bíceps con barra | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 6 | Pullover con mancuerna | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 6 | Pullover con mancuerna | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Tirón A: trabaja espalda, bíceps y hombros; 53,6 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Tirón A: trabaja espalda, bíceps y hombros; 51,3 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -102,7 +100,7 @@
 
 </details>
 
-### 3. Pierna A (miércoles) — 68.8 / 90 min
+### 3. Pierna A (miércoles) — 66.5 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -112,9 +110,9 @@
 | 4 | Curl femoral tumbado en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 5 | Elevación de talones de pie en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 6 | Rollout con barra | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
-| 7 | Crunch en polea alta | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 7 | Crunch en polea alta | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 68,8 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Pierna A: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 66,5 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -129,28 +127,30 @@
 
 </details>
 
-### 4. Empuje B (jueves) — 48.4 / 90 min
+### 4. Empuje B (jueves) — 54.6 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
-| 1 | Remo al mentón con barra | 2 | 8-12 | 2 | 120 s | a elegir | — | 4.2 |
+| 1 | Elevaciones laterales con mancuernas | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 2 | Press inclinado con barra | 4 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 11.3 |
 | 3 | Press de banca con mancuernas | 4 | 8-12 | 2 | 120 s | a elegir | — | 9.3 |
-| 4 | Elevaciones laterales con mancuernas | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 4 | Fondos en paralelas | 2 | 8-12 | 2 | 120 s | sin kg | — | 4.2 |
 | 5 | Extensión de tríceps en polea alta | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 6 | Contractor de pecho (pec deck) | 2 | 10-15 | 1 | 90 s | a elegir | — | 4 |
+| 6 | Face pull en polea | 2 | 10-15 | 1 | 90 s | a elegir | — | 4 |
+| 7 | Elevación de talones sentado en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 
-- Empuje B: trabaja pecho, hombros y tríceps; 48,4 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Empuje B: trabaja pecho, hombros y tríceps; 54,6 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
 
-- **Remo al mentón con barra**: Va primero porque deltoides lateral es prioridad para ti: el primer ejercicio acumula más volumen (Simão 2012). 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
+- **Elevaciones laterales con mancuernas**: Va primero porque deltoides lateral es prioridad para ti: el primer ejercicio acumula más volumen (Simão 2012). 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Press inclinado con barra**: Multiarticular de empuje horizontal al inicio, cuando estás más fresco. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Press de banca con mancuernas**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
-- **Elevaciones laterales con mancuernas**: Trabaja deltoides lateral, tu músculo prioritario. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Fondos en paralelas**: 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 - **Extensión de tríceps en polea alta**: Aislamiento para sumar volumen directo de tríceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
-- **Contractor de pecho (pec deck)**: Aislamiento para sumar volumen directo de pecho. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Face pull en polea**: Aislamiento para sumar volumen directo de hombros. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Elevación de talones sentado en máquina**: Aislamiento para sumar volumen directo de gemelos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 
 </details>
 
@@ -177,7 +177,7 @@
 
 </details>
 
-### 6. Pierna B (sábado) — 71.4 / 90 min
+### 6. Pierna B (sábado) — 69.1 / 90 min
 
 | # | Ejercicio | Series | Reps | RIR | Descanso | Carga inicial | Aprox. | Min |
 |---|---|---|---|---|---|---|---|---|
@@ -186,11 +186,11 @@
 | 3 | Hip thrust con barra | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 4 | Extensión de cuádriceps en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 5 | Elevación de talones en máquina Smith (multipower) | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 6 | Curl femoral tumbado en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 6 | Curl femoral tumbado con mancuerna | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 7 | Press Pallof en polea | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 8 | Crunch abdominal | 4 | 10-15 | 1 | 90 s | sin kg | — | 8.4 |
+| 8 | Crunch abdominal | 3 | 10-15 | 1 | 90 s | sin kg | — | 6.2 |
 
-- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 71,4 min estimados de tus 90 (incluye 5 min de calentamiento general).
+- Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 69,1 min estimados de tus 90 (incluye 5 min de calentamiento general).
 - Queda algo de tiempo libre porque añadir más series superaría el volumen útil para tu nivel.
 
 <details><summary>Por qué cada ejercicio</summary>
@@ -200,7 +200,7 @@
 - **Hip thrust con barra**: Aislamiento para sumar volumen directo de glúteos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Extensión de cuádriceps en máquina**: Aislamiento para sumar volumen directo de cuádriceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Elevación de talones en máquina Smith (multipower)**: Aislamiento para sumar volumen directo de gemelos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
-- **Curl femoral tumbado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Curl femoral tumbado con mancuerna**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Press Pallof en polea**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Crunch abdominal**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 
@@ -210,25 +210,25 @@
 
 | Grupo | Series | Rango | Sesiones/sem | Estado |
 |---|---|---|---|---|
-| pecho | 20 | 12-20 | 3 | dentro |
-| espalda | 20 | 12-20 | 3 | dentro |
-| hombros ★ | 24 | 12-24 | 4 | dentro |
-| bíceps ★ | 20.5 | 12-24 | 3 | dentro |
-| tríceps | 19.5 | 12-20 | 3 | dentro |
+| pecho | 19.5 | 12-20 | 3 | dentro |
+| espalda | 20 | 12-20 | 4 | dentro |
+| hombros ★ | 23.5 | 12-24 | 4 | dentro |
+| bíceps ★ | 19.5 | 12-24 | 2 | dentro |
+| tríceps | 19 | 12-20 | 3 | dentro |
 | cuádriceps | 17 | 12-20 | 2 | dentro |
 | isquiosurales | 17.5 | 12-20 | 2 | dentro |
 | glúteos | 20 | 12-20 | 2 | dentro |
-| gemelos | 12 | 12-20 | 2 | dentro |
-| core | 17 | 12-20 | 2 | dentro |
+| gemelos | 13 | 12-20 | 3 | dentro |
+| core | 15 | 12-20 | 2 | dentro |
 
 ## Avisos
 
-- `TIME_UNDERUSED`: La sesión 1 dura unos 54,2 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 2 dura unos 53,6 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 3 dura unos 68,8 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 4 dura unos 48,4 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 1 dura unos 52,3 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 2 dura unos 51,3 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 3 dura unos 66,5 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 4 dura unos 54,6 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
 - `TIME_UNDERUSED`: La sesión 5 dura unos 37 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
-- `TIME_UNDERUSED`: La sesión 6 dura unos 71,4 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
+- `TIME_UNDERUSED`: La sesión 6 dura unos 69,1 min de tus 90: más series superarían el volumen útil o no hay más ejercicios adecuados.
 
 ## Explicación del plan
 
@@ -238,12 +238,9 @@
 - Prioridad en deltoides lateral y bíceps: su volumen se lleva a la parte alta del rango y sus ejercicios van antes.
 - Todos los grupos musculares llegan al mínimo de volumen semanal.
 - Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
-- El optimizador hizo 6 ajustes sobre la propuesta inicial para equilibrar volumen, tiempo y variedad.
 
 ## Puntuación
 
 | total | cobertura | volumen | tiempo | frecuencia | balance | variedad | preferencias |
 |---|---|---|---|---|---|---|---|
-| 0.9394 | 1 | 0.9854 | 0.7173 | 1 | 1 | 0.9885 | 1 |
-
-Búsqueda local: 0.921236 → 0.939394 (+1.97 %), 6 movimientos, 1213 evaluaciones, parada: converged.
+| 0.938 | 1 | 0.9792 | 0.7128 | 1 | 1 | 0.9962 | 1 |
