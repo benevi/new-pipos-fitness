@@ -41,8 +41,14 @@ export class ContractInterceptor implements NestInterceptor {
     // Solo se validan; el handler las lee con @Headers (req.headers no se reasigna).
     if (spec.headers) parseInput(spec.headers, req.headers, 'headers');
     if (spec.query) {
-      // Express 4 permite reasignar req.query; el handler recibe el objeto ya validado.
-      req.query = parseInput(spec.query, req.query, 'query');
+      // En Express 5 `req.query` es un getter de solo lectura: se redefine como propiedad propia
+      // para que el handler (@Query) reciba el objeto ya validado.
+      Object.defineProperty(req, 'query', {
+        value: parseInput(spec.query, req.query, 'query'),
+        writable: true,
+        configurable: true,
+        enumerable: true,
+      });
     }
     if (spec.body) req.body = parseInput(spec.body, req.body, 'body');
 
