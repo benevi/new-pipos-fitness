@@ -134,7 +134,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
     tzdata.initializeTimeZones();
     try {
       tz.setLocalLocation(
-        tz.getLocation(await FlutterTimezone.getLocalTimezone()),
+        tz.getLocation((await FlutterTimezone.getLocalTimezone()).identifier),
       );
     } catch (_) {
       // Sin zona conocida se usa UTC; el aviso puede desplazarse.
