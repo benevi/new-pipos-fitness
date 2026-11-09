@@ -239,7 +239,7 @@ class _VolumeLegend extends StatelessWidget {
         children: [
           Icon(style.icon, size: AppSpacing.md, color: style.color),
           const SizedBox(width: AppSpacing.xs),
-          Text(label, style: theme.textTheme.bodySmall),
+          Flexible(child: Text(label, style: theme.textTheme.bodySmall)),
         ],
       );
     }

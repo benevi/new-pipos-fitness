@@ -57,30 +57,34 @@ class Sparkline extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SizedBox(
-            height: height,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(maxLabel, key: const Key('chart-max'), style: axis),
-                    Text(minLabel, key: const Key('chart-min'), style: axis),
-                  ],
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: CustomPaint(
-                    painter: _SparklinePainter(
-                      values,
-                      color,
-                      theme.colorScheme.outline,
+          // Alto mínimo [height]; con texto grande crece lo que pidan las
+          // etiquetas del eje (sin desbordar).
+          ConstrainedBox(
+            constraints: BoxConstraints(minHeight: height),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(maxLabel, key: const Key('chart-max'), style: axis),
+                      Text(minLabel, key: const Key('chart-min'), style: axis),
+                    ],
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: CustomPaint(
+                      painter: _SparklinePainter(
+                        values,
+                        color,
+                        theme.colorScheme.outline,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
