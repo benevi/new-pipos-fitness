@@ -865,3 +865,29 @@ Origen: idea 6 de `docs/IDEAS_EL_PLAN.md` (una app previa tenía «plan semanal 
 
 Constantes: `PAUSA_MAX_DIAS = 60` (contrato de la API; diseño, baja).
 
+### 16.19 Medidas corporales: tendencia de peso, IMC y % de grasa estimado
+
+Origen: idea 7 (ADR-0013; decisión de producto). Son **datos de salud** (art. 9): solo con el consentimiento vigente que los cubra (versión `health-2026-12`). Ninguna regla del motor de entrenamiento los usa: son de seguimiento. Todos los textos dicen «estimación», «no es un diagnóstico» y remiten a un profesional.
+
+**Tendencia de peso** (`weightTrend`):
+- Media móvil de **7 días** para mostrar (heurística, baja).
+- Ritmo semanal = pendiente de mínimos cuadrados de los pesos de las **últimas 4 semanas** × 7 / peso medio, en % (heurística, baja; §11 regla 6 pide recalibrar con la tendencia real cada 2-3 semanas).
+- Datos insuficientes: menos de **4 registros** o menos de **14 días** entre el primero y el último de la ventana (heurística, baja).
+- Objetivo por meta (§11.5): pérdida de grasa **0,5-1 %/semana** (Helms 2014; Garthe 2011; confianza media-alta); hipertrofia **0,25-0,5 %/semana** (Iraki et al. 2019, cifra de resúmenes secundarios **[NO VERIFICADO textualmente]**, confianza baja). Fuerza, salud general y resistencia **no fijan ritmo** (`no_target`): no se inventa uno.
+- Estados: `on_track`, `too_fast`, `too_slow`, `no_target`, `insufficient_data`.
+
+**IMC** (`bmi`): kg/m², con las categorías de **adultos** de la OMS: < 18,5 bajo peso; 18,5-24,9 normal; 25-29,9 sobrepeso (preobesidad); 30-34,9 obesidad I; 35-39,9 obesidad II; ≥ 40 obesidad III.
+- Fuente: World Health Organization. *Obesity: preventing and managing the global epidemic. Report of a WHO consultation.* WHO Technical Report Series 894. Ginebra: OMS; 2000. Confianza **alta** en los cortes como convención poblacional. La cita no se ha releído en esta sesión (se cita de memoria).
+- Límites: no distingue músculo de grasa (en quien entrena fuerza puede sobrestimar la grasa); en poblaciones asiáticas se proponen cortes más bajos (WHO Expert Consultation, *Lancet* 2004;363:157-163); antes de los 18 años no se dan categorías (se usan percentiles).
+
+**% de grasa estimado** (`navyBodyFat`), método de circunferencias de la Marina de EE. UU.:
+- Hodgdon JA, Beckett MB. *Prediction of percent body fat for U.S. Navy men from body circumferences and height.* Naval Health Research Center, Report No. 84-11; 1984. Y *… for U.S. Navy women …*, Report No. 84-29; 1984. Conversión de densidad a % con Siri (1961): `% = 495 / D − 450`.
+- Hombres: `D = 1,0324 − 0,19077·log10(abdomen − cuello) + 0,15456·log10(altura)` (cm; abdomen a la altura del ombligo).
+- Mujeres: `D = 1,29579 − 0,35004·log10(cintura + cadera − cuello) + 0,22100·log10(altura)` (cm; cintura en su parte más estrecha, cadera en la más ancha).
+- Comprobación: la forma en pulgadas que reproduce el Departamento de Defensa (hombres `86,010·log10(abdomen − cuello) − 70,041·log10(altura) + 36,76`) da el mismo resultado con menos de 1 punto de diferencia en rangos realistas (test con fast-check).
+- Solo para sexo hombre o mujer (otro valor o sin dato: `not_applicable`). Entradas inválidas (cintura ≤ cuello, faltan medidas o resultado fuera de 2-60 %): `invalid_input`.
+- Error: **no he podido verificar** una cifra de error de validación en esta sesión. Se dice «error típico de varios puntos porcentuales», sin número (heurística). Confianza **media** en la fórmula, **baja** en su exactitud individual.
+- **No se dan categorías de % de grasa** (rangos tipo ACE): no tienen una fuente con la solidez de la OMS para el IMC.
+
+**Otros perímetros** (pecho, brazo y muslo): solo seguimiento (último valor y cambio a 4 y 12 semanas). Ninguna regla los usa ni hay umbrales.
+

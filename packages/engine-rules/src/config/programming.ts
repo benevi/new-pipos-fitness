@@ -308,6 +308,33 @@ export const PROGRAMMING = {
       note: 'apoyo: autorregulación por RIR (Graham y Cleather 2021; Helms 2018, §7)',
     }),
   },
+  /** Medidas corporales: tendencia de peso, IMC y % de grasa estimado (idea 7, ADR-0013). */
+  body: {
+    movingAverageDays: k(7, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'días' }),
+    trendWindowDays: k(28, 'PROGRAMACION.md §16.19', 'baja', {
+      heuristic: true,
+      unit: 'días',
+      note: '§11 regla 6: recalibrar con la tendencia real cada 2-3 semanas; se usan las 4 últimas',
+    }),
+    minSpanDays: k(14, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'días' }),
+    minEntries: k(4, 'PROGRAMACION.md §16.19', 'baja', { heuristic: true, unit: 'registros' }),
+    gainRatePctPerWeek: k(0.25, 'PROGRAMACION.md §11', 'baja', {
+      unit: '% peso/sem',
+      range: [0.25, 0.5],
+      note: 'Iraki et al. 2019, cifra de resúmenes secundarios [NO VERIFICADO textualmente]',
+    }),
+    bmiCutoffs: k<readonly [number, number, number, number, number]>([18.5, 25, 30, 35, 40], 'PROGRAMACION.md §16.19', 'alta', {
+      unit: 'kg/m²',
+      note: 'WHO 2000 (TRS 894): adultos; poblaciones asiáticas usan cortes más bajos (WHO 2004)',
+    }),
+    bmiAdultAge: k(18, 'PROGRAMACION.md §16.19', 'alta', { unit: 'años' }),
+    navyMale: k({ c: 1.0324, abdomenNeck: 0.19077, height: 0.15456 }, 'PROGRAMACION.md §16.19', 'media', {
+      note: 'Hodgdon y Beckett 1984 (NHRC 84-11): densidad corporal en cm y log10; % = 495/D − 450 (Siri 1961)',
+    }),
+    navyFemale: k({ c: 1.29579, waistHipNeck: 0.35004, height: 0.221 }, 'PROGRAMACION.md §16.19', 'media', {
+      note: 'Hodgdon y Beckett 1984 (NHRC 84-29); % = 495/D − 450 (Siri 1961)',
+    }),
+  },
   balance: {
     pullPushRatioMin: k(1, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),
     pullPushRatioMax: k(1.5, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),
