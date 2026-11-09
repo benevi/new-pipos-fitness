@@ -23,7 +23,7 @@
     "audit:cleanup": "tsx scripts/audit-cleanup.ts",
     "openapi:generate": "tsx scripts/openapi.ts write",
     "openapi:check": "tsx scripts/openapi.ts check",
-    "vercel-build": "pnpm --filter \"@pipos/api^...\" run build && prisma generate && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma migrate deploy && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma db seed && pnpm run build"
+    "vercel-build": "pnpm --filter \"@pipos/api^...\" run build && prisma generate && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma migrate deploy && DATABASE_URL=\"${DATABASE_URL_DIRECT:-$DATABASE_URL}\" prisma db seed && pnpm run build && node scripts/bundle-serverless.mjs"
   },
   "dependencies": {
     "@nestjs/common": "^12.4.2",
@@ -60,6 +60,7 @@
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
     "@vitest/coverage-v8": "2.1.9",
+    "esbuild": "^0.25",
     "eslint": "^8.56.0",
     "prisma": "^5.9.0",
     "supertest": "^6.3.4",
