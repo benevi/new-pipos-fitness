@@ -14,16 +14,17 @@ export default defineConfig({
     include: ['src/**/*.e2e-spec.ts'],
     globalSetup: ['./src/test/e2e/global-setup.ts'],
     setupFiles: ['./src/test/e2e/setup-env.ts'],
-    // Todas las suites comparten la misma base de datos: se ejecutan en serie.
+    // Todas las suites comparten la misma base de datos: se ejecutan en serie, en un solo proceso
+    // (Vitest 4+ sustituye `poolOptions.forks.singleFork` por `maxWorkers: 1`).
     fileParallelism: false,
     pool: 'forks',
-    poolOptions: { forks: { singleFork: true } },
+    maxWorkers: 1,
     testTimeout: 30_000,
     hookTimeout: 60_000,
   },
   resolve: {
     alias: {
-      '@': resolve(__dirname, './src'),
+      '@': resolve(import.meta.dirname, './src'),
     },
   },
 });
