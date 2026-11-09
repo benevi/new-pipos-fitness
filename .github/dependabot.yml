@@ -16,13 +16,16 @@ updates:
     commit-message:
       prefix: 'deps'
     groups:
-      # Parches y menores de producción juntos; las mayores, una a una (pueden romper la API).
+      # Parches y menores de producción juntos. Las mayores van agrupadas en un PR aparte
+      # (npm-mayores) que no se mezcla tal cual: cada salto mayor necesita su migración.
       npm-produccion:
         dependency-type: production
         update-types: [minor, patch]
       npm-desarrollo:
         dependency-type: development
         update-types: [minor, patch]
+      npm-mayores:
+        update-types: [major]
 
   # App Flutter.
   - package-ecosystem: pub
@@ -39,6 +42,8 @@ updates:
     groups:
       pub-menores:
         update-types: [minor, patch]
+      pub-mayores:
+        update-types: [major]
 
   # Acciones de GitHub usadas por el CI.
   - package-ecosystem: github-actions
