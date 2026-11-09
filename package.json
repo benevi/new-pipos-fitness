@@ -10,7 +10,7 @@
     "test:e2e": "pnpm --filter @pipos/api test:e2e"
   },
   "devDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^7.0.2"
   },
   "packageManager": "pnpm@9.14.2",
   "engines": {
