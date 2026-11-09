@@ -34,8 +34,9 @@ dev_dependencies:
   freezed: ^2.5.2
   json_serializable: ^6.8.0
   drift_dev: ^2.28.0
-  mocktail: ^1.0.4
-  http_mock_adapter: ^0.6.1
 
 flutter:
   uses-material-design: true
+  # Genera lib/l10n/app_localizations*.dart desde los ARB (también se
+  # versionan, para que CI no dependa de la generación).
+  generate: true
