@@ -1,6 +1,6 @@
 # Revisión como entrenador de los 10 planes de ejemplo
 
-Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0), con criterio de entrenador de fuerza basado en evidencia y las reglas de [PROGRAMACION.md](../PROGRAMACION.md). **No sustituye** la revisión por un entrenador titulado prevista antes del lanzamiento público (PLAN §7).
+Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0; actualizada en la Fase 5), con criterio de entrenador de fuerza basado en evidencia y las reglas de [PROGRAMACION.md](../PROGRAMACION.md). **No sustituye** la revisión por un entrenador titulado prevista antes del lanzamiento público (PLAN §7).
 
 ## Veredicto
 
@@ -31,7 +31,19 @@ Revisión hecha sobre los ficheros de esta carpeta (motor 2.0.0), con criterio d
 11. **Suelo de volumen para fuerza y salud.** PROGRAMACION.md §1 (regla 4) acepta volumen bajo o moderado en estos objetivos: el suelo baja al de principiante (6) y el tiempo libre se usa para subir hacia el rango alto.
 12. **Avisos más útiles.** Las sugerencias de material empiezan por lo barato (banda, barra de dominadas, mancuernas) y el aviso distingue entre falta de material, de nivel o una limitación.
 
+## Fase 5: revisión del catálogo y de la selección
+
+Corregido tras la revisión independiente de cierre (ejemplos regenerados):
+
+13. **Etiquetas de riesgo de cadera y tobillo.** Se añade `hip:caution` a los ejercicios con flexión profunda de cadera bajo carga o gran estiramiento del flexor (sentadilla trasera y frontal, prensa, hack, búlgara, zancadas caminando, peso muerto convencional, swing) y `ankle:caution` a los de dorsiflexión forzada o apoyo unipodal dinámico (sentadilla frontal, zancadas caminando, subida al cajón, búlgara con mancuernas). Criterio conservador: solo variantes cargadas o de mucho rango; las de peso corporal y goblet se quedan sin etiqueta.
+14. **Hombro.** El press de banca con agarre cerrado lleva ahora `shoulder:caution` (misma posición que el press de banca). El press landmine pierde la etiqueta de hombro: empuja en el plano escapular sin pasar por encima de la cabeza y es la alternativa habitual para hombros sensibles, menos exigente que el press con mancuernas. El jalón al pecho y el de agarre estrecho llevan `shoulder:caution`, coherente con las dominadas (misma flexión completa del hombro). Las flexiones se dejan sin etiqueta de hombro (cadena cerrada con la escápula libre, como el press con banda o en el suelo).
+15. **«Avoid» sin limitación.** Un ejercicio con riesgo `avoid` para alguna zona se penaliza aunque el usuario no declare limitaciones, así que solo sale si no hay alternativa: el perfil 6 ya no elige remo al mentón (ahora elevaciones laterales).
+16. **Hombro limitado (perfil 7).** Como mucho un hueco de empuje vertical por semana (el resto pasa a deltoides lateral) y el press cerrado ya no es el press principal: ahora press en el suelo con mancuernas y un único press landmine.
+17. **Curl femoral tumbado** ya no suma 0,5 series de gemelo (el gemelo ayuda en la flexión de rodilla, pero no es una serie efectiva). El peso muerto con barra hexagonal se revisó: cuádriceps 0,5 (secundario moderado) es correcto, más que en el convencional por la posición más vertical, sin llegar a primario.
+
 ## Puntos abiertos (no graves)
+
+- **Perfil 7 sin jalón:** con hombro limitado, el jalón (ahora `shoulder:caution`) cede ante el pullover en polea con brazos rectos, que también lleva el hombro a flexión. Valorar etiquetar el pullover o preferir remos.
 
 - **Sesiones cortas en avanzados con 90 min** (perfiles 5 y 6: 35-70 min). Es coherente con los techos de §1, pero conviene que la app ofrezca bajar los minutos en vez de mostrar el aviso cada semana.
 - **Peso muerto convencional como secundario a 6-12 reps** el día de sentadilla pesada (perfil 4). Aceptable a RIR 2, pero un entrenador probablemente preferiría el rumano ese día; afinable con la afinidad por historial.

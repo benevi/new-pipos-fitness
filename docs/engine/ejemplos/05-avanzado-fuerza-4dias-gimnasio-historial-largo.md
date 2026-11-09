@@ -54,7 +54,7 @@
 |---|---|---|---|---|---|---|---|---|
 | 1 | Press de banca con barra | 3 | 3-6 | 2 | 180 s | 96 kg | 8@50% 5@70% 3@85% | 10.8 |
 | 2 | Remo con barra | 3 | 3-6 | 2 | 180 s | 92 kg | 8@50% | 8.8 |
-| 3 | Press militar con barra de pie | 3 | 6-12 | 2 | 120 s | 61 kg | — | 6.6 |
+| 3 | Press de hombros en máquina | 3 | 6-12 | 2 | 120 s | a elegir | — | 6.6 |
 | 4 | Jalón al pecho en polea | 3 | 6-12 | 2 | 120 s | 80 kg | — | 6.6 |
 | 5 | Extensión de tríceps sobre la cabeza con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 6 | Elevaciones laterales con mancuernas | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
@@ -68,7 +68,7 @@
 
 - **Press de banca con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 96 kg calculada con tu e1RM de 112 kg (2026-10-22) para 3 reps a RIR 2.
 - **Remo con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 1 series de aproximación antes de las series efectivas. Carga 92 kg calculada con tu e1RM de 108 kg (2026-10-22) para 3 reps a RIR 2.
-- **Press militar con barra de pie**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Carga 61 kg calculada con tu e1RM de 77 kg (2026-10-22) para 6 reps a RIR 2.
+- **Press de hombros en máquina**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 2 en reserva.
 - **Jalón al pecho en polea**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Carga 80 kg calculada con tu e1RM de 101 kg (2026-10-22) para 6 reps a RIR 2.
 - **Extensión de tríceps sobre la cabeza con mancuerna**: Aislamiento para sumar volumen directo de tríceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Elevaciones laterales con mancuernas**: Aislamiento para sumar volumen directo de hombros. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
@@ -84,7 +84,7 @@
 | 1 | Sentadilla trasera con barra | 3 | 3-6 | 2 | 180 s | 117 kg | 8@50% 5@70% 3@85% | 10.8 |
 | 2 | Peso muerto convencional con barra | 4 | 6-12 | 2 | 120 s | 147 kg (est.) | — | 9.1 |
 | 3 | Sentadilla búlgara con mancuernas | 3 | 6-12 | 2 | 120 s | a elegir | — | 8.2 |
-| 4 | Curl femoral tumbado en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 4 | Curl femoral tumbado con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 5 | Elevación de talones de pie en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 6 | Extensión de cuádriceps en máquina | 2 | 6-12 | 1 | 90 s | a elegir | — | 3.6 |
 | 7 | Rollout con barra | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
@@ -97,7 +97,7 @@
 - **Sentadilla trasera con barra**: Multiarticular principal al inicio de la sesión: la fuerza mejora más en los ejercicios que se hacen primero (Nunes 2021; ACSM 2026). 3-6 reps a RIR 2 y 3 min de descanso: cargas altas (≥80 % 1RM) para tu objetivo de fuerza. 3 series de aproximación antes de las series efectivas. Carga 117 kg calculada con tu e1RM de 137 kg (2026-10-22) para 3 reps a RIR 2.
 - **Peso muerto convencional con barra**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Carga 147 kg calculada con tu e1RM de 186 kg (2026-10-22); en bisagras la fórmula infraestima, tómala como punto de partida.
 - **Sentadilla búlgara con mancuernas**: 6-12 reps a RIR 2, descanso 120 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 2 en reserva.
-- **Curl femoral tumbado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
+- **Curl femoral tumbado con mancuerna**: Aislamiento para sumar volumen directo de isquiosurales. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Elevación de talones de pie en máquina**: Aislamiento para sumar volumen directo de gemelos. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Extensión de cuádriceps en máquina**: Aislamiento para sumar volumen directo de cuádriceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Rollout con barra**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
@@ -143,7 +143,7 @@
 | 4 | Abducción de cadera en máquina | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 | 5 | Extensión de cuádriceps en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 6 | Elevación de talones en máquina Smith (multipower) | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
-| 7 | Curl femoral tumbado con mancuerna | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
+| 7 | Curl femoral sentado en máquina | 4 | 6-12 | 1 | 90 s | a elegir | — | 7.6 |
 | 8 | Press Pallof en polea | 3 | 6-12 | 1 | 90 s | a elegir | — | 5.6 |
 
 - Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 61,9 min estimados de tus 90 (incluye 5 min de calentamiento general).
@@ -157,7 +157,7 @@
 - **Abducción de cadera en máquina**: Aislamiento para sumar volumen directo de glúteos. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Extensión de cuádriceps en máquina**: Aislamiento para sumar volumen directo de cuádriceps. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Elevación de talones en máquina Smith (multipower)**: Aislamiento para sumar volumen directo de gemelos. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
-- **Curl femoral tumbado con mancuerna**: Aislamiento para sumar volumen directo de isquiosurales. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
+- **Curl femoral sentado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 - **Press Pallof en polea**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 6-12 reps a RIR 1, descanso 90 s, según tu objetivo de fuerza. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 6 repeticiones dejando 1 en reserva.
 
 </details>
@@ -174,8 +174,8 @@
 | cuádriceps | 19.5 | 6-20 | 2 | dentro |
 | isquiosurales | 17 | 6-20 | 2 | dentro |
 | glúteos | 20 | 6-20 | 2 | dentro |
-| gemelos | 8 | 6-20 | 2 | dentro |
-| core | 9.5 | 6-20 | 3 | dentro |
+| gemelos | 6 | 6-20 | 2 | dentro |
+| core | 8 | 6-20 | 2 | dentro |
 
 ## Avisos
 

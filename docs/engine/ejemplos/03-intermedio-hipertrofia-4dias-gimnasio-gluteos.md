@@ -88,7 +88,7 @@
 | 1 | Sentadilla trasera con barra | 3 | 8-12 | 2 | 120 s | a elegir | 8@50% 5@70% | 8.8 |
 | 2 | Peso muerto convencional con barra | 3 | 8-12 | 2 | 120 s | a elegir | — | 6.8 |
 | 3 | Sentadilla búlgara con mancuernas | 2 | 8-12 | 2 | 120 s | a elegir | — | 5.3 |
-| 4 | Curl femoral tumbado en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
+| 4 | Curl femoral tumbado con mancuerna | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 5 | Elevación de talones de pie en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 6 | Extensión de cuádriceps en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 7 | Crunch en polea alta | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
@@ -101,7 +101,7 @@
 - **Sentadilla trasera con barra**: Va primero porque glúteos es prioridad para ti: el primer ejercicio acumula más volumen (Simão 2012). 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. 2 series de aproximación antes de las series efectivas. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Peso muerto convencional con barra**: Trabaja glúteos, tu músculo prioritario. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
 - **Sentadilla búlgara con mancuernas**: Trabaja glúteos, tu músculo prioritario. 8-12 reps a RIR 2, descanso 120 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 8 repeticiones dejando 2 en reserva.
-- **Curl femoral tumbado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Curl femoral tumbado con mancuerna**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Elevación de talones de pie en máquina**: Aislamiento para sumar volumen directo de gemelos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Extensión de cuádriceps en máquina**: Aislamiento para sumar volumen directo de cuádriceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Crunch en polea alta**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
@@ -146,7 +146,7 @@
 | 3 | Hip thrust con barra | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 4 | Extensión de cuádriceps en máquina | 3 | 10-15 | 1 | 90 s | a elegir | — | 6.2 |
 | 5 | Elevación de talones en máquina Smith (multipower) | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
-| 6 | Curl femoral tumbado con mancuerna | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
+| 6 | Curl femoral sentado en máquina | 4 | 10-15 | 1 | 90 s | a elegir | — | 8.4 |
 | 7 | Plancha alta con toques de hombro | 4 | 10-15 | 1 | 90 s | sin kg | — | 8.4 |
 
 - Pierna B: trabaja cuádriceps, isquiosurales, glúteos, gemelos y core; 55,5 min estimados de tus 60 (incluye 5 min de calentamiento general).
@@ -158,7 +158,7 @@
 - **Hip thrust con barra**: Lo incluimos porque lo marcaste como favorito. Trabaja glúteos, tu músculo prioritario. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Extensión de cuádriceps en máquina**: Aislamiento para sumar volumen directo de cuádriceps. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Elevación de talones en máquina Smith (multipower)**: Aislamiento para sumar volumen directo de gemelos. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
-- **Curl femoral tumbado con mancuerna**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
+- **Curl femoral sentado en máquina**: Aislamiento para sumar volumen directo de isquiosurales. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Estimación inicial: sin historial de este ejercicio, elige un peso con el que hagas 10 repeticiones dejando 1 en reserva.
 - **Plancha alta con toques de hombro**: Core al final para no fatigar el tronco antes de los ejercicios pesados. 10-15 reps a RIR 1, descanso 90 s, según tu objetivo de hipertrofia. Se hace con tu peso corporal; ajusta la dificultad con la variante o el tempo.
 
 </details>
@@ -175,7 +175,7 @@
 | cuádriceps | 14.5 | 10-16 | 2 | dentro |
 | isquiosurales | 14.5 | 10-16 | 2 | dentro |
 | glúteos ★ | 16 | 10-16 | 2 | dentro |
-| gemelos | 12.5 | 10-16 | 3 | dentro |
+| gemelos | 11 | 10-16 | 3 | dentro |
 | core | 10 | 10-16 | 2 | dentro |
 
 ## Avisos

@@ -39,6 +39,9 @@ const PATTERN_TARGET: Partial<Record<Ex['pattern'], VolumeGroup>> = {
   hip_isolation: 'glutes',
 };
 
+/** Penalización por cada zona con riesgo «avoid» (heurística, PROGRAMACION.md §16). */
+const AVOID_PENALTY = 1.5;
+
 /** Calidad estática de un ejercicio para un hueco: no depende del resto del plan. */
 export function staticQuality(ex: Ex, slot: SlotSpec | null, role: ExerciseRole, ctx: Ctx): number {
   let s = 0;
@@ -68,6 +71,10 @@ export function staticQuality(ex: Ex, slot: SlotSpec | null, role: ExerciseRole,
     if (ex.src.isUnilateral) s -= 0.25;
   }
   if (ex.cautionZones.size > 0) s -= 1.5 * ex.cautionZones.size;
+  // Un ejercicio «avoid» para alguna zona (p. ej. remo al mentón para el hombro) es de riesgo
+  // alto aunque el usuario no declare limitación: si hay alternativa equivalente, se prefiere.
+  const avoidZones = ex.src.riskTags.filter((r) => r.level === 'avoid').length;
+  if (avoidZones > 0) s -= AVOID_PENALTY * avoidZones;
   return s;
 }
 

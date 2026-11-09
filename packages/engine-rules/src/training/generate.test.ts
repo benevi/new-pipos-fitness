@@ -120,6 +120,20 @@ describe('casos límite fijos (PLAN §3)', () => {
     expect(w?.health).toBe(true);
   });
 
+  it('hombro limitado: sin press cerrado de banca como principal y como mucho un press vertical por semana', () => {
+    for (const days of [4, 5, 6]) {
+      const pl = plan(profile({ limitations: ['shoulder'], daysPerWeek: days, minutesPerSession: 45 }));
+      const all = exercises(pl);
+      expect(all.filter((e) => e.movementPattern === 'vertical_push').length, `${days} días`).toBeLessThanOrEqual(1);
+      expect(all.some((e) => e.exerciseId === 'press-banca-agarre-cerrado' && e.role === 'main')).toBe(false);
+    }
+  });
+
+  it('sin limitación, un ejercicio «avoid» (remo al mentón) pierde frente a una alternativa sin riesgo', () => {
+    const pl = plan(profile({ daysPerWeek: 6, minutesPerSession: 90, level: 'advanced', priorityMuscles: ['side_delts'] }));
+    expect(exercises(pl).map((e) => e.exerciseId)).not.toContain('remo-menton-barra');
+  });
+
   it('los textos derivados de salud van solo en healthNotes / avisos con health: true', () => {
     const ZONE_WORDS = /limitaci|precauci|rodilla/i;
     const pl = plan(profile({ limitations: ['knee', 'shoulder'], equipment: ['barbell', 'dumbbell', 'bench', 'squat_rack', 'cable', 'machine'] }));
