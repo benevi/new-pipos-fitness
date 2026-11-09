@@ -81,8 +81,9 @@
 - [ ] **[BLOQUEA]** Firma de release propia (hoy `release` firma con las claves de debug en
       `android/app/build.gradle.kts`); keystore fuera del repo, en el gestor de secretos del CI.
 - [ ] **[BLOQUEA]** `--dart-define=API_BASE_URL=https://…` (HTTPS; release prohíbe HTTP en claro).
-- [ ] **[BLOQUEA]** `android:allowBackup="false"` (o reglas de backup que excluyan la base drift y el
-      almacenamiento seguro): la base local contiene la cola de series y caché de perfil/plan.
+- [ ] **[BLOQUEA]** Comprobar en el build release que las reglas de backup excluyen la base drift y
+      el almacenamiento seguro (`adb shell bmgr backupnow` + inspección): la base local contiene la
+      cola de series y caché de perfil/plan.
 - [ ] `versionCode`/`versionName` incrementados; build `flutter build appbundle --release`.
 - [ ] Prueba con TalkBack en dispositivo real y en un móvil de gama baja.
 - [ ] Ficha de la tienda: política de privacidad enlazada y formulario de seguridad de datos

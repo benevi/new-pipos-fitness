@@ -149,8 +149,8 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 |---|---|---|---|
 | I | Robo de tokens del dispositivo | Access y refresh token en `flutter_secure_storage` (Keystore/Keychain) | ✅ |
 | I | Base SQLite local (drift) sin cifrar: cola offline y caché de lecturas (puede incluir perfil y plan) | Sandbox de la app | ⚠️ / ⏳ deuda |
-| I | Copia de seguridad de Android con la base local | `android:allowBackup` no está desactivado | ⏳ DEPLOY_CHECKLIST |
-| T | Escrituras de tokens no atómicas (access y refresh por separado) | — | ⏳ deuda |
+| I | Copia de seguridad de Android con la base local y los tokens | Reglas de exclusión de backup en la app (Fase 5); falta validarlas en un build real | ⏳ deuda |
+| T | Escrituras de tokens no atómicas (access y refresh por separado) | Corregido en la app (Fase 5) | ✅ |
 | I | HTTP en claro | Release exige HTTPS; HTTP solo en debug | ✅ |
 
 ## 7. Clasificación de datos
@@ -203,7 +203,7 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 - **Access token válido hasta caducar** (15 min) tras logout/revocación; el rol y la
   existencia del usuario sí se comprueban en BD en cada petición.
 - **Enumeración de emails** por el 409 del registro, mitigada solo por rate limiting.
-- **Base local del móvil sin cifrar** y `allowBackup` sin desactivar.
+- **Base local del móvil sin cifrar** (sandbox de la app; excluida de las copias de seguridad).
 - **Historial de git** conserva binarios antiguos (`.tools/`), sin secretos; no se reescribe.
 - Los textos de las explicaciones de planes **anteriores a la Fase 5** no marcaban los
   derivados de salud; no hay datos de producción, así que no se migran.

@@ -101,63 +101,65 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 ## App móvil
 
-### [Móvil] Editar o borrar una serie registrada desde la interfaz
+Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
+
+### [Móvil] Poder descartar una serie rechazada de forma permanente por la API
+- **Severidad:** Media
+- **Impacto:** una serie que la API rechaza con 400/422 (p. ej. desde la Fase 5, un ejercicio que no
+  es el del hueco ni su sustitución registrada) queda en `failed` y bloquea el cierre del
+  entrenamiento; el usuario no tiene forma de quitarla.
+- **Propuesta:** en la fila de la serie fallida, acción «descartar» que la borre de la cola local
+  (y, si llegó a existir en el servidor, `DELETE`), con el motivo del rechazo visible.
+
+### [Móvil] Editar o borrar una serie ya registrada desde la interfaz
 - **Severidad:** Media
 - **Impacto:** la API admite `PATCH`/`DELETE /workouts/:id/sets/:clientId` (última escritura gana),
-  pero la app no ofrece corregir un error de tecleo; el dato malo contamina e1RM y volumen.
+  pero la app no permite corregir un error de tecleo; el dato malo contamina e1RM y volumen.
 - **Propuesta:** acción en la fila de la serie (editar reps/kg/RIR, borrar) que pase por la cola
   offline con `clientUpdatedAt`.
 
 ### [Móvil] Cambiar de ejercicio sin conexión
-- **Severidad:** Media
-- **Impacto:** la sustitución exige red; en el gimnasio sin cobertura el usuario no puede
-  cambiar una máquina ocupada. Ojo: desde la Fase 5 la API rechaza (400) series de un ejercicio
-  que no sea el del hueco ni su sustitución registrada, así que la sustitución debe sincronizarse
-  **antes** que esas series.
+- **Severidad:** Baja
+- **Impacto:** la sustitución exige red. Desde la Fase 5 la API rechaza (400) series de un
+  ejercicio que no sea el del hueco ni su sustitución registrada, así que una sustitución offline
+  tendría que sincronizarse **antes** que esas series.
 - **Propuesta:** encolar la sustitución en drift (alternativas cacheadas con el plan) y enviarla en
   orden antes de las series del hueco.
-
-### [Móvil] Una sesión terminada sin conexión sigue apareciendo como «hoy» hasta sincronizar
-- **Severidad:** Media
-- **Impacto:** `GET /sessions/today` viene de la caché; hasta que el cierre llega al servidor la
-  app vuelve a ofrecer la misma sesión.
-- **Propuesta:** calcular localmente la siguiente sesión pendiente (misma regla que
-  `nextPendingSession`) cuando hay cierres en cola.
 
 ### [Móvil] Notificación del temporizador de descanso en segundo plano
 - **Severidad:** Baja
 - **Impacto:** si la app pasa a segundo plano, el fin del descanso no avisa.
-- **Propuesta:** notificación local programada (`flutter_local_notifications`) al iniciar el descanso.
+- **Propuesta:** notificación local programada al iniciar el descanso.
+
+### [Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409
+- **Severidad:** Baja
+- **Impacto:** cuando `POST /workouts` responde `409 WORKOUT_IN_PROGRESS` y la app adopta el
+  entrenamiento remoto, en casos límite dos entrenamientos locales quedan con el mismo `serverId`.
+- **Propuesta:** al adoptar, fusionar las series del duplicado en el entrenamiento ya enlazado y
+  borrar el duplicado; test de sincronización con dos inicios encolados.
+
+### [Móvil] Login offline con solo el userId en caché muestra el email vacío
+- **Severidad:** Baja
+- **Impacto:** si solo hay `userId` cacheado, Ajustes muestra el email vacío hasta tener red.
+- **Propuesta:** cachear el usuario completo (`id`, `email`) al validar la sesión y mostrar un
+  marcador «sin conexión» mientras falte.
+
+### [Móvil] Validar las reglas de exclusión de backup en un build Android real
+- **Severidad:** Baja
+- **Impacto:** las reglas que excluyen la base local y el almacenamiento seguro de las copias de
+  seguridad no se han comprobado en un dispositivo/build real.
+- **Propuesta:** `adb shell bmgr backupnow` en un build release y comprobar que la base drift y
+  los tokens no aparecen en la copia.
 
 ### [Móvil] Prueba de accesibilidad con TalkBack en dispositivo real
-- **Severidad:** Media
-- **Impacto:** la accesibilidad solo se ha comprobado con tests de semántica; falta una pasada real.
-- **Propuesta:** guion de prueba manual con TalkBack (registro, onboarding, registrar series,
-  progreso) y corrección de lo que aparezca.
-
-### [Motor/Móvil] Textos del motor solo en español
 - **Severidad:** Baja
-- **Impacto:** la app tiene i18n (ARB), pero las explicaciones, avisos y prescripciones del motor
-  llegan como texto en español.
-- **Propuesta:** el motor emite códigos con parámetros (`{ code, params }`) y la app los traduce;
-  mantener el texto en español como respaldo.
+- **Impacto:** la accesibilidad solo se ha comprobado con tests de semántica.
+- **Propuesta:** guion manual con TalkBack (registro, onboarding, registrar series, progreso) y
+  corrección de lo que aparezca.
 
-### [Móvil] Escritura no atómica de los tokens
-- **Severidad:** Media
-- **Impacto:** access y refresh se guardan con dos escrituras en el almacenamiento seguro; si la
-  app muere entre ambas puede quedar un refresh viejo (ya rotado) → `AUTH_REFRESH_RACE`/
-  `AUTH_REFRESH_REUSED` y cierre de sesión.
-- **Propuesta:** guardar ambos en una sola clave (JSON) o escribir primero el refresh y validar la
-  pareja al leer.
-
-### [Móvil] Base local (drift) sin cifrar y `allowBackup` activo
-- **Severidad:** Alta (bloquea producción)
-- **Impacto:** la base SQLite guarda la cola de series y una caché de lecturas que puede incluir
-  el perfil (con limitaciones) y el plan; Android la incluye en las copias de seguridad.
-- **Propuesta:** `android:allowBackup="false"` (o reglas que excluyan la base) y valorar SQLCipher
-  con la clave en el almacenamiento seguro; no cachear el perfil con datos de salud.
-
-### [Móvil] Firma de release propia
-- **Severidad:** Alta (bloquea producción)
-- **Impacto:** el build `release` firma con las claves de debug (`android/app/build.gradle.kts`).
-- **Propuesta:** keystore de subida en los secretos del CI y `signingConfig` de release.
+### [Motor/Móvil] Explicaciones del motor y nombres de ejercicios solo en español
+- **Severidad:** Baja
+- **Impacto:** con la interfaz en inglés, las explicaciones, avisos, prescripciones y nombres de
+  ejercicios siguen en español.
+- **Propuesta:** el motor emite códigos con parámetros (`{ code, params }`) que la app traduce; usar
+  `nameEn` del catálogo según el idioma.
