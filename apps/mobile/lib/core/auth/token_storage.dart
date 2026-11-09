@@ -41,7 +41,15 @@ abstract class TokenStorage {
 
 class SecureTokenStorage implements TokenStorage {
   SecureTokenStorage([FlutterSecureStorage? storage])
-    : _storage = storage ?? const FlutterSecureStorage();
+    : _storage = storage ?? const FlutterSecureStorage(aOptions: androidOptions);
+
+  /// flutter_secure_storage 10 reescribió el almacenamiento de Android (sin
+  /// Jetpack Security) y migra solo los datos de la 9 a los cifrados nuevos
+  /// (`migrateOnAlgorithmChange`, por defecto). `migrateWithBackup` guarda una
+  /// copia antes de migrar para que un cierre a mitad no pierda la sesión.
+  /// Las copias quedan en SharedPreferences, excluidas del backup
+  /// (res/xml/backup_rules.xml y data_extraction_rules.xml).
+  static const androidOptions = AndroidOptions(migrateWithBackup: true);
 
   final FlutterSecureStorage _storage;
 
