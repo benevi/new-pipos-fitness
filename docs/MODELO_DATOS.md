@@ -23,6 +23,10 @@
 | **ADR-0013** · `WorkoutSession.adjustedMinutes SMALLINT?` (CHECK 15-90) y `reducedVolume BOOLEAN` — `20261111000200_ajuste_de_hoy` | Ajuste de hoy elegido al empezar; solo el modo, nunca el motivo. Las sesiones ajustadas no cuentan para descargas. |
 | **ADR-0013** · `TrainingProfile.trainingWeekdays SMALLINT[]` (CHECK ⊆ 1..7, ≤ 6) y `TrainingBreak` (`clientId` único por usuario, `startsOn`/`endsOn` DATE con CHECK de 1 a 60 días) — `20261111000300_dias_y_pausas` | Días de entreno (no son entrada del motor) y pausas planificadas sin motivo. |
 | **ADR-0013** · `BodyMeasurement` (`UNIQUE(userId, measuredOn)`, peso y perímetros nulables, CHECK de al menos uno) — `20261111000400_medidas_corporales` | Dato de salud (art. 9). IMC y % de grasa no se guardan: se calculan al leer. |
+| **Deuda #9** · `ThrottlerRecord` (`key` PK = hash del throttler, `hits`, `expiresAt`, `blockedUntil`) — `20261112000000_rate_limit_compartido` | Contadores del rate limiting compartidos entre réplicas (`THROTTLE_STORE=postgres`). Efímera; sin IPs en claro. |
+| **Deuda #11** · `PlanVersion.idempotencyKey VARCHAR(128)?`, `idempotencyHash CHAR(64)?`, `UNIQUE(userId, idempotencyKey)` — `20261112000100_idempotencia_generar_plan` | `Idempotency-Key` de `POST /plans/generate`: misma clave → misma versión. |
+| **Deuda #15** · `TrainingPlan.lastDeloadOn DATE?` — `20261112000200_ultima_descarga` | Última descarga real; ancla el ciclo de descarga programada. |
+| **Deuda #17** · `AuditEvent` (enum `AuditEventType`, `userId?` CASCADE, `subjectRef?`, `createdAt`; trigger sin UPDATE) — `20261112000300_registro_auditoria` | Auditoría append-only sin datos personales ni de salud; retención 180 días. |
 > Fuentes leídas: `apps/api/prisma/schema.prisma` (366 líneas), las 6 migraciones en `apps/api/prisma/migrations/`, `packages/contracts/src/enums/index.ts`. Prisma instalado: `^5.9.0`.
 
 ## 0. Hallazgos sobre el estado actual (motivan el rediseño)
@@ -773,7 +777,7 @@ Nota: los registros de carga/repeticiones no se consideran por sí solos datos d
 - `DELETE /me` con reautenticación (contraseña): una transacción que hace `DELETE FROM "User" WHERE id = $1`; la cascada de §4 elimina todo. Las FK `NoAction` se resuelven al final de la sentencia. `Exercise` no se ve afectado (RESTRICT solo apunta hacia el catálogo).
 - `ExerciseMedia.moderatedById` → NULL si el usuario era admin.
 - Copias de seguridad: los datos borrados persisten en backups hasta su rotación (propuesta: 30 días); documentarlo en la política de privacidad. Tras restaurar un backup, reaplicar las supresiones registradas.
-- Prueba de supresión sin datos personales: log de aplicación (no tabla) con `sha256(userId)` + timestamp. Si se quiere en BD, una tabla `AccountDeletionLog` sin FK — **no incluida** en v1 para no ampliar alcance; confirmar con negocio.
+- Prueba de supresión sin datos personales: log de aplicación con `sha256(userId)` + timestamp y, desde el issue #17, un `AuditEvent` `account_deleted` **sin userId** con un id de borrado aleatorio (`subjectRef`, también en el log). Los demás eventos de auditoría del usuario se borran en cascada.
 
 ### 5.5 Retención
 
@@ -783,6 +787,8 @@ Nota: los registros de carga/repeticiones no se consideran por sí solos datos d
 | Cuentas inactivas | Propuesta: aviso a los 24 meses sin login y supresión a los 27 (requiere `lastLoginAt` en `User` — **decisión pendiente**, no incluido en el schema). |
 | `RefreshToken` | Borrado físico a `expiresAt + 7 días` (los revocados conservan 7 días para investigación de reutilización). IP/UA desaparecen con el token. |
 | `ConsentEvent` | Vida de la cuenta (prueba del consentimiento mientras se trata el dato). |
+| `AuditEvent` | 180 días (`AUDIT_RETENTION_DAYS`, `pnpm --filter @pipos/api audit:cleanup` diario); se borra antes con la cuenta (salvo `account_deleted`, sin userId). |
+| `ThrottlerRecord` | Minutos: se borra al caducar la ventana o el bloqueo. |
 | Snapshots `inputSnapshot` | Vida de la versión; redactados al retirar consentimiento. |
 | Backups | 30 días (propuesta). |
 

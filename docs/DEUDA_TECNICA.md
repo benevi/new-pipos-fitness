@@ -132,6 +132,9 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 - **Propuesta:** solo si hubiera datos previos: migración que marque como `health` las notas que
   empiecen por «Precaución por tu limitación» / «Por tu limitación» y los avisos con
   `data.reason = 'limitation'`.
+- **Estado (issue #20, abierto):** no hace falta mientras no exista ninguna base de datos con planes
+  generados antes de la Fase 5 (la API nunca se ha desplegado). Solo habría que hacerlo si se
+  importaran o restauraran datos de esa época; si se confirma que no los hay, se puede cerrar.
 
 ### [Motor] Pasos de carga propios del usuario (microdiscos, mancuernas de 1 kg)
 - **Severidad:** Baja
@@ -189,6 +192,16 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
      local o rehacerlo con la sesión vigente; nunca dejarlo bloqueando la cola.
   5. Test de sincronización: inicio encolado + regeneración del plan → reintento con la sesión
      vigente y el mismo `clientId`.
+
+### [Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos
+- **Severidad:** Baja
+- **Contexto:** la API ya admite `Idempotency-Key` en `POST /plans/generate` (issue #11) y
+  `POST /workouts/:id/abandon` (issue #13); la app todavía no los usa.
+- **Comportamiento esperado del cliente:** un UUID v4 por pulsación de «Generar plan», reenviado
+  igual en cada reintento (200 y 201 son éxito; ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un
+  reintento). Acción «Descartar entrenamiento» que encole `abandon` (idempotente). Si una serie
+  encolada recibe `409 WORKOUT_FINISHED` y el entrenamiento está `abandoned` (abandono automático
+  tras 12 h sin actividad al empezar otro), mostrarlo y no reintentar.
 
 ### [Móvil] Poder descartar una serie rechazada de forma permanente por la API
 - **Severidad:** Media
