@@ -4,6 +4,7 @@ import { PlateBreakdownSchema } from '../engine-v2/load.js';
 import { ExerciseRoleSchema, SessionKindSchema } from '../engine-v2/plan.js';
 import { ProgressionActionSchema } from '../engine-v2/progression.js';
 import { LoadTypeSchema, MovementPatternSchema, WorkoutStatusSchema } from '../enums/index.js';
+import { ExerciseMusclesSchema } from './catalog.js';
 import { DateTimeSchema, IdSchema } from './common.js';
 import { WarmupSetResponseSchema } from './plans.js';
 
@@ -194,6 +195,9 @@ export const TodayExerciseSchema = z
     pinned: z.boolean().default(false),
     /** Nota fija del usuario para el ejercicio realmente hecho (idea 2); null si no hay. */
     note: z.string().nullable().default(null),
+    // ── Fase 1 de la guía de ejercicios (ADR-0014).
+    /** Músculos del ejercicio realmente hecho (sustituto o fijado incluidos): principales primero. */
+    muscles: ExerciseMusclesSchema,
   })
   .strict();
 export type TodayExercise = z.infer<typeof TodayExerciseSchema>;

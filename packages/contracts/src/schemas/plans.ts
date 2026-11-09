@@ -8,6 +8,7 @@ import {
 } from '../engine-v2/plan.js';
 import { LoadImplementSchema } from '../engine-v2/enums.js';
 import { LoadTypeSchema, MovementPatternSchema } from '../enums/index.js';
+import { ExerciseMusclesSchema } from './catalog.js';
 import { DateTimeSchema, IdSchema, paginatedSchema } from './common.js';
 
 export const WarmupSetResponseSchema = z
@@ -53,6 +54,11 @@ export const PlanExerciseResponseSchema = z
     warmupSets: z.array(WarmupSetResponseSchema),
     estimatedMinutes: z.number(),
     rationale: z.array(z.string()),
+    /**
+     * Músculos del ejercicio que se hace en este hueco (el fijado si lo hay): principales
+     * primero (ADR-0014, Fase 1). Vacío si el ejercicio ya no está en el catálogo activo.
+     */
+    muscles: ExerciseMusclesSchema,
   })
   .strict();
 export type PlanExerciseResponse = z.infer<typeof PlanExerciseResponseSchema>;
