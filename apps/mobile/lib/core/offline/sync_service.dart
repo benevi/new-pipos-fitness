@@ -19,6 +19,11 @@
 ///      detiene la pasada (para no desordenar) y se programa un reintento.
 ///    - Error permanente (4xx) o reintentos agotados → `failed` (no bloquea
 ///      al resto). [retryFailed] los vuelve a poner en cola.
+///    d. Otras escrituras offline ([PendingMutations], ADR-0013): nota fija
+///       por ejercicio y medidas corporales, por orden de edición, con el
+///       mismo backoff. Una fila por clave lógica: la última edición local
+///       sustituye a la anterior (la API resuelve «gana la última escritura»
+///       por `clientUpdatedAt` en las notas; las medidas son idempotentes).
 /// 3. Al volver la conectividad se lanza otra pasada.
 /// 4. Al arrancar, las series `syncing` huérfanas (la app murió a mitad de
 ///    envío) vuelven a `pending`: como el envío es idempotente, reenviarlas
@@ -26,6 +31,7 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:drift/drift.dart';
@@ -83,12 +89,29 @@ class SyncReport {
 
 /// Resumen del estado de la cola para la UI.
 class SyncSummary {
-  const SyncSummary({this.pending = 0, this.failed = 0});
+  const SyncSummary({
+    this.pending = 0,
+    this.failed = 0,
+    this.pendingChanges = 0,
+    this.failedChanges = 0,
+  });
 
+  /// Series.
   final int pending;
   final int failed;
 
-  bool get isClean => pending == 0 && failed == 0;
+  /// Otras escrituras (notas, medidas).
+  final int pendingChanges;
+  final int failedChanges;
+
+  int get unsent => pending + failed + pendingChanges + failedChanges;
+
+  bool get isClean => unsent == 0;
+}
+
+/// Envía a la API una escritura de [PendingMutations] (lanza [ApiFailure]).
+abstract class MutationSender {
+  Future<void> send(PendingMutation mutation);
 }
 
 class SyncService {
@@ -101,6 +124,7 @@ class SyncService {
     String Function()? idGenerator,
     this.backoff = const BackoffPolicy(),
     this.retention = const Duration(days: 14),
+    this.mutations,
     void Function(Object error, StackTrace stack)? onError,
   }) : _onError = onError ?? _logError,
        _db = database,
@@ -119,6 +143,9 @@ class SyncService {
   final String Function() _newId;
   final BackoffPolicy backoff;
 
+  /// Envío de las otras escrituras offline; sin él no se procesan.
+  final MutationSender? mutations;
+
   /// Series ya sincronizadas y entrenamientos cerrados se purgan pasado
   /// este tiempo.
   final Duration retention;
@@ -131,6 +158,7 @@ class SyncService {
 
   $LocalSetLogsTable get _sets => _db.localSetLogs;
   $LocalWorkoutsTable get _workouts => _db.localWorkouts;
+  $PendingMutationsTable get _mutations => _db.pendingMutations;
 
   String get _uid {
     final id = _userId;
@@ -181,13 +209,14 @@ class SyncService {
   Future<LocalWorkout> startWorkout({
     required String planSessionId,
     TodayWorkoutRef? adopt,
+    WorkoutAdjustment? adjustment,
   }) async {
     final userId = _uid;
     final row = await _serialized(
       () => _db.transaction(
         () => adopt != null
             ? _adoptTx(userId, planSessionId, adopt)
-            : _startTx(userId, planSessionId),
+            : _startTx(userId, planSessionId, adjustment),
       ),
     );
     _notify();
@@ -195,7 +224,11 @@ class SyncService {
     return row;
   }
 
-  Future<LocalWorkout> _startTx(String userId, String planSessionId) async {
+  Future<LocalWorkout> _startTx(
+    String userId,
+    String planSessionId,
+    WorkoutAdjustment? adjustment,
+  ) async {
     final open = await openWorkoutFor(planSessionId);
     if (open != null) return open;
     return _db
@@ -206,8 +239,80 @@ class SyncService {
             userId: userId,
             planSessionId: planSessionId,
             startedAt: _clock(),
+            adjustmentJson: Value(
+              adjustment == null || adjustment.isNone
+                  ? null
+                  : jsonEncode(adjustment.toJson()),
+            ),
           ),
         );
+  }
+
+  /// Ajuste guardado en el entrenamiento local (null = sesión completa).
+  static WorkoutAdjustment? adjustmentOf(LocalWorkout w) {
+    final raw = w.adjustmentJson;
+    if (raw == null) return null;
+    try {
+      return WorkoutAdjustment.fromJson(
+        (jsonDecode(raw) as Map).cast<String, dynamic>(),
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
+  // ── Otras escrituras offline (notas, medidas) ──
+
+  /// Guarda (o sustituye) la escritura pendiente de [key] y dispara la
+  /// sincronización.
+  Future<void> enqueueMutation({
+    required String key,
+    required MutationKind kind,
+    required Map<String, dynamic> payload,
+    DateTime? updatedAt,
+  }) async {
+    await _db
+        .into(_mutations)
+        .insertOnConflictUpdate(
+          PendingMutationsCompanion.insert(
+            userId: _uid,
+            mutationKey: key,
+            kind: kind,
+            payload: jsonEncode(payload),
+            updatedAt: updatedAt ?? _clock(),
+            status: const Value(SetSyncStatus.pending),
+            attempts: const Value(0),
+            lastError: const Value(null),
+            nextAttemptAt: const Value(null),
+          ),
+        );
+    _notify();
+    _kick();
+  }
+
+  /// Descarta la escritura pendiente de [key] (p. ej. se borra en local algo
+  /// que aún no se había enviado).
+  Future<void> discardMutation(String key) async {
+    await (_db.delete(
+      _mutations,
+    )..where((t) => t.userId.equals(_uid) & t.mutationKey.equals(key))).go();
+    _notify();
+  }
+
+  /// Escrituras pendientes o fallidas cuya clave empieza por [prefix].
+  Stream<List<PendingMutation>> watchMutations(String prefix) {
+    final userId = _userId;
+    if (userId == null) return Stream.value(const []);
+    return _watch(
+      () =>
+          (_db.select(_mutations)
+                ..where(
+                  (t) =>
+                      t.userId.equals(userId) & t.mutationKey.like('$prefix%'),
+                )
+                ..orderBy([(t) => OrderingTerm.asc(t.updatedAt)]))
+              .get(),
+    );
   }
 
   Future<LocalWorkout> _adoptTx(
@@ -372,9 +477,18 @@ class SyncService {
                     t.status.equalsValue(SetSyncStatus.synced).not(),
               ))
               .get();
+      final changes = await (_db.select(
+        _mutations,
+      )..where((t) => t.userId.equals(userId))).get();
       return SyncSummary(
         pending: rows.where((r) => r.status != SetSyncStatus.failed).length,
         failed: rows.where((r) => r.status == SetSyncStatus.failed).length,
+        pendingChanges: changes
+            .where((r) => r.status != SetSyncStatus.failed)
+            .length,
+        failedChanges: changes
+            .where((r) => r.status == SetSyncStatus.failed)
+            .length,
       );
     });
   }
@@ -428,6 +542,14 @@ class SyncService {
         .write(
           const LocalSetLogsCompanion(status: Value(SetSyncStatus.pending)),
         );
+    await (_db.update(_mutations)..where(
+          (t) =>
+              t.userId.equals(userId) &
+              t.status.equalsValue(SetSyncStatus.syncing),
+        ))
+        .write(
+          const PendingMutationsCompanion(status: Value(SetSyncStatus.pending)),
+        );
   }
 
   Future<void> _purgeOld() async {
@@ -453,6 +575,18 @@ class SyncService {
     final userId = _userId;
     if (userId == null) return;
     await _requeueFailedSets(userId);
+    await (_db.update(_mutations)..where(
+          (t) =>
+              t.userId.equals(userId) &
+              t.status.equalsValue(SetSyncStatus.failed),
+        ))
+        .write(
+          const PendingMutationsCompanion(
+            status: Value(SetSyncStatus.pending),
+            attempts: Value(0),
+            nextAttemptAt: Value(null),
+          ),
+        );
     await (_db.update(_workouts)..where((t) => t.userId.equals(userId))).write(
       const LocalWorkoutsCompanion(
         attempts: Value(0),
@@ -509,6 +643,7 @@ class SyncService {
           clientId: w.clientId,
           planSessionId: w.planSessionId,
           startedAt: w.startedAt,
+          adjustment: adjustmentOf(w),
         ),
       );
       await _saveServerId(w.clientId, result.value.id);
@@ -750,7 +885,92 @@ class SyncService {
         failed++;
       }
     }
+
+    // d. Otras escrituras (notas, medidas).
+    final sender = mutations;
+    if (sender != null) {
+      final pending =
+          await (_db.select(_mutations)
+                ..where(
+                  (t) =>
+                      t.userId.equals(userId) &
+                      t.status.equalsValue(SetSyncStatus.pending),
+                )
+                ..orderBy([(t) => OrderingTerm.asc(t.updatedAt)]))
+              .get();
+      for (var i = 0; i < pending.length; i++) {
+        if (_disposed) break;
+        final m = pending[i];
+        if (_deferIfNotDue(m.nextAttemptAt)) {
+          return SyncReport(
+            sent: sent,
+            failed: failed,
+            deferred: pending.length - i,
+          );
+        }
+        await _setMutationStatus(m, SetSyncStatus.syncing);
+        try {
+          await sender.send(m);
+          // Solo se borra si nadie la ha sustituido mientras se enviaba.
+          await (_db.delete(_mutations)..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.mutationKey.equals(m.mutationKey) &
+                    t.updatedAt.equals(m.updatedAt) &
+                    t.payload.equals(m.payload),
+              ))
+              .go();
+          await _setMutationStatus(m, SetSyncStatus.pending);
+          sent++;
+        } catch (e) {
+          final f = ApiFailure.from(e);
+          final attempts = m.attempts + 1;
+          final permanent = !_isTransient(f) || attempts >= backoff.maxAttempts;
+          final delay = backoff.delayFor(attempts);
+          await (_db.update(_mutations)..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.mutationKey.equals(m.mutationKey),
+              ))
+              .write(
+                PendingMutationsCompanion(
+                  status: Value(
+                    permanent ? SetSyncStatus.failed : SetSyncStatus.pending,
+                  ),
+                  attempts: Value(attempts),
+                  lastError: Value(_reason(f)),
+                  nextAttemptAt: Value(permanent ? null : _clock().add(delay)),
+                ),
+              );
+          if (permanent) {
+            failed++;
+            continue;
+          }
+          _scheduleRetry(delay);
+          return SyncReport(
+            sent: sent,
+            failed: failed,
+            deferred: pending.length - i,
+          );
+        }
+      }
+    }
     return SyncReport(sent: sent, failed: failed);
+  }
+
+  /// Cambia el estado si la fila sigue existiendo (si se envió, ya no está).
+  Future<void> _setMutationStatus(
+    PendingMutation m,
+    SetSyncStatus status,
+  ) async {
+    await (_db.update(_mutations)..where(
+          (t) =>
+              t.userId.equals(m.userId) &
+              t.mutationKey.equals(m.mutationKey) &
+              t.status.equalsValue(SetSyncStatus.failed).not(),
+        ))
+        .write(PendingMutationsCompanion(status: Value(status)));
+    _notify();
   }
 
   static bool _isTransient(ApiFailure f) => f.isTransient;

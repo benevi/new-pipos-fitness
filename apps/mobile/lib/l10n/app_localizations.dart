@@ -1597,6 +1597,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Leer y aceptar la versión nueva'**
   String get settingsHealthUpdate;
+
+  /// Notas o medidas guardadas sin conexión que aún no se han enviado
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio pendiente de sincronizar} other{{count} cambios pendientes de sincronizar}}'**
+  String pendingChangesCount(int count);
+
+  /// No description provided for @failedChangesCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio no se pudo enviar} other{{count} cambios no se pudieron enviar}}'**
+  String failedChangesCount(int count);
 }
 
 class _AppLocalizationsDelegate

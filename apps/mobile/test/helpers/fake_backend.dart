@@ -1,8 +1,10 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/data/pipos_api.dart';
+import 'package:pipos_fitness/models/body.dart';
 import 'package:pipos_fitness/models/enums.dart';
 import 'package:pipos_fitness/models/json.dart';
+import 'package:pipos_fitness/models/notes_breaks.dart';
 import 'package:pipos_fitness/models/plan.dart';
 import 'package:pipos_fitness/models/profile.dart';
 import 'package:pipos_fitness/models/progress.dart';
@@ -21,7 +23,10 @@ class FakeBackend
         WorkoutApi,
         ProgressApi,
         AccountApi,
-        CatalogApi {
+        CatalogApi,
+        NotesApi,
+        ScheduleApi,
+        BodyApi {
   FakeBackend({
     this.hasPlan = true,
     this.hasProfile = true,
@@ -71,6 +76,14 @@ class FakeBackend
 
   /// Registro de llamadas (`método ruta`).
   final List<String> calls = [];
+
+  /// Ajustes pedidos en vista previa (`GET /sessions/today?minutes=…`).
+  final List<WorkoutAdjustment> todayQueries = [];
+  final List<StartWorkoutRequest> startRequests = [];
+
+  /// Cambios fijados: planExerciseId → exerciseId.
+  final Map<String, String> pins = {};
+
   final List<ProfileUpsertRequest> profileRequests = [];
   final List<({String version, AppLocale locale})> consentGrants = [];
 
@@ -246,11 +259,80 @@ class FakeBackend
     return PlanVersion.fromJson({...planJson, 'id': id});
   }
 
+  @override
+  Future<PlanExerciseOverride> pinExercise({
+    required String planExerciseId,
+    required String exerciseId,
+  }) async {
+    _guard('PUT /plans/current/exercises/$planExerciseId/override');
+    final options = SubstitutesResponse.fromJson(fixture('substitutes'));
+    final chosen = options.substitutes.firstWhere(
+      (o) => o.exerciseId == exerciseId,
+      orElse: () => throw _error(409, ApiErrorCode.validationFailed),
+    );
+    final ref = {
+      'id': chosen.exerciseId,
+      'slug': chosen.slug,
+      'nameEs': chosen.nameEs,
+    };
+    pins[planExerciseId] = exerciseId;
+    final original = _setPlanPin(planExerciseId, ref);
+    for (final e in (todayJson['exercises'] as List).cast<Json>()) {
+      if (e['planExerciseId'] != planExerciseId) continue;
+      e['substitutedFrom'] ??= e['exercise'];
+      e['exercise'] = ref;
+      e['pinned'] = true;
+    }
+    return PlanExerciseOverride.fromJson({
+      'planVersionId': planJson['id'],
+      'planExerciseIds': [planExerciseId],
+      'original': original,
+      'pinned': ref,
+    });
+  }
+
+  @override
+  Future<PlanExerciseOverride> unpinExercise(String planExerciseId) async {
+    _guard('DELETE /plans/current/exercises/$planExerciseId/override');
+    pins.remove(planExerciseId);
+    final original = _setPlanPin(planExerciseId, null);
+    return PlanExerciseOverride.fromJson({
+      'planVersionId': planJson['id'],
+      'planExerciseIds': [planExerciseId],
+      'original': original,
+      'pinned': null,
+    });
+  }
+
+  /// Cambia `pinned` del hueco en el plan y devuelve la referencia original.
+  Json _setPlanPin(String planExerciseId, Json? pinned) {
+    for (final s in (planJson['sessions'] as List).cast<Json>()) {
+      for (final e in (s['exercises'] as List).cast<Json>()) {
+        if (e['id'] != planExerciseId) continue;
+        e['pinned'] = pinned;
+        return {
+          'id': e['exerciseId'],
+          'slug': e['slug'],
+          'nameEs': e['nameEs'],
+        };
+      }
+    }
+    throw _error(404, ApiErrorCode.notFound);
+  }
+
   // ── WorkoutApi ──
   @override
-  Future<TodaySession> getToday() async {
+  Future<TodaySession> getToday({WorkoutAdjustment? adjustment}) async {
     _guard('GET /sessions/today');
     if (!hasPlan) throw _error(404, ApiErrorCode.planRequired);
+    if (adjustment != null && !adjustment.isNone) {
+      todayQueries.add(adjustment);
+      final adjusted = fixture('today_session_adjusted');
+      (adjusted['adjustment'] as Json)
+        ..['availableMinutes'] = adjustment.availableMinutes
+        ..['reducedVolume'] = adjustment.reducedVolume;
+      return TodaySession.fromJson(adjusted);
+    }
     // Como la API: si hay un entrenamiento en curso, la sesión de hoy es la
     // suya y lleva su referencia.
     for (final w in workouts.values) {
@@ -292,6 +374,7 @@ class FakeBackend
   @override
   Future<Upserted<Workout>> startWorkout(StartWorkoutRequest request) async {
     _guard('POST /workouts');
+    startRequests.add(request);
     final existing = workouts[request.clientId];
     if (existing != null) return Upserted(existing, created: false);
     if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
@@ -489,6 +572,156 @@ class FakeBackend
     );
   }
 
+  // ── NotesApi ──
+  final Map<String, ExerciseNote> notes = {};
+  int notePuts = 0;
+
+  @override
+  Future<ExerciseNote> putNote(
+    String exerciseId,
+    ExerciseNoteRequest request,
+  ) async {
+    _guard('PUT /exercises/$exerciseId/note');
+    notePuts++;
+    final existing = notes[exerciseId];
+    // Gana la última escritura por clientUpdatedAt (como la API).
+    if (existing != null &&
+        existing.clientUpdatedAt.isAfter(request.clientUpdatedAt)) {
+      return existing;
+    }
+    final note = ExerciseNote(
+      exerciseId: exerciseId,
+      slug: 'slug-$exerciseId',
+      text: request.text.trim(),
+      clientUpdatedAt: request.clientUpdatedAt,
+      updatedAt: request.clientUpdatedAt,
+    );
+    notes[exerciseId] = note;
+    _setTodayNote(exerciseId, note.text);
+    return note;
+  }
+
+  @override
+  Future<void> deleteNote(String exerciseId) async {
+    _guard('DELETE /exercises/$exerciseId/note');
+    notes.remove(exerciseId);
+    _setTodayNote(exerciseId, null);
+  }
+
+  void _setTodayNote(String exerciseId, String? text) {
+    for (final e in (todayJson['exercises'] as List).cast<Json>()) {
+      if ((e['exercise'] as Json)['id'] == exerciseId) e['note'] = text;
+    }
+  }
+
+  @override
+  Future<ExerciseNoteList> listNotes() async {
+    _guard('GET /me/exercise-notes');
+    return ExerciseNoteList(notes.values.toList());
+  }
+
+  // ── ScheduleApi ──
+  final Map<String, TrainingBreak> breaks = {};
+  final List<List<int>> scheduleRequests = [];
+
+  @override
+  Future<ProfileResponse> updateSchedule(List<int> trainingWeekdays) async {
+    _guard('PATCH /me/profile/schedule');
+    scheduleRequests.add(trainingWeekdays);
+    if (trainingWeekdays.length > (profileJson['daysPerWeek'] as int)) {
+      throw _error(422, ApiErrorCode.validationFailed);
+    }
+    profileJson = {...profileJson, 'trainingWeekdays': trainingWeekdays};
+    return ProfileResponse.fromJson(profileJson);
+  }
+
+  @override
+  Future<TrainingBreakList> listBreaks({String? from}) async {
+    _guard('GET /me/breaks');
+    return TrainingBreakList(
+      breaks.values
+          .where((b) => from == null || b.endsOn.compareTo(from) >= 0)
+          .toList(),
+    );
+  }
+
+  @override
+  Future<Upserted<TrainingBreak>> createBreak(
+    CreateTrainingBreakRequest request,
+  ) async {
+    _guard('POST /me/breaks');
+    for (final b in breaks.values) {
+      if (b.clientId == request.clientId) return Upserted(b, created: false);
+    }
+    final b = TrainingBreak(
+      id: 'brk-${breaks.length + 1}',
+      clientId: request.clientId,
+      startsOn: request.startsOn,
+      endsOn: request.endsOn,
+      createdAt: DateTime.utc(2026, 11, 9, 8),
+    );
+    breaks[b.id] = b;
+    return Upserted(b, created: true);
+  }
+
+  @override
+  Future<void> deleteBreak(String id) async {
+    _guard('DELETE /me/breaks/$id');
+    breaks.remove(id);
+  }
+
+  // ── BodyApi ──
+  final Map<String, BodyMeasurement> measurements = {};
+  Json bodyProgressJson = fixture('body_progress');
+
+  @override
+  Future<BodyMeasurementRecord> putMeasurement(
+    BodyMeasurement measurement,
+  ) async {
+    _guard('PUT /me/measurements');
+    final consent = HealthConsentStatus.fromJson(
+      profileJson['healthConsent'] as Json,
+    );
+    final needed = {for (final f in measurement.values.keys) f.scope};
+    if (!needed.every(consent.covers)) {
+      throw _error(409, ApiErrorCode.healthConsentRequired);
+    }
+    measurements[measurement.measuredOn] = measurement;
+    return BodyMeasurementRecord(
+      measurement: measurement,
+      updatedAt: DateTime.utc(2026, 11, 9, 8),
+    );
+  }
+
+  @override
+  Future<BodyMeasurementList> listMeasurements({
+    String? from,
+    String? to,
+  }) async {
+    _guard('GET /me/measurements');
+    final items = measurements.values.toList()
+      ..sort((a, b) => b.measuredOn.compareTo(a.measuredOn));
+    return BodyMeasurementList([
+      for (final m in items)
+        BodyMeasurementRecord(
+          measurement: m,
+          updatedAt: DateTime.utc(2026, 11, 9, 8),
+        ),
+    ]);
+  }
+
+  @override
+  Future<void> deleteMeasurement(String date) async {
+    _guard('DELETE /me/measurements/$date');
+    measurements.remove(date);
+  }
+
+  @override
+  Future<BodyProgress> getBodyProgress() async {
+    _guard('GET /progress/body');
+    return BodyProgress.fromJson(bodyProgressJson);
+  }
+
   /// Overrides de Riverpod que conectan todas las interfaces a este fake.
   List<Override> get overrides => [
     profileApiProvider.overrideWithValue(this),
@@ -497,5 +730,8 @@ class FakeBackend
     progressApiProvider.overrideWithValue(this),
     accountApiProvider.overrideWithValue(this),
     catalogApiProvider.overrideWithValue(this),
+    notesApiProvider.overrideWithValue(this),
+    scheduleApiProvider.overrideWithValue(this),
+    bodyApiProvider.overrideWithValue(this),
   ];
 }

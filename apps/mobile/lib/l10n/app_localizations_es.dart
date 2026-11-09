@@ -1155,4 +1155,26 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsHealthUpdate => 'Leer y aceptar la versión nueva';
+
+  @override
+  String pendingChangesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios pendientes de sincronizar',
+      one: '1 cambio pendiente de sincronizar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String failedChangesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios no se pudieron enviar',
+      one: '1 cambio no se pudo enviar',
+    );
+    return '$_temp0';
+  }
 }

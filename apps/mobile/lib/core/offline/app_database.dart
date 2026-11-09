@@ -7,6 +7,9 @@
 ///   sin red y se purgan pasados unos días.
 /// - [CachedPayloads]: última respuesta JSON de lecturas clave (sesión de
 ///   hoy, plan actual) para abrir la app en modo avión.
+/// - [PendingMutations]: otras escrituras offline (ADR-0013): nota fija por
+///   ejercicio y medidas corporales. Una fila por clave lógica (la última
+///   edición local sustituye a la anterior); se borra al confirmarse.
 ///
 /// El código generado (`app_database.g.dart`) se versiona; para regenerarlo:
 ///
@@ -54,6 +57,10 @@ class LocalWorkouts extends Table {
   IntColumn get attempts => integer().withDefault(const Constant(0))();
   TextColumn get lastError => text().nullable()();
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+
+  /// Ajuste de hoy elegido antes de empezar (JSON de `WorkoutAdjustment`;
+  /// null = sesión completa). Se envía en `POST /workouts`.
+  TextColumn get adjustmentJson => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {clientId};
@@ -103,13 +110,44 @@ class CachedPayloads extends Table {
   Set<Column<Object>> get primaryKey => {userId, cacheKey};
 }
 
-@DriftDatabase(tables: [LocalWorkouts, LocalSetLogs, CachedPayloads])
+/// Tipo de escritura offline de [PendingMutations].
+enum MutationKind { notePut, noteDelete, measurementPut, measurementDelete }
+
+@DataClassName('PendingMutation')
+class PendingMutations extends Table {
+  TextColumn get userId => text()();
+
+  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  TextColumn get mutationKey => text()();
+  TextColumn get kind => textEnum<MutationKind>()();
+
+  /// Cuerpo de la petición (JSON) o datos para construirla.
+  TextColumn get payload => text()();
+
+  /// Momento de la edición local (para la nota: `clientUpdatedAt`).
+  DateTimeColumn get updatedAt => dateTime()();
+
+  /// `pending`, `syncing` o `failed` (al confirmarse la fila se borra).
+  TextColumn get status => textEnum<SetSyncStatus>().withDefault(
+    Constant(SetSyncStatus.pending.name),
+  )();
+  IntColumn get attempts => integer().withDefault(const Constant(0))();
+  TextColumn get lastError => text().nullable()();
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {userId, mutationKey};
+}
+
+@DriftDatabase(
+  tables: [LocalWorkouts, LocalSetLogs, CachedPayloads, PendingMutations],
+)
 class AppDatabase extends _$AppDatabase {
   AppDatabase([QueryExecutor? executor])
     : super(executor ?? driftDatabase(name: 'pipos_fitness'));
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -121,6 +159,12 @@ class AppDatabase extends _$AppDatabase {
         // reales todavía (ADR-0009): se descarta la tabla.
         await m.deleteTable('pending_set_logs');
         await m.createAll();
+        return;
+      }
+      if (from < 3) {
+        // ADR-0013: ajuste de hoy y cola de otras escrituras offline.
+        await m.addColumn(localWorkouts, localWorkouts.adjustmentJson);
+        await m.createTable(pendingMutations);
       }
     },
   );

@@ -230,6 +230,8 @@ class ScaffoldWithNav extends ConsumerWidget {
               offline: isOffline,
               pending: sync?.pending ?? 0,
               failed: sync?.failed ?? 0,
+              pendingChanges: sync?.pendingChanges ?? 0,
+              failedChanges: sync?.failedChanges ?? 0,
               onRetry: () => ref.read(syncServiceProvider).retryFailed(),
             ),
           NavigationBar(
@@ -279,21 +281,32 @@ class SyncStatusBar extends StatelessWidget {
     required this.pending,
     required this.failed,
     required this.onRetry,
+    this.pendingChanges = 0,
+    this.failedChanges = 0,
   });
 
   final bool offline;
   final int pending;
   final int failed;
+
+  /// Otras escrituras offline (notas, medidas).
+  final int pendingChanges;
+  final int failedChanges;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final anyFailed = failed > 0 || failedChanges > 0;
     final message = failed > 0
         ? l10n.failedSyncCount(failed)
+        : failedChanges > 0
+        ? l10n.failedChangesCount(failedChanges)
         : pending > 0
         ? l10n.pendingSyncCount(pending)
+        : pendingChanges > 0
+        ? l10n.pendingChangesCount(pendingChanges)
         : l10n.offlineBanner;
     return Semantics(
       liveRegion: true,
@@ -308,18 +321,18 @@ class SyncStatusBar extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              failed > 0
+              anyFailed
                   ? Icons.error_outline
                   : offline
                   ? Icons.cloud_off_outlined
                   : Icons.cloud_upload_outlined,
-              color: failed > 0
+              color: anyFailed
                   ? theme.colorScheme.error
                   : theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(child: Text(message, style: theme.textTheme.bodyMedium)),
-            if (failed > 0)
+            if (anyFailed)
               TextButton(
                 key: const Key('sync-retry'),
                 onPressed: onRetry,

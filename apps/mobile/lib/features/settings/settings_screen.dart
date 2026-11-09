@@ -143,7 +143,7 @@ class SettingsScreen extends ConsumerWidget {
       } catch (_) {}
       summary = await sync.watchSummary().first;
     }
-    final unsent = summary.pending + summary.failed;
+    final unsent = summary.unsent;
     if (!context.mounted) return;
     final ok = await showDialog<bool>(
       context: context,

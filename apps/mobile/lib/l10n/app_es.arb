@@ -344,5 +344,10 @@
   "@loadPctValue": { "placeholders": { "pct": { "type": "String" } } },
 
   "settingsHealthUpdateBody": "Hay una versión nueva del texto que añade las medidas corporales (perímetros) y las estimaciones de IMC y % de grasa. Tu consentimiento actual sigue cubriendo peso, altura y limitaciones.",
-  "settingsHealthUpdate": "Leer y aceptar la versión nueva"
+  "settingsHealthUpdate": "Leer y aceptar la versión nueva",
+
+  "pendingChangesCount": "{count, plural, =1{1 cambio pendiente de sincronizar} other{{count} cambios pendientes de sincronizar}}",
+  "@pendingChangesCount": { "description": "Notas o medidas guardadas sin conexión que aún no se han enviado", "placeholders": { "count": { "type": "int" } }},
+  "failedChangesCount": "{count, plural, =1{1 cambio no se pudo enviar} other{{count} cambios no se pudieron enviar}}",
+  "@failedChangesCount": { "placeholders": { "count": { "type": "int" } }}
 }
