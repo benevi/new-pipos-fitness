@@ -8101,13 +8101,41 @@
           "plans"
         ],
         "summary": "Generar una versión nueva del plan a partir del perfil",
+        "description": "Cabecera opcional Idempotency-Key (recomendado un UUID v4 por intento, igual en cada reintento): repetir la clave devuelve la misma versión con 200 en vez de crear otra; la misma clave con otra entrada (el perfil cambió entre medias) → 422 IDEMPOTENCY_KEY_REUSED. Sin cabecera, cada petición crea una versión.",
         "security": [
           {
             "bearer": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[\\x21-\\x7E]{1,128}$"
+                }
+              ]
+            }
+          }
+        ],
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanVersionResponse"
+                }
+              }
+            }
+          },
           "201": {
             "description": "Created",
             "content": {

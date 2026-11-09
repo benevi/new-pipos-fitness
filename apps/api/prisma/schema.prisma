@@ -505,23 +505,29 @@ model TrainingPlan {
 }
 
 model PlanVersion {
-  id             String        @id @default(uuid()) @db.Uuid
-  planId         String        @db.Uuid
-  userId         String        @db.Uuid
-  plan           TrainingPlan  @relation(fields: [planId, userId], references: [id, userId], onDelete: Cascade)
-  version        Int
-  engineVersion  String        @db.VarChar(32)
-  objectiveScore Float
-  mesocycleWeeks Int           @db.SmallInt
+  id              String        @id @default(uuid()) @db.Uuid
+  planId          String        @db.Uuid
+  userId          String        @db.Uuid
+  plan            TrainingPlan  @relation(fields: [planId, userId], references: [id, userId], onDelete: Cascade)
+  version         Int
+  engineVersion   String        @db.VarChar(32)
+  objectiveScore  Float
+  mesocycleWeeks  Int           @db.SmallInt
   /// Explicación estructurada del motor (split, rationale, warnings, volumen, score).
-  rationale      Json
+  rationale       Json
   /// Perfil usado (puede contener datos art. 9; se redacta al retirar el consentimiento).
-  inputSnapshot  Json
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
-  sessions       PlanSession[]
+  inputSnapshot   Json
+  /// Cabecera `Idempotency-Key` de POST /plans/generate (issue #11): repetir la clave devuelve
+  /// esta versión en vez de crear otra. Null si la petición no la envió.
+  idempotencyKey  String?       @db.VarChar(128)
+  /// SHA-256 de la entrada del motor con la que se generó (misma clave + otra entrada → 422).
+  idempotencyHash String?       @db.Char(64)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  sessions        PlanSession[]
 
   @@unique([planId, version])
   @@unique([id, userId])
+  @@unique([userId, idempotencyKey])
   @@index([userId, createdAt(sort: Desc)])
 }
 

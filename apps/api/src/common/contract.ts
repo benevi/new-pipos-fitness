@@ -15,6 +15,8 @@ export interface ContractSpec {
   auth?: boolean;
   params?: ZodTypeAny;
   query?: ZodTypeAny;
+  /** Cabeceras propias del endpoint (objeto Zod con nombres en minúsculas; las demás se ignoran). */
+  headers?: ZodTypeAny;
   body?: ZodTypeAny;
   /** Esquema de la respuesta con éxito; null = sin cuerpo. */
   response: ZodTypeAny | null;

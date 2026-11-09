@@ -28,13 +28,17 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   no sea la vigente, y ese entrenamiento sigue aceptando series, ediciones, sustituciones y cierre.
   e2e: `plan-outdated.e2e-spec.ts`.
 
-### [API] Idempotencia de `POST /plans/generate` (doble toque → dos versiones)
-- **Severidad:** Baja
-- **Impacto:** dos pulsaciones seguidas crean dos versiones idénticas del plan; reinicia el
-  microciclo de la versión (no el ciclo de descarga, que ya se ancla al plan).
-- **Propuesta:** cabecera opcional `Idempotency-Key` (columna única `(userId, idempotencyKey)` en
-  `PlanVersion`) que la app envíe; o devolver la última versión si su `inputSnapshot` es idéntico
-  y se creó hace < 10 s. Ojo: hay un e2e que espera dos versiones con dos generaciones simultáneas.
+### ~~[API] Idempotencia de `POST /plans/generate` (doble toque → dos versiones)~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #11. La app debe enviar la cabecera.
+- **Qué se hizo:** cabecera opcional `Idempotency-Key` (1-128 caracteres ASCII visibles; 400 si no)
+  con `UNIQUE(userId, idempotencyKey)` en `PlanVersion` y la huella SHA-256 de la entrada del motor.
+  Misma clave y misma entrada → la versión ya creada con **200** (la primera vez, 201); misma clave
+  con otra entrada (el perfil cambió entre medias) → **422 `IDEMPOTENCY_KEY_REUSED`**. Dos toques
+  simultáneos con la misma clave crean una sola versión. Sin cabecera nada cambia (el e2e de dos
+  generaciones simultáneas sigue esperando dos versiones). e2e: `plan-idempotency.e2e-spec.ts`.
+- **Para la app:** generar un UUID v4 por pulsación de «Generar plan» y reenviar el mismo en cada
+  reintento de esa pulsación; tratar 200 y 201 igual; ante 422 `IDEMPOTENCY_KEY_REUSED`, generar
+  una clave nueva y reintentar una vez.
 
 ### ~~[Motor] Redondear la carga a los incrementos reales del material (mancuernas, máquinas)~~ — RESUELTO
 - **Estado:** resuelto con ADR-0013 (idea 1); cierra el issue #12.

@@ -1,4 +1,5 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { createHash } from 'crypto';
 import type { Prisma } from '@prisma/client';
 import { generatePlan } from '@pipos/engine-rules';
 import type {
@@ -20,6 +21,29 @@ import {
   toSummary,
   toVersionResponse,
 } from './plan-mapper';
+
+/** JSON con las claves ordenadas: misma entrada → misma huella, sea cual sea el orden. */
+export function canonicalJson(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value !== null && typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${canonicalJson(v)}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/** Huella de la entrada del motor para `Idempotency-Key` (issue #11). */
+export function idempotencyHash(snapshot: unknown): string {
+  return createHash('sha256').update(canonicalJson(snapshot)).digest('hex');
+}
+
+export interface Generated {
+  value: PlanVersionResponse;
+  /** false = reenvío con una `Idempotency-Key` ya usada: 200 con la versión existente. */
+  created: boolean;
+}
 
 /** Reintentos ante colisión del número de versión (dos generaciones simultáneas). */
 export const PLAN_VERSION_MAX_ATTEMPTS = 3;
@@ -87,7 +111,12 @@ export class PlansService {
    * versión + sesiones + ejercicios con orden). El número de versión lo protege
    * UNIQUE(planId, version); la carrera se resuelve reintentando la transacción entera.
    */
-  async persistVersion(tx: TransactionClient, userId: string, prepared: PreparedPlan): Promise<PlanVersionSummary> {
+  async persistVersion(
+    tx: TransactionClient,
+    userId: string,
+    prepared: PreparedPlan,
+    idempotency?: { key: string; hash: string },
+  ): Promise<PlanVersionSummary> {
     const plan =
       (await tx.trainingPlan.findFirst({ where: { userId, status: 'active' }, select: { id: true } })) ??
       (await tx.trainingPlan.create({ data: { userId }, select: { id: true } }));
@@ -102,6 +131,8 @@ export class PlansService {
         mesocycleWeeks: prepared.draft.mesocycleWeeks,
         rationale: storedRationale(prepared.draft) as unknown as Prisma.InputJsonValue,
         inputSnapshot: prepared.snapshot as unknown as Prisma.InputJsonValue,
+        idempotencyKey: idempotency?.key ?? null,
+        idempotencyHash: idempotency?.hash ?? null,
         sessions: { create: prepared.sessions },
       },
       include: { _count: { select: { sessions: true } } },
@@ -135,14 +166,53 @@ export class PlansService {
     }
   }
 
-  async generate(userId: string): Promise<PlanVersionResponse> {
+  /**
+   * Genera una versión nueva. Con `idempotencyKey` (issue #11) la clave es única por usuario
+   * (UNIQUE(userId, idempotencyKey)): repetirla devuelve la versión ya creada (created=false) si
+   * la entrada del motor es la misma, o 422 IDEMPOTENCY_KEY_REUSED si cambió. Dos peticiones
+   * simultáneas con la misma clave: una inserta y la otra choca con la unicidad, reintenta la
+   * transacción y encuentra la versión de la primera. Sin clave, cada petición crea una versión.
+   */
+  async generate(userId: string, idempotencyKey?: string): Promise<Generated> {
     const ctx = await this.engineInput.load(userId);
     if (!ctx) {
       throw new ApiError(HttpStatus.CONFLICT, 'PROFILE_REQUIRED', 'Complete your training profile first');
     }
+    const idempotency = idempotencyKey ? { key: idempotencyKey, hash: idempotencyHash(ctx.engineProfile) } : undefined;
+    if (idempotency) {
+      const replay = await this.replayIdempotent(this.prisma, userId, idempotency);
+      if (replay) return replay;
+    }
     const prepared = await this.prepare(userId, ctx.engineProfile, ctx.profile.timezone);
-    const summary = await this.withVersionRetry((tx) => this.persistVersion(tx, userId, prepared));
-    return this.version(userId, summary.id);
+    const result = await this.withVersionRetry(async (tx) => {
+      if (idempotency) {
+        const replay = await this.replayIdempotent(tx, userId, idempotency);
+        if (replay) return replay;
+      }
+      return { id: (await this.persistVersion(tx, userId, prepared, idempotency)).id, created: true };
+    });
+    return { value: 'value' in result ? result.value : await this.version(userId, result.id), created: result.created };
+  }
+
+  private async replayIdempotent(
+    db: Db,
+    userId: string,
+    idempotency: { key: string; hash: string },
+  ): Promise<Generated | null> {
+    const existing = await db.planVersion.findUnique({
+      where: { userId_idempotencyKey: { userId, idempotencyKey: idempotency.key } },
+      include: planVersionInclude,
+    });
+    if (!existing) return null;
+    if (existing.idempotencyHash !== idempotency.hash) {
+      throw new ApiError(
+        HttpStatus.UNPROCESSABLE_ENTITY,
+        'IDEMPOTENCY_KEY_REUSED',
+        'Idempotency-Key already used with a different input; use a new key',
+        [{ path: 'headers.idempotency-key', message: 'Already used with a different input' }],
+      );
+    }
+    return { value: toVersionResponse(existing), created: false };
   }
 
   async hasActivePlan(userId: string, db: Db = this.prisma): Promise<boolean> {
