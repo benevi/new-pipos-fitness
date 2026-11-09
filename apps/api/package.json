@@ -49,7 +49,7 @@
     "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
-    "@nestjs/cli": "^10.3.0",
+    "@nestjs/cli": "^12.0.12",
     "@nestjs/testing": "^10.3.0",
     "@swc/core": "^1.7.26",
     "@types/bcrypt": "^5.0.2",
