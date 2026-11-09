@@ -111,7 +111,9 @@ describe('WorkoutsService.sets', () => {
     prisma.planExercise.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.upsertSet(UID, W, setBody), 'VALIDATION_FAILED');
 
-    prisma.planExercise.findFirst.mockResolvedValue({ id: 'pe1' });
+    prisma.planExercise.findFirst.mockResolvedValueOnce({ exerciseId: 'otro', substitutions: [] });
+    await rejectsWithCode(service.upsertSet(UID, W, setBody), 'VALIDATION_FAILED');
+    prisma.planExercise.findFirst.mockResolvedValue({ exerciseId: 'otro', substitutions: [{ exerciseId: 'id:press-banca-barra' }] });
     prisma.setLog.createMany.mockResolvedValueOnce({ count: 1 });
     prisma.setLog.findUniqueOrThrow.mockResolvedValueOnce(setRow());
     const created = await service.upsertSet(UID, W, setBody);

@@ -158,6 +158,26 @@ describe('Concurrencia, idempotencia y propiedad (e2e, Postgres real)', () => {
       expect(invalid.body.code).toBe('VALIDATION_FAILED');
       await request(server()).get('/workouts/not-a-uuid').set(bearer(user.accessToken)).expect(400);
     });
+
+    it('exerciseId debe ser el del hueco o el de su sustitución registrada → si no, 400', async () => {
+      const { user, plan } = await userWithPlan(ctx.app);
+      const { today, workout } = await startToday(ctx.app, user.accessToken);
+      const slot = today.exercises[0];
+      const foreign = plan.sessions[1].exercises.find((e: { exerciseId: string }) => e.exerciseId !== slot.exercise.id);
+      const wrong = await request(server()).post(`/workouts/${workout.id}/sets`).set(bearer(user.accessToken))
+        .send({ ...setBody(slot), exerciseId: foreign.exerciseId }).expect(400);
+      expect(wrong.body.issues[0].path).toBe('body.exerciseId');
+      // Tras registrar la sustitución, el ejercicio nuevo sí vale.
+      const subs = await request(server()).get(`/exercises/${slot.exercise.id}/substitutes`).set(bearer(user.accessToken)).expect(200);
+      const pick = subs.body.substitutes[0];
+      await request(server()).post(`/workouts/${workout.id}/exercises/${slot.planExerciseId}/substitute`)
+        .set(bearer(user.accessToken)).send({ exerciseId: pick.exerciseId }).expect(200);
+      await request(server()).post(`/workouts/${workout.id}/sets`).set(bearer(user.accessToken))
+        .send({ ...setBody(slot), exerciseId: pick.exerciseId }).expect(201);
+      // El original sigue valiendo (series registradas antes del cambio que llegan tarde por la cola).
+      await request(server()).post(`/workouts/${workout.id}/sets`).set(bearer(user.accessToken))
+        .send({ ...setBody(slot), setIndex: 1 }).expect(201);
+    });
   });
 
   describe('propiedad: cada recurso anidado de otro usuario → 404', () => {
