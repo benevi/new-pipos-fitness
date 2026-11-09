@@ -3,6 +3,7 @@ import {
   areExerciseMusclesOrdered,
   PlanVersionResponseSchema,
   sortExerciseMuscles,
+  SubstitutesResponseSchema,
   TodaySessionResponseSchema,
   type ExerciseMuscleRef,
   type TodayExercise,
@@ -38,9 +39,14 @@ describe('Músculos del ejercicio en Hoy y en Plan (e2e, Postgres real)', () => 
   /** Un hueco de hoy con una alternativa cuyos músculos difieren de los del original. */
   async function slotWithDifferentSubstitute(token: string, exercises: TodayExercise[]) {
     for (const e of exercises) {
-      const subs = await request(server()).get(`/exercises/${e.exercise.id}/substitutes`).set(bearer(token)).expect(200);
-      for (const s of subs.body.substitutes as { exerciseId: string }[]) {
+      const subs = SubstitutesResponseSchema.parse(
+        (await request(server()).get(`/exercises/${e.exercise.id}/substitutes`).set(bearer(token)).expect(200)).body,
+      );
+      for (const s of subs.substitutes) {
         const muscles = await catalogMuscles(s.exerciseId);
+        // Cada alternativa trae sus músculos principales (hoja de cambio de ejercicio).
+        expect(s.primaryMuscles).toEqual(muscles.filter((m) => m.role === 'primary').map((m) => m.muscle));
+        expect(s.primaryMuscles.length).toBeGreaterThan(0);
         if (JSON.stringify(muscles) !== JSON.stringify(e.muscles)) return { slot: e, substituteId: s.exerciseId, muscles };
       }
     }

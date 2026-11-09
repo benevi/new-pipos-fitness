@@ -4427,6 +4427,34 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "primaryMuscles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "chest",
+                      "front_delts",
+                      "side_delts",
+                      "rear_delts",
+                      "lats",
+                      "upper_back",
+                      "traps",
+                      "biceps",
+                      "triceps",
+                      "forearms",
+                      "abs",
+                      "obliques",
+                      "lower_back",
+                      "glutes",
+                      "quads",
+                      "hamstrings",
+                      "adductors",
+                      "abductors",
+                      "calves"
+                    ]
+                  },
+                  "default": []
                 }
               },
               "required": [

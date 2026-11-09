@@ -306,7 +306,9 @@ export class WorkoutsService {
       exercise: { id: original.id, slug: original.slug, nameEs: original.nameEs },
       substitutes: result.substitutes.flatMap((s) => {
         const entry = catalog.bySlug.get(s.exerciseId);
-        return entry ? [{ exerciseId: entry.id, slug: entry.slug, nameEs: entry.nameEs, score: s.score, rationale: s.rationale }] : [];
+        if (!entry) return [];
+        const primaryMuscles = entry.muscleRefs.filter((m) => m.role === 'primary').map((m) => m.muscle);
+        return [{ exerciseId: entry.id, slug: entry.slug, nameEs: entry.nameEs, score: s.score, rationale: s.rationale, primaryMuscles }];
       }),
     };
   }

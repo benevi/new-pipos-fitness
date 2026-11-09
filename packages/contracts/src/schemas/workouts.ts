@@ -3,7 +3,7 @@ import { LoadImplementSchema } from '../engine-v2/enums.js';
 import { PlateBreakdownSchema } from '../engine-v2/load.js';
 import { ExerciseRoleSchema, SessionKindSchema } from '../engine-v2/plan.js';
 import { ProgressionActionSchema } from '../engine-v2/progression.js';
-import { LoadTypeSchema, MovementPatternSchema, WorkoutStatusSchema } from '../enums/index.js';
+import { LoadTypeSchema, MovementPatternSchema, MuscleSchema, WorkoutStatusSchema } from '../enums/index.js';
 import { ExerciseMusclesSchema } from './catalog.js';
 import { DateTimeSchema, IdSchema } from './common.js';
 import { WarmupSetResponseSchema } from './plans.js';
@@ -138,6 +138,11 @@ export const SubstituteOptionSchema = z
     nameEs: z.string(),
     score: z.number(),
     rationale: z.array(z.string()),
+    /**
+     * Músculos principales de la alternativa, en el orden del enum (ADR-0014, Fase 1). El
+     * `default` mantiene válidas las respuestas guardadas en caché antes de la Fase 1.
+     */
+    primaryMuscles: z.array(MuscleSchema).default([]),
   })
   .strict();
 export type SubstituteOption = z.infer<typeof SubstituteOptionSchema>;

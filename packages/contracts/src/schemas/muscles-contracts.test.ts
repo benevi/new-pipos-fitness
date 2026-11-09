@@ -4,6 +4,7 @@ import {
   ExerciseMusclesSchema,
   PlanExerciseResponseSchema,
   sortExerciseMuscles,
+  SubstituteOptionSchema,
   TodayExerciseSchema,
 } from '../index.js';
 
@@ -60,6 +61,12 @@ describe('músculos del ejercicio (ADR-0014, Fase 1)', () => {
   it('una respuesta antigua sin `muscles` sigue siendo válida y queda con lista vacía', () => {
     expect(TodayExerciseSchema.parse(OLD_TODAY).muscles).toEqual([]);
     expect(PlanExerciseResponseSchema.parse(OLD_PLAN_EXERCISE).muscles).toEqual([]);
+  });
+
+  it('una alternativa de cambio antigua sin `primaryMuscles` sigue siendo válida', () => {
+    const option = { exerciseId: ID, slug: 'goblet-squat', nameEs: 'Sentadilla goblet', score: 0.9, rationale: [] };
+    expect(SubstituteOptionSchema.parse(option).primaryMuscles).toEqual([]);
+    expect(SubstituteOptionSchema.parse({ ...option, primaryMuscles: ['quads'] }).primaryMuscles).toEqual(['quads']);
   });
 
   it('acepta principales primero y, dentro de cada rol, el orden del enum', () => {
