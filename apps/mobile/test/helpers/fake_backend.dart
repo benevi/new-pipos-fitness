@@ -5,6 +5,7 @@ import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/data/pipos_api.dart';
 import 'package:pipos_fitness/models/body.dart';
 import 'package:pipos_fitness/models/enums.dart';
+import 'package:pipos_fitness/models/exercise.dart';
 import 'package:pipos_fitness/models/json.dart';
 import 'package:pipos_fitness/models/notes_breaks.dart';
 import 'package:pipos_fitness/models/plan.dart';
@@ -749,6 +750,23 @@ class FakeBackend
     return Paginated.fromJson(
       fixture('exercise_list'),
       ExerciseSummary.fromJson,
+    );
+  }
+
+  /// Fichas por id o slug; si falta, se devuelve el fixture `exercise_detail`
+  /// con ese id. Los de [missingExercises] dan 404 (retirados).
+  final Map<String, Json> exerciseDetails = {};
+  final Set<String> missingExercises = {};
+
+  @override
+  Future<ExerciseDetail> getExercise(String idOrSlug) async {
+    _guard('GET /exercises/$idOrSlug');
+    if (missingExercises.contains(idOrSlug)) {
+      throw _error(404, ApiErrorCode.notFound);
+    }
+    return ExerciseDetail.fromJson(
+      exerciseDetails[idOrSlug] ??
+          {...fixture('exercise_detail'), 'id': idOrSlug},
     );
   }
 

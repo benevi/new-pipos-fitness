@@ -26,6 +26,7 @@
 | **Deuda #9** · `ThrottlerRecord` (`key` PK = hash del throttler, `hits`, `expiresAt`, `blockedUntil`) — `20261112000000_rate_limit_compartido` | Contadores del rate limiting compartidos entre réplicas (`THROTTLE_STORE=postgres`). Efímera; sin IPs en claro. |
 | **Deuda #11** · `PlanVersion.idempotencyKey VARCHAR(128)?`, `idempotencyHash CHAR(64)?`, `UNIQUE(userId, idempotencyKey)` — `20261112000100_idempotencia_generar_plan` | `Idempotency-Key` de `POST /plans/generate`: misma clave → misma versión. |
 | **Deuda #15** · `TrainingPlan.lastDeloadOn DATE?` — `20261112000200_ultima_descarga` | Última descarga real; ancla el ciclo de descarga programada. |
+| **ADR-0014** · `Exercise.mistakesEs TEXT[]` (default `{}`) — `20261113000000_ficha_ejercicio`; el seed rellena además `descriptionEs` (columna que ya existía) | Ficha del ejercicio (Fase 2 de la guía): descripción (≤ 400 caracteres, 1-3 frases) y 0-3 errores comunes (≤ 120) escritos por ejercicio en `packages/catalog` y revisados por PR. Contenido **pendiente de revisión por un entrenador titulado** antes del lanzamiento (`GUIDE_CONTENT_REVIEW` en el catálogo). `descriptionEn` sigue sin usar (deuda #29). |
 | **Deuda #17** · `AuditEvent` (enum `AuditEventType`, `userId?` CASCADE, `subjectRef?`, `createdAt`; trigger sin UPDATE) — `20261112000300_registro_auditoria` | Auditoría append-only sin datos personales ni de salud; retención 180 días. |
 > Fuentes leídas: `apps/api/prisma/schema.prisma` (366 líneas), las 6 migraciones en `apps/api/prisma/migrations/`, `packages/contracts/src/enums/index.ts`. Prisma instalado: `^5.9.0`.
 
@@ -358,6 +359,7 @@ model Exercise {
   substitutionGroup   SubstitutionGroup? @relation(fields: [substitutionGroupId], references: [id], onDelete: SetNull)
   cuesEs              String[]           @default([])   // orden del array = orden de presentación
   cuesEn              String[]           @default([])
+  mistakesEs          String[]           @default([])   // ADR-0014: errores comunes (0-3) de la ficha
   createdAt           DateTime           @default(now()) @db.Timestamptz(3)
   updatedAt           DateTime           @updatedAt @db.Timestamptz(3)
   deletedAt           DateTime?          @db.Timestamptz(3) // borrado lógico; nunca DELETE físico

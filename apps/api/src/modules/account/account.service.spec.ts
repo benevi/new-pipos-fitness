@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
+import { loadCatalog } from '@pipos/catalog';
+import { engineV2 } from '@pipos/contracts';
 import { setLogSink } from '../../logging/logging';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { catalogServiceMock, FixedClock, prismaMock, profileRow, rejectsWithCode, UID } from '../../test/unit/support';
@@ -145,6 +147,7 @@ describe('CatalogService', () => {
   const row = (slug: string, over: Record<string, unknown> = {}) => ({
     id: `id:${slug}`, slug, nameEs: 'Ej', nameEn: 'Ex', movementPattern: 'squat', isCompound: true, isUnilateral: false,
     minLevel: 'beginner', equipment: ['bodyweight'], loadType: 'unweighted', cuesEs: ['uno', 'dos'], deletedAt: null,
+    descriptionEs: 'Descripción de prueba del ejercicio.', mistakesEs: ['Error de prueba'],
     muscles: [{ muscle: 'quads', role: 'primary', fraction: new Prisma.Decimal(1) }, { muscle: 'glutes', role: 'secondary', fraction: new Prisma.Decimal(0.5) }],
     riskTags: [{ zone: 'knee', level: 'caution' }],
     substitutionGroup: { key: 'squat' },
@@ -162,6 +165,15 @@ describe('CatalogService', () => {
       slug: 'a', substitutionGroup: 'squat', muscles: [{ fraction: 1 }, { fraction: 0.5 }], media: null,
     });
     expect(toEngineExercise(row('a-b', { substitutionGroup: null }) as never).substitutionGroup).toBe('a_b');
+  });
+
+  it('toEngineExercise toma la ficha del catálogo versionado si la BD aún no la tiene (migrada sin seed)', () => {
+    const real = loadCatalog()[0];
+    const fromPackage = toEngineExercise(row(real.slug, { descriptionEs: null, mistakesEs: [] }) as never);
+    expect(fromPackage).toMatchObject({ descriptionEs: real.descriptionEs, mistakesEs: real.mistakesEs });
+    const unknown = toEngineExercise(row('no-existe', { descriptionEs: null, mistakesEs: [] }) as never);
+    expect(engineV2.CatalogExerciseSchema.safeParse(unknown).success).toBe(true);
+    expect(unknown.mistakesEs).toEqual([]);
   });
 
   it('engineCatalog cachea durante el TTL e invalidate la vacía', async () => {
@@ -196,7 +208,18 @@ describe('CatalogService', () => {
     prisma.exercise.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.get('nope'), 'NOT_FOUND', 404);
     prisma.exercise.findFirst.mockResolvedValueOnce(row('a', { substitutionGroup: null }));
-    expect(await service.get('id:a')).toMatchObject({ substitutionGroup: null, riskTags: [{ zone: 'knee' }] });
+    expect(await service.get('id:a')).toMatchObject({
+      substitutionGroup: null,
+      riskTags: [{ zone: 'knee' }],
+      descriptionEs: 'Descripción de prueba del ejercicio.',
+      mistakesEs: ['Error de prueba'],
+      media: [],
+    });
+    expect(prisma.exercise.findFirst.mock.calls.at(-1)?.[0].where).toEqual({ slug: 'id:a', deletedAt: null });
+    const uuid = '0b6f3c2e-7d1a-4c5e-9f00-123456789abc';
+    prisma.exercise.findFirst.mockResolvedValueOnce(row('a'));
+    await service.get(uuid);
+    expect(prisma.exercise.findFirst.mock.calls.at(-1)?.[0].where).toEqual({ id: uuid, deletedAt: null });
   });
 
   it('catalogServiceMock está alineado con el catálogo real', () => {

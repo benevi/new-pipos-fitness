@@ -26,6 +26,9 @@ carga sesión a sesión.
   idempotente (nunca duplica), las ediciones aplican «última escritura gana» y el borrado es lógico
   ([ADR-0007](docs/adr/0007-offline-first-idempotencia.md)).
 - **Cambiar un ejercicio** — 3 alternativas que respetan patrón, músculos, material y limitaciones.
+- **Ficha del ejercicio** — qué es, qué músculos trabaja, claves técnicas, errores comunes, material y
+  nivel de cada uno de los 144 ejercicios, también sin red para el plan vigente
+  ([ADR-0014](docs/adr/0014-guia-de-ejercicios.md); contenido pendiente de revisión profesional).
 - **Progreso** — e1RM por ejercicio, series efectivas semanales por músculo/grupo frente al rango
   objetivo y adherencia, calculados **al escribir** ([ADR-0008](docs/adr/0008-analytics-al-escribir.md)).
 - **Nutrición mínima** — objetivos diarios de kcal y macros (Mifflin-St Jeor + PAL), sin menús

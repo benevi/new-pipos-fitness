@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { engineV2 } from '@pipos/contracts';
 import rawExercises from '../data/exercises.json';
-import { CatalogValidationError, getExercise, loadCatalog, parseCatalog } from './index';
+import { CatalogValidationError, GUIDE_CONTENT_REVIEW, getExercise, loadCatalog, parseCatalog } from './index';
 
 type Equipment = engineV2.Equipment;
 type MovementPattern = engineV2.MovementPattern;
@@ -142,5 +142,64 @@ describe('catálogo de ejercicios', () => {
   it('getExercise devuelve undefined para un slug desconocido', () => {
     expect(getExercise('no-existe')).toBeUndefined();
     expect(loadCatalog()).toBe(loadCatalog());
+  });
+});
+
+/** Frases de un texto: cortes tras «.», «!» o «?» seguidos de espacio o fin. */
+function sentences(text: string): number {
+  return text.split(/[.!?](?:\s|$)/).filter((s) => s.trim().length > 0).length;
+}
+
+describe('ficha del ejercicio: descripción y errores comunes (ADR-0014)', () => {
+  it('cobertura completa: los 144 ejercicios tienen descripción y al menos un error común', () => {
+    const list = loadCatalog();
+    const withDescription = list.filter((e) => e.descriptionEs.trim().length > 0).length;
+    const withMistakes = list.filter((e) => e.mistakesEs.length > 0).length;
+    console.info(
+      `Cobertura de la ficha: ${withDescription}/${list.length} con descripción, ${withMistakes}/${list.length} con errores comunes`,
+    );
+    expect(withDescription).toBe(list.length);
+    expect(withMistakes).toBe(list.length);
+  });
+
+  it('cada ficha es propia: no hay descripciones repetidas entre ejercicios', () => {
+    const descriptions = loadCatalog().map((e) => e.descriptionEs);
+    expect(new Set(descriptions).size).toBe(descriptions.length);
+  });
+
+  it('el estado del contenido es «pendiente de revisión profesional» hasta el lanzamiento', () => {
+    expect(GUIDE_CONTENT_REVIEW.status).toBe('pending_professional_review');
+  });
+
+  it('ningún texto supera los límites: 1-3 frases y ≤ 400 caracteres; 0-3 errores de ≤ 120', () => {
+    for (const e of loadCatalog()) {
+      {
+        expect(e.descriptionEs.length, e.slug).toBeLessThanOrEqual(engineV2.EXERCISE_DESCRIPTION_MAX);
+        expect(sentences(e.descriptionEs), e.slug).toBeGreaterThanOrEqual(1);
+        expect(sentences(e.descriptionEs), e.slug).toBeLessThanOrEqual(3);
+        expect(e.descriptionEs, e.slug).not.toMatch(/\n/);
+      }
+      for (const m of e.mistakesEs ?? []) {
+        expect(m.length, e.slug).toBeLessThanOrEqual(engineV2.EXERCISE_MISTAKE_MAX);
+      }
+      expect(e.mistakesEs.length, e.slug).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('sin promesas de efectos sin fuente', () => {
+    const banned = /quema(r)? grasa|previene lesiones|evita lesiones|tonific|el mejor ejercicio|garantiza|adelgaza/i;
+    for (const e of loadCatalog()) {
+      const text = [e.descriptionEs, ...e.mistakesEs].join(' ');
+      expect(text, e.slug).not.toMatch(banned);
+    }
+  });
+
+  it('el esquema rechaza una descripción o errores fuera de límites', () => {
+    const first = loadCatalog()[0];
+    expect(() => parseCatalog([{ ...first, descriptionEs: 'x'.repeat(401) }])).toThrow(CatalogValidationError);
+    expect(() => parseCatalog([{ ...first, mistakesEs: ['a', 'b', 'c', 'd'].map((c) => c.repeat(10)) }])).toThrow(
+      CatalogValidationError,
+    );
+    expect(() => parseCatalog([{ ...first, mistakesEs: ['x'.repeat(121)] }])).toThrow(CatalogValidationError);
   });
 });

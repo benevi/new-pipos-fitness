@@ -20,6 +20,8 @@
 /// └── /settings ──────────── Ajustes
 ///     └── profile ────────── Editar perfil
 /// /onboarding, /workout-complete: pantalla completa, sin barra.
+/// /exercise/:id: ficha del ejercicio (id o slug), pantalla completa; se abre
+/// desde Hoy, Plan, el cambio de ejercicio y el onboarding (CUJ-11).
 /// ```
 ///
 /// Al cerrar sesión no hace falta navegar: `PiposRoot` recrea el scope y con
@@ -34,6 +36,7 @@ import '../core/offline/offline_providers.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
+import '../features/exercise/exercise_detail_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/progress/progress_screen.dart';
@@ -59,6 +62,7 @@ class AppRoutes {
   static const progress = '/progress';
   static const settings = '/settings';
   static const workoutComplete = '/workout-complete';
+  static const exercise = '/exercise';
 }
 
 /// Redirección por estado de auth (compatibilidad con tests de 4a).
@@ -72,6 +76,8 @@ String? appRedirect(AuthState auth, SetupStatus setup, String location) {
       location == AppRoutes.login || location == AppRoutes.register;
   final isSplash = location == AppRoutes.splash;
   final isOnboarding = location == AppRoutes.onboarding;
+  // La ficha se puede abrir también durante el onboarding (favoritos/vetados).
+  final isExercise = location.startsWith('${AppRoutes.exercise}/');
 
   if (!auth.isResolved) return isSplash ? null : AppRoutes.splash;
   if (!auth.isAuthenticated) return isAuthRoute ? null : AppRoutes.login;
@@ -80,7 +86,7 @@ String? appRedirect(AuthState auth, SetupStatus setup, String location) {
     case SetupStatus.checking:
       return isSplash ? null : AppRoutes.splash;
     case SetupStatus.needsOnboarding:
-      return isOnboarding ? null : AppRoutes.onboarding;
+      return (isOnboarding || isExercise) ? null : AppRoutes.onboarding;
     case SetupStatus.ready:
       return (isAuthRoute || isSplash) ? AppRoutes.home : null;
   }
@@ -137,6 +143,11 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.onboarding,
         builder: (_, __) => const OnboardingScreen(),
+      ),
+      GoRoute(
+        path: '${AppRoutes.exercise}/:id',
+        builder: (_, state) =>
+            ExerciseDetailScreen(idOrSlug: state.pathParameters['id'] ?? ''),
       ),
       GoRoute(
         path: AppRoutes.workoutComplete,

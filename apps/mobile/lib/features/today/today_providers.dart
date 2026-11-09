@@ -18,6 +18,7 @@ import '../../core/offline/sync_service.dart';
 import '../../core/reminders/reminders.dart';
 import '../../data/pipos_api.dart';
 import '../../models/workout.dart';
+import '../exercise/exercise_providers.dart';
 
 /// Ajuste de hoy elegido antes de empezar (idea 4); null = sesión completa.
 /// Una vez empezado el entrenamiento, la API aplica el ajuste guardado.
@@ -35,6 +36,15 @@ final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
         .getToday(adjustment: adjustment);
 
     await cache.write(CacheKeys.today, session.toJson());
+    // Fichas de los ejercicios de hoy, para verlas sin red (CUJ-11).
+    unawaited(
+      prefetchExerciseDetails(
+        ref.read(catalogApiProvider),
+        cache,
+        session.exercises.map((e) => e.exercise.id),
+        ref.read(clockProvider)(),
+      ),
+    );
     if (adjustment == null) {
       unawaited(
         prefetchSubstitutes(

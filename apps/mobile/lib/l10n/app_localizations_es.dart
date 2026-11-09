@@ -1982,4 +1982,60 @@ class AppLocalizationsEs extends AppLocalizations {
   String settingsLegalConsentVersion(String version, String date) {
     return 'Tu consentimiento de salud: versión $version del texto, aceptada el $date.';
   }
+
+  @override
+  String get exerciseDetailTitle => 'Ficha del ejercicio';
+
+  @override
+  String exerciseDetailOpen(String name) {
+    return 'Ver ficha de $name';
+  }
+
+  @override
+  String get exerciseDetailNeedsConnection =>
+      'Necesitas conexión para ver esta ficha.';
+
+  @override
+  String get exerciseDetailNotFound =>
+      'Este ejercicio ya no está en el catálogo.';
+
+  @override
+  String get exerciseDetailMuscles => 'Músculos que trabaja';
+
+  @override
+  String get exerciseDetailPrimary => 'Principales';
+
+  @override
+  String get exerciseDetailSecondary => 'Secundarios';
+
+  @override
+  String get exerciseDetailCues => 'Claves técnicas';
+
+  @override
+  String get exerciseDetailMistakes => 'Errores comunes';
+
+  @override
+  String get exerciseDetailRequirements => 'Qué necesitas';
+
+  @override
+  String get exerciseDetailEquipment => 'Material';
+
+  @override
+  String get exerciseDetailMinLevel => 'Nivel mínimo';
+
+  @override
+  String get exerciseDetailWatchZones => 'Zonas a vigilar';
+
+  @override
+  String exerciseDetailZoneLine(String zone, String level) {
+    String _temp0 = intl.Intl.selectLogic(level, {
+      'avoid': 'este ejercicio la carga mucho',
+      'other': 'este ejercicio la carga',
+    });
+    return '$zone: $_temp0';
+  }
+
+  @override
+  String get exerciseDetailWatchZonesNote =>
+      'Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.';
 }

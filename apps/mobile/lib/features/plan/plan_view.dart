@@ -11,6 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
 import '../../models/plan.dart';
+import '../exercise/exercise_detail_screen.dart';
 
 import '../../shared/widgets.dart';
 
@@ -191,7 +192,11 @@ class _ExerciseRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (exercise.pinned != null) ...[
-            Text(exercise.pinned!.nameEs, style: theme.textTheme.titleSmall),
+            ExerciseNameLink(
+              idOrSlug: exercise.pinned!.id,
+              name: exercise.pinned!.nameEs,
+              style: theme.textTheme.titleSmall,
+            ),
             Row(
               key: Key('plan-pinned-${exercise.id}'),
               children: [
@@ -223,7 +228,11 @@ class _ExerciseRow extends StatelessWidget {
                 ),
               ),
           ] else
-            Text(exercise.nameEs, style: theme.textTheme.titleSmall),
+            ExerciseNameLink(
+              idOrSlug: exercise.exerciseId,
+              name: exercise.nameEs,
+              style: theme.textTheme.titleSmall,
+            ),
           Text(
             l10n.planExerciseLine(
               exercise.sets,
