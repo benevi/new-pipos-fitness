@@ -170,6 +170,14 @@ void main() {
     final e = AccountExport.fromJson(fixture('export'));
     expect(e.formatVersion, 1);
     expect(e.raw, equals(fixture('export')));
+    // Registro de auditoría (issue #17): se conserva tal cual en el fichero.
+    expect(e.raw['auditEvents'], hasLength(2));
+    // Las exportaciones anteriores, sin `auditEvents`, siguen valiendo.
+    final legacy = fixture('export')..remove('auditEvents');
+    expect(
+      AccountExport.fromJson(legacy).raw.containsKey('auditEvents'),
+      isFalse,
+    );
   });
 
   test(

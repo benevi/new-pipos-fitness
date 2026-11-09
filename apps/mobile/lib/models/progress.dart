@@ -389,7 +389,8 @@ class ExerciseSummary {
 }
 
 /// GET /me/export: se guarda tal cual (el usuario se lleva el JSON). Solo se
-/// validan los campos de cabecera.
+/// validan los campos de cabecera: los bloques opcionales o nuevos (p. ej.
+/// `auditEvents`, issue #17) viajan en [raw] sin interpretarse.
 class AccountExport {
   const AccountExport({
     required this.formatVersion,
