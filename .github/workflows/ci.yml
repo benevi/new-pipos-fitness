@@ -116,6 +116,12 @@ jobs:
       - name: Flutter test
         run: flutter test
 
+      # Integration test «completar una sesión» (CUJ-2) sin emulador: con
+      # `-d flutter-tester` corre headless en el mismo motor que `flutter test`
+      # (`flutter test integration_test` a secas exige un dispositivo).
+      - name: Flutter integration test (headless)
+        run: flutter test -d flutter-tester integration_test
+
       - name: Build APK debug
         run: flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:3000
 
