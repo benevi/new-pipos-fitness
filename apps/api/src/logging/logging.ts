@@ -51,7 +51,6 @@ function minLevel(): LogLevel {
 
 export type LogSink = (line: string) => void;
 
-// eslint-disable-next-line no-console
 let sink: LogSink = (line) => console.log(line);
 
 /** Solo para tests: redirige la salida de los logs. Devuelve la función que restaura la anterior. */

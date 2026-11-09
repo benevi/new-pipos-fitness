@@ -9,7 +9,6 @@ async function main(): Promise<void> {
   const prisma = createPrismaClient();
   try {
     const result = await seedCatalog(prisma);
-    // eslint-disable-next-line no-console
     console.log(JSON.stringify({ level: 'info', message: 'catalog seeded', ...result }));
   } finally {
     await prisma.$disconnect();
@@ -17,7 +16,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((error) => {
-  // eslint-disable-next-line no-console
   console.error(error);
   process.exit(1);
 });
