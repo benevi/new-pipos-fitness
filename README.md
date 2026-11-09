@@ -125,6 +125,7 @@ Contratos en `packages/contracts`; documento OpenAPI 3 en [`apps/api/openapi.jso
 - [Plan de reconstrucción](docs/PLAN_RECONSTRUCCION.md) · [Spec v1](docs/SPEC_V1.md) · [CUJ](docs/CUJS.md)
 - [Programación del motor](docs/engine/PROGRAMACION.md) · [Invariantes](docs/engine/INVARIANTES.md)
 - [Modelo de datos](docs/MODELO_DATOS.md) · [Seguridad](docs/SECURITY.md) · [ADR](docs/adr/README.md)
+- [Ideas recuperadas de una app previa](docs/IDEAS_EL_PLAN.md) ([ADR-0013](docs/adr/0013-ideas-recuperadas.md))
 - [Arquitectura](docs/ARCHITECTURE.md) · [Fases](docs/PHASES.md) · [Reglas de código](docs/CODING_RULES.md)
 - [Checklist de despliegue](docs/DEPLOY_CHECKLIST.md) · [Deuda técnica](docs/DEUDA_TECNICA.md) · [Informe final de la reconstrucción](docs/INFORME_FINAL.md)
 - Histórico (anterior a la reconstrucción): [docs/archivo/](docs/archivo/README.md) y [análisis inicial](docs/ANALISIS_ESTADO_2026-11.md)

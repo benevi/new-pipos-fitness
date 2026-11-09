@@ -18,6 +18,11 @@
 | **Sin** tabla `NutritionTarget` | Los objetivos se calculan al vuelo (función pura) y no se guardan: menos copias de datos de salud (minimización, ADR-0011) y ningún GET escribe (ADR-0008). |
 | **Sin** `lastLoginAt` ni `AccountDeletionLog` | Decisiones tomadas: la prueba de supresión es un log con `sha256(userId)`. |
 | CHECK extra: `priorityMuscles ≤ 3`, `setIndex 0..50`, analítica ≥ 0 | Coherencia con los contratos. |
+| **ADR-0013** · `UserExerciseNote` (`@@id([userId, exerciseId])`, `text VARCHAR(280)` con CHECK de no vacío, `clientUpdatedAt`) — migración `20261111000000_nota_por_ejercicio` | Nota fija por ejercicio; última escritura gana (ADR-0007). Texto libre: se exporta y se borra con la cuenta. |
+| **ADR-0013** · `PlanExerciseOverride` (`planExerciseId` PK → `PlanExercise` CASCADE, `userId`, `exerciseId` RESTRICT) — `20261111000100_cambio_fijado` | Cambio de ejercicio fijado fuera de la versión (inmutable); se hereda al generar versiones nuevas si sigue siendo válido. |
+| **ADR-0013** · `WorkoutSession.adjustedMinutes SMALLINT?` (CHECK 15-90) y `reducedVolume BOOLEAN` — `20261111000200_ajuste_de_hoy` | Ajuste de hoy elegido al empezar; solo el modo, nunca el motivo. Las sesiones ajustadas no cuentan para descargas. |
+| **ADR-0013** · `TrainingProfile.trainingWeekdays SMALLINT[]` (CHECK ⊆ 1..7, ≤ 6) y `TrainingBreak` (`clientId` único por usuario, `startsOn`/`endsOn` DATE con CHECK de 1 a 60 días) — `20261111000300_dias_y_pausas` | Días de entreno (no son entrada del motor) y pausas planificadas sin motivo. |
+| **ADR-0013** · `BodyMeasurement` (`UNIQUE(userId, measuredOn)`, peso y perímetros nulables, CHECK de al menos uno) — `20261111000400_medidas_corporales` | Dato de salud (art. 9). IMC y % de grasa no se guardan: se calculan al leer. |
 > Fuentes leídas: `apps/api/prisma/schema.prisma` (366 líneas), las 6 migraciones en `apps/api/prisma/migrations/`, `packages/contracts/src/enums/index.ts`. Prisma instalado: `^5.9.0`.
 
 ## 0. Hallazgos sobre el estado actual (motivan el rediseño)
@@ -744,7 +749,8 @@ Borrado lógico de `Exercise`: el servicio de catálogo filtra `deletedAt IS NUL
 
 | Categoría | Campos | Base jurídica |
 |---|---|---|
-| **Categoría especial (art. 9, datos de salud)** | `TrainingProfile.limitations`, `TrainingProfile.weightKg`, `TrainingProfile.heightCm`; los mismos valores copiados en `PlanVersion.inputSnapshot` y `NutritionTarget.inputsSnapshot`. | Consentimiento explícito (art. 9.2.a) → `ConsentEvent`. |
+| **Categoría especial (art. 9, datos de salud)** | `TrainingProfile.limitations`, `TrainingProfile.weightKg`, `TrainingProfile.heightCm`; los mismos valores copiados en `PlanVersion.inputSnapshot` y `NutritionTarget.inputsSnapshot`; `BodyMeasurement` (peso y perímetros; ADR-0013). | Consentimiento explícito (art. 9.2.a) → `ConsentEvent`, por ámbitos según la versión del texto. |
+| Texto libre que puede contener salud | `UserExerciseNote.text` (ADR-0013). | Ejecución del contrato; se trata como restringido (exportación, borrado, nunca en logs; riesgo residual en la DPIA). |
 | Datos personales ordinarios | `User.email`, `TrainingProfile.age`, `sex`, `goal`, `level`, días/minutos, equipo, músculos prioritarios, preferencias de ejercicios, planes, `SetLog`, analítica, objetivos nutricionales (kcal/macros). | Ejecución del contrato (art. 6.1.b). |
 | Datos técnicos | Ninguno: no se guarda IP ni user-agent (minimización; migración `20261110000000_minimizacion_ip_user_agent`). La prueba del consentimiento es el evento autenticado con versión y hash del texto. | — |
 
@@ -757,9 +763,10 @@ Nota: los registros de carga/repeticiones no se consideran por sí solos datos d
 - Escritura condicionada: la API rechaza (`409/422`) escribir `weightKg`, `heightCm` o `limitations` si el último `ConsentEvent` para `health_data_processing` no es `granted` con la `policyVersion` vigente. Un cambio de versión material exige reconsentir.
 - **Retirada** (en la misma transacción): `limitations = []`, `weightKg = NULL`, `heightCm = NULL`; se **redactan** las claves de salud en `PlanVersion.inputSnapshot` y `NutritionTarget.inputsSnapshot` (`jsonb - 'weightKg' - 'heightCm' - 'limitations'`), marcando `"redacted": true`. El plan y los objetivos ya generados se conservan (los valores derivados — kcal, ejercicios — no son el dato de salud en sí). El motor pasa a operar sin limitaciones y sin peso (cargas iniciales sin estimar por peso corporal).
 - Sin consentimiento la app es plenamente usable (el consentimiento debe ser libre: no puede condicionar el servicio).
+- **Ámbitos por versión (ADR-0013).** Cada versión del texto cubre unos ámbitos (`weight`, `height`, `limitations`, `body_measurements`, `derived_estimates`; `HEALTH_CONSENT_POLICIES` en contratos y `HealthConsentStatus.scopes`). La versión anterior (`health-2026-11`) sigue vigente para peso, altura y limitaciones; los perímetros y las estimaciones (IMC, % de grasa) exigen la versión `health-2026-11-v2`. Conceder la versión actual con una anterior vigente añade un evento nuevo. La retirada borra además todas las filas de `BodyMeasurement`.
 
 ### 5.3 Exportación (art. 15 y 20)
-- Endpoint síncrono `GET /me/export` (sin tablas de worker): JSON en streaming con `User` (sin `passwordHash`), `TrainingProfile`, `UserExercisePreference`, `ConsentEvent`, `TrainingPlan` → `PlanVersion` → `PlanSession` → `PlanExercise`, `WorkoutSession` → `SetLog`, analítica, `NutritionTarget`. Los ejercicios se exportan por `slug` + nombre (no IDs internos opacos). Se excluyen `RefreshToken.tokenHash`.
+- Endpoint síncrono `GET /me/export` (sin tablas de worker): JSON en streaming con `User` (sin `passwordHash`), `TrainingProfile`, `UserExercisePreference`, `ConsentEvent`, `TrainingPlan` → `PlanVersion` → `PlanSession` → `PlanExercise`, `WorkoutSession` → `SetLog`, analítica, `NutritionTarget`. Desde ADR-0013 también `exerciseNotes`, `trainingBreaks`, `bodyMeasurements` y, en cada ejercicio del plan, el cambio fijado (`pinned`). Los ejercicios se exportan por `slug` + nombre (no IDs internos opacos). Se excluyen `RefreshToken.tokenHash`.
 - Volumen esperado (años de logs ≈ decenas de miles de filas) cabe en streaming; si deja de caber, se reconsidera un job asíncrono en v2.
 
 ### 5.4 Supresión (art. 17)
