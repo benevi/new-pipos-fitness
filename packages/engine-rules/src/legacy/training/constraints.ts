@@ -5,7 +5,6 @@
 import type {
   TrainingEngineInput,
   TrainingEngineOutput,
-  PlanSession,
   CatalogExerciseSnapshot,
   ConstraintViolation,
 } from '@pipos/contracts';
@@ -31,7 +30,8 @@ export function buildCatalogMap(
 
 export function getCompatibleExercises(
   input: TrainingEngineInput,
-  catalog: Map<string, CatalogExerciseSnapshot>,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- firma pública congelada (legacy)
+  _catalog: Map<string, CatalogExerciseSnapshot>,
 ): CatalogExerciseSnapshot[] {
   const { preferences, catalog: cat } = input;
   const loc = preferences.trainingLocation;

@@ -5,7 +5,6 @@ import {
   computeVolumePerExercise,
   computeAdherence,
   detectFatigue,
-  fatigueScorePerExercise,
   volumeTrend,
 } from './progress.js';
 

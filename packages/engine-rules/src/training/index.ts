@@ -1,16 +1,9 @@
 /**
- * Training engine. Pure functions only. Phase 4 + 7.
+ * Motor de entrenamiento v2 (Fase 2). Funciones puras y deterministas.
  */
-
-export { generateTrainingPlan, getTrainingEngineVersion } from './engine.js';
-export { validatePlan, buildCatalogMap, getCompatibleExercises } from './constraints.js';
-export {
-  computeE1RM,
-  getBestE1RMPerExercise,
-  computeVolumePerExercise,
-  computeAdherence,
-  detectFatigue,
-  fatigueScorePerExercise,
-  volumeTrend,
-} from './progress.js';
-export { adaptPlanToProgress } from './adaptation.js';
+export { generatePlan, type GenerateOptions } from './generate.js';
+export { nextPrescription, nextPendingSession, daysBetween } from './progression.js';
+export { substitutes, muscleSimilarity, type Substitute, type SubstitutesResult } from './substitutes.js';
+export { estimateSessionMinutes, type SessionEstimateItem } from './estimate.js';
+export { e1rmOfSet, latestE1rm } from './prescription.js';
+export { filterCatalog, exclusionReason, availableEquipment, type ExclusionReason } from './filter.js';
