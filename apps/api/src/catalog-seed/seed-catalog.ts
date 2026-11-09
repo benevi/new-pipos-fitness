@@ -157,6 +157,7 @@ export async function seedCatalog(
       });
       return { upserted: catalog.length, softDeleted: removed.count, groups: keys.length, media, mediaRemoved };
     },
-    { timeout: 60_000 },
+    // Holgado: el build de Vercel puede estar lejos de la base de datos (~900 consultas con latencia).
+    { timeout: 300_000, maxWait: 30_000 },
   );
 }
