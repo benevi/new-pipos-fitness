@@ -1759,6 +1759,54 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Nota borrada.'**
   String get noteDeleted;
+
+  /// No description provided for @swapPinLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar siempre este cambio'**
+  String get swapPinLabel;
+
+  /// No description provided for @swapPinHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Se aplica a todas las sesiones de este plan con este ejercicio y se mantiene en las versiones nuevas mientras siga siendo válido.'**
+  String get swapPinHelp;
+
+  /// No description provided for @swapPinnedDone.
+  ///
+  /// In es, this message translates to:
+  /// **'A partir de ahora harás {name} en este plan'**
+  String swapPinnedDone(String name);
+
+  /// No description provided for @pinnedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio fijado'**
+  String get pinnedBadge;
+
+  /// No description provided for @pinnedInsteadOf.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio fijado: en lugar de {name}'**
+  String pinnedInsteadOf(String name);
+
+  /// No description provided for @unpinAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a {name}'**
+  String unpinAction(String name);
+
+  /// No description provided for @unpinDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Has vuelto a {name}'**
+  String unpinDone(String name);
+
+  /// No description provided for @pinDroppedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Un cambio fijado ya no se puede aplicar.'**
+  String get pinDroppedTitle;
 }
 
 class _AppLocalizationsDelegate

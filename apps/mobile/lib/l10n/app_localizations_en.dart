@@ -1286,4 +1286,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noteDeleted => 'Note deleted.';
+
+  @override
+  String get swapPinLabel => 'Always use this swap';
+
+  @override
+  String get swapPinHelp =>
+      'Applies to every session in this plan with this exercise and carries over to new versions while it\'s still valid.';
+
+  @override
+  String swapPinnedDone(String name) {
+    return 'From now on you\'ll do $name in this plan';
+  }
+
+  @override
+  String get pinnedBadge => 'Pinned swap';
+
+  @override
+  String pinnedInsteadOf(String name) {
+    return 'Pinned swap: instead of $name';
+  }
+
+  @override
+  String unpinAction(String name) {
+    return 'Go back to $name';
+  }
+
+  @override
+  String unpinDone(String name) {
+    return 'Back to $name';
+  }
+
+  @override
+  String get pinDroppedTitle => 'A pinned swap can no longer be applied.';
 }

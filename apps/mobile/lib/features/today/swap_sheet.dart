@@ -14,6 +14,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/workout.dart';
 import '../../shared/widgets.dart';
+import '../plan/plan_providers.dart';
 import 'today_providers.dart';
 
 Future<void> showSwapSheet(
@@ -24,6 +25,7 @@ Future<void> showSwapSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     showDragHandle: true,
     builder: (_) =>
         _SwapSheet(exercise: exercise, planSessionId: planSessionId),
@@ -50,7 +52,12 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
   String? _busyId;
   ApiFailure? _failure;
 
+  /// «Usar siempre este cambio en este plan» (idea 3): fija el cambio en el
+  /// plan en vez de cambiarlo solo en el entrenamiento de hoy.
+  bool _pin = false;
+
   Future<void> _choose(SubstituteOption option) async {
+    if (_pin) return _pinChoice(option);
     setState(() {
       _busyId = option.exerciseId;
       _failure = null;
@@ -75,6 +82,36 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
       navigator.pop();
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.swapDone(option.nameEs))),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _busyId = null;
+        _failure = ApiFailure.from(e);
+      });
+    }
+  }
+
+  Future<void> _pinChoice(SubstituteOption option) async {
+    setState(() {
+      _busyId = option.exerciseId;
+      _failure = null;
+    });
+    final messenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final l10n = AppLocalizations.of(context);
+    try {
+      await ref
+          .read(planApiProvider)
+          .pinExercise(
+            planExerciseId: widget.exercise.planExerciseId,
+            exerciseId: option.exerciseId,
+          );
+      ref.invalidate(todaySessionProvider);
+      ref.invalidate(currentPlanProvider);
+      navigator.pop();
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.swapPinnedDone(option.nameEs))),
       );
     } catch (e) {
       if (!mounted) return;
@@ -116,7 +153,18 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(l10n.swapHint, style: theme.textTheme.bodyMedium),
-              const SizedBox(height: AppSpacing.md),
+              SwitchListTile(
+                key: const Key('swap-pin'),
+                contentPadding: EdgeInsets.zero,
+                value: _pin,
+                onChanged: _busyId == null
+                    ? (v) => setState(() => _pin = v)
+                    : null,
+                title: Text(l10n.swapPinLabel),
+                subtitle: Text(l10n.swapPinHelp),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+
               if (failure != null)
                 Semantics(
                   liveRegion: true,
@@ -150,49 +198,55 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
                             textAlign: TextAlign.center,
                           ),
                         )
-                      : ListView(
-                          shrinkWrap: true,
-                          children: [
-                            for (final o in r.substitutes)
-                              Card(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(AppSpacing.ms),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        o.nameEs,
-                                        style: theme.textTheme.titleMedium,
-                                      ),
-                                      for (final line in o.rationale)
+                      : SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              for (final o in r.substitutes)
+                                Card(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(
+                                      AppSpacing.ms,
+                                    ),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
                                         Text(
-                                          '• $line',
-                                          style: theme.textTheme.bodyMedium,
+                                          o.nameEs,
+                                          style: theme.textTheme.titleMedium,
                                         ),
-                                      const SizedBox(height: AppSpacing.sm),
-                                      FilledButton(
-                                        key: Key('swap-choose-${o.exerciseId}'),
-                                        onPressed: _busyId == null
-                                            ? () => _choose(o)
-                                            : null,
-                                        child: _busyId == o.exerciseId
-                                            ? const SizedBox.square(
-                                                dimension:
-                                                    AppSpacing.lg -
-                                                    AppSpacing.xs,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                    ),
-                                              )
-                                            : Text(l10n.swapChoose(o.nameEs)),
-                                      ),
-                                    ],
+                                        for (final line in o.rationale)
+                                          Text(
+                                            '• $line',
+                                            style: theme.textTheme.bodyMedium,
+                                          ),
+                                        const SizedBox(height: AppSpacing.sm),
+                                        FilledButton(
+                                          key: Key(
+                                            'swap-choose-${o.exerciseId}',
+                                          ),
+                                          onPressed: _busyId == null
+                                              ? () => _choose(o)
+                                              : null,
+                                          child: _busyId == o.exerciseId
+                                              ? const SizedBox.square(
+                                                  dimension:
+                                                      AppSpacing.lg -
+                                                      AppSpacing.xs,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                      ),
+                                                )
+                                              : Text(l10n.swapChoose(o.nameEs)),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
                 ),
               ),

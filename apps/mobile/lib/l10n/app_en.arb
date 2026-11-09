@@ -299,5 +299,14 @@
   "noteDelete": "Delete note",
   "noteEmptyError": "Write the note or delete it.",
   "noteSaved": "Note saved.",
-  "noteDeleted": "Note deleted."
+  "noteDeleted": "Note deleted.",
+
+  "swapPinLabel": "Always use this swap",
+  "swapPinHelp": "Applies to every session in this plan with this exercise and carries over to new versions while it's still valid.",
+  "swapPinnedDone": "From now on you'll do {name} in this plan",
+  "pinnedBadge": "Pinned swap",
+  "pinnedInsteadOf": "Pinned swap: instead of {name}",
+  "unpinAction": "Go back to {name}",
+  "unpinDone": "Back to {name}",
+  "pinDroppedTitle": "A pinned swap can no longer be applied."
 }

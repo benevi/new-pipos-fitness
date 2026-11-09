@@ -9,7 +9,9 @@ import 'package:flutter/material.dart';
 import '../../app/tokens.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
+import '../../models/enums.dart';
 import '../../models/plan.dart';
+
 import '../../shared/widgets.dart';
 
 class PlanOverview extends StatelessWidget {
@@ -18,11 +20,15 @@ class PlanOverview extends StatelessWidget {
     required this.plan,
     this.rationaleExpanded = false,
     this.header,
+    this.onUnpin,
   });
 
   final PlanVersion plan;
   final bool rationaleExpanded;
   final Widget? header;
+
+  /// Volver al ejercicio original de un hueco fijado (solo el plan vigente).
+  final Future<void> Function(PlanExercise exercise)? onUnpin;
 
   @override
   Widget build(BuildContext context) {
@@ -57,10 +63,16 @@ class PlanOverview extends StatelessWidget {
             child: Column(
               children: [
                 for (final w in plan.warnings)
-                  NoticeBanner(
-                    text: w.message,
-                    icon: Icons.warning_amber_outlined,
-                  ),
+                  w.code == WarningCode.pinnedSubstitutionDropped
+                      ? NoticeBanner(
+                          key: const Key('warning-pin-dropped'),
+                          text: '${l10n.pinDroppedTitle} ${w.message}',
+                          icon: Icons.push_pin_outlined,
+                        )
+                      : NoticeBanner(
+                          text: w.message,
+                          icon: Icons.warning_amber_outlined,
+                        ),
               ],
             ),
           ),
@@ -100,17 +112,28 @@ class PlanOverview extends StatelessWidget {
           ),
         ),
         for (final s in plan.sessions)
-          _SessionCard(session: s, expanded: rationaleExpanded && s.order == 0),
+          _SessionCard(
+            session: s,
+            expanded:
+                (rationaleExpanded && s.order == 0) ||
+                s.exercises.any((e) => e.pinned != null),
+            onUnpin: onUnpin,
+          ),
       ],
     );
   }
 }
 
 class _SessionCard extends StatelessWidget {
-  const _SessionCard({required this.session, required this.expanded});
+  const _SessionCard({
+    required this.session,
+    required this.expanded,
+    this.onUnpin,
+  });
 
   final PlanSession session;
   final bool expanded;
+  final Future<void> Function(PlanExercise exercise)? onUnpin;
 
   @override
   Widget build(BuildContext context) {
@@ -138,7 +161,8 @@ class _SessionCard extends StatelessWidget {
         expandedCrossAxisAlignment: CrossAxisAlignment.start,
         children: [
           RationaleExpander(lines: session.rationale),
-          for (final e in session.exercises) _ExerciseRow(exercise: e),
+          for (final e in session.exercises)
+            _ExerciseRow(exercise: e, onUnpin: onUnpin),
         ],
       ),
     );
@@ -146,9 +170,10 @@ class _SessionCard extends StatelessWidget {
 }
 
 class _ExerciseRow extends StatelessWidget {
-  const _ExerciseRow({required this.exercise});
+  const _ExerciseRow({required this.exercise, this.onUnpin});
 
   final PlanExercise exercise;
+  final Future<void> Function(PlanExercise exercise)? onUnpin;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +184,40 @@ class _ExerciseRow extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(exercise.nameEs, style: theme.textTheme.titleSmall),
+          if (exercise.pinned != null) ...[
+            Text(exercise.pinned!.nameEs, style: theme.textTheme.titleSmall),
+            Row(
+              key: Key('plan-pinned-${exercise.id}'),
+              children: [
+                Icon(
+                  Icons.push_pin,
+                  size: AppSpacing.md,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: AppSpacing.xs),
+                Expanded(
+                  child: Text(
+                    l10n.pinnedInsteadOf(exercise.nameEs),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                ),
+              ],
+            ),
+            if (onUnpin != null)
+              Align(
+                alignment: Alignment.centerLeft,
+                child: TextButton.icon(
+                  key: Key('unpin-${exercise.id}'),
+                  style: TextButton.styleFrom(
+                    minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                  ),
+                  onPressed: () => onUnpin!(exercise),
+                  icon: const Icon(Icons.undo),
+                  label: Text(l10n.unpinAction(exercise.nameEs)),
+                ),
+              ),
+          ] else
+            Text(exercise.nameEs, style: theme.textTheme.titleSmall),
           Text(
             l10n.planExerciseLine(
               exercise.sets,

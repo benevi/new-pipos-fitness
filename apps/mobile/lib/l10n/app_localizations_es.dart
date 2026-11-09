@@ -1289,4 +1289,37 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get noteDeleted => 'Nota borrada.';
+
+  @override
+  String get swapPinLabel => 'Usar siempre este cambio';
+
+  @override
+  String get swapPinHelp =>
+      'Se aplica a todas las sesiones de este plan con este ejercicio y se mantiene en las versiones nuevas mientras siga siendo válido.';
+
+  @override
+  String swapPinnedDone(String name) {
+    return 'A partir de ahora harás $name en este plan';
+  }
+
+  @override
+  String get pinnedBadge => 'Cambio fijado';
+
+  @override
+  String pinnedInsteadOf(String name) {
+    return 'Cambio fijado: en lugar de $name';
+  }
+
+  @override
+  String unpinAction(String name) {
+    return 'Volver a $name';
+  }
+
+  @override
+  String unpinDone(String name) {
+    return 'Has vuelto a $name';
+  }
+
+  @override
+  String get pinDroppedTitle => 'Un cambio fijado ya no se puede aplicar.';
 }

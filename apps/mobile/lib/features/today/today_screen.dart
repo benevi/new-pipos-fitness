@@ -482,7 +482,32 @@ class ExerciseCard extends StatelessWidget {
                           style: theme.textTheme.titleLarge,
                         ),
                       ),
-                      if (exercise.substitutedFrom != null)
+                      if (exercise.pinned)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.xs),
+                          child: Row(
+                            key: Key('pinned-${exercise.planExerciseId}'),
+                            children: [
+                              Icon(
+                                Icons.push_pin,
+                                size: AppSpacing.md,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Expanded(
+                                child: Text(
+                                  exercise.substitutedFrom == null
+                                      ? l10n.pinnedBadge
+                                      : l10n.pinnedInsteadOf(
+                                          exercise.substitutedFrom!.nameEs,
+                                        ),
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (exercise.substitutedFrom != null)
                         Text(
                           l10n.todaySubstitutedFrom(
                             exercise.substitutedFrom!.nameEs,

@@ -387,5 +387,18 @@
   "noteDelete": "Borrar nota",
   "noteEmptyError": "Escribe la nota o bórrala.",
   "noteSaved": "Nota guardada.",
-  "noteDeleted": "Nota borrada."
+  "noteDeleted": "Nota borrada.",
+
+  "swapPinLabel": "Usar siempre este cambio",
+  "swapPinHelp": "Se aplica a todas las sesiones de este plan con este ejercicio y se mantiene en las versiones nuevas mientras siga siendo válido.",
+  "swapPinnedDone": "A partir de ahora harás {name} en este plan",
+  "@swapPinnedDone": { "placeholders": { "name": { "type": "String" } }},
+  "pinnedBadge": "Cambio fijado",
+  "pinnedInsteadOf": "Cambio fijado: en lugar de {name}",
+  "@pinnedInsteadOf": { "placeholders": { "name": { "type": "String" } }},
+  "unpinAction": "Volver a {name}",
+  "@unpinAction": { "placeholders": { "name": { "type": "String" } }},
+  "unpinDone": "Has vuelto a {name}",
+  "@unpinDone": { "placeholders": { "name": { "type": "String" } }},
+  "pinDroppedTitle": "Un cambio fijado ya no se puede aplicar."
 }
