@@ -4,7 +4,7 @@ import { addDays, isoWeekStart, localDate, weekRange, weekStartOf, zonedStartOfD
 import { FixedClock, prismaMock, UID } from '../../test/unit/support';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { ProgressService, lastWeeks, volumeStatus } from '../progress/progress.service';
-import { bestE1rm, groupVolume, muscleVolume } from './analytics-calc';
+import { bestE1rm, groupVolume, muscleVolume, plannedOf, versionForWeek } from './analytics-calc';
 import { groupFractions, PROGRAMMING } from '@pipos/engine-rules';
 import { AnalyticsService } from './analytics.service';
 
@@ -120,6 +120,24 @@ describe('AnalyticsService (escritura)', () => {
     expect(prisma.$queryRaw).toHaveBeenCalled();
   });
 
+  it('recomputeWeek busca la versión creada antes del final de esa semana (issue #14)', async () => {
+    const { prisma, analytics } = setup();
+    await analytics.recomputeWeek(prisma as never, UID, '2026-11-02', 'Europe/Madrid');
+    const where = prisma.planVersion.findFirst.mock.calls[0][0];
+    expect(where.where.createdAt.lt.toISOString()).toBe('2026-11-08T23:00:00.000Z');
+    expect(where.orderBy).toEqual([{ createdAt: 'desc' }, { version: 'desc' }]);
+  });
+
+  it('versionForWeek y plannedOf', () => {
+    const a = { id: 'a', createdAt: new Date('2026-11-01T00:00:00Z'), sessions: [{ exercises: [{ sets: 3 }, { sets: 2 }] }] };
+    const b = { id: 'b', createdAt: new Date('2026-11-05T00:00:00Z'), sessions: [] };
+    expect(versionForWeek([b, a], new Date('2026-11-01T00:00:00Z'))).toBeNull();
+    expect(versionForWeek([b, a], new Date('2026-11-03T00:00:00Z'))?.id).toBe('a');
+    expect(versionForWeek([a, b], new Date('2026-11-09T00:00:00Z'))?.id).toBe('b');
+    expect(plannedOf(a)).toEqual({ sessions: 1, sets: 5 });
+    expect(plannedOf(null)).toEqual({ sessions: 0, sets: 0 });
+  });
+
   it('onWorkoutAbandoned: borra el e1RM de ese entrenamiento y recalcula su semana', async () => {
     const { prisma, analytics } = setup();
     await analytics.onWorkoutAbandoned(prisma as never, workout);
@@ -187,10 +205,9 @@ describe('ProgressService (lectura)', () => {
     prisma.weeklyAdherence.findMany.mockResolvedValue([
       { weekStart: new Date('2026-11-09'), plannedSessions: 3, completedSessions: 2, plannedSets: 30, completedSets: 18 },
     ]);
-    prisma.planVersion.findFirst.mockResolvedValueOnce({
-      createdAt: new Date('2026-11-03T10:00:00Z'),
-      plan: { versions: [{ sessions: [{ exercises: [{ sets: 3 }] }, { exercises: [{ sets: 2 }] }, { exercises: [] }] }] },
-    });
+    prisma.planVersion.findMany.mockResolvedValueOnce([
+      { createdAt: new Date('2026-11-03T10:00:00Z'), sessions: [{ exercises: [{ sets: 3 }] }, { exercises: [{ sets: 2 }] }, { exercises: [] }] },
+    ]);
     const res = await progress.adherence(UID, 3);
     expect(res.weeks).toEqual([
       { weekStart: '2026-10-26', plannedSessions: 0, completedSessions: 0, plannedSets: 0, completedSets: 0, sessionRatio: 0, breakDays: 0 },
@@ -199,7 +216,24 @@ describe('ProgressService (lectura)', () => {
     ]);
     expect(res.totals).toEqual({ plannedSessions: 6, completedSessions: 2, sessionRatio: 0.333 });
     prisma.weeklyAdherence.findMany.mockResolvedValueOnce([]);
-    prisma.planVersion.findFirst.mockResolvedValueOnce(null);
+    prisma.planVersion.findMany.mockResolvedValueOnce([]);
     expect((await progress.adherence(UID, 1)).totals.sessionRatio).toBe(0);
+  });
+
+  it('adherence: cada semana sin actividad usa la versión vigente en esa semana (issue #14)', async () => {
+    const { prisma, progress } = setup();
+    prisma.weeklyAdherence.findMany.mockResolvedValue([]);
+    const sessions = (n: number) => Array.from({ length: n }, () => ({ exercises: [{ sets: 4 }] }));
+    prisma.planVersion.findMany.mockResolvedValueOnce([
+      { createdAt: new Date('2026-10-20T10:00:00Z'), sessions: sessions(3) },
+      { createdAt: new Date('2026-11-05T10:00:00Z'), sessions: sessions(5) },
+    ]);
+    const res = await progress.adherence(UID, 4);
+    expect(res.weeks.map((w) => [w.weekStart, w.plannedSessions, w.plannedSets])).toEqual([
+      ['2026-10-19', 3, 12],
+      ['2026-10-26', 3, 12],
+      ['2026-11-02', 5, 20],
+      ['2026-11-09', 5, 20],
+    ]);
   });
 });

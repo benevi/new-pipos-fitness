@@ -67,3 +67,23 @@ export function groupVolume(sets: readonly Pick<VolumeSet, 'muscles'>[]): Map<en
   for (const [g, v] of out) out.set(g, Math.round(v * 100) / 100);
   return out;
 }
+
+/**
+ * Versión del plan vigente en una semana (issue #14): la última creada antes del final de la
+ * semana (`weekEnd`, exclusivo). null si el plan aún no existía. `versions` en cualquier orden.
+ */
+export function versionForWeek<T extends { createdAt: Date }>(versions: readonly T[], weekEnd: Date): T | null {
+  let found: T | null = null;
+  for (const v of versions) {
+    if (v.createdAt < weekEnd && (!found || v.createdAt >= found.createdAt)) found = v;
+  }
+  return found;
+}
+
+/** Sesiones y series previstas por semana de una versión del plan. */
+export function plannedOf(version: { sessions: { exercises: { sets: number }[] }[] } | null): { sessions: number; sets: number } {
+  return {
+    sessions: version?.sessions.length ?? 0,
+    sets: version?.sessions.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets, 0), 0) ?? 0,
+  };
+}

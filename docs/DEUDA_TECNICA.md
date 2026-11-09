@@ -62,13 +62,14 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   `abandoned`, avisar de que ese entrenamiento se descartó (automáticamente tras 12 h) y no
   reintentar.
 
-### [API] La adherencia de semanas pasadas usa la versión vigente del plan
-- **Severidad:** Baja
-- **Impacto:** `recomputeWeek` toma las sesiones/series planificadas de la versión vigente al
-  escribir, y `GET /progress/adherence` rellena las semanas sin actividad con la última versión.
-  Tras cambiar de 3 a 5 días, las semanas antiguas aparecen con 5 sesiones previstas al recalcular.
-- **Propuesta:** usar la versión vigente en cada semana (`PlanVersion.createdAt ≤ fin de semana`),
-  también en `analytics:rebuild`; test con dos versiones.
+### ~~[API] La adherencia de semanas pasadas usa la versión vigente del plan~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #14.
+- **Qué se hizo:** `recomputeWeek` (al escribir y en `analytics:rebuild`) toma la versión del plan
+  activo creada antes del final de esa semana (`createdAt < lunes siguiente`, zona del usuario) y
+  la guarda en `WeeklyAdherence.planVersionId`; `GET /progress/adherence` rellena cada semana sin
+  actividad con la versión vigente en esa semana (nada antes del primer plan). Helpers puros
+  `versionForWeek`/`plannedOf`. e2e con dos versiones (3 → 5 días):
+  `adherence-versions.e2e-spec.ts`. Tras desplegar, `analytics:rebuild` corrige las filas antiguas.
 
 ### [Motor] La descarga reactiva no reinicia el ciclo de descarga programada
 - **Severidad:** Baja

@@ -54,7 +54,8 @@
 - [ ] Migraciones: `pnpm --filter @pipos/api prisma:migrate:deploy` (`prisma migrate deploy`) como paso
       previo al arranque, **una sola vez por despliegue**. Comprobar antes en staging.
 - [ ] Seed del catálogo: `pnpm --filter @pipos/api prisma:seed` (idempotente; retira con `deletedAt`).
-- [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo` o cambia una `formulaVersion`:
+- [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo`, cambia una `formulaVersion` o
+      cambia cómo se calcula la adherencia (p. ej. issue #14, versión del plan por semana):
       `pnpm --filter @pipos/api analytics:rebuild` tras migrar.
 
 ### Red, TLS y límites
