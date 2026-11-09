@@ -27,6 +27,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - Cuatro destinos, etiquetados con texto e icono (Material `NavigationBar`). Pulsar el destino activo vuelve a su raíz.
 - Sin plan en caché y sin red, la puerta deja pasar: las pestañas muestran su estado sin conexión en vez de encerrar al usuario en el cuestionario.
 - La barra de sincronización (pendientes, fallidas con «Reintentar», sin conexión) va sobre la navegación en todas las pestañas.
+- Entrar sin red usa el usuario guardado (id y correo, también junto a los tokens). Si de una sesión antigua solo queda el id, Ajustes muestra «Sin conexión: tu correo aparecerá al recuperar la red» en lugar del correo, hasta revalidar la sesión (#26).
 
 ## 2. Estados por pantalla
 
@@ -34,8 +35,8 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 |---|---|---|---|---|
 | Cuestionario | spinner con etiqueta «Generando tu plan…» en el botón | — | 422 → error en el campo y vuelta a su paso; aviso general arriba | aviso «Sin conexión»; no se pierde lo rellenado |
 | Hoy | spinner | «Aún no tienes plan» + «Empezar el cuestionario» | mensaje + Reintentar | abre la última sesión guardada con el aviso «Sin conexión. Datos guardados el …»; si nunca se descargó, lo explica |
-| Serie | — | — | «No se pudo enviar» por serie + Reintentar | icono «Pendiente de sincronizar»; la cola sobrevive al cierre |
-| Cambiar ejercicio | spinner en la hoja | «No hay alternativas compatibles…» | mensaje + Reintentar | «Necesitas conexión para hacer esto.» |
+| Serie | — | — | «No se pudo enviar» por serie con el motivo («La API no la acepta: …») + «Reintentar» y «Descartar» (con confirmación) | icono «Pendiente de sincronizar»; la cola sobrevive al cierre |
+| Cambiar ejercicio | spinner en la hoja | «No hay alternativas compatibles…» | mensaje + Reintentar | alternativas guardadas con la sesión de hoy y aviso; el cambio de hoy va a la cola («Cambio a … guardado. Se enviará al recuperar la conexión.»); fijarlo: «Fijar el cambio en el plan necesita conexión…»; sin copia guardada: «Necesitas conexión para hacer esto.» |
 | Fin | — | — | — | «Se sincronizará cuando haya conexión. No se perderá nada.» |
 | Plan | spinner | igual que Hoy | mensaje + Reintentar | plan en caché con aviso |
 | Historial | spinner | «Solo tienes una versión del plan.» | mensaje + Reintentar | error con Reintentar |
@@ -50,10 +51,14 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 
 - **Registro en 1 toque.** Cada serie llega precargada (reps = mínimo del rango o lo de la serie anterior; carga = sugerida o la anterior; RIR = objetivo). Confirmar es un botón de 56 dp. Cambiar reps o kg abre el teclado numérico; el RIR se elige en una hoja con 6 botones grandes. Con «estimación inicial» se escribe el peso una vez y las siguientes series lo heredan.
 - **El entrenamiento empieza al confirmar la primera serie**, sin pantalla intermedia («El entrenamiento empieza al confirmar la primera serie»).
-- **Descanso automático** al confirmar: barra inferior con cuenta atrás, «+15 s» y «Saltar». Vibración al terminar. Solo se anuncia por lector de pantalla al terminar, no cada segundo.
+- **Descanso automático** al confirmar: barra inferior con cuenta atrás, «+15 s» y «Saltar». Vibración al terminar. Solo se anuncia por lector de pantalla al terminar, no cada segundo. Si la app pasa a segundo plano, una notificación local «Descanso terminado» avisa al acabar (solo con el permiso de notificaciones ya concedido; no se pide aquí) y se cancela al volver o al saltar el descanso (#24).
 - **Movimiento reducido:** con `disableAnimations` la cuenta atrás es solo texto (sin barra de progreso). No hay animaciones decorativas; las transiciones son las de Material.
-- **Cambio de ejercicio:** hoja con las 3 alternativas ordenadas y su porqué; un botón «Usar …» por opción. Necesita red (el servidor valida material y limitaciones).
+- **Cambio de ejercicio:** hoja con las 3 alternativas ordenadas y su porqué; un botón «Usar …» por opción. Las alternativas se guardan con la sesión de hoy, así que funciona sin red (#23): el cambio va a la cola offline, Hoy lo muestra al momento con «Cambio pendiente de enviar» (sin la carga sugerida del original, que no vale para el sustituto) y se envía antes que las series del sustituto. Fijarlo en el plan necesita red.
 - **Terminar** pide confirmación y dice cuántas series faltan; lo registrado se guarda siempre.
+- **Abandonar entrenamiento.** Bajo «Terminar», «Abandonar entrenamiento» (en color de error, 48 dp) pide confirmación y explica que lo registrado no contará; funciona sin red (la cola envía el abandono). Si el servidor cerró el entrenamiento por su cuenta (abandono automático tras 12 h sin actividad), Hoy lo explica con cuántas series no se subieron y «Entendido».
+- **Plan cambiado con un entrenamiento en cola.** Si el plan cambió mientras un entrenamiento esperaba para empezar en el servidor, la app lo reapunta a la sesión vigente; si ya tenía series, Hoy avisa de que son de la sesión anterior y ofrece descartarlo (se conserva en el móvil hasta entonces).
+- **Serie rechazada (#21).** Si la API rechaza una serie de forma permanente (400/422, p. ej. un ejercicio que no es el del hueco), la fila muestra el motivo bajo el resumen y dos acciones de 48 dp: «Reintentar» y «Descartar». Descartar pide confirmación («Se quitará de este móvil y no contará en el entrenamiento») y la quita de la cola; si pudo llegar al servidor (confirmada o con un intento de resultado desconocido) se envía además `DELETE`. Después, Terminar ya no la espera.
+- **Corregir o borrar una serie (#22).** Cada serie registrada tiene un menú «Opciones de la serie N» (48 dp, con tooltip) con «Editar» y «Borrar». Editar abre una hoja con reps, kg (coma o punto, como al registrar) y RIR en chips; «Guardar cambios» se ve al instante con el icono «Pendiente de sincronizar». Borrar pide confirmación y la oculta al momento. Las dos pasan por la cola offline: si la serie aún no se había enviado, la edición viaja en el propio `POST` (o se quita sin petición); si ya estaba en el servidor, `PATCH` con `clientUpdatedAt` (gana la última escritura; si gana otra edición, la fila adopta la del servidor) o `DELETE`.
 - **Consentimiento de salud** en un paso propio, con el texto versionado (`health-2026-11-v2` desde ADR-0013; quien aceptó `health-2026-11` conserva sus ámbitos y Ajustes le ofrece la versión nueva), «Acepto» y «Continuar sin datos de salud» con el mismo peso visual. Si se salta, no se piden limitaciones ni peso/altura y la revisión explica la consecuencia. Retirarlo en Ajustes pide confirmación y explica qué se borra.
 - **Borrar cuenta:** diálogo con icono de aviso, consecuencias en una frase, contraseña obligatoria y botón destructivo con el color de error. Contraseña incorrecta (403) → error en el campo; la sesión sigue abierta.
 - **Cambiar el perfil** reutiliza el cuestionario. Si la API crea versión nueva, un diálogo lo explica («hemos creado la versión N… tu historial se conserva») y ofrece «Ver el plan».
@@ -109,10 +114,9 @@ ADR-0013 (móvil): no se cargaron skills adicionales (`vectorlab-ux-skills:forms
 
 ## 8. Limitaciones conocidas
 
-- Editar o borrar una serie ya registrada no tiene UI (la API sí: `PATCH/DELETE /workouts/:id/sets/:clientId`).
 - Tras terminar sin red, Hoy vuelve a mostrar la sesión en caché hasta que haya conexión y la API dé la siguiente.
-- El cambio de ejercicio requiere red.
-- Sin notificaciones del descanso con la app en segundo plano.
-- Días de entreno, pausas y cambio fijado necesitan red (la API valida); solo la nota y las medidas van por la cola offline.
+- El cambio de ejercicio sin red usa las alternativas guardadas ese día y no trae la carga sugerida del sustituto hasta sincronizar.
+- La notificación del descanso en segundo plano es inexacta (Android puede retrasarla en reposo) y no se ha probado en un dispositivo real.
+- Días de entreno, pausas y cambio fijado necesitan red (la API valida); la nota, las medidas, el cambio de ejercicio de hoy y las correcciones de series van por la cola offline.
 - El recordatorio programa avisos para 14 días: si la app no se abre en ese tiempo, deja de avisar hasta la próxima apertura. No se ha probado en un dispositivo real (sin SDK de Android en este entorno).
 - La hora del recordatorio y su interruptor se guardan solo en el dispositivo (no se sincronizan).

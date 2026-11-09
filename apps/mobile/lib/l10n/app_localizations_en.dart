@@ -64,6 +64,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String get syncStatusFailed => 'Could not be sent';
 
   @override
+  String get setRejectedInvalid =>
+      'The server won\'t accept it: the exercise or the values aren\'t valid for this slot.';
+
+  @override
+  String get setRejectedFinished =>
+      'The server won\'t accept it: the workout was already finished.';
+
+  @override
+  String get setRejectedNotStarted =>
+      'Couldn\'t be sent: the workout never started on the server.';
+
+  @override
+  String setRejectedOther(String code) {
+    return 'Couldn\'t be sent ($code).';
+  }
+
+  @override
+  String get setDiscard => 'Discard';
+
+  @override
+  String setDiscardFor(int number) {
+    return 'Discard set $number';
+  }
+
+  @override
+  String setDiscardTitle(int number) {
+    return 'Discard set $number?';
+  }
+
+  @override
+  String get setDiscardBody =>
+      'It will be removed from this phone and won\'t count in the workout. This can\'t be undone.';
+
+  @override
+  String setActionsFor(int number) {
+    return 'Options for set $number';
+  }
+
+  @override
+  String get setEdit => 'Edit';
+
+  @override
+  String setEditTitle(int number) {
+    return 'Fix set $number';
+  }
+
+  @override
+  String get setEditHint => 'Saved on this phone and sent when you\'re online.';
+
+  @override
+  String get setEditSave => 'Save changes';
+
+  @override
+  String get setDelete => 'Delete';
+
+  @override
+  String setDeleteTitle(int number) {
+    return 'Delete set $number?';
+  }
+
+  @override
+  String get setDeleteBody =>
+      'It will no longer count in the workout or in your progress. This can\'t be undone.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Offline. Data saved on $date.';
   }
@@ -532,6 +597,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinish => 'Finish workout';
 
   @override
+  String get todayAbandon => 'Abandon workout';
+
+  @override
+  String get todayAbandonTitle => 'Abandon the workout?';
+
+  @override
+  String get todayAbandonBody =>
+      'What you logged is kept but won\'t count towards your progress or adherence, and you can\'t add more sets. It will be sent even if you\'re offline right now.';
+
+  @override
+  String get todayAbandoned => 'Workout abandoned.';
+
+  @override
+  String todayClosedRemotely(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets weren\'t uploaded.',
+      one: '1 set wasn\'t uploaded.',
+      zero: 'Nothing was left to upload.',
+    );
+    return 'Your previous workout was closed on the server (e.g. abandoned automatically after 12 h without activity). $_temp0';
+  }
+
+  @override
+  String get actionUnderstood => 'Got it';
+
+  @override
   String get todayFinishConfirmTitle => 'Finish the workout?';
 
   @override
@@ -584,6 +677,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todayPlanOutdatedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return 'Your plan changed while you trained offline: this workout saved on your phone ($_temp0) belongs to the previous session and can\'t be uploaded. It stays here until you discard it.';
+  }
+
+  @override
+  String get setRejectedPlanOutdated =>
+      'Your plan changed: this set belongs to the previous session and can\'t be uploaded.';
+
+  @override
   String get todayConflictDiscard => 'Discard';
 
   @override
@@ -622,6 +730,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restTimerDone => 'Rest finished';
 
   @override
+  String get restNotificationTitle => 'Rest finished';
+
+  @override
+  String get restNotificationBody => 'Tap to carry on with your next set.';
+
+  @override
   String swapTitle(String name) {
     return 'Alternatives to $name';
   }
@@ -642,6 +756,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String swapDone(String name) {
     return 'Exercise swapped for $name';
   }
+
+  @override
+  String swapQueued(String name) {
+    return 'Swap to $name saved. It will be sent when you\'re back online.';
+  }
+
+  @override
+  String get swapOfflineNotice =>
+      'Offline: alternatives saved today. Today\'s swap will be sent when you\'re back online; pinning it to the plan needs a connection.';
+
+  @override
+  String get swapPinNeedsNetwork =>
+      'Pinning the swap to the plan needs a connection. Offline you can swap it for today only.';
+
+  @override
+  String get swapPendingBadge => 'Swap waiting to be sent';
 
   @override
   String get completeTitle => 'Workout complete!';
@@ -781,6 +911,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsTitle => 'Settings';
+
+  @override
+  String get settingsEmailOffline =>
+      'Offline: your email will show up once you\'re back online.';
 
   @override
   String get settingsProfile => 'Training profile';

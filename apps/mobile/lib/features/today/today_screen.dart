@@ -14,6 +14,7 @@ import '../../app/tokens.dart';
 import '../../core/api/api_failure.dart';
 import '../../core/offline/app_database.dart';
 import '../../core/offline/offline_providers.dart';
+import '../../core/offline/sync_service.dart' show PendingSwap;
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
@@ -25,9 +26,11 @@ import '../../shared/decimal_input.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
 import 'adjust_sheet.dart';
+import 'edit_set_sheet.dart';
 import 'note_sheet.dart';
 import 'plates.dart';
 import 'rest_timer_bar.dart';
+import '../plan/plan_providers.dart';
 import 'swap_sheet.dart';
 import 'today_providers.dart';
 
@@ -158,6 +161,35 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     ref.read(restTimerProvider.notifier).start(exercise.restSeconds);
   }
 
+  /// Id local de la serie; si solo está en la API, se adopta antes en drift.
+  Future<String> _localSetId(LoggedSetView set) async {
+    final server = set.server;
+    if (server != null) {
+      final workout = await _ensureWorkout();
+      await ref
+          .read(syncServiceProvider)
+          .adoptServerSet(workout.clientId, server);
+    }
+    return set.clientId;
+  }
+
+  Future<void> _editSet(
+    LoggedSetView set,
+    int reps,
+    double loadKg,
+    int? rir,
+  ) async {
+    final id = await _localSetId(set);
+    await ref
+        .read(syncServiceProvider)
+        .updateSet(id, reps: reps, loadKg: loadKg, rir: rir);
+  }
+
+  Future<void> _deleteSet(LoggedSetView set) async {
+    final id = await _localSetId(set);
+    await ref.read(syncServiceProvider).deleteSet(id);
+  }
+
   Future<void> _finish(List<LocalSetLog> local) async {
     final l10n = AppLocalizations.of(context);
     var planned = 0;
@@ -234,10 +266,55 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
       '/workout-complete',
       extra: WorkoutSummary(
         workoutClientId: workout.clientId,
-        sets: allSets.where((s) => !s.isWarmup).length + serverSets,
+        sets:
+            visibleSets(allSets).where((s) => !s.isWarmup).length + serverSets,
         volumeKg: volume,
       ),
     );
+  }
+
+  /// «Abandonar entrenamiento» (issue #13): pide confirmación, cierra el
+  /// entrenamiento en local (la cola envía el abandono, también sin red) y
+  /// deja Hoy limpio, también en la copia guardada para el modo avión.
+  Future<void> _abandon(LocalWorkout? local) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.todayAbandonTitle),
+        content: Text(l10n.todayAbandonBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('abandon-confirm'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.todayAbandon),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final workout = local ?? await _ensureWorkout();
+    await ref.read(syncServiceProvider).abandonWorkout(workout.clientId);
+    ref.read(restTimerProvider.notifier).skip();
+    final json = session.toJson()
+      ..['workout'] = null
+      ..['exercises'] = [
+        for (final e in session.exercises) {...e.toJson(), 'loggedSets': []},
+      ];
+    await ref.read(cacheStoreProvider).write(CacheKeys.today, json);
+    ref.invalidate(todaySessionProvider);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.todayAbandoned)));
   }
 
   @override
@@ -252,11 +329,35 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         : ref.watch(localSetsProvider(workout.clientId)).valueOrNull ??
               const <LocalSetLog>[];
     final hasLogged =
-        local.isNotEmpty ||
+        visibleSets(local).isNotEmpty ||
         session.exercises.any((e) => e.loggedSets.isNotEmpty);
     final pendingNotes =
         ref.watch(pendingNotesProvider).valueOrNull ??
         const <String, String?>{};
+    // Cambios de ejercicio en cola (#23): se ven al momento; al confirmarse
+    // se relee la sesión (carga y discos del sustituto).
+    final swaps =
+        ref.watch(pendingSwapsProvider).valueOrNull ?? const <PendingSwap>[];
+    final exercises = applyPendingSwaps(
+      session.exercises,
+      swaps,
+      workout?.clientId,
+    );
+    // El plan cambió mientras el inicio esperaba en la cola: se relee la
+    // sesión vigente (y el plan).
+    ref.listen(planOutdatedProvider, (_, next) {
+      if (next.hasValue) {
+        ref.invalidate(todaySessionProvider);
+        ref.invalidate(currentPlanProvider);
+      }
+    });
+    ref.listen(pendingSwapsProvider, (prev, next) {
+      final before = prev?.valueOrNull?.map((s) => s.key).toSet() ?? {};
+      final now = next.valueOrNull?.map((s) => s.key).toSet() ?? {};
+      if (before.any((k) => !now.contains(k))) {
+        ref.invalidate(todaySessionProvider);
+      }
+    });
     // Una nota que deja de estar pendiente ya está en la API: se relee la
     // sesión para mostrar la versión del servidor.
     ref.listen(pendingNotesProvider, (prev, next) {
@@ -293,6 +394,10 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               in ref.watch(conflictingWorkoutsProvider).valueOrNull ??
                   const <LocalWorkout>[])
             _ConflictBanner(workout: c),
+          for (final c
+              in ref.watch(closedRemotelyProvider).valueOrNull ??
+                  const <LocalWorkout>[])
+            _ClosedRemotelyBanner(workout: c),
           if (session.activeBreak != null)
             NoticeBanner(
               key: const Key('today-break'),
@@ -355,10 +460,16 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               icon: Icons.directions_walk,
             ),
           if (!hasLogged) NoticeBanner(text: l10n.todayStartHint),
-          for (final e in session.exercises)
+          for (final e in exercises)
             ExerciseCard(
               key: Key('exercise-${e.planExerciseId}'),
               exercise: e,
+              swapPending: swaps.any(
+                (s) =>
+                    !s.failed &&
+                    s.workoutClientId == workout?.clientId &&
+                    s.planExerciseId == e.planExerciseId,
+              ),
               note: pendingNotes.containsKey(e.exercise.id)
                   ? pendingNotes[e.exercise.id]
                   : e.note,
@@ -372,6 +483,8 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               logged: mergeSets(e, local),
               onLog: (index, reps, load, rir) =>
                   _logSet(e, index, reps, load, rir),
+              onEditSet: _editSet,
+              onDeleteSet: _deleteSet,
               onSwap: () => showSwapSheet(
                 context,
                 exercise: e,
@@ -385,6 +498,20 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             icon: const Icon(Icons.flag_outlined),
             label: Text(l10n.todayFinish),
           ),
+          if (workout != null ||
+              session.workout?.status == WorkoutStatus.inProgress)
+            Align(
+              child: TextButton.icon(
+                key: const Key('abandon-workout'),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                ),
+                onPressed: () => _abandon(workout),
+                icon: const Icon(Icons.close),
+                label: Text(l10n.todayAbandon),
+              ),
+            ),
           const SizedBox(height: AppSpacing.md),
           NoticeBanner(
             text: l10n.medicalNotice,
@@ -431,9 +558,11 @@ class _ConflictBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final outdated = workout.lastError == ApiErrorCode.planSessionOutdated;
     final theme = Theme.of(context);
-    final count =
-        ref.watch(localSetsProvider(workout.clientId)).valueOrNull?.length ?? 0;
+    final count = visibleSets(
+      ref.watch(localSetsProvider(workout.clientId)).valueOrNull ?? const [],
+    ).length;
     return Container(
       key: Key('workout-conflict-${workout.clientId}'),
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -446,7 +575,9 @@ class _ConflictBanner extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.todayConflictBody(count),
+            outdated
+                ? l10n.todayPlanOutdatedBody(count)
+                : l10n.todayConflictBody(count),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onErrorContainer,
             ),
@@ -454,11 +585,14 @@ class _ConflictBanner extends ConsumerWidget {
           Wrap(
             spacing: AppSpacing.sm,
             children: [
-              TextButton(
-                key: const Key('conflict-retry'),
-                onPressed: () => ref.read(syncServiceProvider).retryFailed(),
-                child: Text(l10n.syncRetry),
-              ),
+              // Con un plan nuevo, reintentar no sirve: sus series son de
+              // la sesión antigua. Se conserva en el móvil hasta descartarlo.
+              if (!outdated)
+                TextButton(
+                  key: const Key('conflict-retry'),
+                  onPressed: () => ref.read(syncServiceProvider).retryFailed(),
+                  child: Text(l10n.syncRetry),
+                ),
               TextButton(
                 key: const Key('conflict-discard'),
                 onPressed: () => _discard(context, ref, count),
@@ -472,8 +606,50 @@ class _ConflictBanner extends ConsumerWidget {
   }
 }
 
+/// El servidor cerró un entrenamiento que la persona no había terminado
+/// (abandono automático tras 12 h sin actividad, o terminado en otro
+/// dispositivo): se explica qué series no se subieron.
+class _ClosedRemotelyBanner extends ConsumerWidget {
+  const _ClosedRemotelyBanner({required this.workout});
+
+  final LocalWorkout workout;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final lost =
+        (ref.watch(localSetsProvider(workout.clientId)).valueOrNull ??
+                const <LocalSetLog>[])
+            .where((s) => !s.confirmed && !s.deleted)
+            .length;
+    return Padding(
+      key: Key('workout-closed-${workout.clientId}'),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NoticeBanner(
+            text: l10n.todayClosedRemotely(lost),
+            icon: Icons.info_outline,
+          ),
+          TextButton(
+            key: const Key('workout-closed-dismiss'),
+            onPressed: () => ref
+                .read(syncServiceProvider)
+                .dismissClosedNotice(workout.clientId),
+            child: Text(l10n.actionUnderstood),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 typedef LogSetCallback =
     Future<void> Function(int setIndex, int reps, double loadKg, int? rir);
+
+typedef EditSetCallback =
+    Future<void> Function(LoggedSetView set, int reps, double loadKg, int? rir);
 
 class ExerciseCard extends StatelessWidget {
   const ExerciseCard({
@@ -485,12 +661,22 @@ class ExerciseCard extends StatelessWidget {
     this.note,
     this.notePending = false,
     this.onEditNote,
+    this.onEditSet,
+    this.onDeleteSet,
+    this.swapPending = false,
   });
+
+  /// Cambio de ejercicio guardado en la cola sin confirmar (#23).
+  final bool swapPending;
 
   final TodayExercise exercise;
   final List<LoggedSetView> logged;
   final LogSetCallback onLog;
   final VoidCallback onSwap;
+
+  /// Corregir o borrar una serie registrada (#22).
+  final EditSetCallback? onEditSet;
+  final Future<void> Function(LoggedSetView set)? onDeleteSet;
 
   /// Nota fija (la local pendiente manda sobre la de la API).
   final String? note;
@@ -562,6 +748,26 @@ class ExerciseCard extends StatelessWidget {
                             exercise.substitutedFrom!.nameEs,
                           ),
                           style: theme.textTheme.bodySmall,
+                        ),
+                      if (swapPending)
+                        Row(
+                          key: Key('swap-pending-${exercise.planExerciseId}'),
+                          children: [
+                            ExcludeSemantics(
+                              child: Icon(
+                                Icons.cloud_upload_outlined,
+                                size: AppSpacing.md,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                            const SizedBox(width: AppSpacing.xs),
+                            Expanded(
+                              child: Text(
+                                l10n.swapPendingBadge,
+                                style: theme.textTheme.bodySmall,
+                              ),
+                            ),
+                          ],
                         ),
                     ],
                   ),
@@ -661,7 +867,13 @@ class ExerciseCard extends StatelessWidget {
             const Divider(),
             for (var i = 0; i < total; i++)
               if (i < logged.length)
-                _LoggedSetRow(index: i, set: logged[i])
+                _LoggedSetRow(
+                  index: i,
+                  set: logged[i],
+                  weighted: weighted,
+                  onEdit: onEditSet,
+                  onDelete: onDeleteSet,
+                )
               else if (i == logged.length)
                 ActiveSetRow(
                   key: Key('active-${exercise.planExerciseId}-$i'),
@@ -811,16 +1023,91 @@ class _WarmupList extends StatelessWidget {
   }
 }
 
+enum _SetAction { edit, delete }
+
 class _LoggedSetRow extends ConsumerWidget {
-  const _LoggedSetRow({required this.index, required this.set});
+  const _LoggedSetRow({
+    required this.index,
+    required this.set,
+    required this.weighted,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final int index;
   final LoggedSetView set;
+  final bool weighted;
+  final EditSetCallback? onEdit;
+  final Future<void> Function(LoggedSetView set)? onDelete;
+
+  Future<void> _edit(BuildContext context) async {
+    final edited = await showEditSetSheet(
+      context,
+      setNumber: index + 1,
+      weighted: weighted,
+      reps: set.reps,
+      loadKg: set.loadKg,
+      rir: set.rir,
+    );
+    if (edited == null) return;
+    await onEdit?.call(set, edited.reps, edited.loadKg, edited.rir);
+  }
+
+  Future<void> _delete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.setDeleteTitle(index + 1)),
+        content: Text(l10n.setDeleteBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('set-delete-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.setDelete),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await onDelete?.call(set);
+  }
+
+  /// «Descartar» una serie rechazada (#21): se pide confirmación y se quita
+  /// de la cola local (con `DELETE` si llegó a existir en el servidor).
+  Future<void> _discard(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.setDiscardTitle(index + 1)),
+        content: Text(l10n.setDiscardBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('set-discard-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.setDiscard),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(syncServiceProvider).deleteSet(set.clientId);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final failed = set.status == SetSyncStatus.failed;
     final (icon, label, color) = switch (set.status) {
       SetSyncStatus.synced => (
         Icons.cloud_done_outlined,
@@ -843,39 +1130,119 @@ class _LoggedSetRow extends ConsumerWidget {
       l10n.kg(set.loadKg),
       set.rir == null ? '–' : '${set.rir}',
     );
-    return Semantics(
-      label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
-      excludeSemantics: set.status != SetSyncStatus.failed,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: AppSpacing.xxl),
-        child: Row(
-          children: [
-            SizedBox(
-              width: AppSpacing.xxl + AppSpacing.md,
+    const labelWidth = AppSpacing.xxl + AppSpacing.md;
+    final row = ConstrainedBox(
+      constraints: const BoxConstraints(minHeight: AppSpacing.xxl),
+      child: Row(
+        children: [
+          SizedBox(
+            width: labelWidth,
+            child: ExcludeSemantics(
               child: Text(
                 l10n.todaySetLabel(index + 1),
                 style: theme.textTheme.labelLarge,
               ),
             ),
-            Expanded(child: Text(summary, style: theme.textTheme.bodyLarge)),
-            if (set.status == SetSyncStatus.failed)
-              IconButton(
-                tooltip: l10n.syncRetry,
-                icon: Icon(icon, color: color),
+          ),
+          Expanded(
+            child: Semantics(
+              label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
+              excludeSemantics: true,
+              child: Text(summary, style: theme.textTheme.bodyLarge),
+            ),
+          ),
+          Tooltip(
+            message: label,
+            excludeFromSemantics: true,
+            child: Icon(
+              icon,
+              color: color,
+              key: Key('sync-${set.clientId}-${set.status.name}'),
+            ),
+          ),
+          if (onEdit != null || onDelete != null)
+            PopupMenuButton<_SetAction>(
+              key: Key('set-menu-${set.clientId}'),
+              tooltip: l10n.setActionsFor(index + 1),
+              onSelected: (a) => switch (a) {
+                _SetAction.edit => _edit(context),
+                _SetAction.delete => _delete(context),
+              },
+              itemBuilder: (_) => [
+                if (onEdit != null)
+                  PopupMenuItem(
+                    key: const Key('set-action-edit'),
+                    value: _SetAction.edit,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.edit_outlined),
+                      title: Text(l10n.setEdit),
+                    ),
+                  ),
+                // Una rechazada se quita con «Descartar» (debajo).
+                if (onDelete != null && !failed)
+                  PopupMenuItem(
+                    key: const Key('set-action-delete'),
+                    value: _SetAction.delete,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.delete_outline),
+                      title: Text(l10n.setDelete),
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+    if (!failed) return row;
+    final reason = setRejectionReason(l10n, set.lastError);
+    return Column(
+      key: Key('set-failed-${set.clientId}'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        row,
+        Padding(
+          padding: const EdgeInsets.only(left: labelWidth),
+          child: Text(
+            reason,
+            key: Key('set-reason-${set.clientId}'),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.error,
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: labelWidth - AppSpacing.sm),
+          child: Wrap(
+            spacing: AppSpacing.xs,
+            children: [
+              TextButton.icon(
+                key: Key('set-retry-${set.clientId}'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                ),
                 onPressed: () => ref.read(syncServiceProvider).retryFailed(),
-              )
-            else
-              Tooltip(
-                message: label,
-                child: Icon(
-                  icon,
-                  color: color,
-                  key: Key('sync-${set.clientId}-${set.status.name}'),
+                icon: const Icon(Icons.refresh),
+                label: Text(l10n.syncRetry),
+              ),
+              TextButton.icon(
+                key: Key('set-discard-${set.clientId}'),
+                style: TextButton.styleFrom(
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                  foregroundColor: theme.colorScheme.error,
+                ),
+                onPressed: () => _discard(context, ref),
+                icon: const Icon(Icons.delete_outline),
+                label: Text(
+                  l10n.setDiscard,
+                  semanticsLabel: l10n.setDiscardFor(index + 1),
                 ),
               ),
-          ],
+            ],
+          ),
         ),
-      ),
+      ],
     );
   }
 }

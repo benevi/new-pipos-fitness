@@ -11,6 +11,7 @@ library;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/api/api_failure.dart';
 import '../../core/offline/offline_providers.dart';
@@ -191,7 +192,7 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       if (mode == ProfileFormMode.onboarding) {
         final plan = update.planVersion != null
             ? (await planApi.getCurrentPlan())!
-            : await planApi.generatePlan();
+            : await _generatePlan(planApi);
         await _ref
             .read(cacheStoreProvider)
             .write(CacheKeys.currentPlan, plan.toJson());
@@ -224,6 +225,30 @@ class OnboardingController extends StateNotifier<OnboardingState> {
       }
       state = state.copyWith(submitting: false, failure: f);
       if (fieldErrors.isNotEmpty) _showErrors(fieldErrors);
+    }
+  }
+
+  /// Clave de idempotencia del «Generar mi plan» en curso: se crea en la
+  /// pulsación y se reutiliza en cada reintento hasta que sale bien (así un
+  /// reintento tras una respuesta perdida no crea una segunda versión).
+  String? _generateKey;
+
+  static String _newKey() => const Uuid().v4();
+
+  Future<PlanVersion> _generatePlan(PlanApi api) async {
+    final key = _generateKey ??= _newKey();
+    try {
+      final plan = await api.generatePlan(idempotencyKey: key);
+      _generateKey = null;
+      return plan;
+    } on ApiFailure catch (f) {
+      if (f.code != ApiErrorCode.idempotencyKeyReused) rethrow;
+      // La clave ya se usó con otro perfil (cambió entre intentos): una
+      // nueva y un reintento.
+      _generateKey = _newKey();
+      final plan = await api.generatePlan(idempotencyKey: _generateKey);
+      _generateKey = null;
+      return plan;
     }
   }
 

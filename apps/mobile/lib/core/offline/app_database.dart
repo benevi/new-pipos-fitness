@@ -62,6 +62,10 @@ class LocalWorkouts extends Table {
   /// null = sesión completa). Se envía en `POST /workouts`.
   TextColumn get adjustmentJson => text().nullable()();
 
+  /// Abandonado (issue #13): `finishedAt` es el momento del abandono y el
+  /// cierre se envía con `POST /workouts/:id/abandon` en vez de `finish`.
+  BoolColumn get abandoned => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column<Object>> get primaryKey => {clientId};
 }
@@ -93,6 +97,14 @@ class LocalSetLogs extends Table {
   /// Momento a partir del cual se puede reintentar (backoff exponencial).
   DateTimeColumn get nextAttemptAt => dateTime().nullable()();
 
+  /// La API confirmó la serie al menos una vez (existe en el servidor).
+  BoolColumn get confirmed => boolean().withDefault(const Constant(false))();
+
+  /// Borrada en local: la fila queda como «lápida» `pending` hasta que la
+  /// API confirme el `DELETE` (la UI no la pinta y oculta la copia de la
+  /// API). Si nunca llegó al servidor, se borra la fila sin más.
+  BoolColumn get deleted => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column<Object>> get primaryKey => {clientId};
 }
@@ -111,13 +123,23 @@ class CachedPayloads extends Table {
 }
 
 /// Tipo de escritura offline de [PendingMutations].
-enum MutationKind { notePut, noteDelete, measurementPut, measurementDelete }
+enum MutationKind {
+  notePut,
+  noteDelete,
+  measurementPut,
+  measurementDelete,
+
+  /// Cambio de ejercicio de un hueco en un entrenamiento (#23). Lo envía el
+  /// propio `SyncService`, en orden con las series.
+  substitute,
+}
 
 @DataClassName('PendingMutation')
 class PendingMutations extends Table {
   TextColumn get userId => text()();
 
-  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  /// Clave lógica: `note:<exerciseId>`, `measurement:<YYYY-MM-DD>` o
+  /// `swap:<workoutClientId>:<planExerciseId>:<id>` (una fila por cambio).
   TextColumn get mutationKey => text()();
   TextColumn get kind => textEnum<MutationKind>()();
 
@@ -147,7 +169,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'pipos_fitness'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -165,6 +187,18 @@ class AppDatabase extends _$AppDatabase {
         // ADR-0013: ajuste de hoy y cola de otras escrituras offline.
         await m.addColumn(localWorkouts, localWorkouts.adjustmentJson);
         await m.createTable(pendingMutations);
+      }
+      if (from < 4) {
+        // Descartar, editar y borrar series (issues #21 y #22).
+        await m.addColumn(localSetLogs, localSetLogs.confirmed);
+        await m.addColumn(localSetLogs, localSetLogs.deleted);
+        await customStatement(
+          "UPDATE local_set_logs SET confirmed = 1 WHERE status = 'synced'",
+        );
+      }
+      if (from < 5) {
+        // Abandonar entrenamientos (issue #13 de la API).
+        await m.addColumn(localWorkouts, localWorkouts.abandoned);
       }
     },
   );

@@ -27,8 +27,12 @@ abstract class TokenStorage {
   Future<String?> readUserId();
 
   /// Usuario de la última sesión validada. Permite entrar en modo offline
-  /// (y asociar la cola offline a un usuario) sin red.
+  /// (y asociar la cola offline a un usuario) sin red. Si falta su clave
+  /// propia se usa la copia guardada con los tokens (id + email).
   Future<AuthUser?> readCachedUser();
+
+  /// Guarda el usuario completo (id + email) en su clave Y junto a los
+  /// tokens, para que la entrada offline nunca tenga solo el id.
   Future<void> saveCachedUser(AuthUser user);
 
   /// Borra tokens y usuario cacheado.
@@ -53,6 +57,7 @@ class SecureTokenStorage implements TokenStorage {
           j['accessToken'] as String,
           j['refreshToken'] as String,
           j['userId'] as String?,
+          j['email'] as String?,
         );
       } catch (_) {
         return null;
@@ -61,7 +66,7 @@ class SecureTokenStorage implements TokenStorage {
     final access = await _storage.read(key: AppConstants.accessTokenKey);
     final refresh = await _storage.read(key: AppConstants.refreshTokenKey);
     if (access == null || refresh == null) return null;
-    final session = _Session(access, refresh, null);
+    final session = _Session(access, refresh, null, null);
     await _writeSession(session);
     await _deleteLegacy();
     return session;
@@ -73,6 +78,7 @@ class SecureTokenStorage implements TokenStorage {
       'accessToken': s.accessToken,
       'refreshToken': s.refreshToken,
       if (s.userId != null) 'userId': s.userId,
+      if (s.userId != null && s.email != null) 'email': s.email,
     }),
   );
 
@@ -98,28 +104,47 @@ class SecureTokenStorage implements TokenStorage {
     required String refreshToken,
     String? userId,
   }) async {
-    final previous = userId == null ? await readUserId() : null;
-    await _writeSession(
-      _Session(accessToken, refreshToken, userId ?? previous),
-    );
+    final previous = await _readSession();
+    final owner = userId ?? previous?.userId;
+    // El email guardado solo vale para el mismo dueño.
+    final email = owner != null && owner == previous?.userId
+        ? previous?.email
+        : null;
+    await _writeSession(_Session(accessToken, refreshToken, owner, email));
   }
 
   @override
   Future<AuthUser?> readCachedUser() async {
     final raw = await _storage.read(key: AppConstants.cachedUserKey);
-    if (raw == null) return null;
-    try {
-      return AuthUser.fromJson(jsonDecode(raw) as Map<String, dynamic>);
-    } catch (_) {
-      return null;
+    if (raw != null) {
+      try {
+        return AuthUser.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      } catch (_) {}
     }
+    final session = await _readSession();
+    final id = session?.userId;
+    final email = session?.email;
+    return id == null || email == null ? null : AuthUser(id: id, email: email);
   }
 
   @override
-  Future<void> saveCachedUser(AuthUser user) => _storage.write(
-    key: AppConstants.cachedUserKey,
-    value: jsonEncode(user.toJson()),
-  );
+  Future<void> saveCachedUser(AuthUser user) async {
+    await _storage.write(
+      key: AppConstants.cachedUserKey,
+      value: jsonEncode(user.toJson()),
+    );
+    final session = await _readSession();
+    if (session != null) {
+      await _writeSession(
+        _Session(
+          session.accessToken,
+          session.refreshToken,
+          user.id,
+          user.email,
+        ),
+      );
+    }
+  }
 
   @override
   Future<void> clear() async {
@@ -130,11 +155,14 @@ class SecureTokenStorage implements TokenStorage {
 }
 
 class _Session {
-  const _Session(this.accessToken, this.refreshToken, this.userId);
+  const _Session(this.accessToken, this.refreshToken, this.userId, this.email);
 
   final String accessToken;
   final String refreshToken;
   final String? userId;
+
+  /// Email del dueño (copia del usuario cacheado; issue #26).
+  final String? email;
 }
 
 /// Implementación en memoria (tests y previsualizaciones).
@@ -144,12 +172,16 @@ class InMemoryTokenStorage implements TokenStorage {
     this.refreshToken,
     this.cachedUser,
     this.userId,
+    this.userEmail,
   });
 
   String? accessToken;
   String? refreshToken;
   AuthUser? cachedUser;
   String? userId;
+
+  /// Email guardado junto a los tokens (como [SecureTokenStorage]).
+  String? userEmail;
 
   @override
   Future<String?> readUserId() async => userId;
@@ -168,14 +200,29 @@ class InMemoryTokenStorage implements TokenStorage {
   }) async {
     this.accessToken = accessToken;
     this.refreshToken = refreshToken;
-    if (userId != null) this.userId = userId;
+    if (userId != null && userId != this.userId) {
+      this.userId = userId;
+      userEmail = null;
+    }
   }
 
   @override
-  Future<AuthUser?> readCachedUser() async => cachedUser;
+  Future<AuthUser?> readCachedUser() async {
+    final cached = cachedUser;
+    if (cached != null) return cached;
+    final id = userId;
+    final email = userEmail;
+    return id == null || email == null ? null : AuthUser(id: id, email: email);
+  }
 
   @override
-  Future<void> saveCachedUser(AuthUser user) async => cachedUser = user;
+  Future<void> saveCachedUser(AuthUser user) async {
+    cachedUser = user;
+    if (accessToken != null) {
+      userId = user.id;
+      userEmail = user.email;
+    }
+  }
 
   @override
   Future<void> clear() async {
@@ -183,5 +230,6 @@ class InMemoryTokenStorage implements TokenStorage {
     refreshToken = null;
     cachedUser = null;
     userId = null;
+    userEmail = null;
   }
 }

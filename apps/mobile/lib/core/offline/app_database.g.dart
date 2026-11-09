@@ -134,6 +134,21 @@ class $LocalWorkoutsTable extends LocalWorkouts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _abandonedMeta = const VerificationMeta(
+    'abandoned',
+  );
+  @override
+  late final GeneratedColumn<bool> abandoned = GeneratedColumn<bool>(
+    'abandoned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("abandoned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -147,6 +162,7 @@ class $LocalWorkoutsTable extends LocalWorkouts
     lastError,
     nextAttemptAt,
     adjustmentJson,
+    abandoned,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -246,6 +262,12 @@ class $LocalWorkoutsTable extends LocalWorkouts
         ),
       );
     }
+    if (data.containsKey('abandoned')) {
+      context.handle(
+        _abandonedMeta,
+        abandoned.isAcceptableOrUnknown(data['abandoned']!, _abandonedMeta),
+      );
+    }
     return context;
   }
 
@@ -299,6 +321,10 @@ class $LocalWorkoutsTable extends LocalWorkouts
         DriftSqlType.string,
         data['${effectivePrefix}adjustment_json'],
       ),
+      abandoned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}abandoned'],
+      )!,
     );
   }
 
@@ -328,6 +354,10 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
   /// Ajuste de hoy elegido antes de empezar (JSON de `WorkoutAdjustment`;
   /// null = sesión completa). Se envía en `POST /workouts`.
   final String? adjustmentJson;
+
+  /// Abandonado (issue #13): `finishedAt` es el momento del abandono y el
+  /// cierre se envía con `POST /workouts/:id/abandon` en vez de `finish`.
+  final bool abandoned;
   const LocalWorkout({
     required this.clientId,
     required this.userId,
@@ -340,6 +370,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     this.lastError,
     this.nextAttemptAt,
     this.adjustmentJson,
+    required this.abandoned,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -365,6 +396,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     if (!nullToAbsent || adjustmentJson != null) {
       map['adjustment_json'] = Variable<String>(adjustmentJson);
     }
+    map['abandoned'] = Variable<bool>(abandoned);
     return map;
   }
 
@@ -391,6 +423,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       adjustmentJson: adjustmentJson == null && nullToAbsent
           ? const Value.absent()
           : Value(adjustmentJson),
+      abandoned: Value(abandoned),
     );
   }
 
@@ -411,6 +444,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       lastError: serializer.fromJson<String?>(json['lastError']),
       nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
       adjustmentJson: serializer.fromJson<String?>(json['adjustmentJson']),
+      abandoned: serializer.fromJson<bool>(json['abandoned']),
     );
   }
   @override
@@ -428,6 +462,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       'lastError': serializer.toJson<String?>(lastError),
       'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
       'adjustmentJson': serializer.toJson<String?>(adjustmentJson),
+      'abandoned': serializer.toJson<bool>(abandoned),
     };
   }
 
@@ -443,6 +478,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     Value<String?> lastError = const Value.absent(),
     Value<DateTime?> nextAttemptAt = const Value.absent(),
     Value<String?> adjustmentJson = const Value.absent(),
+    bool? abandoned,
   }) => LocalWorkout(
     clientId: clientId ?? this.clientId,
     userId: userId ?? this.userId,
@@ -459,6 +495,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     adjustmentJson: adjustmentJson.present
         ? adjustmentJson.value
         : this.adjustmentJson,
+    abandoned: abandoned ?? this.abandoned,
   );
   LocalWorkout copyWithCompanion(LocalWorkoutsCompanion data) {
     return LocalWorkout(
@@ -483,6 +520,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       adjustmentJson: data.adjustmentJson.present
           ? data.adjustmentJson.value
           : this.adjustmentJson,
+      abandoned: data.abandoned.present ? data.abandoned.value : this.abandoned,
     );
   }
 
@@ -499,7 +537,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
-          ..write('adjustmentJson: $adjustmentJson')
+          ..write('adjustmentJson: $adjustmentJson, ')
+          ..write('abandoned: $abandoned')
           ..write(')'))
         .toString();
   }
@@ -517,6 +556,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     lastError,
     nextAttemptAt,
     adjustmentJson,
+    abandoned,
   );
   @override
   bool operator ==(Object other) =>
@@ -532,7 +572,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           other.attempts == this.attempts &&
           other.lastError == this.lastError &&
           other.nextAttemptAt == this.nextAttemptAt &&
-          other.adjustmentJson == this.adjustmentJson);
+          other.adjustmentJson == this.adjustmentJson &&
+          other.abandoned == this.abandoned);
 }
 
 class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
@@ -547,6 +588,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
   final Value<String?> lastError;
   final Value<DateTime?> nextAttemptAt;
   final Value<String?> adjustmentJson;
+  final Value<bool> abandoned;
   final Value<int> rowid;
   const LocalWorkoutsCompanion({
     this.clientId = const Value.absent(),
@@ -560,6 +602,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
     this.adjustmentJson = const Value.absent(),
+    this.abandoned = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalWorkoutsCompanion.insert({
@@ -574,6 +617,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
     this.adjustmentJson = const Value.absent(),
+    this.abandoned = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        userId = Value(userId),
@@ -591,6 +635,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Expression<String>? lastError,
     Expression<DateTime>? nextAttemptAt,
     Expression<String>? adjustmentJson,
+    Expression<bool>? abandoned,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -605,6 +650,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       if (lastError != null) 'last_error': lastError,
       if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
       if (adjustmentJson != null) 'adjustment_json': adjustmentJson,
+      if (abandoned != null) 'abandoned': abandoned,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -621,6 +667,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Value<String?>? lastError,
     Value<DateTime?>? nextAttemptAt,
     Value<String?>? adjustmentJson,
+    Value<bool>? abandoned,
     Value<int>? rowid,
   }) {
     return LocalWorkoutsCompanion(
@@ -635,6 +682,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       lastError: lastError ?? this.lastError,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
       adjustmentJson: adjustmentJson ?? this.adjustmentJson,
+      abandoned: abandoned ?? this.abandoned,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -675,6 +723,9 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     if (adjustmentJson.present) {
       map['adjustment_json'] = Variable<String>(adjustmentJson.value);
     }
+    if (abandoned.present) {
+      map['abandoned'] = Variable<bool>(abandoned.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -695,6 +746,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
           ..write('adjustmentJson: $adjustmentJson, ')
+          ..write('abandoned: $abandoned, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -880,6 +932,36 @@ class $LocalSetLogsTable extends LocalSetLogs
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _confirmedMeta = const VerificationMeta(
+    'confirmed',
+  );
+  @override
+  late final GeneratedColumn<bool> confirmed = GeneratedColumn<bool>(
+    'confirmed',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("confirmed" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _deletedMeta = const VerificationMeta(
+    'deleted',
+  );
+  @override
+  late final GeneratedColumn<bool> deleted = GeneratedColumn<bool>(
+    'deleted',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("deleted" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -898,6 +980,8 @@ class $LocalSetLogsTable extends LocalSetLogs
     attempts,
     lastError,
     nextAttemptAt,
+    confirmed,
+    deleted,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1031,6 +1115,18 @@ class $LocalSetLogsTable extends LocalSetLogs
         ),
       );
     }
+    if (data.containsKey('confirmed')) {
+      context.handle(
+        _confirmedMeta,
+        confirmed.isAcceptableOrUnknown(data['confirmed']!, _confirmedMeta),
+      );
+    }
+    if (data.containsKey('deleted')) {
+      context.handle(
+        _deletedMeta,
+        deleted.isAcceptableOrUnknown(data['deleted']!, _deletedMeta),
+      );
+    }
     return context;
   }
 
@@ -1106,6 +1202,14 @@ class $LocalSetLogsTable extends LocalSetLogs
         DriftSqlType.dateTime,
         data['${effectivePrefix}next_attempt_at'],
       ),
+      confirmed: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}confirmed'],
+      )!,
+      deleted: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}deleted'],
+      )!,
     );
   }
 
@@ -1140,6 +1244,14 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
 
   /// Momento a partir del cual se puede reintentar (backoff exponencial).
   final DateTime? nextAttemptAt;
+
+  /// La API confirmó la serie al menos una vez (existe en el servidor).
+  final bool confirmed;
+
+  /// Borrada en local: la fila queda como «lápida» `pending` hasta que la
+  /// API confirme el `DELETE` (la UI no la pinta y oculta la copia de la
+  /// API). Si nunca llegó al servidor, se borra la fila sin más.
+  final bool deleted;
   const LocalSetLog({
     required this.clientId,
     required this.userId,
@@ -1157,6 +1269,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
     required this.attempts,
     this.lastError,
     this.nextAttemptAt,
+    required this.confirmed,
+    required this.deleted,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1189,6 +1303,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
     if (!nullToAbsent || nextAttemptAt != null) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
     }
+    map['confirmed'] = Variable<bool>(confirmed);
+    map['deleted'] = Variable<bool>(deleted);
     return map;
   }
 
@@ -1216,6 +1332,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
       nextAttemptAt: nextAttemptAt == null && nullToAbsent
           ? const Value.absent()
           : Value(nextAttemptAt),
+      confirmed: Value(confirmed),
+      deleted: Value(deleted),
     );
   }
 
@@ -1243,6 +1361,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
       attempts: serializer.fromJson<int>(json['attempts']),
       lastError: serializer.fromJson<String?>(json['lastError']),
       nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      confirmed: serializer.fromJson<bool>(json['confirmed']),
+      deleted: serializer.fromJson<bool>(json['deleted']),
     );
   }
   @override
@@ -1267,6 +1387,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
       'attempts': serializer.toJson<int>(attempts),
       'lastError': serializer.toJson<String?>(lastError),
       'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'confirmed': serializer.toJson<bool>(confirmed),
+      'deleted': serializer.toJson<bool>(deleted),
     };
   }
 
@@ -1287,6 +1409,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
     int? attempts,
     Value<String?> lastError = const Value.absent(),
     Value<DateTime?> nextAttemptAt = const Value.absent(),
+    bool? confirmed,
+    bool? deleted,
   }) => LocalSetLog(
     clientId: clientId ?? this.clientId,
     userId: userId ?? this.userId,
@@ -1308,6 +1432,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
     nextAttemptAt: nextAttemptAt.present
         ? nextAttemptAt.value
         : this.nextAttemptAt,
+    confirmed: confirmed ?? this.confirmed,
+    deleted: deleted ?? this.deleted,
   );
   LocalSetLog copyWithCompanion(LocalSetLogsCompanion data) {
     return LocalSetLog(
@@ -1337,6 +1463,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
       nextAttemptAt: data.nextAttemptAt.present
           ? data.nextAttemptAt.value
           : this.nextAttemptAt,
+      confirmed: data.confirmed.present ? data.confirmed.value : this.confirmed,
+      deleted: data.deleted.present ? data.deleted.value : this.deleted,
     );
   }
 
@@ -1358,7 +1486,9 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
           ..write('status: $status, ')
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
-          ..write('nextAttemptAt: $nextAttemptAt')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('confirmed: $confirmed, ')
+          ..write('deleted: $deleted')
           ..write(')'))
         .toString();
   }
@@ -1381,6 +1511,8 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
     attempts,
     lastError,
     nextAttemptAt,
+    confirmed,
+    deleted,
   );
   @override
   bool operator ==(Object other) =>
@@ -1401,7 +1533,9 @@ class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
           other.status == this.status &&
           other.attempts == this.attempts &&
           other.lastError == this.lastError &&
-          other.nextAttemptAt == this.nextAttemptAt);
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.confirmed == this.confirmed &&
+          other.deleted == this.deleted);
 }
 
 class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
@@ -1421,6 +1555,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
   final Value<int> attempts;
   final Value<String?> lastError;
   final Value<DateTime?> nextAttemptAt;
+  final Value<bool> confirmed;
+  final Value<bool> deleted;
   final Value<int> rowid;
   const LocalSetLogsCompanion({
     this.clientId = const Value.absent(),
@@ -1439,6 +1575,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.confirmed = const Value.absent(),
+    this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalSetLogsCompanion.insert({
@@ -1458,6 +1596,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.confirmed = const Value.absent(),
+    this.deleted = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        userId = Value(userId),
@@ -1485,6 +1625,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
     Expression<int>? attempts,
     Expression<String>? lastError,
     Expression<DateTime>? nextAttemptAt,
+    Expression<bool>? confirmed,
+    Expression<bool>? deleted,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1504,6 +1646,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
       if (attempts != null) 'attempts': attempts,
       if (lastError != null) 'last_error': lastError,
       if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (confirmed != null) 'confirmed': confirmed,
+      if (deleted != null) 'deleted': deleted,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1525,6 +1669,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
     Value<int>? attempts,
     Value<String?>? lastError,
     Value<DateTime?>? nextAttemptAt,
+    Value<bool>? confirmed,
+    Value<bool>? deleted,
     Value<int>? rowid,
   }) {
     return LocalSetLogsCompanion(
@@ -1544,6 +1690,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
       attempts: attempts ?? this.attempts,
       lastError: lastError ?? this.lastError,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      confirmed: confirmed ?? this.confirmed,
+      deleted: deleted ?? this.deleted,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1601,6 +1749,12 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
     if (nextAttemptAt.present) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
     }
+    if (confirmed.present) {
+      map['confirmed'] = Variable<bool>(confirmed.value);
+    }
+    if (deleted.present) {
+      map['deleted'] = Variable<bool>(deleted.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1626,6 +1780,8 @@ class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('confirmed: $confirmed, ')
+          ..write('deleted: $deleted, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2193,7 +2349,8 @@ class $PendingMutationsTable extends PendingMutations
 class PendingMutation extends DataClass implements Insertable<PendingMutation> {
   final String userId;
 
-  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  /// Clave lógica: `note:<exerciseId>`, `measurement:<YYYY-MM-DD>` o
+  /// `swap:<workoutClientId>:<planExerciseId>:<id>` (una fila por cambio).
   final String mutationKey;
   final MutationKind kind;
 
@@ -2572,6 +2729,7 @@ typedef $$LocalWorkoutsTableCreateCompanionBuilder =
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<String?> adjustmentJson,
+      Value<bool> abandoned,
       Value<int> rowid,
     });
 typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
@@ -2587,6 +2745,7 @@ typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<String?> adjustmentJson,
+      Value<bool> abandoned,
       Value<int> rowid,
     });
 
@@ -2651,6 +2810,11 @@ class $$LocalWorkoutsTableFilterComposer
 
   ColumnFilters<String> get adjustmentJson => $composableBuilder(
     column: $table.adjustmentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get abandoned => $composableBuilder(
+    column: $table.abandoned,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2718,6 +2882,11 @@ class $$LocalWorkoutsTableOrderingComposer
     column: $table.adjustmentJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get abandoned => $composableBuilder(
+    column: $table.abandoned,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalWorkoutsTableAnnotationComposer
@@ -2771,6 +2940,9 @@ class $$LocalWorkoutsTableAnnotationComposer
     column: $table.adjustmentJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get abandoned =>
+      $composableBuilder(column: $table.abandoned, builder: (column) => column);
 }
 
 class $$LocalWorkoutsTableTableManager
@@ -2815,6 +2987,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<String?> adjustmentJson = const Value.absent(),
+                Value<bool> abandoned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion(
                 clientId: clientId,
@@ -2828,6 +3001,7 @@ class $$LocalWorkoutsTableTableManager
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
                 adjustmentJson: adjustmentJson,
+                abandoned: abandoned,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2843,6 +3017,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<String?> adjustmentJson = const Value.absent(),
+                Value<bool> abandoned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion.insert(
                 clientId: clientId,
@@ -2856,6 +3031,7 @@ class $$LocalWorkoutsTableTableManager
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
                 adjustmentJson: adjustmentJson,
+                abandoned: abandoned,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2901,6 +3077,8 @@ typedef $$LocalSetLogsTableCreateCompanionBuilder =
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
+      Value<bool> confirmed,
+      Value<bool> deleted,
       Value<int> rowid,
     });
 typedef $$LocalSetLogsTableUpdateCompanionBuilder =
@@ -2921,6 +3099,8 @@ typedef $$LocalSetLogsTableUpdateCompanionBuilder =
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
+      Value<bool> confirmed,
+      Value<bool> deleted,
       Value<int> rowid,
     });
 
@@ -3013,6 +3193,16 @@ class $$LocalSetLogsTableFilterComposer
     column: $table.nextAttemptAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnFilters<bool> get confirmed => $composableBuilder(
+    column: $table.confirmed,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
 class $$LocalSetLogsTableOrderingComposer
@@ -3103,6 +3293,16 @@ class $$LocalSetLogsTableOrderingComposer
     column: $table.nextAttemptAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get confirmed => $composableBuilder(
+    column: $table.confirmed,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get deleted => $composableBuilder(
+    column: $table.deleted,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalSetLogsTableAnnotationComposer
@@ -3171,6 +3371,12 @@ class $$LocalSetLogsTableAnnotationComposer
     column: $table.nextAttemptAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get confirmed =>
+      $composableBuilder(column: $table.confirmed, builder: (column) => column);
+
+  GeneratedColumn<bool> get deleted =>
+      $composableBuilder(column: $table.deleted, builder: (column) => column);
 }
 
 class $$LocalSetLogsTableTableManager
@@ -3220,6 +3426,8 @@ class $$LocalSetLogsTableTableManager
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<bool> confirmed = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalSetLogsCompanion(
                 clientId: clientId,
@@ -3238,6 +3446,8 @@ class $$LocalSetLogsTableTableManager
                 attempts: attempts,
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
+                confirmed: confirmed,
+                deleted: deleted,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3258,6 +3468,8 @@ class $$LocalSetLogsTableTableManager
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<bool> confirmed = const Value.absent(),
+                Value<bool> deleted = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalSetLogsCompanion.insert(
                 clientId: clientId,
@@ -3276,6 +3488,8 @@ class $$LocalSetLogsTableTableManager
                 attempts: attempts,
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
+                confirmed: confirmed,
+                deleted: deleted,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/data/pipos_api.dart';
@@ -81,6 +83,9 @@ class FakeBackend
   final List<WorkoutAdjustment> todayQueries = [];
   final List<StartWorkoutRequest> startRequests = [];
 
+  /// Sesiones de versiones del plan que ya no son la vigente.
+  final Set<String> outdatedPlanSessions = {};
+
   /// Cambios fijados: planExerciseId → exerciseId.
   final Map<String, String> pins = {};
 
@@ -100,6 +105,14 @@ class FakeBackend
 
   /// Si devuelve un fallo, `upsertSet` lo lanza (sin guardar la serie).
   ApiFailure? Function(UpsertSetRequest request)? setFailure;
+
+  /// Como la API desde la Fase 5: rechaza (400) una serie nueva de un
+  /// ejercicio que no sea el original del hueco ni su sustitución
+  /// registrada (la última) en ese entrenamiento.
+  bool enforceSlotExercise = false;
+
+  /// Fallos que lanzarán los próximos `substitute` (uno por llamada).
+  final List<ApiFailure> substituteFailures = [];
 
   /// Fallos que lanzarán los próximos `finishWorkout` (uno por llamada).
   final List<ApiFailure> finishFailures = [];
@@ -145,6 +158,12 @@ class FakeBackend
     if (hasHealth && consent['granted'] != true && consentGrants.isEmpty) {
       throw _error(409, ApiErrorCode.healthConsentRequired);
     }
+    // Como la API: solo hay versión nueva del plan si el perfil cambió.
+    final changed =
+        !hasProfile ||
+        request.toJson().entries.any(
+          (e) => jsonEncode(profileJson[e.key]) != jsonEncode(e.value),
+        );
     profileJson = {
       ...profileJson,
       ...request.toJson(),
@@ -153,7 +172,7 @@ class FakeBackend
     };
     hasProfile = true;
     PlanVersionSummary? newVersion;
-    if (hasPlan) {
+    if (hasPlan && changed) {
       final v = (planJson['version'] as int) + 1;
       planJson = {...planJson, 'version': v};
       newVersion = PlanVersion.fromJson(planJson).summary;
@@ -230,13 +249,50 @@ class FakeBackend
   }
 
   // ── PlanApi ──
+  /// `Idempotency-Key` de cada `POST /plans/generate` (null = sin clave).
+  final List<String?> generateKeys = [];
+
+  /// Versiones creadas por `generatePlan` (una repetición con la misma clave
+  /// devuelve la misma, como la API).
+  int plansGenerated = 0;
+  final Map<String, ({String profile, Json plan})> _generatedByKey = {};
+
+  /// Simula que la API crea la versión pero la respuesta se pierde.
+  bool loseNextGenerateResponse = false;
+
   @override
-  Future<PlanVersion> generatePlan() async {
+  Future<PlanVersion> generatePlan({String? idempotencyKey}) async {
     _guard('POST /plans/generate');
+    generateKeys.add(idempotencyKey);
     if (!hasProfile) throw _error(409, ApiErrorCode.profileRequired);
+    final profile = profileJson.toString();
+    final previous = idempotencyKey == null
+        ? null
+        : _generatedByKey[idempotencyKey];
+    if (previous != null) {
+      if (previous.profile != profile) {
+        throw _error(422, ApiErrorCode.idempotencyKeyReused);
+      }
+      return PlanVersion.fromJson(previous.plan);
+    }
     hasPlan = true;
+    plansGenerated++;
+    if (idempotencyKey != null) {
+      _generatedByKey[idempotencyKey] = (profile: profile, plan: planJson);
+    }
+    if (loseNextGenerateResponse) {
+      loseNextGenerateResponse = false;
+      throw const ApiFailure(
+        type: ApiFailureType.timeout,
+        message: 'response lost (fake)',
+      );
+    }
     return PlanVersion.fromJson(planJson);
   }
+
+  /// La próxima clave usada se da por gastada con otro perfil (422).
+  void reserveKeyWithOtherProfile(String key) =>
+      _generatedByKey[key] = (profile: 'otro perfil', plan: planJson);
 
   @override
   Future<PlanVersion?> getCurrentPlan() async {
@@ -377,6 +433,23 @@ class FakeBackend
     startRequests.add(request);
     final existing = workouts[request.clientId];
     if (existing != null) return Upserted(existing, created: false);
+    // Como la API (issue #10): sesión de una versión del plan no vigente.
+    if (outdatedPlanSessions.contains(request.planSessionId)) {
+      throw _error(409, ApiErrorCode.planSessionOutdated);
+    }
+    // Como la API: uno en curso sin actividad desde hace más de 12 h se
+    // abandona solo; si no, 409 WORKOUT_IN_PROGRESS.
+    final cutoff = request.startedAt.subtract(const Duration(hours: 12));
+    for (final w in workouts.values.toList()) {
+      if (w.status != WorkoutStatus.inProgress) continue;
+      var last = w.startedAt;
+      for (final set in sets.values) {
+        if (set.workoutId == w.id && set.completedAt.isAfter(last)) {
+          last = set.completedAt;
+        }
+      }
+      if (last.isBefore(cutoff)) autoAbandon(w.id);
+    }
     if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
       throw _error(409, ApiErrorCode.workoutInProgress);
     }
@@ -418,6 +491,23 @@ class FakeBackend
     if (existing != null) {
       setsReplayed++;
       return Upserted(existing, created: false);
+    }
+    if (enforceSlotExercise && request.planExerciseId != null) {
+      final slot = (todayJson['exercises'] as List).cast<Json>().firstWhere(
+        (e) => e['planExerciseId'] == request.planExerciseId,
+      );
+      final original =
+          ((slot['substitutedFrom'] ?? slot['exercise']) as Json)['id'];
+      String? substituted;
+      for (final sub in substitutions) {
+        if (sub.workoutId == workoutId &&
+            sub.planExerciseId == request.planExerciseId) {
+          substituted = sub.exerciseId;
+        }
+      }
+      if (request.exerciseId != original && request.exerciseId != substituted) {
+        throw _error(400, ApiErrorCode.validationFailed);
+      }
     }
     final s = SetLog(
       id: 'set-${request.clientId}',
@@ -474,6 +564,91 @@ class FakeBackend
     return done;
   }
 
+  int abandons = 0;
+
+  Workout _withStatus(Workout w, WorkoutStatus status) => Workout(
+    id: w.id,
+    clientId: w.clientId,
+    planSessionId: w.planSessionId,
+    status: status,
+    startedAt: w.startedAt,
+    completedAt: w.completedAt,
+    sets: w.sets,
+    substitutions: w.substitutions,
+  );
+
+  @override
+  Future<Workout> abandonWorkout(String workoutId) async {
+    _guard('POST /workouts/$workoutId/abandon');
+    final w = _byServerId(workoutId);
+    if (w == null) throw _error(404, ApiErrorCode.notFound);
+    if (w.status == WorkoutStatus.abandoned) return w;
+    if (w.status != WorkoutStatus.inProgress) {
+      throw _error(409, ApiErrorCode.workoutFinished);
+    }
+    abandons++;
+    return workouts[w.clientId] = _withStatus(w, WorkoutStatus.abandoned);
+  }
+
+  /// Simula el abandono automático del servidor (> 12 h sin actividad al
+  /// empezar otro entrenamiento).
+  void autoAbandon(String workoutId) {
+    final w = _byServerId(workoutId)!;
+    workouts[w.clientId] = _withStatus(w, WorkoutStatus.abandoned);
+  }
+
+  /// Series borradas con `DELETE` (clientId).
+  final List<String> deletedSets = [];
+
+  @override
+  Future<SetLog> deleteSet(String workoutId, String clientId) async {
+    _guard('DELETE /workouts/$workoutId/sets/$clientId');
+    final existing = sets[clientId];
+    if (_byServerId(workoutId) == null ||
+        existing == null ||
+        existing.workoutId != workoutId) {
+      throw _error(404, ApiErrorCode.notFound);
+    }
+    if (existing.deletedAt != null) return existing;
+    deletedSets.add(clientId);
+    final deleted = SetLog.fromJson({
+      ...existing.toJson(),
+      'deletedAt': '2026-11-09T09:00:00.000Z',
+    });
+    sets[clientId] = deleted;
+    return deleted;
+  }
+
+  /// `PATCH` recibidos (clientId, cuerpo).
+  final List<({String clientId, PatchSetRequest request})> patches = [];
+
+  @override
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  ) async {
+    _guard('PATCH /workouts/$workoutId/sets/$clientId');
+    final existing = sets[clientId];
+    if (_byServerId(workoutId) == null ||
+        existing == null ||
+        existing.workoutId != workoutId) {
+      throw _error(404, ApiErrorCode.notFound);
+    }
+    patches.add((clientId: clientId, request: request));
+    // Gana la última escritura por clientUpdatedAt (como la API).
+    if (existing.deletedAt != null ||
+        !request.clientUpdatedAt.isAfter(existing.clientUpdatedAt)) {
+      return existing;
+    }
+    final updated = SetLog.fromJson({
+      ...existing.toJson(),
+      ...request.toJson(),
+    });
+    sets[clientId] = updated;
+    return updated;
+  }
+
   @override
   Future<SubstitutesResponse> getSubstitutes(String exerciseId) async {
     _guard('GET /exercises/$exerciseId/substitutes');
@@ -490,8 +665,13 @@ class FakeBackend
     required String exerciseId,
   }) async {
     _guard('POST /workouts/$workoutId/exercises/$planExerciseId/substitute');
-    if (_byServerId(workoutId) == null) {
+    if (substituteFailures.isNotEmpty) throw substituteFailures.removeAt(0);
+    final w = _byServerId(workoutId);
+    if (w == null) {
       throw _error(404, ApiErrorCode.notFound);
+    }
+    if (w.status != WorkoutStatus.inProgress) {
+      throw _error(409, ApiErrorCode.workoutFinished);
     }
     final options = SubstitutesResponse.fromJson(fixture('substitutes'));
     final chosen = options.substitutes.firstWhere(
@@ -506,7 +686,7 @@ class FakeBackend
     final slot = exercises.firstWhere(
       (e) => e['planExerciseId'] == planExerciseId,
     );
-    final original = slot['exercise'] as Json;
+    final original = (slot['substitutedFrom'] ?? slot['exercise']) as Json;
     slot['substitutedFrom'] = original;
     slot['exercise'] = {
       'id': chosen.exerciseId,

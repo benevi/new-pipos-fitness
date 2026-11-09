@@ -64,6 +64,72 @@ class AppLocalizationsEs extends AppLocalizations {
   String get syncStatusFailed => 'No se pudo enviar';
 
   @override
+  String get setRejectedInvalid =>
+      'La API no la acepta: el ejercicio o los datos no valen para este hueco.';
+
+  @override
+  String get setRejectedFinished =>
+      'La API no la acepta: el entrenamiento ya estaba terminado.';
+
+  @override
+  String get setRejectedNotStarted =>
+      'No se pudo enviar: el entrenamiento no llegó a empezar en el servidor.';
+
+  @override
+  String setRejectedOther(String code) {
+    return 'No se pudo enviar ($code).';
+  }
+
+  @override
+  String get setDiscard => 'Descartar';
+
+  @override
+  String setDiscardFor(int number) {
+    return 'Descartar la serie $number';
+  }
+
+  @override
+  String setDiscardTitle(int number) {
+    return '¿Descartar la serie $number?';
+  }
+
+  @override
+  String get setDiscardBody =>
+      'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.';
+
+  @override
+  String setActionsFor(int number) {
+    return 'Opciones de la serie $number';
+  }
+
+  @override
+  String get setEdit => 'Editar';
+
+  @override
+  String setEditTitle(int number) {
+    return 'Corregir la serie $number';
+  }
+
+  @override
+  String get setEditHint =>
+      'Se guarda en este móvil y se envía cuando haya conexión.';
+
+  @override
+  String get setEditSave => 'Guardar cambios';
+
+  @override
+  String get setDelete => 'Borrar';
+
+  @override
+  String setDeleteTitle(int number) {
+    return '¿Borrar la serie $number?';
+  }
+
+  @override
+  String get setDeleteBody =>
+      'Dejará de contar en el entrenamiento y en tu progreso. No se puede deshacer.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Sin conexión. Datos guardados el $date.';
   }
@@ -533,6 +599,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinish => 'Terminar entrenamiento';
 
   @override
+  String get todayAbandon => 'Abandonar entrenamiento';
+
+  @override
+  String get todayAbandonTitle => '¿Abandonar el entrenamiento?';
+
+  @override
+  String get todayAbandonBody =>
+      'Lo registrado se conserva pero no contará en tu progreso ni en la adherencia, y no podrás añadir más series. Se enviará aunque ahora no tengas conexión.';
+
+  @override
+  String get todayAbandoned => 'Entrenamiento abandonado.';
+
+  @override
+  String todayClosedRemotely(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series no llegaron a subirse.',
+      one: '1 serie no llegó a subirse.',
+      zero: 'No quedó nada sin subir.',
+    );
+    return 'Tu entrenamiento anterior se cerró en el servidor (p. ej., se abandonó solo tras 12 h sin actividad). $_temp0';
+  }
+
+  @override
+  String get actionUnderstood => 'Entendido';
+
+  @override
   String get todayFinishConfirmTitle => '¿Terminar el entrenamiento?';
 
   @override
@@ -585,6 +679,21 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String todayPlanOutdatedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series',
+      one: '1 serie',
+    );
+    return 'Tu plan cambió mientras entrenabas sin conexión: este entrenamiento guardado en el móvil ($_temp0) es de la sesión anterior y no se puede subir. Se conserva aquí hasta que lo descartes.';
+  }
+
+  @override
+  String get setRejectedPlanOutdated =>
+      'Tu plan cambió: esta serie es de la sesión anterior y no se puede subir.';
+
+  @override
   String get todayConflictDiscard => 'Descartar';
 
   @override
@@ -624,6 +733,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get restTimerDone => 'Descanso terminado';
 
   @override
+  String get restNotificationTitle => 'Descanso terminado';
+
+  @override
+  String get restNotificationBody => 'Toca para seguir con la siguiente serie.';
+
+  @override
   String swapTitle(String name) {
     return 'Alternativas a $name';
   }
@@ -645,6 +760,22 @@ class AppLocalizationsEs extends AppLocalizations {
   String swapDone(String name) {
     return 'Ejercicio cambiado por $name';
   }
+
+  @override
+  String swapQueued(String name) {
+    return 'Cambio a $name guardado. Se enviará al recuperar la conexión.';
+  }
+
+  @override
+  String get swapOfflineNotice =>
+      'Sin conexión: alternativas guardadas hoy. El cambio de hoy se enviará al volver la red; fijarlo en el plan necesita conexión.';
+
+  @override
+  String get swapPinNeedsNetwork =>
+      'Fijar el cambio en el plan necesita conexión. Sin red puedes cambiarlo solo para hoy.';
+
+  @override
+  String get swapPendingBadge => 'Cambio pendiente de enviar';
 
   @override
   String get completeTitle => '¡Entrenamiento completado!';
@@ -784,6 +915,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsTitle => 'Ajustes';
+
+  @override
+  String get settingsEmailOffline =>
+      'Sin conexión: tu correo aparecerá al recuperar la red.';
 
   @override
   String get settingsProfile => 'Perfil de entrenamiento';

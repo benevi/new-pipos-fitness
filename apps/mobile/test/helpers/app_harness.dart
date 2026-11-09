@@ -43,7 +43,19 @@ class FakeNotificationScheduler implements NotificationScheduler {
   }
 
   @override
+  Future<bool> hasPermission() async => grant;
+
+  @override
   Future<void> cancelAll() async => scheduled.clear();
+
+  @override
+  Future<void> cancel(int id) async {
+    scheduled.remove(id);
+    cancelled.add(id);
+  }
+
+  final List<int> cancelled = [];
+  final Map<int, String> titles = {};
 
   @override
   Future<void> schedule({
@@ -51,8 +63,10 @@ class FakeNotificationScheduler implements NotificationScheduler {
     required DateTime when,
     required String title,
     required String body,
+    NotificationChannel channel = NotificationChannel.reminders,
   }) async {
     scheduled[id] = when;
+    titles[id] = title;
   }
 }
 

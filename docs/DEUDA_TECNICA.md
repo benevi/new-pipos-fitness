@@ -175,74 +175,86 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
 
-### [Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento
-- **Severidad:** Media (sin esto, un inicio encolado offline justo antes de un cambio de plan
-  hecho en otro dispositivo queda en `failed` con sus series)
-- **Contexto:** desde el issue #10 la API rechaza `POST /workouts` con una sesión de una versión
-  del plan que ya no es la vigente. Solo afecta a entrenamientos **nuevos**: si el `clientId` ya
-  existe en el servidor, el reenvío devuelve 200 y las series se siguen aceptando.
-- **Comportamiento esperado del cliente:**
-  1. Tratar `PLAN_SESSION_OUTDATED` como recuperable, **no** como fallo permanente de la cola.
-  2. Refrescar `GET /sessions/today` (y la caché del plan, `GET /plans/current`).
-  3. Si el entrenamiento local **no tiene series**: reapuntarlo a la `planSessionId` vigente que
-     devuelve `/sessions/today` y reintentar el `POST /workouts` con el **mismo `clientId`**.
-  4. Si **ya tiene series** locales (hechas offline con la sesión antigua): no se pueden subir a
-     la sesión nueva (sus `planExerciseId` son de la versión antigua → 400). Avisar al usuario
-     («tu plan cambió mientras entrenabas sin conexión») y ofrecer descartar el entrenamiento
-     local o rehacerlo con la sesión vigente; nunca dejarlo bloqueando la cola.
-  5. Test de sincronización: inicio encolado + regeneración del plan → reintento con la sesión
-     vigente y el mismo `clientId`.
+### ~~[Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`.
+- **Qué se hizo:** `SyncService._startOnServer` trata `PLAN_SESSION_OUTDATED` como recuperable:
+  relee `GET /sessions/today` y, si el entrenamiento local no tiene series ni cambios de ejercicio,
+  lo reapunta a la sesión vigente y reintenta `POST /workouts` con el mismo `clientId`. Si ya tiene
+  series, queda en conflicto con su motivo (sin bloquear la cola): Hoy avisa de que el plan cambió
+  y ofrece descartarlo (se conserva en el móvil hasta entonces); la sesión y el plan se releen.
+  Tests en `test/core/offline/sync_service_test.dart`.
 
-### [Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos
-- **Severidad:** Baja
-- **Contexto:** la API ya admite `Idempotency-Key` en `POST /plans/generate` (issue #11) y
-  `POST /workouts/:id/abandon` (issue #13); la app todavía no los usa.
-- **Comportamiento esperado del cliente:** un UUID v4 por pulsación de «Generar plan», reenviado
-  igual en cada reintento (200 y 201 son éxito; ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un
-  reintento). Acción «Descartar entrenamiento» que encole `abandon` (idempotente). Si una serie
-  encolada recibe `409 WORKOUT_FINISHED` y el entrenamiento está `abandoned` (abandono automático
-  tras 12 h sin actividad al empezar otro), mostrarlo y no reintentar.
+### ~~[Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`.
+- **Qué se hizo:**
+  - «Generar mi plan» envía `Idempotency-Key` (UUID v4 por pulsación, reutilizado en cada
+    reintento hasta que sale bien); ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un reintento.
+    La edición del perfil no llama a `/plans/generate` (la versión la crea `PUT /me/profile`).
+    Tests en `test/features/onboarding/onboarding_test.dart`.
+  - «Abandonar entrenamiento» en Hoy (con confirmación), también sin red: cierra el entrenamiento en
+    local (columna `abandoned`, drift v5), descarta las series no confirmadas y la cola envía
+    `POST /workouts/:id/abandon` (idempotente; `409 WORKOUT_FINISHED` se da por cerrado).
+  - Una serie o un cambio de ejercicio que recibe `409 WORKOUT_FINISHED` (entrenamiento cerrado en
+    el servidor, p. ej. abandonado solo tras 12 h) cierra el entrenamiento en local sin reintentar
+    ni bloquear la cola, y Hoy avisa de cuántas series no se subieron. Un entrenamiento abierto, sin
+    nada pendiente y sin actividad desde hace más de 12 h se cierra como abandonado al empezar otro.
+    Tests: `test/core/offline/abandon_queue_test.dart`, `test/features/today/abandon_workout_test.dart`.
 
-### [Móvil] Poder descartar una serie rechazada de forma permanente por la API
-- **Severidad:** Media
-- **Impacto:** una serie que la API rechaza con 400/422 (p. ej. desde la Fase 5, un ejercicio que no
-  es el del hueco ni su sustitución registrada) queda en `failed` y bloquea el cierre del
-  entrenamiento; el usuario no tiene forma de quitarla.
-- **Propuesta:** en la fila de la serie fallida, acción «descartar» que la borre de la cola local
-  (y, si llegó a existir en el servidor, `DELETE`), con el motivo del rechazo visible.
+### ~~[Móvil] Poder descartar una serie rechazada de forma permanente por la API~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #21.
+- **Qué se hizo:** la fila de la serie fallida muestra el motivo del rechazo y «Descartar» (con
+  confirmación). `SyncService.deleteSet` la quita de la cola; si pudo existir en el servidor
+  (confirmada o con un intento de resultado desconocido) queda como lápida hasta que la API
+  confirme `DELETE /workouts/:id/sets/:clientId` (404 también vale). Un rechazo de validación al
+  crearla garantiza que la API no la guardó, así que se borra sin petición. Después el finish sale.
+  Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/discard_set_test.dart`.
 
-### [Móvil] Editar o borrar una serie ya registrada desde la interfaz
-- **Severidad:** Media
-- **Impacto:** la API admite `PATCH`/`DELETE /workouts/:id/sets/:clientId` (última escritura gana),
-  pero la app no permite corregir un error de tecleo; el dato malo contamina e1RM y volumen.
-- **Propuesta:** acción en la fila de la serie (editar reps/kg/RIR, borrar) que pase por la cola
-  offline con `clientUpdatedAt`.
+### ~~[Móvil] Editar o borrar una serie ya registrada desde la interfaz~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #22.
+- **Qué se hizo:** menú por serie con «Editar» (reps, kg con `decimal_input`, RIR) y «Borrar»
+  (con confirmación), optimista desde drift. `SyncService.updateSet` funde la edición con la
+  creación pendiente si aún no se envió (un solo `POST`); si ya existía, envía
+  `PATCH /workouts/:id/sets/:clientId` con `clientUpdatedAt` (también tras un reenvío que responde
+  200 con valores viejos). La fila adopta la versión del servidor si otra edición gana. Las series
+  que solo están en la API se adoptan en drift antes de editarlas. Borrar deja una lápida hasta el
+  `DELETE`. Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/edit_set_test.dart`.
 
-### [Móvil] Cambiar de ejercicio sin conexión
-- **Severidad:** Baja
-- **Impacto:** la sustitución exige red. Desde la Fase 5 la API rechaza (400) series de un
-  ejercicio que no sea el del hueco ni su sustitución registrada, así que una sustitución offline
-  tendría que sincronizarse **antes** que esas series.
-- **Propuesta:** encolar la sustitución en drift (alternativas cacheadas con el plan) y enviarla en
-  orden antes de las series del hueco.
+### ~~[Móvil] Cambiar de ejercicio sin conexión~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #23.
+- **Qué se hizo:** las alternativas de cada ejercicio se guardan en caché con la sesión de hoy
+  (`CacheKeys.substitutes`). El cambio de hoy se encola en drift (`PendingMutations`, tipo
+  `substitute`, una fila por cambio) y Hoy lo muestra al momento («Cambio pendiente de enviar», sin
+  la carga del original). `SyncService` lo envía intercalado por orden de registro con las series:
+  antes que las registradas después (a igual segundo, primero el cambio) y, si se aplaza, la pasada
+  se detiene para no desordenar. Fijar el cambio en el plan sigue necesitando red (mensaje propio).
+  Tests de orden: `test/core/offline/swap_queue_test.dart` (el fake de la API rechaza, como la
+  real, series de un ejercicio que no sea el del hueco ni su sustitución) y
+  `test/features/today/swap_exercise_test.dart`.
 
-### [Móvil] Notificación del temporizador de descanso en segundo plano
-- **Severidad:** Baja
-- **Impacto:** si la app pasa a segundo plano, el fin del descanso no avisa.
-- **Propuesta:** notificación local programada al iniciar el descanso.
+### ~~[Móvil] Notificación del temporizador de descanso en segundo plano~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #24.
+- **Qué se hizo:** al pasar la app a segundo plano con un descanso en marcha, `RestTimerController`
+  programa una notificación local (`flutter_local_notifications`, canal propio `rest_timer`) para
+  `endsAt`, solo si ya hay permiso (no lo pide); se cancela al volver, al saltar el descanso o al
+  empezar otro. Tests con planificador inyectado: `test/features/today/rest_notification_test.dart`.
+- **Pendiente:** el aviso es inexacto (`inexactAllowWhileIdle`, sin el permiso de alarmas exactas):
+  Android puede retrasarlo algunos minutos en reposo. Probarlo en un dispositivo real.
 
-### [Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409
-- **Severidad:** Baja
-- **Impacto:** cuando `POST /workouts` responde `409 WORKOUT_IN_PROGRESS` y la app adopta el
-  entrenamiento remoto, en casos límite dos entrenamientos locales quedan con el mismo `serverId`.
-- **Propuesta:** al adoptar, fusionar las series del duplicado en el entrenamiento ya enlazado y
-  borrar el duplicado; test de sincronización con dos inicios encolados.
+### ~~[Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #25.
+- **Qué se hizo:** todo enlace con un id de la API pasa por `SyncService._linkToServer`: si otro
+  entrenamiento local ya apunta a ese id, las series del duplicado pasan al ya enlazado y el
+  duplicado se borra; queda terminado solo si los dos lo estaban. Tests en
+  `test/core/offline/sync_service_test.dart` (dos inicios encolados; adopción desde Hoy).
 
-### [Móvil] Login offline con solo el userId en caché muestra el email vacío
-- **Severidad:** Baja
-- **Impacto:** si solo hay `userId` cacheado, Ajustes muestra el email vacío hasta tener red.
-- **Propuesta:** cachear el usuario completo (`id`, `email`) al validar la sesión y mostrar un
-  marcador «sin conexión» mientras falte.
+### ~~[Móvil] Login offline con solo el userId en caché muestra el email vacío~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #26.
+- **Qué se hizo:** al validar la sesión (login, registro o `GET /me`) el usuario completo (`id`,
+  `email`) se guarda también en el mismo valor que los tokens; `readCachedUser` lo usa si falta su
+  clave propia (un refresh lo conserva; otro dueño no lo hereda). Si aun así solo hay `userId`
+  (sesiones antiguas), Ajustes muestra «Sin conexión: tu correo aparecerá al recuperar la red» en
+  vez de un correo vacío. Tests: `test/core/auth/token_storage_test.dart`,
+  `test/features/settings/offline_email_test.dart`.
 
 ### [Móvil] Validar las reglas de exclusión de backup en un build Android real
 - **Severidad:** Baja
