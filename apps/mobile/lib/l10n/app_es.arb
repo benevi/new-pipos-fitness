@@ -270,8 +270,8 @@
   "settingsProfile": "Perfil de entrenamiento",
   "settingsProfileSubtitle": "Objetivo, días, minutos, material y preferencias",
   "settingsHealth": "Datos de salud y limitaciones",
-  "settingsHealthGranted": "Consentimiento dado ({version})",
-  "@settingsHealthGranted": { "placeholders": { "version": { "type": "String" } } },
+  "settingsHealthGranted": "Consentimiento de salud dado el {date}",
+  "@settingsHealthGranted": {"placeholders": {"date": {"type": "String"}}},
   "settingsHealthNotGranted": "Sin consentimiento: el plan no usa limitaciones ni datos corporales",
   "settingsHealthGrant": "Dar consentimiento",
   "settingsHealthWithdraw": "Retirar consentimiento",
@@ -280,9 +280,9 @@
   "settingsHealthWithdrawn": "Consentimiento retirado. Tus datos de salud se han borrado.",
   "settingsNutrition": "Objetivos de nutrición",
   "settingsNutritionKcal": "{kcal} kcal al día",
-  "@settingsNutritionKcal": { "placeholders": { "kcal": { "type": "int" } } },
+  "@settingsNutritionKcal": {"placeholders": {"kcal": {"type": "String"}}},
   "settingsNutritionMacros": "Proteína {protein} g · Grasa {fat} g · Hidratos {carbs} g",
-  "@settingsNutritionMacros": { "placeholders": { "protein": { "type": "int" }, "fat": { "type": "int" }, "carbs": { "type": "int" } } },
+  "@settingsNutritionMacros": {"placeholders": {"protein": {"type": "String"}, "fat": {"type": "String"}, "carbs": {"type": "String"}}},
   "settingsNutritionIncomplete": "Completa estos datos para calcularlos:",
   "settingsNutritionComplete": "Completar mis datos",
   "settingsExport": "Exportar mis datos",
@@ -547,5 +547,8 @@
   "progressVolumeLegendBelow": "Por debajo del rango",
   "progressVolumeLegendWithin": "Dentro del rango",
   "progressVolumeLegendAbove": "Por encima del rango",
-  "progressVolumeLegendBand": "La franja marca el rango objetivo de series efectivas."
+  "progressVolumeLegendBand": "La franja marca el rango objetivo de series efectivas.",
+  "settingsHealthGrantedNoDate": "Consentimiento de salud dado",
+  "settingsLegalConsentVersion": "Tu consentimiento de salud: versión {version} del texto, aceptada el {date}.",
+  "@settingsLegalConsentVersion": {"placeholders": {"version": {"type": "String"}, "date": {"type": "String"}}}
 }

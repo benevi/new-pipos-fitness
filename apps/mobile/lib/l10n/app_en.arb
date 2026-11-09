@@ -217,7 +217,7 @@
   "settingsProfile": "Training profile",
   "settingsProfileSubtitle": "Goal, days, minutes, equipment and preferences",
   "settingsHealth": "Health data and limitations",
-  "settingsHealthGranted": "Consent given ({version})",
+  "settingsHealthGranted": "Health consent given on {date}",
   "settingsHealthNotGranted": "No consent: the plan doesn't use limitations or body data",
   "settingsHealthGrant": "Give consent",
   "settingsHealthWithdraw": "Withdraw consent",
@@ -423,5 +423,7 @@
   "progressVolumeLegendBelow": "Below range",
   "progressVolumeLegendWithin": "Within range",
   "progressVolumeLegendAbove": "Above range",
-  "progressVolumeLegendBand": "The band marks the target range of effective sets."
+  "progressVolumeLegendBand": "The band marks the target range of effective sets.",
+  "settingsHealthGrantedNoDate": "Health consent given",
+  "settingsLegalConsentVersion": "Your health consent: text version {version}, accepted on {date}."
 }

@@ -38,7 +38,7 @@ class SettingsScreen extends ConsumerWidget {
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Text(email, style: Theme.of(context).textTheme.bodyMedium),
             ),
-          Card(
+          _TileCard(
             child: ListTile(
               key: const Key('settings-profile'),
               minTileHeight: AppSpacing.xxl + AppSpacing.md,
@@ -49,11 +49,10 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.go('/settings/profile'),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
           const _HealthCard(),
 
           const _NutritionCard(),
-          Card(
+          _TileCard(
             child: ListTile(
               key: const Key('settings-schedule'),
               minTileHeight: AppSpacing.xxl + AppSpacing.md,
@@ -64,8 +63,7 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => context.go('/settings/schedule'),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          Card(
+          _TileCard(
             child: Column(
               children: [
                 ListTile(
@@ -82,7 +80,7 @@ class SettingsScreen extends ConsumerWidget {
                   minTileHeight: AppSpacing.xxl + AppSpacing.md,
                   leading: const Icon(Icons.gavel_outlined),
                   title: Text(l10n.settingsLegal),
-                  onTap: () => _showLegal(context),
+                  onTap: () => _showLegal(context, ref),
                 ),
                 const Divider(height: 1),
                 ListTile(
@@ -95,8 +93,7 @@ class SettingsScreen extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
-          Card(
+          _TileCard(
             child: ListTile(
               key: const Key('settings-delete'),
               minTileHeight: AppSpacing.xxl + AppSpacing.md,
@@ -112,7 +109,6 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => showDeleteAccountDialog(context),
             ),
           ),
-          const SizedBox(height: AppSpacing.md),
           NoticeBanner(
             text: l10n.medicalNotice,
             icon: Icons.health_and_safety_outlined,
@@ -187,8 +183,9 @@ class SettingsScreen extends ConsumerWidget {
     await ref.read(authProvider.notifier).logout();
   }
 
-  void _showLegal(BuildContext context) {
+  void _showLegal(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final consent = ref.read(healthConsentProvider).valueOrNull;
     showDialog<void>(
       context: context,
       builder: (ctx) => AlertDialog(
@@ -206,6 +203,23 @@ class SettingsScreen extends ConsumerWidget {
                 l10n.onboardingConsentVersion(healthConsentPolicyVersion),
                 style: Theme.of(ctx).textTheme.bodySmall,
               ),
+              // La versión aceptada solo se muestra aquí (detalle legal), no
+              // en la tarjeta de Ajustes.
+              if (consent != null &&
+                  consent.granted &&
+                  consent.version != null) ...[
+                const SizedBox(height: AppSpacing.sm),
+                Text(
+                  l10n.settingsLegalConsentVersion(
+                    consent.version!,
+                    consent.grantedAt == null
+                        ? '–'
+                        : l10n.shortDate(consent.grantedAt!),
+                  ),
+                  key: const Key('legal-consent-version'),
+                  style: Theme.of(ctx).textTheme.bodySmall,
+                ),
+              ],
             ],
           ),
         ),
@@ -338,9 +352,11 @@ class _HealthCardState extends ConsumerState<_HealthCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              c.granted
-                  ? l10n.settingsHealthGranted(c.version ?? '')
-                  : l10n.settingsHealthNotGranted,
+              !c.granted
+                  ? l10n.settingsHealthNotGranted
+                  : c.grantedAt == null
+                  ? l10n.settingsHealthGrantedNoDate
+                  : l10n.settingsHealthGranted(l10n.shortDate(c.grantedAt!)),
               key: const Key('health-status'),
             ),
             const SizedBox(height: AppSpacing.sm),
@@ -441,10 +457,17 @@ class _NutritionCard extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              l10n.settingsNutritionKcal(t.kcal),
+              // Separador de miles del idioma: «2.350 kcal».
+              l10n.settingsNutritionKcal(l10n.number(t.kcal)),
               style: theme.textTheme.headlineSmall,
             ),
-            Text(l10n.settingsNutritionMacros(t.proteinG, t.fatG, t.carbsG)),
+            Text(
+              l10n.settingsNutritionMacros(
+                l10n.number(t.proteinG),
+                l10n.number(t.fatG),
+                l10n.number(t.carbsG),
+              ),
+            ),
             Text(
               l10n.nutritionGoalLabel(t.nutritionGoal.wire),
               style: theme.textTheme.bodySmall,
@@ -457,6 +480,25 @@ class _NutritionCard extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Tarjeta de una o varias filas de lista con el mismo inset horizontal y
+/// la misma separación que [SectionCard] (Card trae un margen de 4 dp por
+/// defecto que la desalineaba).
+class _TileCard extends StatelessWidget {
+  const _TileCard({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.only(bottom: AppSpacing.md),
+    clipBehavior: Clip.antiAlias,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.circular(AppRadius.lg),
+    ),
+    child: child,
+  );
 }
 
 /// Diálogo de borrado de cuenta: explica las consecuencias y pide la

@@ -793,8 +793,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsHealth => 'Health data and limitations';
 
   @override
-  String settingsHealthGranted(String version) {
-    return 'Consent given ($version)';
+  String settingsHealthGranted(String date) {
+    return 'Health consent given on $date';
   }
 
   @override
@@ -822,12 +822,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsNutrition => 'Nutrition targets';
 
   @override
-  String settingsNutritionKcal(int kcal) {
+  String settingsNutritionKcal(String kcal) {
     return '$kcal kcal a day';
   }
 
   @override
-  String settingsNutritionMacros(int protein, int fat, int carbs) {
+  String settingsNutritionMacros(String protein, String fat, String carbs) {
     return 'Protein $protein g · Fat $fat g · Carbs $carbs g';
   }
 
@@ -1834,4 +1834,12 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get progressVolumeLegendBand =>
       'The band marks the target range of effective sets.';
+
+  @override
+  String get settingsHealthGrantedNoDate => 'Health consent given';
+
+  @override
+  String settingsLegalConsentVersion(String version, String date) {
+    return 'Your health consent: text version $version, accepted on $date.';
+  }
 }

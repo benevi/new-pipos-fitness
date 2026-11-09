@@ -796,8 +796,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsHealth => 'Datos de salud y limitaciones';
 
   @override
-  String settingsHealthGranted(String version) {
-    return 'Consentimiento dado ($version)';
+  String settingsHealthGranted(String date) {
+    return 'Consentimiento de salud dado el $date';
   }
 
   @override
@@ -825,12 +825,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsNutrition => 'Objetivos de nutrición';
 
   @override
-  String settingsNutritionKcal(int kcal) {
+  String settingsNutritionKcal(String kcal) {
     return '$kcal kcal al día';
   }
 
   @override
-  String settingsNutritionMacros(int protein, int fat, int carbs) {
+  String settingsNutritionMacros(String protein, String fat, String carbs) {
     return 'Proteína $protein g · Grasa $fat g · Hidratos $carbs g';
   }
 
@@ -1839,4 +1839,12 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get progressVolumeLegendBand =>
       'La franja marca el rango objetivo de series efectivas.';
+
+  @override
+  String get settingsHealthGrantedNoDate => 'Consentimiento de salud dado';
+
+  @override
+  String settingsLegalConsentVersion(String version, String date) {
+    return 'Tu consentimiento de salud: versión $version del texto, aceptada el $date.';
+  }
 }

@@ -1308,8 +1308,8 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHealthGranted.
   ///
   /// In es, this message translates to:
-  /// **'Consentimiento dado ({version})'**
-  String settingsHealthGranted(String version);
+  /// **'Consentimiento de salud dado el {date}'**
+  String settingsHealthGranted(String date);
 
   /// No description provided for @settingsHealthNotGranted.
   ///
@@ -1357,13 +1357,13 @@ abstract class AppLocalizations {
   ///
   /// In es, this message translates to:
   /// **'{kcal} kcal al día'**
-  String settingsNutritionKcal(int kcal);
+  String settingsNutritionKcal(String kcal);
 
   /// No description provided for @settingsNutritionMacros.
   ///
   /// In es, this message translates to:
   /// **'Proteína {protein} g · Grasa {fat} g · Hidratos {carbs} g'**
-  String settingsNutritionMacros(int protein, int fat, int carbs);
+  String settingsNutritionMacros(String protein, String fat, String carbs);
 
   /// No description provided for @settingsNutritionIncomplete.
   ///
@@ -2486,6 +2486,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'La franja marca el rango objetivo de series efectivas.'**
   String get progressVolumeLegendBand;
+
+  /// No description provided for @settingsHealthGrantedNoDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Consentimiento de salud dado'**
+  String get settingsHealthGrantedNoDate;
+
+  /// No description provided for @settingsLegalConsentVersion.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu consentimiento de salud: versión {version} del texto, aceptada el {date}.'**
+  String settingsLegalConsentVersion(String version, String date);
 }
 
 class _AppLocalizationsDelegate
