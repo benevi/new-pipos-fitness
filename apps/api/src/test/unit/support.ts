@@ -1,7 +1,7 @@
 import { vi, type Mock } from 'vitest';
 import { loadCatalog } from '@pipos/catalog';
 import { loadImplement } from '@pipos/engine-rules';
-import { HEALTH_CONSENT_POLICY } from '@pipos/contracts';
+import { HEALTH_CONSENT_POLICY, sortExerciseMuscles } from '@pipos/contracts';
 import type { TrainingProfile } from '@prisma/client';
 import { Clock } from '../../common/clock';
 import type { CatalogEntry, EngineCatalog } from '../../modules/catalog/catalog.service';
@@ -80,6 +80,7 @@ export function fakeEngineCatalog(): EngineCatalog {
     isUnilateral: e.isUnilateral,
     cuesEs: e.cuesEs,
     muscles: e.muscles.map((m) => ({ muscle: m.muscle, fraction: m.fraction })),
+    muscleRefs: sortExerciseMuscles(e.muscles),
     loadImplement: loadImplement(e),
   }));
   return { exercises, bySlug: new Map(entries.map((e) => [e.slug, e])), byId: new Map(entries.map((e) => [e.id, e])) };

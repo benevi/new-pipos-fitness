@@ -212,7 +212,7 @@ export class PlansService {
         [{ path: 'headers.idempotency-key', message: 'Already used with a different input' }],
       );
     }
-    return { value: toVersionResponse(existing), created: false };
+    return { value: toVersionResponse(existing, (await this.catalog.engineCatalog()).byId), created: false };
   }
 
   async hasActivePlan(userId: string, db: Db = this.prisma): Promise<boolean> {
@@ -252,8 +252,11 @@ export class PlansService {
 
   /** Propiedad: solo versiones del propio usuario (otra → 404, no se revela su existencia). */
   async version(userId: string, id: string): Promise<PlanVersionResponse> {
-    const row = await this.prisma.planVersion.findFirst({ where: { id, userId }, include: planVersionInclude });
+    const [row, catalog] = await Promise.all([
+      this.prisma.planVersion.findFirst({ where: { id, userId }, include: planVersionInclude }),
+      this.catalog.engineCatalog(),
+    ]);
     if (!row) throw ApiError.notFound('Plan version not found');
-    return toVersionResponse(row);
+    return toVersionResponse(row, catalog.byId);
   }
 }

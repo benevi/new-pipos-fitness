@@ -26,6 +26,9 @@ carga sesión a sesión.
   idempotente (nunca duplica), las ediciones aplican «última escritura gana» y el borrado es lógico
   ([ADR-0007](docs/adr/0007-offline-first-idempotencia.md)).
 - **Cambiar un ejercicio** — 3 alternativas que respetan patrón, músculos, material y limitaciones.
+- **Qué trabaja cada ejercicio** — Hoy, Plan y el cambio de ejercicio muestran los músculos principales
+  («Trabaja: …») y, desplegados, los secundarios, del ejercicio que se hace de verdad (sustituto o fijado
+  incluidos), a partir del catálogo ([ADR-0014](docs/adr/0014-guia-de-ejercicios.md), Fase 1).
 - **Ficha del ejercicio** — qué es, qué músculos trabaja, claves técnicas, errores comunes, material y
   nivel de cada uno de los 144 ejercicios, también sin red para el plan vigente
   ([ADR-0014](docs/adr/0014-guia-de-ejercicios.md); contenido pendiente de revisión profesional).

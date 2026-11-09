@@ -15,6 +15,7 @@ import '../../data/pipos_api.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/workout.dart';
+import '../../shared/exercise_muscles.dart';
 import '../exercise/exercise_detail_screen.dart';
 import '../../shared/widgets.dart';
 import '../plan/plan_providers.dart';
@@ -167,51 +168,53 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
           constraints: BoxConstraints(
             maxHeight: MediaQuery.sizeOf(context).height * 0.8,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Semantics(
-                header: true,
-                child: Text(
-                  l10n.swapTitle(widget.exercise.exercise.nameEs),
-                  style: theme.textTheme.titleLarge,
-                ),
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(l10n.swapHint, style: theme.textTheme.bodyMedium),
-              SwitchListTile(
-                key: const Key('swap-pin'),
-                contentPadding: EdgeInsets.zero,
-                value: _pin,
-                onChanged: _busyId == null
-                    ? (v) => setState(() => _pin = v)
-                    : null,
-                title: Text(l10n.swapPinLabel),
-                subtitle: Text(l10n.swapPinHelp),
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              if (offline && failure == null)
-                NoticeBanner(
-                  key: const Key('swap-offline'),
-                  text: l10n.swapOfflineNotice,
-                  icon: Icons.cloud_off_outlined,
-                ),
-              if (failure != null)
+          // Toda la hoja se desplaza: con texto grande, la cabecera sola ya
+          // no cabe (sin desbordes al 200 %).
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
                 Semantics(
-                  liveRegion: true,
-                  child: NoticeBanner(
-                    key: const Key('swap-error'),
-                    text: failure.isConnectivity
-                        ? (_pin
-                              ? l10n.swapPinNeedsNetwork
-                              : l10n.errorOfflineAction)
-                        : failure.localized(l10n),
-                    icon: Icons.error_outline,
+                  header: true,
+                  child: Text(
+                    l10n.swapTitle(widget.exercise.exercise.nameEs),
+                    style: theme.textTheme.titleLarge,
                   ),
                 ),
-              Flexible(
-                child: subs.when(
+                const SizedBox(height: AppSpacing.xs),
+                Text(l10n.swapHint, style: theme.textTheme.bodyMedium),
+                SwitchListTile(
+                  key: const Key('swap-pin'),
+                  contentPadding: EdgeInsets.zero,
+                  value: _pin,
+                  onChanged: _busyId == null
+                      ? (v) => setState(() => _pin = v)
+                      : null,
+                  title: Text(l10n.swapPinLabel),
+                  subtitle: Text(l10n.swapPinHelp),
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                if (offline && failure == null)
+                  NoticeBanner(
+                    key: const Key('swap-offline'),
+                    text: l10n.swapOfflineNotice,
+                    icon: Icons.cloud_off_outlined,
+                  ),
+                if (failure != null)
+                  Semantics(
+                    liveRegion: true,
+                    child: NoticeBanner(
+                      key: const Key('swap-error'),
+                      text: failure.isConnectivity
+                          ? (_pin
+                                ? l10n.swapPinNeedsNetwork
+                                : l10n.errorOfflineAction)
+                          : failure.localized(l10n),
+                      icon: Icons.error_outline,
+                    ),
+                  ),
+                subs.when(
                   loading: () => const Padding(
                     padding: EdgeInsets.all(AppSpacing.lg),
                     child: LoadingView(),
@@ -233,61 +236,61 @@ class _SwapSheetState extends ConsumerState<_SwapSheet> {
                             textAlign: TextAlign.center,
                           ),
                         )
-                      : SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              for (final o in cached.value.substitutes)
-                                Card(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(
-                                      AppSpacing.ms,
-                                    ),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        ExerciseNameLink(
-                                          idOrSlug: o.exerciseId,
-                                          name: o.nameEs,
-                                          style: theme.textTheme.titleMedium,
-                                          fromModal: true,
+                      : Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            for (final o in cached.value.substitutes)
+                              Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(AppSpacing.ms),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      ExerciseNameLink(
+                                        idOrSlug: o.exerciseId,
+                                        name: o.nameEs,
+                                        style: theme.textTheme.titleMedium,
+                                        fromModal: true,
+                                      ),
+                                      MusclesWorksLine(
+                                        key: Key(
+                                          'swap-muscles-${o.exerciseId}',
                                         ),
-                                        for (final line in o.rationale)
-                                          Text(
-                                            '• $line',
-                                            style: theme.textTheme.bodyMedium,
-                                          ),
-                                        const SizedBox(height: AppSpacing.sm),
-                                        FilledButton(
-                                          key: Key(
-                                            'swap-choose-${o.exerciseId}',
-                                          ),
-                                          onPressed: _busyId == null
-                                              ? () => _choose(o)
-                                              : null,
-                                          child: _busyId == o.exerciseId
-                                              ? const SizedBox.square(
-                                                  dimension:
-                                                      AppSpacing.lg -
-                                                      AppSpacing.xs,
-                                                  child:
-                                                      CircularProgressIndicator(
-                                                        strokeWidth: 2,
-                                                      ),
-                                                )
-                                              : Text(l10n.swapChoose(o.nameEs)),
+                                        muscles: o.primaryMuscles,
+                                      ),
+                                      for (final line in o.rationale)
+                                        Text(
+                                          '• $line',
+                                          style: theme.textTheme.bodyMedium,
                                         ),
-                                      ],
-                                    ),
+                                      const SizedBox(height: AppSpacing.sm),
+                                      FilledButton(
+                                        key: Key('swap-choose-${o.exerciseId}'),
+                                        onPressed: _busyId == null
+                                            ? () => _choose(o)
+                                            : null,
+                                        child: _busyId == o.exerciseId
+                                            ? const SizedBox.square(
+                                                dimension:
+                                                    AppSpacing.lg -
+                                                    AppSpacing.xs,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                    ),
+                                              )
+                                            : Text(l10n.swapChoose(o.nameEs)),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                            ],
-                          ),
+                              ),
+                          ],
                         ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

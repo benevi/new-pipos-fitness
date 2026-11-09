@@ -63,6 +63,23 @@ const map = {
   body_progress_consent_required: 'BodyProgressResponseSchema',
 };
 
+/**
+ * Listas `muscles` de Hoy y Plan (ADR-0014, `{ muscle, role }`; no el detalle del catálogo, que
+ * lleva `fraction`): principales primero y en el orden del enum. El orden
+ * no es parte del esquema Zod (perdería el tipo en openapi.json), así que se comprueba aparte.
+ */
+function unorderedMuscles(node, path = []) {
+  if (Array.isArray(node)) return node.flatMap((n, i) => unorderedMuscles(n, [...path, i]));
+  if (!node || typeof node !== 'object') return [];
+  const own =
+    Array.isArray(node.muscles) &&
+    node.muscles.every((m) => 'role' in m && !('fraction' in m)) &&
+    !contracts.areExerciseMusclesOrdered(node.muscles)
+      ? [[...path, 'muscles'].join('.')]
+      : [];
+  return [...own, ...Object.entries(node).flatMap(([k, v]) => unorderedMuscles(v, [...path, k]))];
+}
+
 let failed = 0;
 for (const [file, schemaName] of Object.entries(map)) {
   const schema = contracts[schemaName];
@@ -73,7 +90,12 @@ for (const [file, schemaName] of Object.entries(map)) {
   }
   const json = JSON.parse(readFileSync(join(fixtures, `${file}.json`), 'utf8'));
   const result = schema.safeParse(json);
-  if (result.success) {
+  const unordered = unorderedMuscles(json);
+  if (result.success && unordered.length > 0) {
+    failed++;
+    console.error(`✗ ${file}: músculos fuera de orden (principales primero, orden del enum)`);
+    for (const p of unordered) console.error(`   ${p}`);
+  } else if (result.success) {
     console.log(`✓ ${file} (${schemaName})`);
   } else {
     failed++;

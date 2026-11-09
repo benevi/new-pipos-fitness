@@ -974,6 +974,36 @@ abstract class AppLocalizations {
   /// **'Claves técnicas'**
   String get todayCues;
 
+  /// Músculos principales del ejercicio (ADR-0014). TalkBack lo lee igual.
+  ///
+  /// In es, this message translates to:
+  /// **'Trabaja: {muscles}'**
+  String musclesWorks(String muscles);
+
+  /// Músculos secundarios del ejercicio.
+  ///
+  /// In es, this message translates to:
+  /// **'También: {muscles}'**
+  String musclesAlso(String muscles);
+
+  /// No description provided for @musclesAlsoLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'También:'**
+  String get musclesAlsoLabel;
+
+  /// No description provided for @musclesHideSecondary.
+  ///
+  /// In es, this message translates to:
+  /// **'Ocultar secundarios'**
+  String get musclesHideSecondary;
+
+  /// No description provided for @musclesShowSecondaryHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Muestra los músculos que el ejercicio trabaja en segundo plano'**
+  String get musclesShowSecondaryHint;
+
   /// No description provided for @todaySetLabel.
   ///
   /// In es, this message translates to:

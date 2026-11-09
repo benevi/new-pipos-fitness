@@ -2,11 +2,13 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { getExercise } from '@pipos/catalog';
 import { loadImplement } from '@pipos/engine-rules';
+import { sortExerciseMuscles } from '@pipos/contracts';
 import type {
   engineV2,
   ExerciseDetail,
   ExerciseListQuery,
   ExerciseListResponse,
+  ExerciseMuscleRef,
   ExerciseRef,
   ExerciseSummary,
   LoadType,
@@ -33,6 +35,8 @@ export interface CatalogEntry {
   isUnilateral: boolean;
   cuesEs: string[];
   muscles: { muscle: engineV2.Muscle; fraction: number }[];
+  /** Músculos para mostrar en Hoy y en Plan (principales primero, orden del enum; ADR-0014). */
+  muscleRefs: ExerciseMuscleRef[];
   /** Material que fija el paso de carga (PROGRAMACION.md §16.16); null si no se carga en kg. */
   loadImplement: engineV2.LoadImplement | null;
 }
@@ -97,6 +101,7 @@ function toEntry(row: ExerciseRow): CatalogEntry {
     isUnilateral: row.isUnilateral,
     cuesEs: row.cuesEs,
     muscles: row.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
+    muscleRefs: sortExerciseMuscles(row.muscles),
     loadImplement: loadImplement(row),
   };
 }

@@ -737,6 +737,52 @@
                                     "items": {
                                       "type": "string"
                                     }
+                                  },
+                                  "muscles": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "object",
+                                      "properties": {
+                                        "muscle": {
+                                          "type": "string",
+                                          "enum": [
+                                            "chest",
+                                            "front_delts",
+                                            "side_delts",
+                                            "rear_delts",
+                                            "lats",
+                                            "upper_back",
+                                            "traps",
+                                            "biceps",
+                                            "triceps",
+                                            "forearms",
+                                            "abs",
+                                            "obliques",
+                                            "lower_back",
+                                            "glutes",
+                                            "quads",
+                                            "hamstrings",
+                                            "adductors",
+                                            "abductors",
+                                            "calves"
+                                          ]
+                                        },
+                                        "role": {
+                                          "type": "string",
+                                          "enum": [
+                                            "primary",
+                                            "secondary"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "muscle",
+                                        "role"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "maxItems": 19,
+                                    "default": []
                                   }
                                 },
                                 "required": [
@@ -3440,6 +3486,52 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "muscles": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "muscle": {
+                              "type": "string",
+                              "enum": [
+                                "chest",
+                                "front_delts",
+                                "side_delts",
+                                "rear_delts",
+                                "lats",
+                                "upper_back",
+                                "traps",
+                                "biceps",
+                                "triceps",
+                                "forearms",
+                                "abs",
+                                "obliques",
+                                "lower_back",
+                                "glutes",
+                                "quads",
+                                "hamstrings",
+                                "adductors",
+                                "abductors",
+                                "calves"
+                              ]
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "primary",
+                                "secondary"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "muscle",
+                            "role"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "maxItems": 19,
+                        "default": []
                       }
                     },
                     "required": [
@@ -4436,6 +4528,34 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "primaryMuscles": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "chest",
+                      "front_delts",
+                      "side_delts",
+                      "rear_delts",
+                      "lats",
+                      "upper_back",
+                      "traps",
+                      "biceps",
+                      "triceps",
+                      "forearms",
+                      "abs",
+                      "obliques",
+                      "lower_back",
+                      "glutes",
+                      "quads",
+                      "hamstrings",
+                      "adductors",
+                      "abductors",
+                      "calves"
+                    ]
+                  },
+                  "default": []
                 }
               },
               "required": [
@@ -4916,6 +5036,52 @@
                   "type": "string",
                   "nullable": true,
                   "default": null
+                },
+                "muscles": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "muscle": {
+                        "type": "string",
+                        "enum": [
+                          "chest",
+                          "front_delts",
+                          "side_delts",
+                          "rear_delts",
+                          "lats",
+                          "upper_back",
+                          "traps",
+                          "biceps",
+                          "triceps",
+                          "forearms",
+                          "abs",
+                          "obliques",
+                          "lower_back",
+                          "glutes",
+                          "quads",
+                          "hamstrings",
+                          "adductors",
+                          "abductors",
+                          "calves"
+                        ]
+                      },
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "primary",
+                          "secondary"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "muscle",
+                      "role"
+                    ],
+                    "additionalProperties": false
+                  },
+                  "maxItems": 19,
+                  "default": []
                 }
               },
               "required": [

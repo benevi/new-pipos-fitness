@@ -86,6 +86,24 @@
           "rationale": [
             "Sentadilla trasera: multiarticular de squat para tu objetivo."
           ],
+          "muscles": [
+            {
+              "muscle": "glutes",
+              "role": "primary"
+            },
+            {
+              "muscle": "quads",
+              "role": "primary"
+            },
+            {
+              "muscle": "lower_back",
+              "role": "secondary"
+            },
+            {
+              "muscle": "adductors",
+              "role": "secondary"
+            }
+          ],
           "loadImplement": "barbell",
           "pinned": null
         },
@@ -109,6 +127,20 @@
           "estimatedMinutes": 9.5,
           "rationale": [
             "Flexiones: multiarticular de horizontal_push para tu objetivo."
+          ],
+          "muscles": [
+            {
+              "muscle": "chest",
+              "role": "primary"
+            },
+            {
+              "muscle": "front_delts",
+              "role": "secondary"
+            },
+            {
+              "muscle": "triceps",
+              "role": "secondary"
+            }
           ],
           "loadImplement": null,
           "pinned": null
@@ -147,6 +179,28 @@
           "estimatedMinutes": 9.5,
           "rationale": [
             "Remo con mancuerna: multiarticular de horizontal_pull para tu objetivo."
+          ],
+          "muscles": [
+            {
+              "muscle": "lats",
+              "role": "primary"
+            },
+            {
+              "muscle": "upper_back",
+              "role": "primary"
+            },
+            {
+              "muscle": "rear_delts",
+              "role": "secondary"
+            },
+            {
+              "muscle": "biceps",
+              "role": "secondary"
+            },
+            {
+              "muscle": "lower_back",
+              "role": "secondary"
+            }
           ],
           "loadImplement": "dumbbell",
           "pinned": null

@@ -1,6 +1,6 @@
 # UX móvil de v1 (Fase 4b)
 
-**Fecha:** 2026-11-09 · **Alcance:** `apps/mobile` · Base: SPEC_V1, CUJS, ADR-0007 (offline), ADR-0011 (salud) y ADR-0013 (ideas recuperadas).
+**Fecha:** 2026-11-09 · **Alcance:** `apps/mobile` · Base: SPEC_V1, CUJS, ADR-0007 (offline), ADR-0011 (salud), ADR-0013 (ideas recuperadas) y ADR-0014 (guía de ejercicios).
 
 
 ## 1. Mapa de navegación
@@ -83,6 +83,10 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Días, pausas y recordatorio (idea 6).** Chips de lunes a domingo (como mucho los días por semana del plan; sin elegir, los del plan), lista de pausas con alta por rango de fechas (1-60 días) y borrado confirmado. Recordatorio **local** (sin push): interruptor + hora; antes del permiso del sistema (Android 13+) un diálogo explica para qué es; avisos inexactos para los próximos 14 días que se saltan las pausas y se reprograman al abrir la app y al cambiar algo. Hoy avisa de la pausa activa o del día de descanso (se puede entrenar igualmente).
 - **Medidas (idea 7, CUJ-10).** Datos de salud con consentimiento por ámbitos: sin él, la pestaña solo explica y ofrece el texto vigente; con la versión anterior, solo el peso, y los perímetros piden aceptar `health-2026-11-v2`. Formulario con todas las medidas opcionales (al menos una), unidad, rango y «cómo medir» por campo; precarga el día porque el `PUT` lo sustituye entero. IMC y % de grasa llevan siempre «Estimación — no es un diagnóstico» y sus límites; el % de grasa no tiene categorías.
 
+### Guía de ejercicios (ADR-0014)
+
+- **Músculos visibles (Fase 1).** Bajo el nombre de cada ejercicio de Hoy, la línea «Trabaja: Glúteos, Cuádriceps» con los músculos principales del ejercicio que se hace de verdad (el sustituto o el fijado, si lo hay). Si tiene secundarios, la propia línea es el desplegable (48 dp, «+N» y flecha): al tocarla aparece «También: Lumbares, Aductores». TalkBack lee «Trabaja: …» como botón con estado plegado/desplegado. Plan muestra los mismos músculos como chips: los principales rellenos y, tras «También:», los secundarios con borde; el rol se distingue por el texto, no solo por el color, y TalkBack lee el grupo entero. En la hoja de cambiar ejercicio, cada alternativa dice «Trabaja: …» con sus principales; la hoja entera se desplaza para no desbordar con texto grande. Los datos vienen del catálogo vía la API (`muscles`, `primaryMuscles`), ya ordenados; una respuesta o caché anterior sin ellos no pinta nada (sin huecos), y un cambio aún sin confirmar tampoco hasta sincronizar.
+
 ## 4. Tono del texto
 
 - Castellano de España, tuteo, frases cortas y verbos concretos: «Generar mi plan», «Confirmar serie 2», «Reintentar».
@@ -115,6 +119,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | Lector de pantalla en dispositivo real (TalkBack) | pendiente | no hay SDK de Android en este entorno; queda para la QA de la Fase 5 |
 | Pantallas y hojas de ADR-0013 al 200 % (discos, nota, ajuste de hoy, días y pausas, Cuerpo, formulario de medidas) | ✓ | `test/a11y/text_scale_test.dart` |
 | Recordatorio: permiso explicado antes de pedirlo | ✓ | `test/features/settings/schedule_test.dart` |
+| Músculos (ADR-0014): «Trabaja: …» desplegado, chips de Plan y hoja de cambio al 200 % en claro y oscuro; TalkBack lee «Trabaja: …» | ✓ | `test/features/today/exercise_muscles_test.dart` |
 | Ficha del ejercicio al 200 %, objetivos ≥ 48 dp y enlaces con etiqueta «Ver ficha de …» | ✓ | `test/features/exercise/exercise_detail_test.dart` |
 
 ## 7. Skills consultadas

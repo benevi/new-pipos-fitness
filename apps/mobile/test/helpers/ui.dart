@@ -70,8 +70,14 @@ Future<void> scrollToTop(WidgetTester tester) async {
         matching: find.byType(Scrollable),
       )
       .first;
-  tester.state<ScrollableState>(scrollable).position.jumpTo(0);
-  await pumpFrames(tester, frames: 5);
+  // Si arriba apareció algo (un aviso) mientras la lista estaba desplazada,
+  // la lista corrige el desplazamiento al volver y no queda en 0: se repite.
+  for (var i = 0; i < 5; i++) {
+    final position = tester.state<ScrollableState>(scrollable).position;
+    if (i > 0 && position.pixels == 0) break;
+    position.jumpTo(0);
+    await pumpFrames(tester, frames: 5);
+  }
 }
 
 /// La lista vertical visible más interna (no el Scrollable de un TextField).

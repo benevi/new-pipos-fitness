@@ -24,6 +24,7 @@ import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../exercise/exercise_detail_screen.dart';
 import '../../shared/decimal_input.dart';
+import '../../shared/exercise_muscles.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
 import 'adjust_sheet.dart';
@@ -779,6 +780,10 @@ class ExerciseCard extends StatelessWidget {
                   onPressed: onSwap,
                 ),
               ],
+            ),
+            ExerciseMusclesSummary(
+              id: exercise.planExerciseId,
+              muscles: exercise.muscles,
             ),
             if (onEditNote != null)
               _NoteBox(
