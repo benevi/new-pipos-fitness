@@ -93,6 +93,7 @@ export const WARNING_CODES = [
   'PUSH_PULL_IMBALANCE',
   'DAYS_ABOVE_LEVEL_GUIDE',
   'FAVOURITE_EXCLUDED',
+  'PINNED_SUBSTITUTION_DROPPED',
 ] as const;
 export const WarningCodeSchema = z.enum(WARNING_CODES);
 export type WarningCode = z.infer<typeof WarningCodeSchema>;
@@ -123,6 +124,23 @@ export const ScoreBreakdownSchema = z
 export type ScoreBreakdown = z.infer<typeof ScoreBreakdownSchema>;
 
 
+/** Cambio fijado por el usuario: ejercicio original → elegido (slugs). Idea 3, ADR-0013. */
+export const PinnedSubstitutionInputSchema = z
+  .object({ from: z.string().min(1), to: z.string().min(1) })
+  .strict();
+export type PinnedSubstitutionInput = z.infer<typeof PinnedSubstitutionInputSchema>;
+
+/** Cambio fijado que sigue siendo válido, aplicado a un hueco concreto del plan generado. */
+export const PinnedSubstitutionSchema = z
+  .object({
+    sessionOrder: z.number().int().min(0),
+    exerciseOrder: z.number().int().min(0),
+    from: z.string().min(1),
+    to: z.string().min(1),
+  })
+  .strict();
+export type PinnedSubstitution = z.infer<typeof PinnedSubstitutionSchema>;
+
 export const PlanDraftSchema = z
   .object({
     engineVersion: z.string(),
@@ -136,6 +154,8 @@ export const PlanDraftSchema = z
     /** Explicaciones del plan derivadas de datos de salud (ver PlannedExercise.healthNotes). */
     healthNotes: z.array(z.string()),
     score: ScoreBreakdownSchema,
+    /** Cambios fijados que se mantienen en este plan (los descartados van en `warnings`). */
+    pinnedSubstitutions: z.array(PinnedSubstitutionSchema).default([]),
     meta: z
       .object({
         catalogSize: z.number().int().min(0),

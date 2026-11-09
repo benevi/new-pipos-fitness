@@ -162,9 +162,15 @@ describe('PlansService', () => {
     prisma.trainingPlan.findFirst.mockResolvedValueOnce({ id: 'p1' });
     prisma.planVersion.aggregate.mockResolvedValueOnce({ _max: { version: 1 } });
     prisma.planVersion.create.mockResolvedValueOnce(versionRow({ id: 'v2', version: 2 }));
-    prisma.planVersion.findFirst.mockResolvedValueOnce(versionRow({ id: 'v2', version: 2 }));
+    // Primero la versión vigente para heredar los cambios fijados (idea 3); luego la creada.
+    prisma.planVersion.findFirst.mockResolvedValueOnce({ id: 'v1' }).mockResolvedValueOnce(versionRow({ id: 'v2', version: 2 }));
+    prisma.planExerciseOverride.findMany.mockResolvedValueOnce([
+      { exercise: { slug: 'zzz-no-existe' }, planExercise: { exercise: { slug: 'yyy-no-existe' } } },
+    ]);
     const res = await plans.generate(UID);
     expect(res.version).toBe(2);
+    // El cambio fijado imposible se descarta: no se crea ningún override.
+    expect(prisma.planExerciseOverride.createMany).not.toHaveBeenCalled();
   });
 
   it('current, versions, version (propiedad → 404)', async () => {

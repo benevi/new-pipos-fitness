@@ -21,6 +21,10 @@ export const WarmupSetResponseSchema = z
   .strict();
 export type WarmupSetResponse = z.infer<typeof WarmupSetResponseSchema>;
 
+/** Referencia corta a un ejercicio (misma forma que ExerciseRefSchema de workouts). */
+export const PlanExerciseRefSchema = z.object({ id: IdSchema, slug: z.string(), nameEs: z.string() }).strict();
+export type PlanExerciseRef = z.infer<typeof PlanExerciseRefSchema>;
+
 export const PlanExerciseResponseSchema = z
   .object({
     /** Id del hueco del plan (planExerciseId en los endpoints de entrenamiento). */
@@ -44,6 +48,8 @@ export const PlanExerciseResponseSchema = z
      * El servidor siempre lo envía; el `default` solo mantiene válidos los clientes anteriores.
      */
     loadImplement: LoadImplementSchema.nullable().default(null),
+    /** Ejercicio que el usuario ha fijado para este hueco (idea 3); null = el del plan. */
+    pinned: PlanExerciseRefSchema.nullable().default(null),
     warmupSets: z.array(WarmupSetResponseSchema),
     estimatedMinutes: z.number(),
     rationale: z.array(z.string()),
@@ -92,3 +98,24 @@ export type PlanVersionResponse = z.infer<typeof PlanVersionResponseSchema>;
 
 export const PlanVersionListResponseSchema = paginatedSchema(PlanVersionSummarySchema);
 export type PlanVersionListResponse = z.infer<typeof PlanVersionListResponseSchema>;
+
+/**
+ * PUT /plans/current/exercises/:planExerciseId/override — «usar siempre este ejercicio en este
+ * plan» (idea 3, ADR-0013). Debe ser una alternativa válida del original para tu perfil (la misma
+ * validación que el cambio puntual). Se aplica a todos los huecos de la versión vigente con el
+ * mismo ejercicio original y se hereda en las versiones siguientes mientras siga siendo válido.
+ */
+export const PlanExerciseOverrideRequestSchema = z.object({ exerciseId: IdSchema }).strict();
+export type PlanExerciseOverrideRequest = z.infer<typeof PlanExerciseOverrideRequestSchema>;
+
+export const PlanExerciseOverrideResponseSchema = z
+  .object({
+    planVersionId: IdSchema,
+    /** Huecos de la versión vigente afectados (todos los del mismo ejercicio original). */
+    planExerciseIds: z.array(IdSchema).min(1),
+    original: PlanExerciseRefSchema,
+    /** Ejercicio fijado; null tras volver al original (DELETE). */
+    pinned: PlanExerciseRefSchema.nullable(),
+  })
+  .strict();
+export type PlanExerciseOverrideResponse = z.infer<typeof PlanExerciseOverrideResponseSchema>;

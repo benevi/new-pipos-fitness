@@ -416,7 +416,8 @@
                                 "PRIORITY_UNCOVERED",
                                 "PUSH_PULL_IMBALANCE",
                                 "DAYS_ABOVE_LEVEL_GUIDE",
-                                "FAVOURITE_EXCLUDED"
+                                "FAVOURITE_EXCLUDED",
+                                "PINNED_SUBSTITUTION_DROPPED"
                               ]
                             },
                             "message": {
@@ -654,6 +655,29 @@
                                       "cable",
                                       "weight_plate"
                                     ],
+                                    "nullable": true,
+                                    "default": null
+                                  },
+                                  "pinned": {
+                                    "type": "object",
+                                    "properties": {
+                                      "id": {
+                                        "type": "string",
+                                        "format": "uuid"
+                                      },
+                                      "slug": {
+                                        "type": "string"
+                                      },
+                                      "nameEs": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "id",
+                                      "slug",
+                                      "nameEs"
+                                    ],
+                                    "additionalProperties": false,
                                     "nullable": true,
                                     "default": null
                                   },
@@ -2102,6 +2126,86 @@
         ],
         "additionalProperties": false
       },
+      "PlanExerciseOverrideRequest": {
+        "type": "object",
+        "properties": {
+          "exerciseId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "exerciseId"
+        ],
+        "additionalProperties": false
+      },
+      "PlanExerciseOverrideResponse": {
+        "type": "object",
+        "properties": {
+          "planVersionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "planExerciseIds": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "minItems": 1
+          },
+          "original": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "nameEs": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "nameEs"
+            ],
+            "additionalProperties": false
+          },
+          "pinned": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "slug": {
+                "type": "string"
+              },
+              "nameEs": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "slug",
+              "nameEs"
+            ],
+            "additionalProperties": false,
+            "nullable": true
+          }
+        },
+        "required": [
+          "planVersionId",
+          "planExerciseIds",
+          "original",
+          "pinned"
+        ],
+        "additionalProperties": false
+      },
       "PlanVersionListResponse": {
         "type": "object",
         "properties": {
@@ -2270,7 +2374,8 @@
                     "PRIORITY_UNCOVERED",
                     "PUSH_PULL_IMBALANCE",
                     "DAYS_ABOVE_LEVEL_GUIDE",
-                    "FAVOURITE_EXCLUDED"
+                    "FAVOURITE_EXCLUDED",
+                    "PINNED_SUBSTITUTION_DROPPED"
                   ]
                 },
                 "message": {
@@ -2508,6 +2613,29 @@
                           "cable",
                           "weight_plate"
                         ],
+                        "nullable": true,
+                        "default": null
+                      },
+                      "pinned": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid"
+                          },
+                          "slug": {
+                            "type": "string"
+                          },
+                          "nameEs": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "slug",
+                          "nameEs"
+                        ],
+                        "additionalProperties": false,
                         "nullable": true,
                         "default": null
                       },
@@ -3930,6 +4058,10 @@
                   "additionalProperties": false,
                   "nullable": true,
                   "default": null
+                },
+                "pinned": {
+                  "type": "boolean",
+                  "default": false
                 },
                 "note": {
                   "type": "string",
@@ -6124,6 +6256,199 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/plans/current/exercises/{planExerciseId}/override": {
+      "delete": {
+        "operationId": "Plans_unpin",
+        "tags": [
+          "plans"
+        ],
+        "summary": "Volver al ejercicio original del plan (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planExerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanExerciseOverrideResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "Plans_pin",
+        "tags": [
+          "plans"
+        ],
+        "summary": "Fijar un cambio de ejercicio en el plan vigente (se hereda en las versiones siguientes)",
+        "description": "Debe ser una alternativa válida del ejercicio original para tu perfil (400 si no). Se aplica a todos los huecos de la versión vigente con ese ejercicio y no crea una versión nueva. Si exerciseId es el original, equivale a DELETE.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "planExerciseId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanExerciseOverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanExerciseOverrideResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
             "content": {
               "application/json": {
                 "schema": {

@@ -33,7 +33,10 @@ export const planVersionInclude = {
     include: {
       exercises: {
         orderBy: { order: 'asc' },
-        include: { exercise: { select: { slug: true, nameEs: true, movementPattern: true, loadType: true, equipment: true } } },
+        include: {
+          exercise: { select: { slug: true, nameEs: true, movementPattern: true, loadType: true, equipment: true } },
+          override: { select: { exercise: { select: { id: true, slug: true, nameEs: true } } } },
+        },
       },
     },
   },
@@ -177,6 +180,7 @@ export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exerci
     initialLoadKg: initial,
     initialLoadIsEstimate: e.initialLoadIsEstimate,
     loadImplement: implement,
+    pinned: e.override ? e.override.exercise : null,
     warmupSets: warmupsFor(e.warmupSets, initial, implement),
     estimatedMinutes: e.estimatedMinutes,
     rationale: readExerciseRationale(e.rationale),

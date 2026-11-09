@@ -3,6 +3,7 @@ import { isLoadStepMultiple } from '@pipos/engine-rules';
 import {
   AccountExportSchema,
   ExerciseNoteResponseSchema,
+  PlanExerciseOverrideResponseSchema,
   PlanVersionResponseSchema,
   TodaySessionResponseSchema,
   type TodayExercise,
@@ -156,6 +157,138 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
       await request(server()).put(url).set(t).send({ text: 'otra', clientUpdatedAt: '2026-11-10T11:00:00.000Z' }).expect(200);
       await request(server()).delete('/me').set(t).send({ password: user.password }).expect(204);
       expect(await ctx.prisma.userExerciseNote.count({ where: { userId: user.id } })).toBe(0);
+    });
+  });
+
+  describe('Idea 3: cambio de ejercicio permanente', () => {
+    it('fijar, today y series lo aceptan, se hereda al regenerar, se descarta si falta material, volver al original', async () => {
+      const { user } = await userWithPlan(ctx.app);
+      const t = bearer(user.accessToken);
+      const today = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      // Un hueco con alternativas cuyo material no sea solo el del original.
+      let slot: TodayExercise | undefined;
+      let alt: { exerciseId: string; slug: string } | undefined;
+      for (const e of today.exercises) {
+        const subs = await request(server()).get(`/exercises/${e.exercise.id}/substitutes`).set(t).expect(200);
+        if (subs.body.substitutes.length > 0) {
+          slot = e;
+          alt = subs.body.substitutes[0];
+          break;
+        }
+      }
+      expect(slot && alt).toBeTruthy();
+      const url = `/plans/current/exercises/${slot!.planExerciseId}/override`;
+      const versionsBefore = await ctx.prisma.planVersion.count({ where: { userId: user.id } });
+
+      // Un ejercicio que no es alternativa → 400; hueco inexistente → 404.
+      const unrelated = today.exercises.find((e) => e.movementPattern !== slot!.movementPattern)!;
+      await request(server()).put(url).set(t).send({ exerciseId: unrelated.exercise.id }).expect(400);
+      await request(server()).put('/plans/current/exercises/00000000-0000-4000-8000-000000000000/override').set(t).send({ exerciseId: alt!.exerciseId }).expect(404);
+
+      const pinned = PlanExerciseOverrideResponseSchema.parse((await request(server()).put(url).set(t).send({ exerciseId: alt!.exerciseId }).expect(200)).body);
+      expect(pinned.pinned?.id).toBe(alt!.exerciseId);
+      expect(pinned.original.id).toBe(slot!.exercise.id);
+      expect(pinned.planExerciseIds).toContain(slot!.planExerciseId);
+      // Fijar no crea una versión nueva del plan.
+      expect(await ctx.prisma.planVersion.count({ where: { userId: user.id } })).toBe(versionsBefore);
+
+      // Otro usuario no puede tocar el hueco.
+      const other = await userWithPlan(ctx.app);
+      await request(server()).put(url).set(bearer(other.user.accessToken)).send({ exerciseId: alt!.exerciseId }).expect(404);
+
+      const during = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      const ex = during.exercises.find((e) => e.planExerciseId === slot!.planExerciseId)!;
+      expect(ex.pinned).toBe(true);
+      expect(ex.exercise.id).toBe(alt!.exerciseId);
+      expect(ex.substitutedFrom?.id).toBe(slot!.exercise.id);
+      const plan = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+      const planSlot = plan.sessions.flatMap((s) => s.exercises).find((e) => e.id === slot!.planExerciseId)!;
+      expect(planSlot.pinned?.id).toBe(alt!.exerciseId);
+
+      // Regenerar el plan (sin historial nuevo: mismo plan) conserva el cambio en los huecos del
+      // mismo ejercicio original.
+      const regen = PlanVersionResponseSchema.parse((await request(server()).post('/plans/generate').set(t).expect(201)).body);
+      const regenSlots = regen.sessions.flatMap((s) => s.exercises).filter((e) => e.exerciseId === slot!.exercise.id);
+      expect(regenSlots.length).toBeGreaterThan(0);
+      for (const s of regenSlots) expect(s.pinned?.id).toBe(alt!.exerciseId);
+      // El hueco de la versión antigua ya no es de la versión vigente → 404.
+      await request(server()).delete(url).set(t).expect(404);
+
+      // La serie del ejercicio fijado se acepta; la de otro ejercicio no.
+      const { today: todayNow, workout } = await startToday(ctx.app, user.accessToken);
+      const exNow = (todayNow.exercises as TodayExercise[]).find((e) => e.pinned)!;
+      expect(exNow.exercise.id).toBe(alt!.exerciseId);
+      await request(server()).post(`/workouts/${workout.id}/sets`).set(t).send(setBody(exNow)).expect(201);
+      await request(server())
+        .post(`/workouts/${workout.id}/sets`)
+        .set(t)
+        .send(setBody({ planExerciseId: exNow.planExerciseId, exercise: { id: unrelated.exercise.id } }, { setIndex: 1 }))
+        .expect(400);
+      // Hoy se puede volver puntualmente al original con un cambio fijado.
+      const back = await request(server())
+        .post(`/workouts/${workout.id}/exercises/${exNow.planExerciseId}/substitute`)
+        .set(t)
+        .send({ exerciseId: slot!.exercise.id })
+        .expect(200);
+      expect(back.body.exercise.id).toBe(slot!.exercise.id);
+      const swapped = (await request(server()).get('/sessions/today').set(t).expect(200)).body as { exercises: TodayExercise[] };
+      const swappedEx = swapped.exercises.find((e) => e.planExerciseId === exNow.planExerciseId)!;
+      expect(swappedEx.exercise.id).toBe(slot!.exercise.id);
+      expect(swappedEx.pinned).toBe(false);
+      await finishAt(user.accessToken, workout.id, new Date());
+
+      // Quitar el material del ejercicio fijado: la versión nueva lo descarta con un aviso.
+      const altEquipment = (await ctx.prisma.exercise.findUniqueOrThrow({ where: { id: alt!.exerciseId } })).equipment;
+      const origEquipment = (await ctx.prisma.exercise.findUniqueOrThrow({ where: { id: slot!.exercise.id } })).equipment;
+      const removable = altEquipment.filter((e) => !origEquipment.includes(e) && e !== 'bodyweight');
+      if (removable.length > 0) {
+        const profile = await request(server()).get('/me/profile').set(t).expect(200);
+        const upd = await request(server())
+          .put('/me/profile')
+          .set(t)
+          .send({
+            goal: profile.body.goal,
+            level: profile.body.level,
+            daysPerWeek: profile.body.daysPerWeek,
+            minutesPerSession: profile.body.minutesPerSession,
+            equipment: profile.body.equipment.filter((e: string) => !removable.includes(e)),
+            timezone: profile.body.timezone,
+          })
+          .expect(200);
+        expect(upd.body.planVersion).not.toBeNull();
+        const cur = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+        expect(cur.sessions.flatMap((s) => s.exercises).every((e) => e.pinned === null)).toBe(true);
+        const stillThere = cur.sessions.flatMap((s) => s.exercises).some((e) => e.exerciseId === slot!.exercise.id);
+        if (stillThere) expect(cur.warnings.some((w) => w.code === 'PINNED_SUBSTITUTION_DROPPED')).toBe(true);
+      } else {
+        // Volver al original en la versión vigente.
+        const slotNow = regenSlots[0];
+        const un = PlanExerciseOverrideResponseSchema.parse(
+          (await request(server()).delete(`/plans/current/exercises/${slotNow.id}/override`).set(t).expect(200)).body,
+        );
+        expect(un.pinned).toBeNull();
+        expect(await ctx.prisma.planExerciseOverride.count({ where: { userId: user.id, planExerciseId: { in: un.planExerciseIds } } })).toBe(0);
+      }
+    });
+
+    it('volver al original con DELETE es idempotente y la versión vigente queda sin cambios fijados', async () => {
+      const { user } = await userWithPlan(ctx.app);
+      const t = bearer(user.accessToken);
+      const plan = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+      for (const e of plan.sessions.flatMap((s) => s.exercises)) {
+        const subs = await request(server()).get(`/exercises/${e.exerciseId}/substitutes`).set(t).expect(200);
+        if (subs.body.substitutes.length === 0) continue;
+        const url = `/plans/current/exercises/${e.id}/override`;
+        await request(server()).put(url).set(t).send({ exerciseId: subs.body.substitutes[0].exerciseId }).expect(200);
+        expect(await ctx.prisma.planExerciseOverride.count({ where: { userId: user.id } })).toBeGreaterThan(0);
+        await request(server()).delete(url).set(t).expect(200);
+        await request(server()).delete(url).set(t).expect(200);
+        // Fijar el propio original equivale a volver.
+        await request(server()).put(url).set(t).send({ exerciseId: e.exerciseId }).expect(200);
+        expect(await ctx.prisma.planExerciseOverride.count({ where: { userId: user.id } })).toBe(0);
+        return;
+      }
+      throw new Error('ningún ejercicio con alternativas');
     });
   });
 });

@@ -105,14 +105,19 @@ export class SessionsService {
       include: {
         exercises: {
           orderBy: { order: 'asc' },
-          include: { exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true, equipment: true } } },
+          include: {
+            exercise: { select: { id: true, slug: true, nameEs: true, cuesEs: true, movementPattern: true, loadType: true, equipment: true } },
+            override: { select: { exerciseId: true } },
+          },
         },
       },
     });
 
     const catalog = await this.catalog.engineCatalog();
     const swaps = new Map(workout?.substitutions.map((s) => [s.planExerciseId, s.exerciseId]) ?? []);
-    const performedIds = session.exercises.map((e) => swaps.get(e.id) ?? e.exerciseId);
+    // Ejercicio de hoy: cambio puntual del entrenamiento > cambio fijado del plan > el del plan.
+    const performedOf = (e: (typeof session.exercises)[number]) => swaps.get(e.id) ?? e.override?.exerciseId ?? e.exerciseId;
+    const performedIds = session.exercises.map(performedOf);
     const [refs, notes] = await Promise.all([this.catalog.refs(performedIds), this.notes.byExercise(userId, performedIds)]);
     const history = await this.engineInput.history(userId, tz, {
       exerciseIds: performedIds,
@@ -122,7 +127,7 @@ export class SessionsService {
     const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
 
     const exercises: TodayExercise[] = session.exercises.map((slot) => {
-      const performedId = swaps.get(slot.id) ?? slot.exerciseId;
+      const performedId = performedOf(slot);
       const original: ExerciseRef = { id: slot.exercise.id, slug: slot.exercise.slug, nameEs: slot.exercise.nameEs };
       const performed = refs.get(performedId) ?? original;
       const entry = catalog.byId.get(performedId);
@@ -177,6 +182,7 @@ export class SessionsService {
         loadImplement: implement,
         loadStepKg: implement ? loadStepKg(implement) : null,
         plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
+        pinned: !swaps.has(slot.id) && slot.override !== null && performedId !== slot.exerciseId,
         note: notes.get(performedId) ?? null,
       };
     });

@@ -28,6 +28,8 @@ export interface PreparedPlan {
   draft: engineV2.PlanDraft;
   snapshot: engineV2.EngineProfileInput;
   sessions: Prisma.PlanSessionCreateWithoutPlanVersionInput[];
+  /** Cambios fijados que se heredan, por posición en el plan nuevo (ids de ejercicio). */
+  pinnedIds: { sessionOrder: number; exerciseOrder: number; exerciseId: string }[];
 }
 
 @Injectable()
@@ -43,11 +45,13 @@ export class PlansService {
    * calcular cargas iniciales por e1RM (CUJ-6: el nuevo plan conserva lo aprendido).
    */
   async prepare(userId: string, engineProfile: engineV2.EngineProfileInput, timezone: string): Promise<PreparedPlan> {
-    const [catalog, history] = await Promise.all([
+    const [catalog, history, pins] = await Promise.all([
       this.catalog.engineCatalog(),
       this.engineInput.history(userId, timezone),
+      this.currentPins(userId),
     ]);
-    const result = generatePlan({ ...engineProfile, history }, catalog.exercises);
+    // Los cambios fijados de la versión vigente se heredan si siguen siendo válidos (idea 3).
+    const result = generatePlan({ ...engineProfile, history }, catalog.exercises, { pinnedSubstitutions: pins });
     if (!result.ok) {
       const status = result.error.code === 'INVALID_CATALOG' ? HttpStatus.INTERNAL_SERVER_ERROR : HttpStatus.UNPROCESSABLE_ENTITY;
       if (status >= 500) log('error', 'Engine rejected the catalog', { code: result.error.code });
@@ -57,7 +61,25 @@ export class PlansService {
       draft: result.plan,
       snapshot: engineProfile,
       sessions: draftToSessionsCreate(result.plan, catalog.bySlug),
+      pinnedIds: result.plan.pinnedSubstitutions.map((p) => ({
+        sessionOrder: p.sessionOrder,
+        exerciseOrder: p.exerciseOrder,
+        exerciseId: catalog.bySlug.get(p.to)?.id ?? '',
+      })),
     };
+  }
+
+  /** Cambios fijados de la versión vigente como pares de slugs `from → to` (sin duplicados). */
+  async currentPins(userId: string, db: Db = this.prisma): Promise<engineV2.PinnedSubstitutionInput[]> {
+    const id = await this.currentVersionId(userId, db);
+    if (!id) return [];
+    const rows = await db.planExerciseOverride.findMany({
+      where: { userId, planExercise: { planSession: { planVersionId: id } } },
+      select: { exercise: { select: { slug: true } }, planExercise: { select: { exercise: { select: { slug: true } } } } },
+    });
+    const pins = new Map<string, string>();
+    for (const r of rows) pins.set(r.planExercise.exercise.slug, r.exercise.slug);
+    return [...pins].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0)).map(([from, to]) => ({ from, to }));
   }
 
   /**
@@ -84,6 +106,18 @@ export class PlansService {
       },
       include: { _count: { select: { sessions: true } } },
     });
+    if (prepared.pinnedIds.length > 0) {
+      const slots = await tx.planExercise.findMany({
+        where: { planSession: { planVersionId: created.id } },
+        select: { id: true, order: true, planSession: { select: { order: true } } },
+      });
+      const byPos = new Map(slots.map((s) => [`${s.planSession.order}:${s.order}`, s.id]));
+      const data = prepared.pinnedIds.flatMap((p) => {
+        const planExerciseId = byPos.get(`${p.sessionOrder}:${p.exerciseOrder}`);
+        return planExerciseId && p.exerciseId ? [{ planExerciseId, userId, exerciseId: p.exerciseId }] : [];
+      });
+      if (data.length > 0) await tx.planExerciseOverride.createMany({ data });
+    }
     return toSummary(created);
   }
 

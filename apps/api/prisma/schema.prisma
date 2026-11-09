@@ -244,6 +244,7 @@ model User {
   weeklyGroupVolume   WeeklyGroupVolume[]
   weeklyAdherence     WeeklyAdherence[]
   exerciseNotes       UserExerciseNote[]
+  planOverrides       PlanExerciseOverride[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -384,6 +385,7 @@ model Exercise {
   e1rmHistory   ExerciseE1rm[]
   preferences   UserExercisePreference[]
   userNotes     UserExerciseNote[]
+  planOverrides PlanExerciseOverride[]
 
   @@index([movementPattern])
   @@index([substitutionGroupId])
@@ -513,8 +515,25 @@ model PlanExercise {
   rationale             Json?
   setLogs               SetLog[]
   substitutions         WorkoutSubstitution[]
+  override              PlanExerciseOverride?
 
   @@unique([planSessionId, order])
+  @@index([exerciseId])
+}
+
+/// Cambio de ejercicio fijado por el usuario para un hueco del plan (idea 3, ADR-0013). La
+/// versión del plan es inmutable: el cambio vive aparte y se hereda al generar la siguiente
+/// versión si sigue siendo válido (motor: resolvePins).
+model PlanExerciseOverride {
+  planExerciseId String       @id @db.Uuid
+  planExercise   PlanExercise @relation(fields: [planExerciseId], references: [id], onDelete: Cascade)
+  userId         String       @db.Uuid
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId     String       @db.Uuid
+  exercise       Exercise     @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  createdAt      DateTime     @default(now()) @db.Timestamptz(3)
+
+  @@index([userId])
   @@index([exerciseId])
 }
 

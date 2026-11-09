@@ -173,6 +173,8 @@ export const TodayExerciseSchema = z
     loadStepKg: z.number().positive().nullable().default(null),
     /** Discos por lado para la carga sugerida (solo barras con peso conocido y carga ≥ barra). */
     plates: PlateBreakdownSchema.nullable().default(null),
+    /** true si el ejercicio de hoy es un cambio fijado del plan (idea 3); `substitutedFrom` es el original. */
+    pinned: z.boolean().default(false),
     /** Nota fija del usuario para el ejercicio realmente hecho (idea 2); null si no hay. */
     note: z.string().nullable().default(null),
   })

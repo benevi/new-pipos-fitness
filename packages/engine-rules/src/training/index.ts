@@ -18,3 +18,4 @@ export {
   type LoadImplement,
   type RoundDirection,
 } from './load.js';
+export { resolvePins, pinDropReason, type PinDropReason, type ResolvedPins } from './pins.js';
