@@ -23,6 +23,12 @@ export const EnvSchema = z.object({
   /** Vida del access token en segundos. */
   JWT_ACCESS_EXPIRES_IN: z.coerce.number().int().min(60).max(86_400).default(900),
   REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(365).default(30),
+  /**
+   * Ventana (s) en la que reenviar un refresh token recién rotado se trata como carrera benigna
+   * (respuesta perdida, dos peticiones a la vez): 401 AUTH_REFRESH_RACE sin revocar la familia.
+   * Fuera de la ventana, la reutilización revoca todas las sesiones del usuario.
+   */
+  REFRESH_REUSE_GRACE_SECONDS: z.coerce.number().int().min(0).max(300).default(10),
   /** Lista separada por comas de orígenes permitidos para CORS. Vacío = ningún origen de navegador. */
   CORS_ORIGINS: z
     .string()

@@ -15,6 +15,7 @@ describe('parseEnv', () => {
       PORT: 3000,
       JWT_ACCESS_EXPIRES_IN: 900,
       REFRESH_TOKEN_TTL_DAYS: 30,
+      REFRESH_REUSE_GRACE_SECONDS: 10,
       CORS_ORIGINS: [],
       LOG_LEVEL: 'info',
       THROTTLE_ENABLED: true,
