@@ -38,6 +38,8 @@ export class ContractInterceptor implements NestInterceptor {
 
     const req = context.switchToHttp().getRequest();
     req.params = parseInput(spec.params, req.params, 'params');
+    // Solo se validan; el handler las lee con @Headers (req.headers no se reasigna).
+    if (spec.headers) parseInput(spec.headers, req.headers, 'headers');
     if (spec.query) {
       // Express 4 permite reasignar req.query; el handler recibe el objeto ya validado.
       req.query = parseInput(spec.query, req.query, 'query');

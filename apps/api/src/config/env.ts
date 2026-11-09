@@ -49,9 +49,21 @@ export const EnvSchema = z.object({
     .pipe(z.string().url().optional()),
   /** Rate limiting global. Sólo se desactiva explícitamente (p. ej. en e2e). */
   THROTTLE_ENABLED: booleanFromEnv(true),
+  /**
+   * Saltos de proxy de confianza delante de la API (`app.set('trust proxy', n)`). Con 0 (por
+   * defecto) se ignora `X-Forwarded-For` y la IP es la del socket. Detrás del balanceador del
+   * hosting, el número de proxies que añaden su salto (normalmente 1). Un valor mayor del real
+   * permite a un cliente falsificar su IP con la cabecera y saltarse el rate limiting.
+   */
+  TRUST_PROXY_HOPS: z.coerce.number().int().min(0).max(10).default(0),
+  /**
+   * Almacén de contadores del rate limiting: `postgres` (compartido entre réplicas) o `memory`
+   * (por proceso). Sin definir: `postgres` en producción y `memory` en el resto.
+   */
+  THROTTLE_STORE: z.enum(['memory', 'postgres']).optional(),
 });
 
-export type Env = z.infer<typeof EnvSchema>;
+export type Env = Omit<z.infer<typeof EnvSchema>, 'THROTTLE_STORE'> & { THROTTLE_STORE: 'memory' | 'postgres' };
 
 export const APP_ENV = Symbol('APP_ENV');
 
@@ -73,5 +85,6 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
   if (result.data.NODE_ENV === 'production' && !result.data.THROTTLE_ENABLED) {
     throw new InvalidEnvError(['THROTTLE_ENABLED: cannot be disabled in production']);
   }
-  return result.data;
+  const data = result.data;
+  return { ...data, THROTTLE_STORE: data.THROTTLE_STORE ?? (data.NODE_ENV === 'production' ? 'postgres' : 'memory') };
 }

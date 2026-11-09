@@ -13,7 +13,7 @@ import {
 } from '../../test/unit/support';
 import type { CatalogService } from '../catalog/catalog.service';
 import { ageFrom, buildEngineProfile, EngineInputService, toTrainingHistory } from './engine-input.service';
-import { PLAN_VERSION_MAX_ATTEMPTS, PlansService } from './plans.service';
+import { canonicalJson, idempotencyHash, PLAN_VERSION_MAX_ATTEMPTS, PlansService } from './plans.service';
 
 const p2002 = () => new Prisma.PrismaClientKnownRequestError('dup', { code: 'P2002', clientVersion: '5' });
 
@@ -168,9 +168,68 @@ describe('PlansService', () => {
       { exercise: { slug: 'zzz-no-existe' }, planExercise: { exercise: { slug: 'yyy-no-existe' } } },
     ]);
     const res = await plans.generate(UID);
-    expect(res.version).toBe(2);
+    expect(res.created).toBe(true);
+    expect(res.value.version).toBe(2);
+    expect(prisma.planVersion.create.mock.calls[0][0].data).toMatchObject({ idempotencyKey: null, idempotencyHash: null });
     // El cambio fijado imposible se descarta: no se crea ningún override.
     expect(prisma.planExerciseOverride.createMany).not.toHaveBeenCalled();
+  });
+
+  it('canonicalJson/idempotencyHash: independiente del orden de las claves; ignora undefined', () => {
+    expect(canonicalJson({ b: 1, a: [{ d: 2, c: null }], u: undefined })).toBe('{"a":[{"c":null,"d":2}],"b":1}');
+    expect(idempotencyHash({ a: 1, b: 2 })).toBe(idempotencyHash({ b: 2, a: 1 }));
+    expect(idempotencyHash({ a: 1 })).not.toBe(idempotencyHash({ a: 2 }));
+  });
+
+  function withProfile(prisma: ReturnType<typeof setup>['prisma']) {
+    prisma.trainingProfile.findUnique.mockResolvedValue(profileRow());
+    prisma.userExercisePreference.findMany.mockResolvedValue([]);
+    prisma.consentEvent.findFirst.mockResolvedValue(null);
+  }
+
+  it('generate con Idempotency-Key: clave nueva crea y guarda clave y huella', async () => {
+    const { plans, prisma } = setup();
+    withProfile(prisma);
+    prisma.planVersion.findUnique.mockResolvedValue(null);
+    prisma.trainingPlan.findFirst.mockResolvedValueOnce({ id: 'p1' });
+    prisma.planVersion.aggregate.mockResolvedValueOnce({ _max: { version: 1 } });
+    prisma.planVersion.create.mockResolvedValueOnce(versionRow({ id: 'v2', version: 2 }));
+    prisma.planVersion.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(versionRow({ id: 'v2', version: 2 }));
+    const res = await plans.generate(UID, 'key-1');
+    expect(res).toMatchObject({ created: true, value: { id: 'v2' } });
+    const data = prisma.planVersion.create.mock.calls[0][0].data;
+    expect(data.idempotencyKey).toBe('key-1');
+    expect(data.idempotencyHash).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('generate con Idempotency-Key repetida: misma entrada → la existente (200); otra → 422', async () => {
+    const { plans, prisma } = setup();
+    withProfile(prisma);
+    const engineProfile = (await new EngineInputService(prisma as unknown as PrismaService, new FixedClock()).load(UID))!.engineProfile;
+    prisma.planVersion.findUnique.mockResolvedValueOnce(versionRow({ idempotencyHash: idempotencyHash(engineProfile) }));
+    const replay = await plans.generate(UID, 'key-1');
+    expect(replay).toMatchObject({ created: false, value: { id: 'v1' } });
+    expect(prisma.planVersion.create).not.toHaveBeenCalled();
+
+    prisma.planVersion.findUnique.mockResolvedValueOnce(versionRow({ idempotencyHash: 'f'.repeat(64) }));
+    await rejectsWithCode(plans.generate(UID, 'key-1'), 'IDEMPOTENCY_KEY_REUSED', 422);
+  });
+
+  it('generate con Idempotency-Key: si otra petición la inserta a la vez, el reintento devuelve la suya', async () => {
+    const { plans, prisma } = setup();
+    withProfile(prisma);
+    const engineProfile = (await new EngineInputService(prisma as unknown as PrismaService, new FixedClock()).load(UID))!.engineProfile;
+    // Antes de la transacción no existe; dentro del reintento, ya sí.
+    prisma.planVersion.findUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(versionRow({ id: 'v9', idempotencyHash: idempotencyHash(engineProfile) }));
+    prisma.planVersion.findFirst.mockResolvedValue(null);
+    prisma.trainingPlan.findFirst.mockResolvedValue({ id: 'p1' });
+    prisma.planVersion.aggregate.mockResolvedValue({ _max: { version: 1 } });
+    prisma.planVersion.create.mockRejectedValueOnce(p2002());
+    const res = await plans.generate(UID, 'key-1');
+    expect(res).toMatchObject({ created: false, value: { id: 'v9' } });
   });
 
   it('current, versions, version (propiedad → 404)', async () => {

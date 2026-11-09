@@ -16,12 +16,29 @@ import { isUniqueViolation, PrismaService, type TransactionClient } from '../../
 import { AnalyticsService } from '../analytics/analytics.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
+import { dateColumn, fromDateColumn, localDate } from '../../common/time';
+import { log } from '../../logging/logging';
+import { isDeloadSession, SessionsService, startsNewDeload } from './sessions.service';
 import { toSetResponse, toWorkoutResponse, workoutInclude } from './workout-mapper';
 
 export interface Upserted<T> {
   value: T;
   /** false = el `clientId` ya existía (reenvío idempotente): 200 en vez de 201. */
   created: boolean;
+}
+
+/**
+ * Un entrenamiento en curso sin actividad (inicio o última serie) desde hace más de estas horas
+ * se abandona automáticamente al empezar otro (issue #13): uno olvidado no bloquea los siguientes
+ * con 409 WORKOUT_IN_PROGRESS. 12 h: ninguna sesión real dura tanto y deja margen a quien empieza
+ * por la mañana y cierra por la noche. Los abandonados no cuentan en la analítica ni la adherencia.
+ */
+export const STALE_WORKOUT_HOURS = 12;
+const HOUR_MS = 60 * 60 * 1000;
+
+/** ¿Lleva el entrenamiento en curso más de STALE_WORKOUT_HOURS sin actividad? */
+export function isStaleWorkout(lastActivity: Date, now: Date): boolean {
+  return now.getTime() - lastActivity.getTime() > STALE_WORKOUT_HOURS * HOUR_MS;
 }
 
 /** Cuántas alternativas pide la validación de un cambio (las 3 visibles + margen). */
@@ -40,6 +57,7 @@ export class WorkoutsService {
     private readonly catalog: CatalogService,
     private readonly engineInput: EngineInputService,
     private readonly clock: Clock,
+    private readonly sessions: SessionsService,
   ) {}
 
   async start(userId: string, input: StartWorkoutRequest): Promise<Upserted<WorkoutResponse>> {
@@ -51,15 +69,38 @@ export class WorkoutsService {
 
     const planSession = await this.prisma.planSession.findFirst({
       where: { id: input.planSessionId, userId },
-      select: { id: true },
+      select: { id: true, planVersionId: true },
     });
     if (!planSession) throw ApiError.notFound('Plan session not found');
+    // Un entrenamiento NUEVO solo sobre la versión vigente: el de una versión antigua no avanzaría
+    // el microciclo vigente (issue #10). Los ya empezados (reenvío por clientId, arriba) y sus
+    // series se siguen aceptando: la cola offline puede entregarlos tras un cambio de plan.
+    if (planSession.planVersionId !== (await this.currentVersionId(userId))) {
+      throw new ApiError(
+        HttpStatus.CONFLICT,
+        'PLAN_SESSION_OUTDATED',
+        'This plan session belongs to an older plan version; refresh GET /sessions/today',
+      );
+    }
 
     const inProgress = await this.prisma.workoutSession.findFirst({
       where: { userId, status: 'in_progress' },
-      select: { id: true },
+      select: {
+        id: true,
+        userId: true,
+        startedAt: true,
+        setLogs: { orderBy: { completedAt: 'desc' }, take: 1, select: { completedAt: true } },
+      },
     });
-    if (inProgress) throw this.inProgressError(inProgress.id);
+    if (inProgress) {
+      const lastSet = inProgress.setLogs[0]?.completedAt;
+      const lastActivity = lastSet && lastSet > inProgress.startedAt ? lastSet : inProgress.startedAt;
+      if (!isStaleWorkout(lastActivity, this.clock.now())) throw this.inProgressError(inProgress.id);
+      await this.prisma.$transaction(async (tx) => {
+        await this.analytics.lockUser(tx, userId);
+        await this.markAbandoned(tx, inProgress);
+      });
+    }
 
     try {
       // La FK compuesta (planSessionId, userId) impide en BD apuntar a la sesión de otro usuario.
@@ -170,6 +211,7 @@ export class WorkoutsService {
   }
 
   async finish(userId: string, workoutId: string, input: FinishWorkoutRequest): Promise<WorkoutResponse> {
+    const deload = await this.wasDeload(userId, workoutId);
     await this.prisma.$transaction(async (tx) => {
       await this.analytics.lockUser(tx, userId);
       const workout = await this.ownedWorkout(tx, userId, workoutId);
@@ -180,8 +222,75 @@ export class WorkoutsService {
       }
       await tx.workoutSession.update({ where: { id: workoutId }, data: { status: 'completed', completedAt } });
       await this.analytics.onWorkoutFinished(tx, workout);
+      if (deload) await this.recordDeload(tx, userId, workout);
     });
     return this.get(userId, workoutId);
+  }
+
+  /**
+   * ¿La prescripción de este entrenamiento (el que está en curso) era de descarga? Se calcula con
+   * la misma sesión de hoy que ve el usuario. Si no se puede calcular, no se registra nada (el
+   * cierre nunca falla por esto).
+   */
+  private async wasDeload(userId: string, workoutId: string): Promise<boolean> {
+    try {
+      const today = await this.sessions.today(userId);
+      return today.workout?.id === workoutId && isDeloadSession(today.exercises);
+    } catch (error) {
+      // Un ApiError (sin perfil, sin plan…) es un caso de dominio: simplemente no hay descarga.
+      if (!(error instanceof ApiError)) {
+        log('warn', 'Could not compute the deload state of a finished workout', { name: (error as Error)?.name });
+      }
+      return false;
+    }
+  }
+
+  /** Issue #15: guarda la última descarga real en el plan para anclar el ciclo de descarga. */
+  private async recordDeload(
+    tx: TransactionClient,
+    userId: string,
+    workout: { startedAt: Date; planSessionId: string },
+  ): Promise<void> {
+    const session = await tx.planSession.findFirst({
+      where: { id: workout.planSessionId, userId },
+      select: { planVersion: { select: { plan: { select: { id: true, lastDeloadOn: true } } } } },
+    });
+    const plan = session?.planVersion.plan;
+    if (!plan) return;
+    const profile = await tx.trainingProfile.findUnique({ where: { userId }, select: { timezone: true } });
+    const day = localDate(workout.startedAt, profile?.timezone ?? 'UTC');
+    const last = plan.lastDeloadOn ? fromDateColumn(plan.lastDeloadOn) : null;
+    if (startsNewDeload(last, day)) {
+      await tx.trainingPlan.update({ where: { id: plan.id }, data: { lastDeloadOn: dateColumn(day) } });
+    }
+  }
+
+  /**
+   * Abandonar un entrenamiento en curso (issue #13). Idempotente: abandonar uno ya abandonado
+   * devuelve el mismo estado; uno terminado → 409 WORKOUT_FINISHED. Sus series se conservan
+   * pero dejan de contar en e1RM, volumen y adherencia; no se admiten series nuevas.
+   */
+  async abandon(userId: string, workoutId: string): Promise<WorkoutResponse> {
+    await this.prisma.$transaction(async (tx) => {
+      await this.analytics.lockUser(tx, userId);
+      const workout = await this.ownedWorkout(tx, userId, workoutId);
+      if (workout.status === 'abandoned') return;
+      this.assertInProgress(workout.status);
+      await this.markAbandoned(tx, workout);
+    });
+    return this.get(userId, workoutId);
+  }
+
+  /** Pasa a `abandoned` si sigue en curso (condición en el UPDATE: no pisa un cierre simultáneo). */
+  private async markAbandoned(
+    tx: TransactionClient,
+    workout: { id: string; userId: string; startedAt: Date },
+  ): Promise<void> {
+    const updated = await tx.workoutSession.updateMany({
+      where: { id: workout.id, userId: workout.userId, status: 'in_progress' },
+      data: { status: 'abandoned' },
+    });
+    if (updated.count === 1) await this.analytics.onWorkoutAbandoned(tx, workout);
   }
 
   /** CUJ-4: 3 alternativas del motor que respetan patrón, músculos, material y limitaciones. */
@@ -249,6 +358,16 @@ export class WorkoutsService {
       update: { exerciseId },
     });
     return { workoutId, planExerciseId, exercise: target, substitutedFrom: slot.exercise };
+  }
+
+  /** Versión vigente = la de mayor número del plan activo (como PlansService.currentVersionId). */
+  private async currentVersionId(userId: string): Promise<string | null> {
+    const row = await this.prisma.planVersion.findFirst({
+      where: { userId, plan: { status: 'active' } },
+      orderBy: { version: 'desc' },
+      select: { id: true },
+    });
+    return row?.id ?? null;
   }
 
   private replayStart(existing: Parameters<typeof toWorkoutResponse>[0], input: StartWorkoutRequest): Upserted<WorkoutResponse> {

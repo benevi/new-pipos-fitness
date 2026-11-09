@@ -1,8 +1,10 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Param, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import { z } from 'zod';
 import { Throttle } from '@nestjs/throttler';
 import {
   IdSchema,
+  IdempotencyKeyHeadersSchema,
   PlanExerciseOverrideRequestSchema,
   PlanExerciseOverrideResponseSchema,
   type PlanExerciseOverrideRequest,
@@ -35,12 +37,22 @@ export class PlansController {
   @Contract({
     tag: 'plans',
     summary: 'Generar una versión nueva del plan a partir del perfil',
+    description:
+      'Cabecera opcional Idempotency-Key (recomendado un UUID v4 por intento, igual en cada reintento): repetir la clave devuelve la misma versión con 200 en vez de crear otra; la misma clave con otra entrada (el perfil cambió entre medias) → 422 IDEMPOTENCY_KEY_REUSED. Sin cabecera, cada petición crea una versión.',
+    headers: IdempotencyKeyHeadersSchema,
     response: PlanVersionResponseSchema,
     status: 201,
+    alternateStatuses: [200],
     errors: [409, 422],
   })
-  generate(@CurrentUser() user: AuthenticatedUser) {
-    return this.plans.generate(user.id);
+  async generate(
+    @CurrentUser() user: AuthenticatedUser,
+    @Headers('idempotency-key') idempotencyKey: string | undefined,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.plans.generate(user.id, idempotencyKey);
+    res.status(result.created ? 201 : 200);
+    return result.value;
   }
 
   @Get('current')

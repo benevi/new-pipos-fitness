@@ -6,8 +6,8 @@ import type { AnalyticsService } from '../analytics/analytics.service';
 import type { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import { NotesService } from './notes.service';
-import { currentLoad, SessionsService, weeksSinceDeload } from './sessions.service';
-import { WorkoutsService } from './workouts.service';
+import { currentLoad, isDeloadSession, SessionsService, startsNewDeload, weeksSinceDeload } from './sessions.service';
+import { isStaleWorkout, STALE_WORKOUT_HOURS, WorkoutsService } from './workouts.service';
 
 const NOW = new Date('2026-11-09T10:00:00.000Z');
 const W = 'w1';
@@ -25,18 +25,19 @@ const p2002 = () => new Prisma.PrismaClientKnownRequestError('dup', { code: 'P20
 function setup() {
   const prisma = prismaMock();
   const clock = new FixedClock(NOW);
-  const analytics = { lockUser: vi.fn(), onSetChanged: vi.fn(), onWorkoutFinished: vi.fn() };
+  const analytics = { lockUser: vi.fn(), onSetChanged: vi.fn(), onWorkoutFinished: vi.fn(), onWorkoutAbandoned: vi.fn() };
   const catalog = catalogServiceMock();
   const engineInput = new EngineInputService(prisma as unknown as PrismaService, clock);
+  const notes = new NotesService(prisma as unknown as PrismaService);
+  const sessions = new SessionsService(prisma as unknown as PrismaService, catalog as unknown as CatalogService, engineInput, clock, notes);
   const service = new WorkoutsService(
     prisma as unknown as PrismaService,
     analytics as unknown as AnalyticsService,
     catalog as unknown as CatalogService,
     engineInput,
     clock,
+    sessions,
   );
-  const notes = new NotesService(prisma as unknown as PrismaService);
-  const sessions = new SessionsService(prisma as unknown as PrismaService, catalog as unknown as CatalogService, engineInput, clock, notes);
   prisma.userExerciseNote.findMany.mockResolvedValue([]);
   prisma.userExercisePreference.findMany.mockResolvedValue([]);
   prisma.consentEvent.findFirst.mockResolvedValue(null);
@@ -63,8 +64,9 @@ describe('WorkoutsService.start', () => {
     prisma.workoutSession.findUnique.mockResolvedValue(null);
     prisma.planSession.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.start(UID, startBody), 'NOT_FOUND', 404);
-    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1' });
-    prisma.workoutSession.findFirst.mockResolvedValueOnce({ id: 'w0' });
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
+    prisma.workoutSession.findFirst.mockResolvedValueOnce({ id: 'w0', userId: UID, startedAt: NOW, setLogs: [] });
     await rejectsWithCode(service.start(UID, startBody), 'WORKOUT_IN_PROGRESS', 409);
     prisma.workoutSession.findFirst.mockResolvedValueOnce(null);
     prisma.workoutSession.create.mockResolvedValueOnce(workoutRow());
@@ -75,7 +77,8 @@ describe('WorkoutsService.start', () => {
 
   it('carrera P2002: devuelve la del mismo clientId o 409; otros errores se propagan', async () => {
     const { prisma, service } = setup();
-    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1' });
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
     prisma.workoutSession.findFirst.mockResolvedValue(null);
     prisma.workoutSession.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(workoutRow());
     prisma.workoutSession.create.mockRejectedValueOnce(p2002());
@@ -86,6 +89,87 @@ describe('WorkoutsService.start', () => {
     await rejectsWithCode(service.start(UID, startBody), 'WORKOUT_IN_PROGRESS');
     prisma.workoutSession.create.mockRejectedValueOnce(new Error('x'));
     await expect(service.start(UID, startBody)).rejects.toThrow('x');
+  });
+
+  it('sesión de una versión antigua del plan → 409 PLAN_SESSION_OUTDATED (sin crear nada)', async () => {
+    const { prisma, service } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(null);
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v2' });
+    await rejectsWithCode(service.start(UID, startBody), 'PLAN_SESSION_OUTDATED', 409);
+    expect(prisma.workoutSession.create).not.toHaveBeenCalled();
+    // Sin plan activo tampoco es la vigente.
+    prisma.planVersion.findFirst.mockResolvedValue(null);
+    await rejectsWithCode(service.start(UID, startBody), 'PLAN_SESSION_OUTDATED', 409);
+  });
+
+  it('el reenvío de un entrenamiento ya creado sobre una versión antigua se acepta (idempotencia)', async () => {
+    const { prisma, service } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(workoutRow());
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v2' });
+    expect((await service.start(UID, startBody)).created).toBe(false);
+  });
+
+  it(`isStaleWorkout: más de ${STALE_WORKOUT_HOURS} h sin actividad`, () => {
+    const h = (n: number) => new Date(NOW.getTime() - n * 3_600_000);
+    expect(isStaleWorkout(h(STALE_WORKOUT_HOURS), NOW)).toBe(false);
+    expect(isStaleWorkout(h(STALE_WORKOUT_HOURS + 0.01), NOW)).toBe(true);
+  });
+
+  it('otro en curso olvidado (> 12 h sin actividad) → se abandona y se empieza el nuevo', async () => {
+    const { prisma, service, analytics } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(null);
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
+    const old = new Date(NOW.getTime() - 13 * 3_600_000);
+    prisma.workoutSession.findFirst.mockResolvedValueOnce({ id: 'w0', userId: UID, startedAt: old, setLogs: [{ completedAt: old }] });
+    prisma.workoutSession.updateMany.mockResolvedValueOnce({ count: 1 });
+    prisma.workoutSession.create.mockResolvedValueOnce(workoutRow());
+    expect((await service.start(UID, startBody)).created).toBe(true);
+    expect(prisma.workoutSession.updateMany.mock.calls[0][0]).toMatchObject({
+      where: { id: 'w0', status: 'in_progress' },
+      data: { status: 'abandoned' },
+    });
+    expect(analytics.onWorkoutAbandoned).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ id: 'w0' }));
+  });
+
+  it('una serie reciente mantiene vivo un entrenamiento empezado hace más de 12 h', async () => {
+    const { prisma, service } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(null);
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
+    const old = new Date(NOW.getTime() - 13 * 3_600_000);
+    const recent = new Date(NOW.getTime() - 3_600_000);
+    prisma.workoutSession.findFirst.mockResolvedValueOnce({ id: 'w0', userId: UID, startedAt: old, setLogs: [{ completedAt: recent }] });
+    await rejectsWithCode(service.start(UID, startBody), 'WORKOUT_IN_PROGRESS', 409);
+    expect(prisma.workoutSession.updateMany).not.toHaveBeenCalled();
+  });
+
+  it('abandon: en curso → abandoned y recalcula; idempotente; terminado → 409; ajeno → 404', async () => {
+    const { prisma, service, analytics } = setup();
+    prisma.workoutSession.findFirst
+      .mockResolvedValueOnce(workoutRow())
+      .mockResolvedValueOnce(workoutRow({ status: 'abandoned' }));
+    prisma.workoutSession.updateMany.mockResolvedValueOnce({ count: 1 });
+    expect((await service.abandon(UID, W)).status).toBe('abandoned');
+    expect(analytics.onWorkoutAbandoned).toHaveBeenCalledTimes(1);
+
+    prisma.workoutSession.findFirst
+      .mockResolvedValueOnce(workoutRow({ status: 'abandoned' }))
+      .mockResolvedValueOnce(workoutRow({ status: 'abandoned' }));
+    expect((await service.abandon(UID, W)).status).toBe('abandoned');
+    expect(prisma.workoutSession.updateMany).toHaveBeenCalledTimes(1);
+
+    prisma.workoutSession.findFirst.mockResolvedValueOnce(workoutRow({ status: 'completed' }));
+    await rejectsWithCode(service.abandon(UID, W), 'WORKOUT_FINISHED', 409);
+    prisma.workoutSession.findFirst.mockResolvedValueOnce(null);
+    await rejectsWithCode(service.abandon(UID, W), 'NOT_FOUND', 404);
+
+    // Carrera con un cierre: el UPDATE condicionado no toca nada y no recalcula.
+    prisma.workoutSession.findFirst.mockResolvedValueOnce(workoutRow()).mockResolvedValueOnce(workoutRow({ status: 'completed' }));
+    prisma.workoutSession.updateMany.mockResolvedValueOnce({ count: 0 });
+    await service.abandon(UID, W);
+    expect(analytics.onWorkoutAbandoned).toHaveBeenCalledTimes(1);
   });
 
   it('get: 404 si no es suyo', async () => {
@@ -282,5 +366,73 @@ describe('SessionsService', () => {
     expect(ex.exercise.id).toBe('id:press-banca-mancuernas');
     expect(ex.prescription.loadKg).toBeNull();
     expect(ex.loggedSets).toHaveLength(1);
+  });
+});
+
+describe('Descarga real (issue #15)', () => {
+  const plain = (isDeload: boolean) => ({ prescription: { isDeload } });
+
+  it('weeksSinceDeload: sin descarga registrada cuenta desde el inicio del plan', () => {
+    expect(weeksSinceDeload('2026-01-05', '2026-02-16')).toBe(6);
+    expect(weeksSinceDeload('2026-01-05', '2026-02-16', null)).toBe(6);
+  });
+
+  it('weeksSinceDeload: anclado a la última descarga (sigue 7 días y luego reinicia el ciclo)', () => {
+    // Plan del 5 de enero; descarga reactiva el 2 de febrero (semana 4).
+    expect(weeksSinceDeload('2026-01-05', '2026-02-02', '2026-02-02')).toBe(6);
+    expect(weeksSinceDeload('2026-01-05', '2026-02-08', '2026-02-02')).toBe(6);
+    expect(weeksSinceDeload('2026-01-05', '2026-02-09', '2026-02-02')).toBe(0);
+    // Sin el ancla, el 16 de febrero tocaría la programada (semana 6); con él, no.
+    expect(weeksSinceDeload('2026-01-05', '2026-02-16', '2026-02-02')).toBe(1);
+    expect(weeksSinceDeload('2026-01-05', '2026-03-23', '2026-02-02')).toBe(6);
+    // Una fecha anterior al plan (plan nuevo) o futura se ignora.
+    expect(weeksSinceDeload('2026-03-02', '2026-03-09', '2026-02-02')).toBe(1);
+    expect(weeksSinceDeload('2026-01-05', '2026-01-12', '2026-02-02')).toBe(1);
+  });
+
+  it('isDeloadSession: al menos la mitad de los ejercicios en descarga', () => {
+    expect(isDeloadSession([])).toBe(false);
+    expect(isDeloadSession([plain(true), plain(false), plain(false)])).toBe(false);
+    expect(isDeloadSession([plain(true), plain(false)])).toBe(true);
+    expect(isDeloadSession([plain(true), plain(true), plain(true)])).toBe(true);
+  });
+
+  it('startsNewDeload: solo fuera de la semana de la descarga anterior', () => {
+    expect(startsNewDeload(null, '2026-02-02')).toBe(true);
+    expect(startsNewDeload('2026-02-02', '2026-02-08')).toBe(false);
+    expect(startsNewDeload('2026-02-02', '2026-02-09')).toBe(true);
+  });
+
+  it('finish registra la descarga en el plan si la sesión de hoy era de descarga', async () => {
+    const { prisma, service, sessions } = setup();
+    prisma.workoutSession.findFirst.mockResolvedValue(workoutRow());
+    prisma.workoutSession.update.mockResolvedValue({});
+    const today = vi.spyOn(sessions, 'today');
+    today.mockResolvedValueOnce({ workout: { id: W }, exercises: [plain(true), plain(true)] } as never);
+    prisma.planSession.findFirst.mockResolvedValueOnce({ planVersion: { plan: { id: 'p1', lastDeloadOn: null } } });
+    prisma.trainingProfile.findUnique.mockResolvedValue({ timezone: 'Europe/Madrid' });
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    expect(prisma.trainingPlan.update).toHaveBeenCalledWith({ where: { id: 'p1' }, data: { lastDeloadOn: new Date('2026-11-09') } });
+
+    // Dentro de la misma semana de descarga no se mueve el ancla.
+    today.mockResolvedValueOnce({ workout: { id: W }, exercises: [plain(true)] } as never);
+    prisma.planSession.findFirst.mockResolvedValueOnce({ planVersion: { plan: { id: 'p1', lastDeloadOn: new Date('2026-11-06') } } });
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    expect(prisma.trainingPlan.update).toHaveBeenCalledTimes(1);
+
+    // Sesión normal, otro entrenamiento o error al calcular: nada.
+    today.mockResolvedValueOnce({ workout: { id: W }, exercises: [plain(false)] } as never);
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    today.mockResolvedValueOnce({ workout: { id: 'otro' }, exercises: [plain(true)] } as never);
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    today.mockRejectedValueOnce(new Error('x'));
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    expect(prisma.trainingPlan.update).toHaveBeenCalledTimes(1);
+
+    // Sin plan encontrado tampoco.
+    today.mockResolvedValueOnce({ workout: { id: W }, exercises: [plain(true)] } as never);
+    prisma.planSession.findFirst.mockResolvedValueOnce(null);
+    await service.finish(UID, W, { completedAt: NOW.toISOString() });
+    expect(prisma.trainingPlan.update).toHaveBeenCalledTimes(1);
   });
 });

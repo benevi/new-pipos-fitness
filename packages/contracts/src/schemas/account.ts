@@ -5,6 +5,7 @@ import {
   LocaleSchema,
   MuscleSchema,
   PlanStatusSchema,
+  AuditEventTypeSchema,
   RoleSchema,
 } from '../enums/index.js';
 import { CalendarDateSchema, DateTimeSchema, IdSchema } from './common.js';
@@ -76,6 +77,12 @@ export const AccountExportSchema = z
     trainingBreaks: z.array(TrainingBreakResponseSchema).default([]),
     /** Medidas corporales (dato de salud, art. 9). */
     bodyMeasurements: z.array(BodyMeasurementResponseSchema).default([]),
+    /**
+     * Registro de auditoría del usuario (issue #17): solo tipo y fecha; retención limitada
+     * (180 días). El servidor siempre lo envía; el `default` mantiene válidas las exportaciones
+     * y fixtures anteriores.
+     */
+    auditEvents: z.array(z.object({ type: AuditEventTypeSchema, occurredAt: DateTimeSchema }).strict()).default([]),
     analytics: z
       .object({
         e1rm: z.array(

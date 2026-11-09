@@ -41,6 +41,8 @@
 | `LOG_LEVEL` | `info` |
 | `SENTRY_DSN` | DSN del proyecto (región UE) o vacío |
 | `THROTTLE_ENABLED` | Sin definir (true) |
+| `TRUST_PROXY_HOPS` | Número de proxies de confianza delante de la API (normalmente `1`: el balanceador del hosting). `0` (por defecto) ignora `X-Forwarded-For`. **Nunca** más saltos de los reales: un cliente podría falsificar su IP y saltarse el rate limiting |
+| `THROTTLE_STORE` | `postgres` (por defecto con `NODE_ENV=production`): contadores del rate limiting compartidos entre réplicas en la tabla `ThrottlerRecord`. `memory` solo con una única instancia |
 
 - [ ] Secretos en el gestor de secretos del hosting; rotación de `JWT_ACCESS_SECRET` documentada
       (rotarlo invalida todos los access tokens; los refresh siguen valiendo).
@@ -52,22 +54,29 @@
 - [ ] Migraciones: `pnpm --filter @pipos/api prisma:migrate:deploy` (`prisma migrate deploy`) como paso
       previo al arranque, **una sola vez por despliegue**. Comprobar antes en staging.
 - [ ] Seed del catálogo: `pnpm --filter @pipos/api prisma:seed` (idempotente; retira con `deletedAt`).
-- [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo` o cambia una `formulaVersion`:
+- [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo`, cambia una `formulaVersion` o
+      cambia cómo se calcula la adherencia (p. ej. issue #14, versión del plan por semana):
       `pnpm --filter @pipos/api analytics:rebuild` tras migrar.
 
 ### Red, TLS y límites
 
 - [ ] **[BLOQUEA]** HTTPS con TLS 1.2+ terminado en el hosting/proxy; HTTP redirige o se cierra.
       La API ya envía HSTS.
-- [ ] **[BLOQUEA]** `trust proxy` configurado según el proxy del hosting (hoy no se configura: el
-      rate limiting vería la IP del proxy y limitaría a todos a la vez). Ver DEUDA_TECNICA.
-- [ ] Una sola instancia de la API (el throttler es en memoria). Con varias réplicas hace falta un
-      almacén compartido antes de escalar.
+- [ ] **[BLOQUEA]** `TRUST_PROXY_HOPS` igual al número de proxies del hosting delante de la API
+      (sin él el rate limiting vería la IP del proxy y limitaría a todos a la vez). Comprobar en
+      staging: dos clientes con IP distinta no comparten el límite de login (5/min), y una cabecera
+      `X-Forwarded-For` inventada por el cliente no cambia su IP.
+- [ ] `THROTTLE_STORE=postgres` (por defecto en producción): las réplicas comparten los contadores,
+      así que se puede escalar a varias instancias. La tabla `ThrottlerRecord` se limpia sola (filas
+      caducadas, como mucho una vez por minuto y réplica); no guarda IPs en claro (clave = hash).
 - [ ] Límites vigentes revisados: global 100/min, login/registro 5/min, refresh 10/min, generar
       plan 10/min, exportar/borrar 5/min, health 60/min (`apps/api/src/config/throttle.ts`).
 - [ ] CORS: solo los orígenes de `CORS_ORIGINS`.
 
 ### Monitorización
+
+- [ ] Tarea diaria `pnpm --filter @pipos/api audit:cleanup` (planificador del hosting): borra los
+      `AuditEvent` con más de 180 días (`AUDIT_RETENTION_DAYS`, issue #17). Retención acordada en la EIPD.
 
 - [ ] Sondas del orquestador: liveness `GET /health`, readiness `GET /health/ready` (503 sin BD).
 - [ ] Logs JSON a un sistema con retención limitada y acceso restringido; comprobar que no salen

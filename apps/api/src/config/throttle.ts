@@ -1,7 +1,7 @@
 /**
  * Límites de rate limiting (ventana de 60 s, por IP de cliente).
- * El almacenamiento es en memoria por instancia: con varias réplicas hará falta un almacén
- * compartido (pendiente; v1 es un único proceso, ADR-0002).
+ * La IP sale de `req.ip` (con `TRUST_PROXY_HOPS` saltos de proxy de confianza) y los contadores
+ * van en Postgres (`THROTTLE_STORE=postgres`, compartidos entre réplicas) o en memoria por proceso.
  */
 const MINUTE_MS = 60_000;
 

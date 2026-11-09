@@ -1138,6 +1138,38 @@
             },
             "default": []
           },
+          "auditEvents": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "login_succeeded",
+                    "login_failed",
+                    "refresh_reuse_detected",
+                    "health_consent_granted",
+                    "health_consent_withdrawn",
+                    "health_profile_changed",
+                    "body_measurement_saved",
+                    "body_measurement_deleted",
+                    "account_deleted"
+                  ]
+                },
+                "occurredAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "type",
+                "occurredAt"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
           "analytics": {
             "type": "object",
             "properties": {
@@ -8101,13 +8133,41 @@
           "plans"
         ],
         "summary": "Generar una versión nueva del plan a partir del perfil",
+        "description": "Cabecera opcional Idempotency-Key (recomendado un UUID v4 por intento, igual en cada reintento): repetir la clave devuelve la misma versión con 200 en vez de crear otra; la misma clave con otra entrada (el perfil cambió entre medias) → 422 IDEMPOTENCY_KEY_REUSED. Sin cabecera, cada petición crea una versión.",
         "security": [
           {
             "bearer": []
           }
         ],
-        "parameters": [],
+        "parameters": [
+          {
+            "name": "idempotency-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^[\\x21-\\x7E]{1,128}$"
+                }
+              ]
+            }
+          }
+        ],
         "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanVersionResponse"
+                }
+              }
+            }
+          },
           "201": {
             "description": "Created",
             "content": {
@@ -8842,6 +8902,7 @@
           "workouts"
         ],
         "summary": "Empezar un entrenamiento (idempotente por clientId)",
+        "description": "409 WORKOUT_IN_PROGRESS si hay otro en curso con actividad en las últimas 12 h (si no, ese se abandona automáticamente y se empieza el nuevo); 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.",
         "security": [
           {
             "bearer": []
@@ -8998,6 +9059,104 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts/{id}/abandon": {
+      "post": {
+        "operationId": "Workouts_abandon",
+        "tags": [
+          "workouts"
+        ],
+        "summary": "Abandonar el entrenamiento en curso (idempotente; 409 si ya estaba terminado)",
+        "description": "Las series se conservan pero dejan de contar en e1RM, volumen y adherencia, y no se admiten series nuevas (409 WORKOUT_FINISHED). Al empezar otro entrenamiento, uno en curso sin actividad desde hace más de 12 h se abandona solo.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
             "content": {
               "application/json": {
                 "schema": {
