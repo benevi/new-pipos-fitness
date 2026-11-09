@@ -5,7 +5,18 @@
 import { engineV2 } from '@pipos/contracts';
 import rawExercises from '../data/exercises.json';
 
-export const CATALOG_VERSION = '1.0.0';
+export const CATALOG_VERSION = '1.1.0';
+
+/**
+ * Estado del contenido de la ficha del ejercicio (`descriptionEs`, `mistakesEs`; ADR-0014).
+ * Lo redactó el equipo de desarrollo ejercicio a ejercicio y entró por PR; debe revisarlo un
+ * entrenador titulado antes del lanzamiento público (SPEC_V1). Al revisarlo, cambiar a
+ * 'professionally_reviewed' e indicar la fecha.
+ */
+export const GUIDE_CONTENT_REVIEW = {
+  status: 'pending_professional_review' as 'pending_professional_review' | 'professionally_reviewed',
+  reviewedOn: null as string | null,
+} as const;
 
 export type CatalogExercise = engineV2.CatalogExercise;
 

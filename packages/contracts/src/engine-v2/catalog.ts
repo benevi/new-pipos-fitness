@@ -62,9 +62,9 @@ export const CatalogExerciseSchema = z
      * Qué es el movimiento y qué trabaja, en 1-3 frases (ADR-0014). Sin promesas de efectos sin
      * fuente. Contenido pendiente de revisión por un entrenador titulado antes del lanzamiento.
      */
-    descriptionEs: z.string().min(20).max(EXERCISE_DESCRIPTION_MAX).optional(),
+    descriptionEs: z.string().min(20).max(EXERCISE_DESCRIPTION_MAX),
     /** Errores comunes (0-3), cada uno ≤ 120 caracteres (ADR-0014). */
-    mistakesEs: z.array(z.string().min(3).max(EXERCISE_MISTAKE_MAX)).max(3).optional(),
+    mistakesEs: z.array(z.string().min(3).max(EXERCISE_MISTAKE_MAX)).max(3),
     media: z.null(),
   })
   .strict()

@@ -18,6 +18,8 @@ const exercise = {
   riskTags: [{ zone: 'shoulder', level: 'caution' }],
   substitutionGroup: 'horizontal_press',
   cuesEs: ['Escápulas juntas', 'Barra al centro del pecho'],
+  descriptionEs: 'Empuje tumbado en banco que baja la barra al pecho y la sube; trabaja sobre todo el pecho.',
+  mistakesEs: ['Rebotar la barra en el pecho', 'Despegar los glúteos del banco'],
   media: null,
 };
 
@@ -70,14 +72,13 @@ describe('engineV2: catálogo', () => {
     expect(engineV2.CatalogExerciseSchema.safeParse({ ...exercise, ...patch }).success).toBe(false);
   });
 
-  it('acepta la descripción y los errores comunes de la ficha (ADR-0014)', () => {
-    const withGuide = {
-      ...exercise,
-      descriptionEs: 'Empuje tumbado en banco que baja la barra al pecho y la sube; trabaja sobre todo el pecho.',
-      mistakesEs: ['Rebotar la barra en el pecho', 'Despegar los glúteos del banco'],
-    };
-    expect(engineV2.CatalogExerciseSchema.safeParse(withGuide).success).toBe(true);
-    expect(engineV2.CatalogExerciseSchema.safeParse({ ...withGuide, mistakesEs: [] }).success).toBe(true);
+  it('la descripción y los errores comunes son obligatorios; la lista de errores puede ir vacía (ADR-0014)', () => {
+    expect(engineV2.CatalogExerciseSchema.safeParse({ ...exercise, mistakesEs: [] }).success).toBe(true);
+    for (const key of ['descriptionEs', 'mistakesEs'] as const) {
+      const without: Record<string, unknown> = { ...exercise };
+      delete without[key];
+      expect(engineV2.CatalogExerciseSchema.safeParse(without).success).toBe(false);
+    }
   });
 
   it('rechaza slugs duplicados en la lista', () => {
