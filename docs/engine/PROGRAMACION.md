@@ -689,3 +689,104 @@ Nota sobre los autores: los nombres de coautores que siguen al primero en alguna
 17. **ACSM 2026.** Solo se leyeron el abstract y los materiales de prensa. Las cifras de descanso, volumen y proximidad al fallo del texto completo no se verificaron. Conviene revisarlo completo porque es la guía vigente.
 18. **DOIs no verificados**: Grgic 2018, Schoenfeld 2016 (descanso), Garthe 2011 y Rogerson 2024 (este último deducido del nombre del PDF).
 19. **Limitación general.** La red de la sesión bloqueó PubMed, PMC, Springer, MDPI, ACSM y SportRxiv. Las cifras proceden de abstracts y registros indexados vistos a través del buscador, no de los textos completos.
+
+---
+
+## 16. Heurísticas de diseño del motor v2 (añadidas en la Fase 2)
+
+Todo lo de esta sección es **heurística de diseño** (confianza **baja**): decisiones propias necesarias para que el motor funcione, sin evidencia directa. Cada una se apoya, cuando es posible, en una regla citada de las secciones 1-12. Las constantes viven en `packages/engine-rules/src/config/programming.ts` con `source: 'PROGRAMACION.md §16.x'` y `heuristic: true`.
+
+### 16.1 Grupos de volumen
+
+- El motor mide el volumen en 10 grupos: pecho, espalda (dorsal + espalda alta), hombros (deltoides lateral + posterior), bíceps, tríceps, cuádriceps, isquiosurales, glúteos (+ abductores), gemelos y core (abdominales + oblicuos). Cubren los grupos principales de la OMS (§10) con algo más de detalle en piernas y brazos.
+- El deltoides anterior, el trapecio, los antebrazos, la zona lumbar y los aductores **no tienen objetivo propio**: reciben mucho trabajo indirecto de los multiarticulares (se informan en `muscleVolume`).
+- En cada ejercicio, el grupo suma `series × máxima fracción de sus músculos` (§1): un remo cuenta 1 serie para espalda aunque trabaje dorsal y espalda alta, no 2.
+
+### 16.2 Umbral de frecuencia
+
+Un grupo cuenta como «entrenado» en una sesión si recibe **≥ 1 serie efectiva** (`FREQ_UMBRAL_SERIES = 1`). Así 2 series de press de banca (0,5 × 2 = 1) cuentan como un estímulo de tríceps.
+
+### 16.3 Series y ejercicios por sesión
+
+| nombre | valor | apoyo |
+|---|---|---|
+| `SERIES_MIN_EJERCICIO` | 2 | por debajo se pierde tiempo en calentamiento y transición |
+| `SERIES_DEF_EJERCICIO` | 3 | punto medio habitual; respeta `SERIES_EJERCICIO_FUERZA` 2-3 (§3) |
+| `SERIES_MAX_EJERCICIO` | 4 (3 en salud general, §3; 3 en el principal de fuerza, §3) | por encima conviene otro ejercicio (variedad, §1 `VOL_SESION_MAX`) |
+| `EJERCICIOS_MAX_SESION` | 8 | sesiones legibles; con 90 min caben ~30 series |
+
+Dos ejercicios del mismo grupo de sustitución no van en la misma sesión, salvo que trabajen un músculo prioritario.
+
+Al rellenar tiempo libre, **core y gemelos solo se llevan hasta el suelo** (salvo que sean prioritarios) y una sesión lleva **como mucho 2 ejercicios de core**: el tiempo sobrante se reparte primero entre los grupos grandes.
+
+### 16.4 Prescripción por objetivo
+
+- Aislamiento en hipertrofia: 10-15 reps (dentro de `REPS_HIPERTROFIA_RANGO` 5-30, §3) a RIR 1 (§4).
+- Pérdida de grasa: se entrena como hipertrofia para conservar masa muscular (las kcal se ajustan en nutrición, §11).
+- Resistencia muscular: RIR 2 en multiarticulares y 1 en aislamiento (§4: la proximidad al fallo importa para la hipertrofia; nunca fallo en multiarticulares).
+- Principiantes: 8-12 reps en todos los objetivos salvo resistencia (ACSM 2009, §3) y RIR ≥ 3 en multiarticulares y ≥ 2 en aislamiento (§4).
+
+### 16.5 Series de aproximación
+
+Primer multiarticular con carga de la sesión: 2 series (3 si el objetivo es fuerza) al **50 % × 8, 70 % × 5 y 85 % × 3** de la carga de trabajo. Los porcentajes son práctica habitual; no hay estudio que los fije.
+
+El resto de multiarticulares pesados (esquema de fuerza a 3-6 reps) llevan **1** serie de aproximación al 50 % (`N_SERIES_APROX_OTROS` 0-1, §8).
+
+### 16.6 Tiempo
+
+- En ejercicios unilaterales el tiempo de serie se multiplica por 2 (se hace cada lado).
+- Tolerancia de duración: **±10 %** sobre los minutos elegidos. El motor apunta a no pasarse; si sobra más del 10 % lo avisa (`TIME_UNDERUSED`).
+- `T_TRANSICION` se fija en 60 s (extremo bajo de §8) para no penalizar sesiones cortas.
+
+### 16.7 Pesos del scoring
+
+| componente | peso | qué mide |
+|---|---|---|
+| cobertura | 0,25 | grupos sobre el suelo (60 %) y patrones semanales presentes (40 %) |
+| ajuste de volumen | 0,20 | dentro de [suelo, techo]; los prioritarios puntúan más cerca del techo |
+| ajuste de tiempo | 0,20 | penaliza pasarse (pendiente 5) y quedarse corto (pendiente 1, fuera de la tolerancia) |
+| frecuencia | 0,10 | grupos con ≥ 2 sesiones/semana (§2) |
+| balance tirón/empuje | 0,10 | ratio dentro de [1,0; 1,5] (§10); no penaliza empujar si la espalda ya está en su techo |
+| variedad | 0,10 | penaliza repetir el mismo ejercicio en la semana |
+| preferencias | 0,05 | favoritos incluidos y pocos ejercicios con precaución en zonas limitadas (penalización 0,5) |
+
+### 16.8 Búsqueda local (retirada)
+
+Se implementó (60 iteraciones y 40.000 evaluaciones como máximo) y se midió en los 10 perfiles de ejemplo: mejoraba el score un **1,83 %** de media, por debajo del umbral del 2 % de ADR-0006, así que se retiró. El plan es la solución por reglas; los pesos de §16.7 se usan solo para puntuar y comparar planes.
+
+### 16.9 Progresión: bajadas y pausas
+
+- Bajada reactiva tras 2 sesiones por debajo del rango o del RIR: **−5 %** (extremo bajo de 5-10 %, §7).
+- Vuelta tras **≥ 14 días** sin hacer el ejercicio (CUJ-5): **−10 %** de carga (extremo alto de 5-10 %, §7).
+- Descarga reactiva: el índice de rendimiento (Epley con reps + RIR, §9) cae en **2 sesiones seguidas** (`N_SESIONES_ESTANCAMIENTO`, §7).
+- Descarga programada: series al **50 %** (extremo alto de 40-50 %), RIR + 2, misma frecuencia (§7).
+
+### 16.10 Carga inicial desde el historial
+
+Se usa el e1RM de la **sesión más reciente** con series válidas (1-10 reps efectivas, §9). La carga se calcula para `repMin + RIR` reps efectivas y se redondea **hacia abajo a 1 kg** (`INCREMENTO_MIN_KG`, §7). Si `repMin + RIR > 10`, no se da carga (la fórmula no es fiable) y se marca como estimación.
+
+### 16.11 Nutrición
+
+- Suelo de seguridad: las kcal objetivo **nunca bajan del gasto en reposo** (REE de Mifflin-St Jeor). No es un umbral clínico; evita déficits agresivos sin supervisión.
+- Grasa por defecto: **25 %** de la energía (dentro de 20-35 %, §11.4); si no caben los hidratos, se baja al 20 %.
+- Proteína en déficit: 2,2 g/kg de peso total por defecto (extremo bajo de la aproximación de §11), o 2,3 g/kg de masa magra si se conoce.
+- Superávit: 10 % (5 % en avanzados), extremos bajos de §11.5.
+- Factores de Atwater: 4 kcal/g de proteína e hidratos y 9 kcal/g de grasa (convención).
+
+### 16.12 Patrones fuera de la generación automática
+
+Los acarreos (`carry`) se prescriben por tiempo o distancia, no por repeticiones, así que v1 no los genera; siguen en el catálogo para sustituciones manuales. Por lo mismo, el catálogo no incluye isométricos (planchas): el core se cubre con dead bug, bird dog, Pallof, crunch y similares.
+
+### 16.13 Plantillas de sesión y días
+
+- Cuerpo completo A/B/C, torso A/B, pierna A/B, empuje A/B y tirón A/B con huecos de patrón en orden: multiarticular principal → secundarios → accesorios → core (§6). Cada grupo aparece en ≥ 2 sesiones por semana (§2).
+- 5 días: torso, pierna, empuje, tirón, pierna. 6 días: empuje, tirón, pierna × 2.
+- Días (0 = lunes): 2 → L, J; 3 → L, X, V; 4 → L, M, J, V; 5 → L, M, X, V, S; 6 → L a S.
+
+### 16.14 Mesociclo
+
+El plan se versiona en mesociclos de **6 semanas**, igual a `DELOAD_CADA_SEMANAS` (§7).
+
+### 16.15 Afinidad en la selección de ejercicios
+
+Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`. Para llegar al suelo de un grupo, el relleno puede usar como último recurso una sesión de otros grupos (p. ej. gemelos al final del día de tirón).

@@ -11,7 +11,7 @@ Estado de todos: **Propuesto**, pendiente de «APRUEBO fase 0».
 | [0003](0003-retirar-coach-ia.md) | Retirar el coach de IA; explicabilidad del motor; interfaz `AiProvider` vacía |
 | [0004](0004-nutricion-objetivos-diarios.md) | Nutrición reducida a objetivos diarios, sin catálogo de alimentos |
 | [0005](0005-catalogo-seed-sin-panel-admin.md) | Catálogo como seed versionado; panel admin fuera de v1 |
-| [0006](0006-motor-dos-pasos-constantes.md) | Motor en dos pasos con constantes en tabla configurable y citada |
+| [0006](0006-motor-dos-pasos-constantes.md) | Motor por reglas con constantes en tabla configurable y citada (búsqueda local retirada tras medir) |
 | [0007](0007-offline-first-idempotencia.md) | Registro offline-first con cola local e idempotencia por UUID de cliente |
 | [0008](0008-analytics-al-escribir.md) | Analytics calculados al escribir, en tablas resumen |
 | [0009](0009-migraciones-desde-cero.md) | Regenerar las migraciones en una única migración inicial |

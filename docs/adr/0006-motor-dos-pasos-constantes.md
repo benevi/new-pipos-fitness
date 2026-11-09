@@ -1,6 +1,6 @@
 # ADR-0006: Motor en dos pasos con constantes en tabla configurable y citada
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado (búsqueda local retirada tras medir: +1,83 % medio en 10 perfiles, umbral 2 %) · **Fecha**: 2026-11-09
 
 ## Contexto
 El motor actual mezcla constantes en el código (`WEEKLY_SETS_FLOOR` sin usar, versión `'0.0.1'` en 3 sitios), ordena por UUID y tiene errores de dominio (`.some` en material, «compuesto» mal definido, scoring incompleto).
@@ -24,3 +24,21 @@ El motor actual mezcla constantes en el código (`WEEKLY_SETS_FLOOR` sin usar, v
 
 ## Revisión
 - Si la búsqueda local no mejora el score más de un 2 % en los 10 perfiles de ejemplo, eliminarla.
+
+## Resultado de la medición (Fase 2, 2026-11-09)
+Score de la solución por reglas frente al score tras la búsqueda local (60 iteraciones, 40.000 evaluaciones como máximo), en los 10 perfiles de `docs/engine/ejemplos/`:
+
+| Perfil | Inicial | Tras búsqueda local | Mejora |
+|---|---|---|---|
+| 1 | 0,6787 | 0,6959 | +2,54 % |
+| 2 | 0,9335 | 0,9356 | +0,22 % |
+| 3 | 0,9878 | 0,9990 | +1,14 % |
+| 4 | 0,9631 | 0,9975 | +3,57 % |
+| 5 | 0,9591 | 0,9639 | +0,50 % |
+| 6 | 0,9212 | 0,9394 | +1,97 % |
+| 7 | 0,9485 | 0,9830 | +3,64 % |
+| 8 | 0,9106 | 0,9169 | +0,69 % |
+| 9 | 0,9150 | 0,9506 | +3,89 % |
+| 10 | 0,9481 | 0,9494 | +0,14 % |
+
+Mejora media **1,83 %** (< 2 %): se aplica el criterio de revisión y **se elimina la búsqueda local** (código, constantes, tests y opción `enabled`). El generador es la solución determinista por reglas; el scoring se conserva para medir y explicar la calidad del plan. Durante la revisión de los ejemplos, la búsqueda local además tendía a degradar ejercicios o volumen para ganar balance o variedad, lo que obligó a ponerle salvaguardas: otro argumento para retirarla.

@@ -1,0 +1,5508 @@
+[
+  {
+    "slug": "sentadilla-trasera-barra",
+    "nameEs": "Sentadilla trasera con barra",
+    "nameEn": "Barbell back squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell",
+      "squat_rack"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Barra apoyada en la parte alta de la espalda",
+      "Rodillas en la dirección de los pies",
+      "Baja hasta donde mantengas la espalda neutra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-frontal-barra",
+    "nameEs": "Sentadilla frontal con barra",
+    "nameEn": "Barbell front squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "barbell",
+      "squat_rack"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Codos altos y barra sobre los hombros",
+      "Tronco lo más vertical posible"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-goblet-mancuerna",
+    "nameEs": "Sentadilla goblet con mancuerna",
+    "nameEn": "Dumbbell goblet squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Mancuerna pegada al pecho",
+      "Codos entre las rodillas al bajar",
+      "Empuja el suelo con todo el pie"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-goblet-kettlebell",
+    "nameEs": "Sentadilla goblet con kettlebell",
+    "nameEn": "Kettlebell goblet squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Kettlebell sujeta por las asas a la altura del pecho",
+      "Baja controlando y sube sin rebotar"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-peso-corporal",
+    "nameEs": "Sentadilla con peso corporal",
+    "nameEn": "Bodyweight squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Brazos al frente para equilibrarte",
+      "Baja con control y sube sin rebotar"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-banda-elastica",
+    "nameEs": "Sentadilla con banda elástica",
+    "nameEn": "Banded squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_bilateral",
+    "cuesEs": [
+      "Pisa la banda con los pies a la anchura de los hombros",
+      "Banda sobre los hombros y codos bajos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "prensa-piernas",
+    "nameEs": "Prensa de piernas",
+    "nameEn": "Leg press",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_machine",
+    "cuesEs": [
+      "Zona lumbar pegada al respaldo",
+      "No bloquees las rodillas arriba"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-hack-maquina",
+    "nameEs": "Sentadilla hack en máquina",
+    "nameEn": "Machine hack squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_machine",
+    "cuesEs": [
+      "Espalda apoyada en el respaldo",
+      "Baja controlando la profundidad"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-multipower",
+    "nameEs": "Sentadilla en máquina Smith (multipower)",
+    "nameEn": "Smith machine squat",
+    "movementPattern": "squat",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "smith_machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "squat_machine",
+    "cuesEs": [
+      "Pies ligeramente adelantados respecto a la barra",
+      "Rodillas en la línea de los pies"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-barra",
+    "nameEs": "Peso muerto convencional con barra",
+    "nameEn": "Barbell conventional deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "quads",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Barra pegada a las piernas todo el recorrido",
+      "Espalda neutra antes de despegar",
+      "Empuja el suelo y extiende la cadera"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-barra",
+    "nameEs": "Peso muerto rumano con barra",
+    "nameEn": "Barbell Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Rodillas ligeramente flexionadas y fijas",
+      "Lleva la cadera atrás hasta notar los isquios",
+      "Espalda neutra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-mancuernas",
+    "nameEs": "Peso muerto rumano con mancuernas",
+    "nameEn": "Dumbbell Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Mancuernas cerca de las piernas",
+      "Cadera atrás, espalda neutra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-barra-hexagonal",
+    "nameEs": "Peso muerto con barra hexagonal",
+    "nameEn": "Trap bar deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "trap_bar"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "quads",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Colócate en el centro de la barra",
+      "Pecho alto y empuja el suelo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "buenos-dias-barra",
+    "nameEs": "Buenos días con barra",
+    "nameEn": "Barbell good morning",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "barbell",
+      "squat_rack"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "avoid"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Carga ligera y recorrido controlado",
+      "Espalda neutra en todo momento"
+    ],
+    "media": null
+  },
+  {
+    "slug": "swing-kettlebell",
+    "nameEs": "Swing con kettlebell",
+    "nameEn": "Kettlebell swing",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "El movimiento sale de la cadera, no de los brazos",
+      "Aprieta glúteos arriba sin hiperextender"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-kettlebell",
+    "nameEs": "Peso muerto rumano con kettlebell",
+    "nameEn": "Kettlebell Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Kettlebell cerca de las piernas",
+      "Cadera atrás con la espalda neutra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "pull-through-polea",
+    "nameEs": "Pull-through en polea",
+    "nameEn": "Cable pull-through",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "De espaldas a la polea, cuerda entre las piernas",
+      "Lleva la cadera atrás y extiéndela apretando glúteos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-banda",
+    "nameEs": "Peso muerto rumano con banda elástica",
+    "nameEn": "Banded Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hinge_bilateral",
+    "cuesEs": [
+      "Pisa la banda y sujétala con los brazos extendidos",
+      "Cadera atrás con la espalda neutra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "hiperextension-banco",
+    "nameEs": "Hiperextensión en banco de 45°",
+    "nameEn": "45-degree back extension",
+    "movementPattern": "hinge",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lower_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "back_extension",
+    "cuesEs": [
+      "Bisagra desde la cadera",
+      "Sube hasta alinear tronco y piernas, sin hiperextender"
+    ],
+    "media": null
+  },
+  {
+    "slug": "hiperextension-suelo",
+    "nameEs": "Extensión lumbar tumbado boca abajo («superman»)",
+    "nameEn": "Prone back extension (superman)",
+    "movementPattern": "hinge",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lower_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "back_extension",
+    "cuesEs": [
+      "Eleva pecho y piernas unos centímetros",
+      "Mantén la mirada al suelo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-una-pierna",
+    "nameEs": "Peso muerto rumano a una pierna sin carga",
+    "nameEn": "Bodyweight single-leg Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hinge_unilateral",
+    "cuesEs": [
+      "Cadera alineada, sin abrirla",
+      "Pierna libre estirada hacia atrás"
+    ],
+    "media": null
+  },
+  {
+    "slug": "peso-muerto-rumano-una-pierna-mancuerna",
+    "nameEs": "Peso muerto rumano a una pierna con mancuerna",
+    "nameEn": "Dumbbell single-leg Romanian deadlift",
+    "movementPattern": "hinge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hinge_unilateral",
+    "cuesEs": [
+      "Mancuerna en la mano contraria a la pierna de apoyo",
+      "Baja lento y con la cadera cuadrada"
+    ],
+    "media": null
+  },
+  {
+    "slug": "zancada-atras-peso-corporal",
+    "nameEs": "Zancada hacia atrás con peso corporal",
+    "nameEn": "Bodyweight reverse lunge",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Paso largo hacia atrás",
+      "Rodilla de atrás casi roza el suelo",
+      "Empuja con el pie de delante"
+    ],
+    "media": null
+  },
+  {
+    "slug": "zancada-atras-mancuernas",
+    "nameEs": "Zancada hacia atrás con mancuernas",
+    "nameEn": "Dumbbell reverse lunge",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Tronco erguido",
+      "Peso en el talón del pie delantero"
+    ],
+    "media": null
+  },
+  {
+    "slug": "zancadas-caminando-mancuernas",
+    "nameEs": "Zancadas caminando con mancuernas",
+    "nameEn": "Dumbbell walking lunge",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Pasos largos y controlados",
+      "No dejes que la rodilla se meta hacia dentro"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-bulgara-mancuernas",
+    "nameEs": "Sentadilla búlgara con mancuernas",
+    "nameEn": "Dumbbell Bulgarian split squat",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "adductors",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Empeine trasero sobre el banco",
+      "Baja en vertical",
+      "Rodilla delantera en la línea del pie"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-bulgara-peso-corporal",
+    "nameEs": "Sentadilla búlgara con peso corporal",
+    "nameEn": "Bodyweight Bulgarian split squat",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bench"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Empeine trasero sobre el banco",
+      "Baja en vertical con control"
+    ],
+    "media": null
+  },
+  {
+    "slug": "subida-cajon-mancuernas",
+    "nameEs": "Subida al cajón con mancuernas",
+    "nameEn": "Dumbbell step-up",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "plyo_box"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Apoya todo el pie en el cajón",
+      "Sube empujando con la pierna de arriba"
+    ],
+    "media": null
+  },
+  {
+    "slug": "subida-banco-peso-corporal",
+    "nameEs": "Subida al banco con peso corporal",
+    "nameEn": "Bodyweight bench step-up",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bench"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Banco estable y a la altura de la rodilla o menos",
+      "No te impulses con la pierna de abajo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sentadilla-dividida-peso-corporal",
+    "nameEs": "Sentadilla dividida con peso corporal",
+    "nameEn": "Bodyweight split squat",
+    "movementPattern": "lunge",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lunge",
+    "cuesEs": [
+      "Pies separados en línea y fijos",
+      "Baja en vertical"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-banca-barra",
+    "nameEs": "Press de banca con barra",
+    "nameEn": "Barbell bench press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Escápulas juntas y hacia abajo",
+      "Barra al centro del pecho",
+      "Pies firmes en el suelo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-banca-mancuernas",
+    "nameEs": "Press de banca con mancuernas",
+    "nameEn": "Dumbbell bench press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Codos a unos 45° del tronco",
+      "Baja hasta notar estiramiento en el pecho"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-suelo-mancuernas",
+    "nameEs": "Press en el suelo con mancuernas",
+    "nameEn": "Dumbbell floor press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Tumbado en el suelo con rodillas flexionadas",
+      "Baja hasta que el codo toque el suelo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-pecho-maquina",
+    "nameEs": "Press de pecho en máquina",
+    "nameEn": "Machine chest press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Agarres a la altura del pecho",
+      "Espalda pegada al respaldo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-pecho-polea",
+    "nameEs": "Press de pecho en polea",
+    "nameEn": "Cable chest press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Un pie adelantado para estabilizarte",
+      "Empuja al frente sin encoger hombros"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-pecho-banda",
+    "nameEs": "Press de pecho con banda elástica",
+    "nameEn": "Banded chest press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Banda anclada a la altura del pecho",
+      "Empuja al frente y vuelve despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-banca-multipower",
+    "nameEs": "Press de banca en máquina Smith (multipower)",
+    "nameEn": "Smith machine bench press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "smith_machine",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Banco colocado para que la barra baje al centro del pecho",
+      "Escápulas juntas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-banca-agarre-cerrado",
+    "nameEs": "Press de banca con agarre cerrado",
+    "nameEn": "Close-grip bench press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "chest",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "horizontal_press",
+    "cuesEs": [
+      "Manos a la anchura de los hombros",
+      "Codos pegados al cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-inclinado-mancuernas",
+    "nameEs": "Press inclinado con mancuernas",
+    "nameEn": "Incline dumbbell press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "incline_press",
+    "cuesEs": [
+      "Banco a unos 30°",
+      "Baja las mancuernas a la parte alta del pecho"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-inclinado-barra",
+    "nameEs": "Press inclinado con barra",
+    "nameEn": "Incline barbell bench press",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "incline_press",
+    "cuesEs": [
+      "Banco a unos 30°",
+      "Barra a la parte alta del pecho"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones",
+    "nameEs": "Flexiones",
+    "nameEn": "Push-up",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "push_up",
+    "cuesEs": [
+      "Cuerpo en línea de la cabeza a los talones",
+      "Codos a unos 45° del tronco",
+      "Pecho casi al suelo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones-inclinadas",
+    "nameEs": "Flexiones inclinadas con manos elevadas",
+    "nameEn": "Incline push-up",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "push_up",
+    "cuesEs": [
+      "Manos sobre una superficie estable (mesa, pared)",
+      "Cuanto más alto el apoyo, más fácil"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones-declinadas",
+    "nameEs": "Flexiones declinadas con pies elevados",
+    "nameEn": "Decline push-up",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      },
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "push_up",
+    "cuesEs": [
+      "Pies sobre una superficie estable",
+      "Mantén el abdomen firme"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones-diamante",
+    "nameEs": "Flexiones diamante",
+    "nameEn": "Diamond push-up",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "chest",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "push_up",
+    "cuesEs": [
+      "Manos juntas formando un rombo",
+      "Codos pegados al cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "fondos-paralelas",
+    "nameEs": "Fondos en paralelas",
+    "nameEn": "Parallel bar dip",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dip_station"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "dips",
+    "cuesEs": [
+      "Tronco ligeramente inclinado hacia delante",
+      "Baja solo hasta donde el hombro esté cómodo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "fondos-anillas",
+    "nameEs": "Fondos en anillas",
+    "nameEn": "Ring dip",
+    "movementPattern": "horizontal_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "gymnastic_rings"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "dips",
+    "cuesEs": [
+      "Anillas pegadas al cuerpo arriba",
+      "Recorrido controlado"
+    ],
+    "media": null
+  },
+  {
+    "slug": "aperturas-mancuernas",
+    "nameEs": "Aperturas con mancuernas",
+    "nameEn": "Dumbbell fly",
+    "movementPattern": "horizontal_push",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "chest_fly",
+    "cuesEs": [
+      "Codos ligeramente flexionados y fijos",
+      "Abre hasta notar estiramiento, sin forzar el hombro"
+    ],
+    "media": null
+  },
+  {
+    "slug": "cruces-polea",
+    "nameEs": "Cruces en polea",
+    "nameEn": "Cable crossover",
+    "movementPattern": "horizontal_push",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "chest_fly",
+    "cuesEs": [
+      "Un paso adelante y tronco ligeramente inclinado",
+      "Junta las manos delante del pecho"
+    ],
+    "media": null
+  },
+  {
+    "slug": "contractor-pecho",
+    "nameEs": "Contractor de pecho (pec deck)",
+    "nameEn": "Pec deck",
+    "movementPattern": "horizontal_push",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "chest",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "chest_fly",
+    "cuesEs": [
+      "Asiento con los agarres a la altura del pecho",
+      "Codos ligeramente flexionados"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-militar-barra",
+    "nameEs": "Press militar con barra de pie",
+    "nameEn": "Standing barbell overhead press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Glúteos y abdomen firmes",
+      "La barra sube en línea recta pasando cerca de la cara"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-hombros-sentado-mancuernas",
+    "nameEs": "Press de hombros sentado con mancuernas",
+    "nameEn": "Seated dumbbell shoulder press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Respaldo casi vertical",
+      "Codos ligeramente por delante del tronco"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-hombros-pie-mancuernas",
+    "nameEs": "Press de hombros de pie con mancuernas",
+    "nameEn": "Standing dumbbell shoulder press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Abdomen firme, sin arquear la espalda",
+      "Sube las mancuernas por encima de la cabeza"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-hombros-kettlebell",
+    "nameEs": "Press de hombros a una mano con kettlebell",
+    "nameEn": "Single-arm kettlebell overhead press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "obliques",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Kettlebell apoyada en el antebrazo",
+      "Abdomen y glúteos firmes al empujar"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-hombros-maquina",
+    "nameEs": "Press de hombros en máquina",
+    "nameEn": "Machine shoulder press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Agarres a la altura de los hombros al empezar",
+      "No bloquees los codos arriba"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-hombros-banda",
+    "nameEs": "Press de hombros con banda elástica",
+    "nameEn": "Banded overhead press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Pisa la banda y empuja por encima de la cabeza",
+      "Abdomen firme"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-landmine",
+    "nameEs": "Press landmine a una mano",
+    "nameEn": "Single-arm landmine press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "chest",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Extremo de la barra anclado en una esquina",
+      "Empuja hacia arriba y adelante"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-tras-nuca",
+    "nameEs": "Press tras nuca con barra",
+    "nameEn": "Behind-the-neck press",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "barbell",
+      "squat_rack"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      }
+    ],
+    "substitutionGroup": "overhead_press",
+    "cuesEs": [
+      "Solo con buena movilidad de hombro",
+      "Carga moderada y recorrido controlado"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones-pica",
+    "nameEs": "Flexiones en pica",
+    "nameEn": "Pike push-up",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "bodyweight_overhead_press",
+    "cuesEs": [
+      "Cadera alta formando una V invertida",
+      "Lleva la cabeza hacia delante de las manos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "flexiones-pino-pared",
+    "nameEs": "Flexiones en pino contra la pared",
+    "nameEn": "Wall handstand push-up",
+    "movementPattern": "vertical_push",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "front_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "side_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "bodyweight_overhead_press",
+    "cuesEs": [
+      "Domina primero el pino estático",
+      "Baja controlando hasta casi tocar con la cabeza"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-barra",
+    "nameEs": "Remo con barra",
+    "nameEn": "Barbell bent-over row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "lower_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Tronco inclinado y espalda neutra",
+      "Lleva la barra hacia el ombligo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-mancuerna-una-mano",
+    "nameEs": "Remo a una mano con mancuerna",
+    "nameEn": "One-arm dumbbell row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Mano y rodilla apoyadas en el banco",
+      "Lleva el codo hacia la cadera"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-mancuernas-pecho-apoyado",
+    "nameEs": "Remo con mancuernas con pecho apoyado",
+    "nameEn": "Chest-supported dumbbell row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Pecho apoyado en el banco inclinado",
+      "Junta las escápulas al final"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-kettlebell-una-mano",
+    "nameEs": "Remo a una mano con kettlebell",
+    "nameEn": "One-arm kettlebell row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Postura escalonada con la mano libre en el muslo",
+      "Lleva el codo hacia la cadera sin girar el tronco"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-sentado-polea",
+    "nameEs": "Remo sentado en polea",
+    "nameEn": "Seated cable row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Tronco quieto y erguido",
+      "Tira hacia el abdomen juntando escápulas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-maquina",
+    "nameEs": "Remo en máquina",
+    "nameEn": "Machine row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Pecho contra el apoyo",
+      "Lleva los codos atrás"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-invertido-anillas",
+    "nameEs": "Remo invertido en anillas",
+    "nameEn": "Ring row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "gymnastic_rings"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Cuerpo recto como una tabla",
+      "Cuanto más vertical, más fácil"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-trx",
+    "nameEs": "Remo en suspensión (TRX)",
+    "nameEn": "Suspension trainer row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "suspension_trainer"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Cuerpo recto y abdomen firme",
+      "Tira del pecho hacia las asas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-invertido-barra",
+    "nameEs": "Remo invertido en barra",
+    "nameEn": "Inverted barbell row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "barbell",
+      "squat_rack"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Barra fija en el rack a la altura de la cadera",
+      "Lleva el pecho a la barra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-banda",
+    "nameEs": "Remo con banda elástica",
+    "nameEn": "Banded row",
+    "movementPattern": "horizontal_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "rear_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "row",
+    "cuesEs": [
+      "Banda anclada a la altura del pecho",
+      "Tira llevando los codos atrás"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dominadas-pronas",
+    "nameEs": "Dominadas pronas",
+    "nameEn": "Pull-up",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "pull_up_bar"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pull_up",
+    "cuesEs": [
+      "Agarre algo más ancho que los hombros",
+      "Lleva el pecho hacia la barra",
+      "Baja hasta estirar los brazos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dominadas-supinas",
+    "nameEs": "Dominadas supinas",
+    "nameEn": "Chin-up",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "pull_up_bar"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pull_up",
+    "cuesEs": [
+      "Palmas hacia ti, a la anchura de los hombros",
+      "Barbilla por encima de la barra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dominadas-asistidas-banda",
+    "nameEs": "Dominadas asistidas con banda",
+    "nameEn": "Band-assisted pull-up",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "pull_up_bar",
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pull_up",
+    "cuesEs": [
+      "Banda en la barra y bajo la rodilla o el pie",
+      "Banda más gruesa = más ayuda"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dominadas-negativas",
+    "nameEs": "Dominadas negativas (fase excéntrica)",
+    "nameEn": "Negative pull-up",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "pull_up_bar"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pull_up",
+    "cuesEs": [
+      "Sube con ayuda de un salto o un apoyo",
+      "Baja en 3-5 segundos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dominadas-asistidas-maquina",
+    "nameEs": "Dominadas asistidas en máquina",
+    "nameEn": "Machine-assisted pull-up",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pull_up",
+    "cuesEs": [
+      "Más peso de asistencia = más fácil",
+      "Lleva el pecho hacia la barra"
+    ],
+    "media": null
+  },
+  {
+    "slug": "jalon-pecho-polea",
+    "nameEs": "Jalón al pecho en polea",
+    "nameEn": "Lat pulldown",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "pulldown",
+    "cuesEs": [
+      "Muslos bien sujetos bajo el apoyo",
+      "Lleva la barra a la parte alta del pecho"
+    ],
+    "media": null
+  },
+  {
+    "slug": "jalon-agarre-estrecho",
+    "nameEs": "Jalón con agarre estrecho",
+    "nameEn": "Close-grip lat pulldown",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "pulldown",
+    "cuesEs": [
+      "Agarre neutro estrecho",
+      "Codos hacia las costillas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "jalon-banda",
+    "nameEs": "Jalón con banda elástica",
+    "nameEn": "Banded lat pulldown",
+    "movementPattern": "vertical_pull",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "pulldown",
+    "cuesEs": [
+      "Banda anclada en lo alto (puerta, barra)",
+      "Tira hacia abajo llevando los codos a las costillas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "pullover-mancuerna",
+    "nameEs": "Pullover con mancuerna",
+    "nameEn": "Dumbbell pullover",
+    "movementPattern": "vertical_pull",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "chest",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "pullover",
+    "cuesEs": [
+      "Codos ligeramente flexionados",
+      "Baja detrás de la cabeza solo hasta donde el hombro esté cómodo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "pullover-polea-brazos-rectos",
+    "nameEs": "Pullover en polea alta con brazos rectos",
+    "nameEn": "Straight-arm cable pulldown",
+    "movementPattern": "vertical_pull",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "lats",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "triceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "pullover",
+    "cuesEs": [
+      "Brazos casi rectos",
+      "Lleva la barra hasta los muslos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-biceps-barra",
+    "nameEs": "Curl de bíceps con barra",
+    "nameEn": "Barbell curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Codos quietos junto al cuerpo",
+      "Sin balancear el tronco"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-barra-z",
+    "nameEs": "Curl con barra Z",
+    "nameEn": "EZ-bar curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "ez_bar"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Codos quietos",
+      "Baja hasta extender casi del todo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-biceps-mancuernas",
+    "nameEs": "Curl de bíceps con mancuernas",
+    "nameEn": "Dumbbell curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Gira la palma hacia arriba al subir",
+      "Codos fijos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-martillo",
+    "nameEs": "Curl martillo con mancuernas",
+    "nameEn": "Dumbbell hammer curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Palmas enfrentadas todo el recorrido",
+      "Codos fijos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-inclinado-mancuernas",
+    "nameEs": "Curl inclinado con mancuernas",
+    "nameEn": "Incline dumbbell curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Banco a unos 45°",
+      "Brazos colgando por detrás del tronco"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-polea",
+    "nameEs": "Curl de bíceps en polea",
+    "nameEn": "Cable curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Polea baja",
+      "Codos fijos junto al cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-banda",
+    "nameEs": "Curl de bíceps con banda elástica",
+    "nameEn": "Banded curl",
+    "movementPattern": "elbow_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "biceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "curl",
+    "cuesEs": [
+      "Pisa la banda",
+      "Sube controlando y baja despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-triceps-polea",
+    "nameEs": "Extensión de tríceps en polea alta",
+    "nameEn": "Cable triceps pushdown",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Codos pegados al cuerpo",
+      "Extiende del todo abajo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-triceps-polea-sobre-cabeza",
+    "nameEs": "Extensión de tríceps sobre la cabeza en polea",
+    "nameEn": "Overhead cable triceps extension",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "De espaldas a la polea",
+      "Codos apuntando al frente"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-triceps-mancuerna-sobre-cabeza",
+    "nameEs": "Extensión de tríceps sobre la cabeza con mancuerna",
+    "nameEn": "Overhead dumbbell triceps extension",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      },
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Mancuerna sujeta con las dos manos",
+      "Codos cerca de la cabeza"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-frances-barra-z",
+    "nameEs": "Press francés con barra Z",
+    "nameEn": "EZ-bar skull crusher",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "ez_bar",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Brazos ligeramente inclinados hacia atrás",
+      "Baja la barra hacia la frente con control"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-frances-mancuernas",
+    "nameEs": "Press francés con mancuernas",
+    "nameEn": "Dumbbell skull crusher",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "elbow",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Palmas enfrentadas",
+      "Solo se mueven los codos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-triceps-banda",
+    "nameEs": "Extensión de tríceps con banda elástica",
+    "nameEn": "Banded triceps pushdown",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Banda anclada en alto",
+      "Codos pegados al cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "fondos-banco",
+    "nameEs": "Fondos en banco",
+    "nameEn": "Bench dip",
+    "movementPattern": "elbow_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bench"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "triceps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "chest",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "triceps_extension",
+    "cuesEs": [
+      "Espalda cerca del banco",
+      "Baja solo hasta 90° de codo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevaciones-laterales-mancuernas",
+    "nameEs": "Elevaciones laterales con mancuernas",
+    "nameEn": "Dumbbell lateral raise",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "side_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lateral_raise",
+    "cuesEs": [
+      "Sube hasta la altura de los hombros",
+      "Codos ligeramente flexionados",
+      "Sin impulso"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevaciones-laterales-polea",
+    "nameEs": "Elevación lateral en polea",
+    "nameEn": "Cable lateral raise",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "side_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lateral_raise",
+    "cuesEs": [
+      "Polea baja, cable por delante del cuerpo",
+      "Sube hasta la altura del hombro"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevaciones-laterales-banda",
+    "nameEs": "Elevaciones laterales con banda elástica",
+    "nameEn": "Banded lateral raise",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "side_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lateral_raise",
+    "cuesEs": [
+      "Pisa la banda",
+      "Sube los brazos hacia los lados"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevaciones-laterales-maquina",
+    "nameEs": "Elevaciones laterales en máquina",
+    "nameEn": "Machine lateral raise",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "side_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lateral_raise",
+    "cuesEs": [
+      "Codos contra los apoyos",
+      "Sube hasta la altura del hombro"
+    ],
+    "media": null
+  },
+  {
+    "slug": "remo-menton-barra",
+    "nameEs": "Remo al mentón con barra",
+    "nameEn": "Barbell upright row",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "side_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "biceps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "avoid"
+      },
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "lateral_raise",
+    "cuesEs": [
+      "Agarre ancho",
+      "Sube los codos solo hasta la altura de los hombros"
+    ],
+    "media": null
+  },
+  {
+    "slug": "pajaros-mancuernas",
+    "nameEs": "Pájaros con mancuernas",
+    "nameEn": "Dumbbell rear delt fly",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "rear_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "rear_delt",
+    "cuesEs": [
+      "Tronco inclinado y espalda neutra",
+      "Abre los brazos hacia los lados"
+    ],
+    "media": null
+  },
+  {
+    "slug": "face-pull-polea",
+    "nameEs": "Face pull en polea",
+    "nameEn": "Cable face pull",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "rear_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "rear_delt",
+    "cuesEs": [
+      "Cuerda a la altura de la cara",
+      "Tira separando las manos hacia las orejas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "aperturas-banda",
+    "nameEs": "Aperturas con banda (pull-apart)",
+    "nameEn": "Band pull-apart",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "rear_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "rear_delt",
+    "cuesEs": [
+      "Brazos al frente a la altura del pecho",
+      "Separa las manos juntando escápulas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "contractor-inverso",
+    "nameEs": "Pájaros en máquina (contractor inverso)",
+    "nameEn": "Reverse pec deck",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "rear_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "rear_delt",
+    "cuesEs": [
+      "Pecho contra el respaldo",
+      "Abre los brazos sin encoger hombros"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevaciones-y-t-w",
+    "nameEs": "Elevaciones Y-T-W tumbado boca abajo",
+    "nameEn": "Prone Y-T-W raise",
+    "movementPattern": "shoulder_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "rear_delts",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "upper_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "rear_delt",
+    "cuesEs": [
+      "Tumbado boca abajo, frente apoyada",
+      "Dibuja Y, T y W con los brazos juntando escápulas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-cuadriceps-maquina",
+    "nameEs": "Extensión de cuádriceps en máquina",
+    "nameEn": "Machine leg extension",
+    "movementPattern": "knee_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "leg_extension",
+    "cuesEs": [
+      "Rodilla alineada con el eje de la máquina",
+      "Sube controlando y baja despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "extension-rodilla-banda",
+    "nameEs": "Extensión de rodilla con banda elástica",
+    "nameEn": "Banded leg extension",
+    "movementPattern": "knee_extension",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "leg_extension",
+    "cuesEs": [
+      "Sentado, banda anclada detrás del tobillo",
+      "Extiende la rodilla sin bloquear"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sissy-squat",
+    "nameEs": "Sissy squat asistida",
+    "nameEn": "Assisted sissy squat",
+    "movementPattern": "knee_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "quads",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "avoid"
+      }
+    ],
+    "substitutionGroup": "leg_extension",
+    "cuesEs": [
+      "Sujétate a un apoyo fijo",
+      "Rodillas adelante y tronco en línea con los muslos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-femoral-tumbado-maquina",
+    "nameEs": "Curl femoral tumbado en máquina",
+    "nameEn": "Lying leg curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "calves",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Cadera pegada al banco",
+      "Baja despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-femoral-sentado-maquina",
+    "nameEs": "Curl femoral sentado en máquina",
+    "nameEn": "Seated leg curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Rodilla alineada con el eje",
+      "Flexiona del todo y vuelve controlando"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-nordico",
+    "nameEs": "Curl nórdico",
+    "nameEn": "Nordic hamstring curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Tobillos bien sujetos (compañero o mueble pesado)",
+      "Baja lo más despacio que puedas",
+      "Ayúdate con las manos al final"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-femoral-deslizamiento",
+    "nameEs": "Curl femoral con deslizamiento (toalla en el suelo)",
+    "nameEn": "Sliding leg curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Tumbado boca arriba con talones sobre una toalla",
+      "Cadera elevada mientras flexionas las rodillas"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-femoral-mancuerna",
+    "nameEs": "Curl femoral tumbado con mancuerna",
+    "nameEn": "Dumbbell lying leg curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Mancuerna bien sujeta entre los pies",
+      "Movimiento lento y controlado"
+    ],
+    "media": null
+  },
+  {
+    "slug": "curl-femoral-banda",
+    "nameEs": "Curl femoral con banda elástica",
+    "nameEn": "Banded leg curl",
+    "movementPattern": "knee_flexion",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "hamstrings",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "leg_curl",
+    "cuesEs": [
+      "Tumbado boca abajo, banda anclada al tobillo",
+      "Flexiona la rodilla sin levantar la cadera"
+    ],
+    "media": null
+  },
+  {
+    "slug": "hip-thrust-barra",
+    "nameEs": "Hip thrust con barra",
+    "nameEn": "Barbell hip thrust",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "barbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_thrust",
+    "cuesEs": [
+      "Parte alta de la espalda apoyada en el banco",
+      "Barbilla recogida y costillas abajo",
+      "Aprieta glúteos arriba"
+    ],
+    "media": null
+  },
+  {
+    "slug": "hip-thrust-mancuerna",
+    "nameEs": "Hip thrust con mancuerna",
+    "nameEn": "Dumbbell hip thrust",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell",
+      "bench"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_thrust",
+    "cuesEs": [
+      "Mancuerna sobre la cadera",
+      "Extiende la cadera sin arquear la zona lumbar"
+    ],
+    "media": null
+  },
+  {
+    "slug": "puente-gluteos",
+    "nameEs": "Puente de glúteos",
+    "nameEn": "Glute bridge",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_thrust",
+    "cuesEs": [
+      "Talones cerca de la cadera",
+      "Sube apretando glúteos, sin arquear la espalda"
+    ],
+    "media": null
+  },
+  {
+    "slug": "puente-gluteos-una-pierna",
+    "nameEs": "Puente de glúteos a una pierna",
+    "nameEn": "Single-leg glute bridge",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "hamstrings",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_thrust",
+    "cuesEs": [
+      "Pierna libre extendida o flexionada",
+      "Cadera nivelada"
+    ],
+    "media": null
+  },
+  {
+    "slug": "patada-gluteo-polea",
+    "nameEs": "Patada de glúteo en polea",
+    "nameEn": "Cable glute kickback",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "glute_kickback",
+    "cuesEs": [
+      "Tobillera en la polea baja",
+      "Lleva la pierna atrás sin arquear la espalda"
+    ],
+    "media": null
+  },
+  {
+    "slug": "patada-gluteo-banda",
+    "nameEs": "Patada de glúteo con banda elástica",
+    "nameEn": "Banded glute kickback",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "glutes",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "glute_kickback",
+    "cuesEs": [
+      "En cuadrupedia o de pie con apoyo",
+      "Extiende la cadera sin girar la pelvis"
+    ],
+    "media": null
+  },
+  {
+    "slug": "abduccion-cadera-maquina",
+    "nameEs": "Abducción de cadera en máquina",
+    "nameEn": "Machine hip abduction",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "abductors",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_abduction",
+    "cuesEs": [
+      "Espalda apoyada",
+      "Abre las piernas controlando la vuelta"
+    ],
+    "media": null
+  },
+  {
+    "slug": "abduccion-cadera-tumbado",
+    "nameEs": "Abducción de cadera tumbado de lado",
+    "nameEn": "Side-lying hip abduction",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abductors",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_abduction",
+    "cuesEs": [
+      "Cadera apilada, sin rodar hacia atrás",
+      "Sube la pierna un poco por detrás del cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "pasos-laterales-banda",
+    "nameEs": "Pasos laterales con banda elástica",
+    "nameEn": "Banded lateral walk",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abductors",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "hip_abduction",
+    "cuesEs": [
+      "Banda por encima de las rodillas o en los tobillos",
+      "Semisentadilla y pasos cortos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "aduccion-cadera-maquina",
+    "nameEs": "Aducción de cadera en máquina",
+    "nameEn": "Machine hip adduction",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "adductors",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "hip",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hip_adduction",
+    "cuesEs": [
+      "Espalda apoyada",
+      "Cierra las piernas sin rebotar"
+    ],
+    "media": null
+  },
+  {
+    "slug": "plancha-copenhague",
+    "nameEs": "Plancha de Copenhague con apoyo en banco",
+    "nameEn": "Copenhagen adduction (bench)",
+    "movementPattern": "hip_isolation",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "intermediate",
+    "equipment": [
+      "bench"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "adductors",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "obliques",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "hip_adduction",
+    "cuesEs": [
+      "Empieza con la rodilla apoyada (versión corta)",
+      "Sube la cadera hasta alinear el cuerpo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-talones-maquina",
+    "nameEs": "Elevación de talones de pie en máquina",
+    "nameEn": "Standing machine calf raise",
+    "movementPattern": "calf_raise",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "calves",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "calf_raise",
+    "cuesEs": [
+      "Baja el talón hasta estirar",
+      "Pausa arriba de un segundo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-talones-sentado-maquina",
+    "nameEs": "Elevación de talones sentado en máquina",
+    "nameEn": "Seated machine calf raise",
+    "movementPattern": "calf_raise",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "calves",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "calf_raise",
+    "cuesEs": [
+      "Rodillas a 90°",
+      "Recorrido completo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-talones-una-pierna",
+    "nameEs": "Elevación de talones a una pierna",
+    "nameEn": "Single-leg calf raise",
+    "movementPattern": "calf_raise",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "calves",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "ankle",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "calf_raise",
+    "cuesEs": [
+      "En un escalón, sujétate a la pared",
+      "Baja el talón y sube del todo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-talones-mancuerna",
+    "nameEs": "Elevación de talones con mancuerna",
+    "nameEn": "Dumbbell calf raise",
+    "movementPattern": "calf_raise",
+    "isCompound": false,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "calves",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "ankle",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "calf_raise",
+    "cuesEs": [
+      "Mancuerna en el lado de la pierna que trabaja",
+      "Recorrido completo"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-talones-multipower",
+    "nameEs": "Elevación de talones en máquina Smith (multipower)",
+    "nameEn": "Smith machine calf raise",
+    "movementPattern": "calf_raise",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "smith_machine"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "calves",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "calf_raise",
+    "cuesEs": [
+      "Puntas sobre un disco o escalón",
+      "Sube del todo y baja despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "dead-bug",
+    "nameEs": "Dead bug (bicho muerto)",
+    "nameEn": "Dead bug",
+    "movementPattern": "core_anti_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "anti_extension",
+    "cuesEs": [
+      "Zona lumbar pegada al suelo",
+      "Extiende brazo y pierna contrarios despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "rodamiento-barra",
+    "nameEs": "Rollout con barra",
+    "nameEn": "Barbell rollout",
+    "movementPattern": "core_anti_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "barbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      },
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "anti_extension",
+    "cuesEs": [
+      "Desde rodillas",
+      "Avanza solo hasta donde no arquees la espalda"
+    ],
+    "media": null
+  },
+  {
+    "slug": "sierra-trx",
+    "nameEs": "Sierra en suspensión (TRX body saw)",
+    "nameEn": "Suspension body saw",
+    "movementPattern": "core_anti_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "suspension_trainer"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "anti_extension",
+    "cuesEs": [
+      "Pies en las asas, apoyado en antebrazos",
+      "Muévete atrás y adelante sin hundir la cadera"
+    ],
+    "media": null
+  },
+  {
+    "slug": "rueda-abdominal-anillas",
+    "nameEs": "Rollout en anillas",
+    "nameEn": "Ring rollout",
+    "movementPattern": "core_anti_extension",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "advanced",
+    "equipment": [
+      "gymnastic_rings"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "lats",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      },
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "anti_extension",
+    "cuesEs": [
+      "Anillas bajas, desde rodillas",
+      "No arquees la espalda"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-pallof-polea",
+    "nameEs": "Press Pallof en polea",
+    "nameEn": "Cable Pallof press",
+    "movementPattern": "core_anti_rotation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "obliques",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "anti_rotation",
+    "cuesEs": [
+      "De lado a la polea",
+      "Extiende los brazos sin dejar que el tronco gire"
+    ],
+    "media": null
+  },
+  {
+    "slug": "press-pallof-banda",
+    "nameEs": "Press Pallof con banda elástica",
+    "nameEn": "Banded Pallof press",
+    "movementPattern": "core_anti_rotation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "resistance_band"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "obliques",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "anti_rotation",
+    "cuesEs": [
+      "Banda anclada a la altura del pecho",
+      "Resiste el giro"
+    ],
+    "media": null
+  },
+  {
+    "slug": "bird-dog",
+    "nameEs": "Bird dog (cuadrupedia con brazo y pierna contrarios)",
+    "nameEn": "Bird dog",
+    "movementPattern": "core_anti_rotation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "lower_back",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "anti_rotation",
+    "cuesEs": [
+      "Espalda neutra y cadera nivelada",
+      "Extiende brazo y pierna contrarios despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "plancha-toques-hombro",
+    "nameEs": "Plancha alta con toques de hombro",
+    "nameEn": "Plank shoulder tap",
+    "movementPattern": "core_anti_rotation",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "obliques",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "front_delts",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "wrist",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "anti_rotation",
+    "cuesEs": [
+      "Pies separados para más estabilidad",
+      "Toca el hombro contrario sin mover la cadera"
+    ],
+    "media": null
+  },
+  {
+    "slug": "crunch",
+    "nameEs": "Crunch abdominal",
+    "nameEn": "Crunch",
+    "movementPattern": "core_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "core_flexion",
+    "cuesEs": [
+      "Despega solo los hombros del suelo",
+      "Exhala al subir"
+    ],
+    "media": null
+  },
+  {
+    "slug": "crunch-inverso",
+    "nameEs": "Crunch inverso",
+    "nameEn": "Reverse crunch",
+    "movementPattern": "core_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "bodyweight"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "core_flexion",
+    "cuesEs": [
+      "Lleva las rodillas al pecho despegando la pelvis",
+      "Baja despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "crunch-polea",
+    "nameEs": "Crunch en polea alta",
+    "nameEn": "Cable crunch",
+    "movementPattern": "core_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "cable"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "core_flexion",
+    "cuesEs": [
+      "De rodillas frente a la polea",
+      "Flexiona el tronco llevando los codos a los muslos"
+    ],
+    "media": null
+  },
+  {
+    "slug": "elevacion-rodillas-colgado",
+    "nameEs": "Elevación de rodillas colgado",
+    "nameEn": "Hanging knee raise",
+    "movementPattern": "core_flexion",
+    "isCompound": false,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "pull_up_bar"
+    ],
+    "loadType": "unweighted",
+    "muscles": [
+      {
+        "muscle": "abs",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "core_flexion",
+    "cuesEs": [
+      "Evita balancearte",
+      "Lleva las rodillas al pecho redondeando la pelvis"
+    ],
+    "media": null
+  },
+  {
+    "slug": "paseo-granjero-mancuernas",
+    "nameEs": "Paseo del granjero con mancuernas",
+    "nameEn": "Dumbbell farmer carry",
+    "movementPattern": "carry",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "forearms",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "obliques",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "abs",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "carry",
+    "cuesEs": [
+      "Hombros atrás y abajo",
+      "Pasos cortos y tronco erguido"
+    ],
+    "media": null
+  },
+  {
+    "slug": "paseo-maleta-mancuerna",
+    "nameEs": "Paseo de maleta con una mancuerna",
+    "nameEn": "Dumbbell suitcase carry",
+    "movementPattern": "carry",
+    "isCompound": true,
+    "isUnilateral": true,
+    "minLevel": "beginner",
+    "equipment": [
+      "dumbbell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "obliques",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "forearms",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "carry",
+    "cuesEs": [
+      "No te inclines hacia el peso",
+      "Camina despacio"
+    ],
+    "media": null
+  },
+  {
+    "slug": "paseo-granjero-kettlebell",
+    "nameEs": "Paseo del granjero con kettlebells",
+    "nameEn": "Kettlebell farmer carry",
+    "movementPattern": "carry",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "beginner",
+    "equipment": [
+      "kettlebell"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "forearms",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "obliques",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [],
+    "substitutionGroup": "carry",
+    "cuesEs": [
+      "Agarre firme",
+      "Tronco erguido"
+    ],
+    "media": null
+  },
+  {
+    "slug": "paseo-granjero-barra-hexagonal",
+    "nameEs": "Paseo del granjero con barra hexagonal",
+    "nameEn": "Trap bar carry",
+    "movementPattern": "carry",
+    "isCompound": true,
+    "isUnilateral": false,
+    "minLevel": "intermediate",
+    "equipment": [
+      "trap_bar"
+    ],
+    "loadType": "weighted",
+    "muscles": [
+      {
+        "muscle": "forearms",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "traps",
+        "role": "primary",
+        "fraction": 1
+      },
+      {
+        "muscle": "obliques",
+        "role": "secondary",
+        "fraction": 0.5
+      },
+      {
+        "muscle": "glutes",
+        "role": "secondary",
+        "fraction": 0.5
+      }
+    ],
+    "riskTags": [
+      {
+        "zone": "lumbar",
+        "level": "caution"
+      }
+    ],
+    "substitutionGroup": "carry",
+    "cuesEs": [
+      "Levanta como en el peso muerto",
+      "Pasos cortos"
+    ],
+    "media": null
+  }
+]

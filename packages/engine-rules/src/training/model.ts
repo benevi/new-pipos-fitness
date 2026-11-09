@@ -1,31 +1,75 @@
 /**
- * Training engine internal types. Aligned with @pipos/contracts training-engine schemas.
+ * Tipos internos y utilidades puras del motor v2.
  */
+import type { engineV2 } from '@pipos/contracts';
+import type { ProgrammingConfig } from '../config/programming.js';
 
-import type {
-  TrainingEngineInput,
-  TrainingEngineOutput,
-  PlanSession,
-  PlanExercise,
-  CatalogExerciseSnapshot,
-  ConstraintViolation,
-} from '@pipos/contracts';
+export type CatalogExercise = engineV2.CatalogExercise;
+export type Profile = engineV2.EngineProfile;
+export type VolumeGroup = engineV2.VolumeGroup;
+export type Muscle = engineV2.Muscle;
+export type MovementPattern = engineV2.MovementPattern;
+export type ExerciseRole = engineV2.ExerciseRole;
+export type SessionKind = engineV2.SessionKind;
+export type BodyZone = engineV2.BodyZone;
+export type Equipment = engineV2.Equipment;
 
-export type { TrainingEngineInput, TrainingEngineOutput, PlanSession, PlanExercise };
-export type { CatalogExerciseSnapshot, ConstraintViolation };
+export const LEVEL_RANK: Record<engineV2.TrainingLevel, number> = { beginner: 0, intermediate: 1, advanced: 2 };
 
-export const MUSCLE_ROLE_WEIGHT = {
-  primary: 1,
-  secondary: 0.5,
-  stabilizer: 0.25,
-} as const;
+export const PUSH_PATTERNS: ReadonlySet<MovementPattern> = new Set(['horizontal_push', 'vertical_push']);
+export const PULL_PATTERNS: ReadonlySet<MovementPattern> = new Set(['horizontal_pull', 'vertical_pull']);
+export const CORE_PATTERNS: ReadonlySet<MovementPattern> = new Set([
+  'core_anti_extension',
+  'core_anti_rotation',
+  'core_flexion',
+]);
 
-export const MAX_EXERCISES_PER_SESSION = 10;
-export const MIN_COMPOUND_PER_SESSION = 1;
-export const ESTIMATED_SECONDS_PER_SET = 50; // work + rest portion per set
-export const AVOID_MUSCLE_MAX_SETS = 2;
-export const WEEKLY_SETS_CAP_BEGINNER = 12;
-export const WEEKLY_SETS_CAP_INTERMEDIATE = 16;
-export const WEEKLY_SETS_CAP_ADVANCED = 20;
-export const WEEKLY_SETS_FLOOR = 4;
-export const LOCAL_SEARCH_MAX_ITERATIONS = 50;
+/** Ejercicio del catálogo enriquecido con datos derivados que el motor usa a menudo. */
+export interface Ex {
+  readonly src: CatalogExercise;
+  readonly slug: string;
+  readonly pattern: MovementPattern;
+  readonly weighted: boolean;
+  /** Fracción por grupo de volumen = máxima fracción de sus músculos (PROGRAMACION.md §16.1). */
+  readonly groups: ReadonlyMap<VolumeGroup, number>;
+  readonly muscles: ReadonlyMap<Muscle, number>;
+  readonly primaryMuscles: ReadonlySet<Muscle>;
+  /** Zonas con riesgo «caution» (las «avoid» ya se filtraron si aplican). */
+  readonly cautionZones: ReadonlySet<BodyZone>;
+}
+
+export function enrich(src: CatalogExercise, config: ProgrammingConfig): Ex {
+  const map = config.volume.groupOfMuscle.value;
+  const groups = new Map<VolumeGroup, number>();
+  const muscles = new Map<Muscle, number>();
+  const primary = new Set<Muscle>();
+  for (const m of src.muscles) {
+    muscles.set(m.muscle, m.fraction);
+    if (m.role === 'primary') primary.add(m.muscle);
+    const g = map[m.muscle];
+    if (g) groups.set(g, Math.max(groups.get(g) ?? 0, m.fraction));
+  }
+  return {
+    src,
+    slug: src.slug,
+    pattern: src.movementPattern,
+    weighted: src.loadType === 'weighted',
+    groups,
+    muscles,
+    primaryMuscles: primary,
+    cautionZones: new Set(src.riskTags.filter((r) => r.level === 'caution').map((r) => r.zone)),
+  };
+}
+
+/** Comparación estable por código de carácter (no depende del locale). */
+export function cmpStr(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
+}
+
+export function round1(n: number): number {
+  return Math.round(n * 10) / 10;
+}
+
+export function groupOf(muscle: Muscle, config: ProgrammingConfig): VolumeGroup | null {
+  return config.volume.groupOfMuscle.value[muscle];
+}

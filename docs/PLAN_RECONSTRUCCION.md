@@ -50,7 +50,7 @@ Salen de la revisión crítica de alcance:
    - Cribado previo no médico (aviso de consultar a un profesional si hay dolor, enfermedad cardiovascular conocida o síntomas), sin bloquear ni diagnosticar.
    - Zona horaria del usuario para cerrar bien las semanas.
 3. **La nutrición se mantiene reducida** (ADR-0004), con la alternativa documentada de sacarla del todo.
-4. **La búsqueda local se mantiene, pero acotada y con criterio de retirada:** si no mejora el score más de un 2 % en los 10 perfiles de ejemplo, se elimina (ADR-0006).
+4. **La búsqueda local se midió y se retiró** (ADR-0006): en los 10 perfiles de ejemplo mejoraba el score un 1,83 % de media, por debajo del umbral del 2 %.
 
 ## 3. Diseño del motor
 Detalle completo, con cada constante y su fuente, en [engine/PROGRAMACION.md](engine/PROGRAMACION.md).
@@ -62,7 +62,7 @@ Detalle completo, con cada constante y su fuente, en [engine/PROGRAMACION.md](en
 4. **Repartir el volumen:** objetivo de series semanales por grupo según nivel y prioridad, entre suelo y techo; las series de los músculos secundarios cuentan a fracción.
 5. **Solución inicial:** por sesión, multiarticulares del patrón requerido → accesorios → aislamiento y core; el músculo prioritario primero; elección por afinidad (favoritos, cobertura, variedad). Desempate estable por `slug`.
 6. **Asignar la prescripción:** reps, RIR y descanso según objetivo y tipo de ejercicio; carga desde el e1RM del historial o marcada como «estimación inicial».
-7. **Búsqueda local acotada** (máximo de iteraciones y de tiempo): intercambios y ajuste de series que mejoran el score sin violar restricciones duras.
+7. ~~Búsqueda local acotada~~ **Retirada en la Fase 2** (ADR-0006): solo aportaba un +1,83 % medio en 10 perfiles, umbral 2 %. La solución por reglas del paso 5 (con relleno de volumen hasta suelo y techo, reparación de frecuencia y ajuste al tiempo) es el plan final; el scoring se mantiene como medida de calidad del plan.
 8. **Explicaciones:** `rationale[]` por plan, sesión y ejercicio, con plantillas en castellano.
 
 **Scoring**, con pesos en la tabla de config: cobertura de músculos objetivo (penaliza huecos), ajuste al rango de volumen, ajuste al tiempo de sesión (penaliza pasarse y quedarse corto), frecuencia, balance empuje/tracción, variedad sin redundancia, preferencias.
