@@ -112,7 +112,7 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   cubre las actualizaciones de la app.
 
 ### ~~[CI] Migrar a zod 4 (excepción de `pnpm audit`)~~ — RESUELTO
-- **Estado:** resuelto en la rama `deps/migracion-zod` (migración de dependencias mayores, PR #50).
+- **Estado:** resuelto en el PR #58 (migración de dependencias mayores del PR #50 de Dependabot).
 - **Qué se hizo:** `packages/contracts` y la API en zod 4.6 (`z.record` con clave, `z.iso.datetime`,
   `z.uuid`, `z.email`, `error` en lugar de `required_error`; rutas de los issues con `PropertyKey`).
   `zod-to-json-schema` sustituido por `z.toJSONSchema` (OpenAPI 3.0, `io` de entrada/salida),
@@ -173,6 +173,46 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   (art. 9) y notas de texto libre que podrían contener datos de salud.
 - **Propuesta:** incluirlos en la DPIA y en el registro de actividades; revisión legal del texto
   `health-2026-11-v2` del consentimiento. La idea 5 (dolor) necesitará otra versión del texto.
+
+## Dependencias (versiones mayores pendientes)
+
+Migración de los PR agrupados de Dependabot #50 (npm) y #56 (pub), una por PR: NestJS 12 (#57),
+zod 4 (#58), Prisma 7 (#60), Vitest 5 y Node 22 (#62), ESLint 10 (#64), supertest 7 (#66),
+@types/bcrypt 6 (#68), fast-check 4 (#70), flutter_lints 6 (#72), flutter_secure_storage 10
+(#74), share_plus 13 (#77) y flutter_timezone 5 (#80). `@types/node` se queda a propósito en la 22
+(la versión de Node con que corre la API), no en la 26 que proponía Dependabot. Quedan estas:
+
+### [Deps] TypeScript 7
+- **Severidad:** Baja
+- **Impacto:** seguimos en TypeScript 5.9. TypeScript 7 (compilador nativo) ya no publica la API
+  de compilador clásica en el paquete `typescript` (solo `tsc` y una API `unstable/*`), y las
+  herramientas que la usan la fijan por debajo: typescript-eslint 8.72 exige `typescript <6.1`,
+  `@nestjs/swagger` 12 `^5.5 || ^6` y `@nestjs/cli` 12 trae `typescript ~6.0.2` para `nest build`.
+- **Propuesta:** esperar a que typescript-eslint y Nest admitan TS 7 (o ofrezcan otra vía, como
+  compilar con SWC). Entretanto se puede pasar a TypeScript 6.0, que todas admiten, revisando los
+  avisos de opciones obsoletas de `tsconfig`.
+
+### [Deps/Móvil] Subir Flutter a 3.44 para go_router 18, flutter_local_notifications 23, Riverpod 3 e intl 0.20.3
+- **Severidad:** Baja
+- **Impacto:** con Flutter 3.38.10 fijado (ADR-0012, Dart 3.10) no se pueden instalar:
+  - `go_router` 18 (exige Flutter ≥ 3.44 y Dart 3.12; la última compatible es la 17.5).
+  - `flutter_local_notifications` 23 (Flutter ≥ 3.44, Dart 3.12, `compileSdk` 37 y AGP 9.1.1).
+  - `flutter_riverpod` 3: la 3.0–3.3 depende del paquete `test`, cuyas versiones compatibles con
+    el `test_api` de Flutter 3.38 piden `analyzer` < 9, y `drift_dev` ≥ 2.23 necesita uno más
+    nuevo, así que no hay solución de versiones; la 3.4.1+ quita ese conflicto pero exige Dart 3.12.
+  - `intl` 0.20.3: `flutter_localizations` de Flutter 3.38 fija `intl` 0.20.2.
+- **Propuesta:** un PR que actualice la versión fijada de Flutter (ADR-0012, `.fvmrc`, CI) a la
+  3.44 con AGP 9 / `compileSdk` 37, probado en un dispositivo real, y después estas cuatro
+  migraciones (Riverpod 3: imports de `legacy.dart` para StateNotifier/StateProvider,
+  `valueOrNull` → `value`, y decidir si se desactiva el reintento automático de proveedores).
+
+### [API] Unitarios de `MeasurementsService`
+- **Severidad:** Baja
+- **Impacto:** la cobertura v8 de Vitest 5 es más estricta; los servicios de la API cumplen el
+  80 % gracias a los unitarios añadidos en #62, pero `MeasurementsService` (medidas corporales)
+  sigue cubierto casi solo por los e2e (~10 % unitario).
+- **Propuesta:** unitarios con `prismaMock` para consentimiento por ámbito, upsert por fecha y
+  progreso corporal, como los de `ScheduleService`.
 
 ## App móvil
 
@@ -265,6 +305,8 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
   seguridad no se han comprobado en un dispositivo/build real.
 - **Propuesta:** `adb shell bmgr backupnow` en un build release y comprobar que la base drift y
   los tokens no aparecen en la copia.
+  En el mismo dispositivo, comprobar que una sesión guardada con flutter_secure_storage 9 sigue
+  abierta tras actualizar a la 10 (migración automática con `migrateWithBackup`, PR #74).
 
 ### [Móvil] Prueba de accesibilidad con TalkBack en dispositivo real
 - **Severidad:** Baja
