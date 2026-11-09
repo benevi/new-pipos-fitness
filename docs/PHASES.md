@@ -13,6 +13,6 @@ paralelo.
 | 2 | Motor y catálogo | `reconstruccion/fase-2-motor` | #4 | Motor v2 con constantes citadas, progresión, sustituciones, catálogo seed, propiedades, 10 planes de ejemplo revisados; fuera el worker. |
 | 3 | API y datos | `reconstruccion/fase-3-api` | #5 | Esquema y migración únicos, módulos v1, idempotencia, analítica al escribir, consentimiento/exportar/borrar, OpenAPI desde Zod, e2e de los CUJ-1..8. |
 | 4b | App móvil v1 | `reconstruccion/fase-4b-movil-v1` | #6 | Pantallas de v1, i18n, accesibilidad, sincronización, integration test headless y APK en CI. |
-| 5 | Cierre | `reconstruccion/fase-5-*` | este PR | Revisiones independientes y correcciones (RGPD, motor, analítica, catálogo), docs coherentes, archivo histórico, [checklist de despliegue](DEPLOY_CHECKLIST.md) y [deuda técnica](DEUDA_TECNICA.md). |
+| 5 | Cierre | `reconstruccion/fase-5-*` | #7, #8, #30 | Revisiones independientes y correcciones (RGPD, motor, analítica, catálogo), docs coherentes, archivo histórico, [checklist de despliegue](DEPLOY_CHECKLIST.md) , [deuda técnica](DEUDA_TECNICA.md) (issues #9–#29) e [informe final](INFORME_FINAL.md). |
 
 Los documentos de las «fases 1–16» del proyecto original están en [archivo/](archivo/README.md).
