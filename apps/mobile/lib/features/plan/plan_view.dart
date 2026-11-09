@@ -11,7 +11,7 @@ import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
 import '../../models/plan.dart';
-
+import '../../shared/exercise_muscles.dart';
 import '../../shared/widgets.dart';
 
 class PlanOverview extends StatelessWidget {
@@ -224,6 +224,7 @@ class _ExerciseRow extends StatelessWidget {
               ),
           ] else
             Text(exercise.nameEs, style: theme.textTheme.titleSmall),
+          ExerciseMuscleChips(id: exercise.id, muscles: exercise.muscles),
           Text(
             l10n.planExerciseLine(
               exercise.sets,

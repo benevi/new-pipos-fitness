@@ -554,6 +554,26 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayCues => 'Claves técnicas';
 
   @override
+  String musclesWorks(String muscles) {
+    return 'Trabaja: $muscles';
+  }
+
+  @override
+  String musclesAlso(String muscles) {
+    return 'También: $muscles';
+  }
+
+  @override
+  String get musclesAlsoLabel => 'También:';
+
+  @override
+  String get musclesHideSecondary => 'Ocultar secundarios';
+
+  @override
+  String get musclesShowSecondaryHint =>
+      'Muestra los músculos que el ejercicio trabaja en segundo plano';
+
+  @override
   String todaySetLabel(int index) {
     return 'Serie $index';
   }
