@@ -224,6 +224,54 @@ abstract class AppLocalizations {
   /// **'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.'**
   String get setDiscardBody;
 
+  /// No description provided for @setActionsFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones de la serie {number}'**
+  String setActionsFor(int number);
+
+  /// No description provided for @setEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get setEdit;
+
+  /// No description provided for @setEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Corregir la serie {number}'**
+  String setEditTitle(int number);
+
+  /// No description provided for @setEditHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Se guarda en este móvil y se envía cuando haya conexión.'**
+  String get setEditHint;
+
+  /// No description provided for @setEditSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get setEditSave;
+
+  /// No description provided for @setDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar'**
+  String get setDelete;
+
+  /// No description provided for @setDeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar la serie {number}?'**
+  String setDeleteTitle(int number);
+
+  /// No description provided for @setDeleteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejará de contar en el entrenamiento y en tu progreso. No se puede deshacer.'**
+  String get setDeleteBody;
+
   /// No description provided for @cachedDataNotice.
   ///
   /// In es, this message translates to:

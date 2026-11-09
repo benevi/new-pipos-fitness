@@ -98,6 +98,38 @@ class AppLocalizationsEs extends AppLocalizations {
       'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.';
 
   @override
+  String setActionsFor(int number) {
+    return 'Opciones de la serie $number';
+  }
+
+  @override
+  String get setEdit => 'Editar';
+
+  @override
+  String setEditTitle(int number) {
+    return 'Corregir la serie $number';
+  }
+
+  @override
+  String get setEditHint =>
+      'Se guarda en este móvil y se envía cuando haya conexión.';
+
+  @override
+  String get setEditSave => 'Guardar cambios';
+
+  @override
+  String get setDelete => 'Borrar';
+
+  @override
+  String setDeleteTitle(int number) {
+    return '¿Borrar la serie $number?';
+  }
+
+  @override
+  String get setDeleteBody =>
+      'Dejará de contar en el entrenamiento y en tu progreso. No se puede deshacer.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Sin conexión. Datos guardados el $date.';
   }

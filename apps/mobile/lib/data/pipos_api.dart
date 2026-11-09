@@ -75,6 +75,13 @@ abstract class WorkoutApi {
   /// `DELETE /workouts/:id/sets/:clientId` (borrado lógico, idempotente;
   /// 404 si la serie nunca llegó al servidor).
   Future<SetLog> deleteSet(String workoutId, String clientId);
+
+  /// `PATCH /workouts/:id/sets/:clientId` (gana la última escritura).
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  );
   Future<SubstitutesResponse> getSubstitutes(String exerciseId);
   Future<Substitution> substitute({
     required String workoutId,
@@ -334,6 +341,22 @@ class DioPiposApi
   Future<SetLog> deleteSet(String workoutId, String clientId) => _call(
     () async => SetLog.fromJson(
       _json(await _client.delete('/workouts/$workoutId/sets/$clientId')),
+    ),
+  );
+
+  @override
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  ) => _call(
+    () async => SetLog.fromJson(
+      _json(
+        await _client.patch(
+          '/workouts/$workoutId/sets/$clientId',
+          data: request.toJson(),
+        ),
+      ),
     ),
   );
 

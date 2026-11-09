@@ -446,6 +446,66 @@ class SyncService {
     _kick();
   }
 
+  /// Corrige una serie registrada (#22): reps, carga y RIR. Si aún no se
+  /// había enviado, la edición se funde con la creación pendiente (un solo
+  /// `POST`); si ya existía en el servidor, se envía `PATCH` con
+  /// `clientUpdatedAt` (gana la última escritura). La UI se pinta al
+  /// instante desde drift.
+  Future<void> updateSet(
+    String clientId, {
+    required int reps,
+    required double loadKg,
+    required int? rir,
+  }) async {
+    await _db.transaction(() async {
+      final row = await _setByClientId(clientId);
+      if (row == null || row.deleted) return;
+      await (_db.update(
+        _sets,
+      )..where((t) => t.clientId.equals(clientId))).write(
+        LocalSetLogsCompanion(
+          reps: Value(reps),
+          loadKg: Value(loadKg),
+          rir: Value(rir),
+          updatedAt: Value(_editTime(row.updatedAt)),
+          status: const Value(SetSyncStatus.pending),
+          attempts: const Value(0),
+          lastError: const Value(null),
+          nextAttemptAt: const Value(null),
+        ),
+      );
+    });
+    _notify();
+    _kick();
+  }
+
+  /// Copia local (confirmada) de una serie que solo está en la API (p. ej.
+  /// registrada en otro dispositivo), para poder editarla o borrarla por la
+  /// cola. No hace nada si ya existe.
+  Future<void> adoptServerSet(String workoutClientId, SetLog set) async {
+    await _db
+        .into(_sets)
+        .insert(
+          LocalSetLogsCompanion.insert(
+            clientId: set.clientId,
+            userId: _uid,
+            workoutClientId: workoutClientId,
+            planExerciseId: Value(set.planExerciseId),
+            exerciseId: set.exerciseId,
+            setIndex: set.setIndex,
+            reps: set.reps,
+            loadKg: set.loadKg,
+            rir: Value(set.rir),
+            isWarmup: Value(set.isWarmup),
+            completedAt: set.completedAt,
+            updatedAt: set.clientUpdatedAt,
+            status: const Value(SetSyncStatus.synced),
+            confirmed: const Value(true),
+          ),
+          mode: InsertMode.insertOrIgnore,
+        );
+  }
+
   /// `true` si la serie puede existir en el servidor: confirmada, en envío o
   /// con algún intento cuyo resultado no se conoce (timeout, 5xx...). Un
   /// rechazo de validación al crearla garantiza que la API no la guardó (el
@@ -873,8 +933,8 @@ class SyncService {
         if (item.deleted) {
           await _sendDelete(serverId, item);
         } else {
-          await _api.upsertSet(serverId, _requestFor(item));
-          await _confirm(item);
+          final remote = await _sendSet(serverId, item);
+          await _confirm(item, remote: remote);
         }
         sent++;
       } catch (e) {
@@ -1158,7 +1218,13 @@ class SyncService {
   /// La API confirmó la serie. Si se editó o borró mientras se enviaba, la
   /// fila queda `pending` (con `confirmed`) y se envía otra vez: el reenvío
   /// responde 200 con la versión del servidor y se corrige con `PATCH`.
-  Future<void> _confirm(LocalSetLog item) async {
+  ///
+  /// Si la versión del servidor ([remote]) es más reciente (otra edición
+  /// ganó por `clientUpdatedAt`, o se borró desde otro dispositivo), la fila
+  /// local la adopta para no mostrar algo distinto de lo guardado.
+  Future<void> _confirm(LocalSetLog item, {SetLog? remote}) async {
+    final newer =
+        remote != null && remote.clientUpdatedAt.isAfter(item.updatedAt);
     final n =
         await (_db.update(_sets)..where(
               (t) =>
@@ -1167,11 +1233,18 @@ class SyncService {
                   t.deleted.equals(false),
             ))
             .write(
-              const LocalSetLogsCompanion(
-                status: Value(SetSyncStatus.synced),
-                confirmed: Value(true),
-                lastError: Value(null),
-                nextAttemptAt: Value(null),
+              LocalSetLogsCompanion(
+                status: const Value(SetSyncStatus.synced),
+                confirmed: const Value(true),
+                lastError: const Value(null),
+                nextAttemptAt: const Value(null),
+                deleted: Value(remote?.deletedAt != null),
+                reps: newer ? Value(remote.reps) : const Value.absent(),
+                loadKg: newer ? Value(remote.loadKg) : const Value.absent(),
+                rir: newer ? Value(remote.rir) : const Value.absent(),
+                updatedAt: newer
+                    ? Value(remote.clientUpdatedAt)
+                    : const Value.absent(),
               ),
             );
     if (n == 0) {
@@ -1193,14 +1266,57 @@ class SyncService {
     _notify();
   }
 
+  /// Crea la serie (`POST`, idempotente) o, si ya existía en el servidor,
+  /// le aplica la edición local con `PATCH` (gana la última escritura por
+  /// `clientUpdatedAt`). Una edición de una serie aún no enviada viaja en el
+  /// propio `POST`: no hace falta `PATCH`.
+  ///
+  /// Devuelve la versión del servidor tras el envío.
+  Future<SetLog> _sendSet(String serverId, LocalSetLog item) async {
+    if (item.confirmed) {
+      return _api.patchSet(serverId, item.clientId, _patchFor(item));
+    }
+    final result = await _api.upsertSet(serverId, _requestFor(item));
+    final remote = result.value;
+    if (!result.created &&
+        remote.deletedAt == null &&
+        remote.clientUpdatedAt.isBefore(item.updatedAt) &&
+        (remote.reps != item.reps ||
+            remote.loadKg != item.loadKg ||
+            remote.rir != item.rir)) {
+      // Ya estaba (respuesta perdida, o editada mientras se enviaba).
+      return _api.patchSet(serverId, item.clientId, _patchFor(item));
+    }
+    return remote;
+  }
+
+  PatchSetRequest _patchFor(LocalSetLog item) => PatchSetRequest(
+    reps: item.reps,
+    loadKg: item.loadKg,
+    rir: item.rir,
+    clientUpdatedAt: item.updatedAt,
+  );
+
   /// `DELETE` de una lápida; 404 = nunca llegó al servidor (también vale).
+  /// La lápida se conserva `synced` (hasta la purga) para seguir ocultando
+  /// la copia de la API que tenga en memoria la sesión de hoy.
   Future<void> _sendDelete(String serverId, LocalSetLog item) async {
     try {
       await _api.deleteSet(serverId, item.clientId);
     } catch (e) {
       if (ApiFailure.from(e).statusCode != 404) rethrow;
     }
-    await _removeSet(item.clientId);
+    await (_db.update(_sets)..where(
+          (t) => t.clientId.equals(item.clientId) & t.deleted.equals(true),
+        ))
+        .write(
+          const LocalSetLogsCompanion(
+            status: Value(SetSyncStatus.synced),
+            nextAttemptAt: Value(null),
+            lastError: Value(null),
+          ),
+        );
+    _notify();
   }
 
   Future<void> _removeSet(String clientId) async {

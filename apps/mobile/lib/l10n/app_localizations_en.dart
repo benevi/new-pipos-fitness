@@ -98,6 +98,37 @@ class AppLocalizationsEn extends AppLocalizations {
       'It will be removed from this phone and won\'t count in the workout. This can\'t be undone.';
 
   @override
+  String setActionsFor(int number) {
+    return 'Options for set $number';
+  }
+
+  @override
+  String get setEdit => 'Edit';
+
+  @override
+  String setEditTitle(int number) {
+    return 'Fix set $number';
+  }
+
+  @override
+  String get setEditHint => 'Saved on this phone and sent when you\'re online.';
+
+  @override
+  String get setEditSave => 'Save changes';
+
+  @override
+  String get setDelete => 'Delete';
+
+  @override
+  String setDeleteTitle(int number) {
+    return 'Delete set $number?';
+  }
+
+  @override
+  String get setDeleteBody =>
+      'It will no longer count in the workout or in your progress. This can\'t be undone.';
+
+  @override
   String cachedDataNotice(String date) {
     return 'Offline. Data saved on $date.';
   }

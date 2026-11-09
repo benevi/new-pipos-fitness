@@ -145,12 +145,15 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
   crearla garantiza que la API no la guardó, así que se borra sin petición. Después el finish sale.
   Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/discard_set_test.dart`.
 
-### [Móvil] Editar o borrar una serie ya registrada desde la interfaz
-- **Severidad:** Media
-- **Impacto:** la API admite `PATCH`/`DELETE /workouts/:id/sets/:clientId` (última escritura gana),
-  pero la app no permite corregir un error de tecleo; el dato malo contamina e1RM y volumen.
-- **Propuesta:** acción en la fila de la serie (editar reps/kg/RIR, borrar) que pase por la cola
-  offline con `clientUpdatedAt`.
+### ~~[Móvil] Editar o borrar una serie ya registrada desde la interfaz~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #22.
+- **Qué se hizo:** menú por serie con «Editar» (reps, kg con `decimal_input`, RIR) y «Borrar»
+  (con confirmación), optimista desde drift. `SyncService.updateSet` funde la edición con la
+  creación pendiente si aún no se envió (un solo `POST`); si ya existía, envía
+  `PATCH /workouts/:id/sets/:clientId` con `clientUpdatedAt` (también tras un reenvío que responde
+  200 con valores viejos). La fila adopta la versión del servidor si otra edición gana. Las series
+  que solo están en la API se adoptan en drift antes de editarlas. Borrar deja una lápida hasta el
+  `DELETE`. Tests: `test/core/offline/set_queue_test.dart`, `test/features/today/edit_set_test.dart`.
 
 ### [Móvil] Cambiar de ejercicio sin conexión
 - **Severidad:** Baja

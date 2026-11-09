@@ -25,6 +25,7 @@ import '../../shared/decimal_input.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
 import 'adjust_sheet.dart';
+import 'edit_set_sheet.dart';
 import 'note_sheet.dart';
 import 'plates.dart';
 import 'rest_timer_bar.dart';
@@ -156,6 +157,35 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         );
     HapticFeedback.lightImpact();
     ref.read(restTimerProvider.notifier).start(exercise.restSeconds);
+  }
+
+  /// Id local de la serie; si solo está en la API, se adopta antes en drift.
+  Future<String> _localSetId(LoggedSetView set) async {
+    final server = set.server;
+    if (server != null) {
+      final workout = await _ensureWorkout();
+      await ref
+          .read(syncServiceProvider)
+          .adoptServerSet(workout.clientId, server);
+    }
+    return set.clientId;
+  }
+
+  Future<void> _editSet(
+    LoggedSetView set,
+    int reps,
+    double loadKg,
+    int? rir,
+  ) async {
+    final id = await _localSetId(set);
+    await ref
+        .read(syncServiceProvider)
+        .updateSet(id, reps: reps, loadKg: loadKg, rir: rir);
+  }
+
+  Future<void> _deleteSet(LoggedSetView set) async {
+    final id = await _localSetId(set);
+    await ref.read(syncServiceProvider).deleteSet(id);
   }
 
   Future<void> _finish(List<LocalSetLog> local) async {
@@ -373,6 +403,8 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               logged: mergeSets(e, local),
               onLog: (index, reps, load, rir) =>
                   _logSet(e, index, reps, load, rir),
+              onEditSet: _editSet,
+              onDeleteSet: _deleteSet,
               onSwap: () => showSwapSheet(
                 context,
                 exercise: e,
@@ -477,6 +509,9 @@ class _ConflictBanner extends ConsumerWidget {
 typedef LogSetCallback =
     Future<void> Function(int setIndex, int reps, double loadKg, int? rir);
 
+typedef EditSetCallback =
+    Future<void> Function(LoggedSetView set, int reps, double loadKg, int? rir);
+
 class ExerciseCard extends StatelessWidget {
   const ExerciseCard({
     super.key,
@@ -487,12 +522,18 @@ class ExerciseCard extends StatelessWidget {
     this.note,
     this.notePending = false,
     this.onEditNote,
+    this.onEditSet,
+    this.onDeleteSet,
   });
 
   final TodayExercise exercise;
   final List<LoggedSetView> logged;
   final LogSetCallback onLog;
   final VoidCallback onSwap;
+
+  /// Corregir o borrar una serie registrada (#22).
+  final EditSetCallback? onEditSet;
+  final Future<void> Function(LoggedSetView set)? onDeleteSet;
 
   /// Nota fija (la local pendiente manda sobre la de la API).
   final String? note;
@@ -663,7 +704,13 @@ class ExerciseCard extends StatelessWidget {
             const Divider(),
             for (var i = 0; i < total; i++)
               if (i < logged.length)
-                _LoggedSetRow(index: i, set: logged[i])
+                _LoggedSetRow(
+                  index: i,
+                  set: logged[i],
+                  weighted: weighted,
+                  onEdit: onEditSet,
+                  onDelete: onDeleteSet,
+                )
               else if (i == logged.length)
                 ActiveSetRow(
                   key: Key('active-${exercise.planExerciseId}-$i'),
@@ -813,11 +860,58 @@ class _WarmupList extends StatelessWidget {
   }
 }
 
+enum _SetAction { edit, delete }
+
 class _LoggedSetRow extends ConsumerWidget {
-  const _LoggedSetRow({required this.index, required this.set});
+  const _LoggedSetRow({
+    required this.index,
+    required this.set,
+    required this.weighted,
+    this.onEdit,
+    this.onDelete,
+  });
 
   final int index;
   final LoggedSetView set;
+  final bool weighted;
+  final EditSetCallback? onEdit;
+  final Future<void> Function(LoggedSetView set)? onDelete;
+
+  Future<void> _edit(BuildContext context) async {
+    final edited = await showEditSetSheet(
+      context,
+      setNumber: index + 1,
+      weighted: weighted,
+      reps: set.reps,
+      loadKg: set.loadKg,
+      rir: set.rir,
+    );
+    if (edited == null) return;
+    await onEdit?.call(set, edited.reps, edited.loadKg, edited.rir);
+  }
+
+  Future<void> _delete(BuildContext context) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.setDeleteTitle(index + 1)),
+        content: Text(l10n.setDeleteBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('set-delete-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.setDelete),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) await onDelete?.call(set);
+  }
 
   /// «Descartar» una serie rechazada (#21): se pide confirmación y se quita
   /// de la cola local (con `DELETE` si llegó a existir en el servidor).
@@ -880,40 +974,71 @@ class _LoggedSetRow extends ConsumerWidget {
         children: [
           SizedBox(
             width: labelWidth,
-            child: Text(
-              l10n.todaySetLabel(index + 1),
-              style: theme.textTheme.labelLarge,
+            child: ExcludeSemantics(
+              child: Text(
+                l10n.todaySetLabel(index + 1),
+                style: theme.textTheme.labelLarge,
+              ),
             ),
           ),
-          Expanded(child: Text(summary, style: theme.textTheme.bodyLarge)),
+          Expanded(
+            child: Semantics(
+              label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
+              excludeSemantics: true,
+              child: Text(summary, style: theme.textTheme.bodyLarge),
+            ),
+          ),
           Tooltip(
             message: label,
+            excludeFromSemantics: true,
             child: Icon(
               icon,
               color: color,
               key: Key('sync-${set.clientId}-${set.status.name}'),
             ),
           ),
+          if (onEdit != null || onDelete != null)
+            PopupMenuButton<_SetAction>(
+              key: Key('set-menu-${set.clientId}'),
+              tooltip: l10n.setActionsFor(index + 1),
+              onSelected: (a) => switch (a) {
+                _SetAction.edit => _edit(context),
+                _SetAction.delete => _delete(context),
+              },
+              itemBuilder: (_) => [
+                if (onEdit != null)
+                  PopupMenuItem(
+                    key: const Key('set-action-edit'),
+                    value: _SetAction.edit,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.edit_outlined),
+                      title: Text(l10n.setEdit),
+                    ),
+                  ),
+                // Una rechazada se quita con «Descartar» (debajo).
+                if (onDelete != null && !failed)
+                  PopupMenuItem(
+                    key: const Key('set-action-delete'),
+                    value: _SetAction.delete,
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.delete_outline),
+                      title: Text(l10n.setDelete),
+                    ),
+                  ),
+              ],
+            ),
         ],
       ),
     );
-    if (!failed) {
-      return Semantics(
-        label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
-        excludeSemantics: true,
-        child: row,
-      );
-    }
+    if (!failed) return row;
     final reason = setRejectionReason(l10n, set.lastError);
     return Column(
       key: Key('set-failed-${set.clientId}'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Semantics(
-          label: '${l10n.todaySetLabel(index + 1)}: $summary. $label',
-          excludeSemantics: true,
-          child: row,
-        ),
+        row,
         Padding(
           padding: const EdgeInsets.only(left: labelWidth),
           child: Text(

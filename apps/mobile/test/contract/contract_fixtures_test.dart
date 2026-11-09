@@ -123,6 +123,16 @@ void main() {
       const ProfileScheduleRequest([1, 3, 5]).toJson(),
       fixture('profile_schedule_request'),
     );
+    // Editar una serie (#22).
+    expect(
+      PatchSetRequest(
+        reps: 9,
+        loadKg: 62.5,
+        rir: 1,
+        clientUpdatedAt: DateTime.utc(2026, 11, 9, 8, 5),
+      ).toJson(),
+      fixture('patch_set_request'),
+    );
     // Sin ajuste no se envía el campo (clientes anteriores).
     expect(
       StartWorkoutRequest(

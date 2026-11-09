@@ -55,6 +55,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Cambio de ejercicio:** hoja con las 3 alternativas ordenadas y su porqué; un botón «Usar …» por opción. Necesita red (el servidor valida material y limitaciones).
 - **Terminar** pide confirmación y dice cuántas series faltan; lo registrado se guarda siempre.
 - **Serie rechazada (#21).** Si la API rechaza una serie de forma permanente (400/422, p. ej. un ejercicio que no es el del hueco), la fila muestra el motivo bajo el resumen y dos acciones de 48 dp: «Reintentar» y «Descartar». Descartar pide confirmación («Se quitará de este móvil y no contará en el entrenamiento») y la quita de la cola; si pudo llegar al servidor (confirmada o con un intento de resultado desconocido) se envía además `DELETE`. Después, Terminar ya no la espera.
+- **Corregir o borrar una serie (#22).** Cada serie registrada tiene un menú «Opciones de la serie N» (48 dp, con tooltip) con «Editar» y «Borrar». Editar abre una hoja con reps, kg (coma o punto, como al registrar) y RIR en chips; «Guardar cambios» se ve al instante con el icono «Pendiente de sincronizar». Borrar pide confirmación y la oculta al momento. Las dos pasan por la cola offline: si la serie aún no se había enviado, la edición viaja en el propio `POST` (o se quita sin petición); si ya estaba en el servidor, `PATCH` con `clientUpdatedAt` (gana la última escritura; si gana otra edición, la fila adopta la del servidor) o `DELETE`.
 - **Consentimiento de salud** en un paso propio, con el texto versionado (`health-2026-11-v2` desde ADR-0013; quien aceptó `health-2026-11` conserva sus ámbitos y Ajustes le ofrece la versión nueva), «Acepto» y «Continuar sin datos de salud» con el mismo peso visual. Si se salta, no se piden limitaciones ni peso/altura y la revisión explica la consecuencia. Retirarlo en Ajustes pide confirmación y explica qué se borra.
 - **Borrar cuenta:** diálogo con icono de aviso, consecuencias en una frase, contraseña obligatoria y botón destructivo con el color de error. Contraseña incorrecta (403) → error en el campo; la sesión sigue abierta.
 - **Cambiar el perfil** reutiliza el cuestionario. Si la API crea versión nueva, un diálogo lo explica («hemos creado la versión N… tu historial se conserva») y ofrece «Ver el plan».
@@ -110,7 +111,6 @@ ADR-0013 (móvil): no se cargaron skills adicionales (`vectorlab-ux-skills:forms
 
 ## 8. Limitaciones conocidas
 
-- Editar o borrar una serie ya registrada no tiene UI (la API sí: `PATCH/DELETE /workouts/:id/sets/:clientId`).
 - Tras terminar sin red, Hoy vuelve a mostrar la sesión en caché hasta que haya conexión y la API dé la siguiente.
 - El cambio de ejercicio requiere red.
 - Sin notificaciones del descanso con la app en segundo plano.

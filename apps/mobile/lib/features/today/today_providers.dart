@@ -86,6 +86,7 @@ class LoggedSetView {
     required this.rir,
     required this.status,
     this.lastError,
+    this.server,
   });
 
   final String clientId;
@@ -97,6 +98,10 @@ class LoggedSetView {
 
   /// Motivo del último fallo de envío (código de la API o `HTTP nnn`).
   final String? lastError;
+
+  /// La serie de la API si no hay copia local (p. ej. registrada en otro
+  /// dispositivo): para editarla o borrarla se adopta antes en drift.
+  final SetLog? server;
 }
 
 /// Fusiona las series de la API (`loggedSets`) con las locales, sin
@@ -113,6 +118,7 @@ List<LoggedSetView> mergeSets(TodayExercise exercise, List<LocalSetLog> local) {
       loadKg: s.loadKg,
       rir: s.rir,
       status: SetSyncStatus.synced,
+      server: s,
     );
   }
   for (final s in local) {

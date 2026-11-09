@@ -496,6 +496,36 @@ class FakeBackend
     return deleted;
   }
 
+  /// `PATCH` recibidos (clientId, cuerpo).
+  final List<({String clientId, PatchSetRequest request})> patches = [];
+
+  @override
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  ) async {
+    _guard('PATCH /workouts/$workoutId/sets/$clientId');
+    final existing = sets[clientId];
+    if (_byServerId(workoutId) == null ||
+        existing == null ||
+        existing.workoutId != workoutId) {
+      throw _error(404, ApiErrorCode.notFound);
+    }
+    patches.add((clientId: clientId, request: request));
+    // Gana la última escritura por clientUpdatedAt (como la API).
+    if (existing.deletedAt != null ||
+        !request.clientUpdatedAt.isAfter(existing.clientUpdatedAt)) {
+      return existing;
+    }
+    final updated = SetLog.fromJson({
+      ...existing.toJson(),
+      ...request.toJson(),
+    });
+    sets[clientId] = updated;
+    return updated;
+  }
+
   @override
   Future<SubstitutesResponse> getSubstitutes(String exerciseId) async {
     _guard('GET /exercises/$exerciseId/substitutes');
