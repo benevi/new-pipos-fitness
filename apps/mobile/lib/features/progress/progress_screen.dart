@@ -236,6 +236,8 @@ class _AdherenceSection extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final planned = adherence.plannedSessions;
+    final breakDays = adherence.weeks.fold<int>(0, (s, w) => s + w.breakDays);
+
     return SectionCard(
       title: l10n.progressAdherenceTitle,
       child: planned == 0
@@ -257,6 +259,15 @@ class _AdherenceSection extends StatelessWidget {
                     value: adherence.sessionRatio.clamp(0, 1),
                   ),
                 ),
+                if (breakDays > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(top: AppSpacing.sm),
+                    child: Text(
+                      l10n.progressAdherenceBreakDays(breakDays),
+                      key: const Key('adherence-break-days'),
+                      style: theme.textTheme.bodySmall,
+                    ),
+                  ),
               ],
             ),
     );

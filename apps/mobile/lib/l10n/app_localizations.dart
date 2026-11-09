@@ -1921,6 +1921,234 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Volver a la sesión completa'**
   String get adjustRemove;
+
+  /// No description provided for @settingsSchedule.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno, pausas y recordatorio'**
+  String get settingsSchedule;
+
+  /// No description provided for @settingsScheduleSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué días entrenas, vacaciones y aviso en el móvil'**
+  String get settingsScheduleSubtitle;
+
+  /// No description provided for @scheduleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Días y pausas'**
+  String get scheduleTitle;
+
+  /// No description provided for @scheduleDaysTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno'**
+  String get scheduleDaysTitle;
+
+  /// No description provided for @scheduleDaysIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Sirven para el recordatorio y para saber si hoy toca. No cambian tu plan: sigue el orden de tus sesiones.'**
+  String get scheduleDaysIntro;
+
+  /// No description provided for @scheduleDaysCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} de {max} días elegidos'**
+  String scheduleDaysCount(int count, int max);
+
+  /// No description provided for @scheduleDaysDefault.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin días elegidos: se usan los días del plan.'**
+  String get scheduleDaysDefault;
+
+  /// No description provided for @scheduleDaysTooMany.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan tiene {max} días por semana: elige {max} como mucho.'**
+  String scheduleDaysTooMany(int max);
+
+  /// No description provided for @scheduleDaysSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar días'**
+  String get scheduleDaysSave;
+
+  /// No description provided for @scheduleDaysSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno guardados.'**
+  String get scheduleDaysSaved;
+
+  /// No description provided for @scheduleBreaksTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausas'**
+  String get scheduleBreaksTitle;
+
+  /// No description provided for @scheduleBreaksIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Vacaciones o días sin entrenar (de 1 a 60 días). No cuentan en tu adherencia, no bajan la carga al volver y el recordatorio no suena.'**
+  String get scheduleBreaksIntro;
+
+  /// No description provided for @scheduleBreaksEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes pausas planificadas.'**
+  String get scheduleBreaksEmpty;
+
+  /// No description provided for @scheduleBreakRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Del {start} al {end}'**
+  String scheduleBreakRange(String start, String end);
+
+  /// No description provided for @scheduleBreakDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String scheduleBreakDays(int count);
+
+  /// No description provided for @scheduleBreakAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir pausa'**
+  String get scheduleBreakAdd;
+
+  /// No description provided for @scheduleBreakPickerHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige el primer y el último día'**
+  String get scheduleBreakPickerHelp;
+
+  /// No description provided for @scheduleBreakTooLong.
+  ///
+  /// In es, this message translates to:
+  /// **'Una pausa dura como mucho 60 días.'**
+  String get scheduleBreakTooLong;
+
+  /// No description provided for @scheduleBreakAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausa añadida.'**
+  String get scheduleBreakAdded;
+
+  /// No description provided for @scheduleBreakDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar pausa'**
+  String get scheduleBreakDelete;
+
+  /// No description provided for @scheduleBreakDeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar esta pausa?'**
+  String get scheduleBreakDeleteTitle;
+
+  /// No description provided for @scheduleBreakDeleteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Esos días volverán a contar en tu adherencia.'**
+  String get scheduleBreakDeleteBody;
+
+  /// No description provided for @scheduleBreakDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausa borrada.'**
+  String get scheduleBreakDeleted;
+
+  /// No description provided for @scheduleReminderTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio'**
+  String get scheduleReminderTitle;
+
+  /// No description provided for @scheduleReminderToggle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordarme los días de entreno'**
+  String get scheduleReminderToggle;
+
+  /// No description provided for @scheduleReminderHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Un aviso en este móvil, sin pasar por nuestro servidor. No suena en las pausas.'**
+  String get scheduleReminderHelp;
+
+  /// No description provided for @scheduleReminderTime.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora: {time}'**
+  String scheduleReminderTime(String time);
+
+  /// No description provided for @scheduleReminderTimeEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar la hora del recordatorio'**
+  String get scheduleReminderTimeEdit;
+
+  /// No description provided for @scheduleReminderPermissionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Te avisamos?'**
+  String get scheduleReminderPermissionTitle;
+
+  /// No description provided for @scheduleReminderPermissionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para avisarte los días de entreno, Android te pedirá permiso para mostrar notificaciones. Solo usamos este permiso para el recordatorio.'**
+  String get scheduleReminderPermissionBody;
+
+  /// No description provided for @scheduleReminderPermissionContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get scheduleReminderPermissionContinue;
+
+  /// No description provided for @scheduleReminderPermissionLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get scheduleReminderPermissionLater;
+
+  /// No description provided for @scheduleReminderDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin permiso no podemos avisarte. Puedes activarlo en los ajustes del sistema.'**
+  String get scheduleReminderDenied;
+
+  /// No description provided for @reminderNotificationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy toca entrenar'**
+  String get reminderNotificationTitle;
+
+  /// No description provided for @reminderNotificationBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu sesión te espera en Pipos Fitness.'**
+  String get reminderNotificationBody;
+
+  /// No description provided for @todayBreakNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Estás en pausa hasta el {date}. Si te apetece, puedes entrenar igualmente.'**
+  String todayBreakNotice(String date);
+
+  /// No description provided for @todayRestDayNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy no es uno de tus días de entreno. Puedes descansar o entrenar igualmente.'**
+  String get todayRestDayNotice;
+
+  /// No description provided for @progressAdherenceBreakDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día en pausa: no cuenta} other{{count} días en pausa: no cuentan}}'**
+  String progressAdherenceBreakDays(int count);
 }
 
 class _AppLocalizationsDelegate

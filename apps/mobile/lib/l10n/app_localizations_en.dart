@@ -1389,4 +1389,154 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adjustRemove => 'Back to the full session';
+
+  @override
+  String get settingsSchedule => 'Training days, breaks and reminder';
+
+  @override
+  String get settingsScheduleSubtitle =>
+      'Which days you train, holidays and a reminder on this phone';
+
+  @override
+  String get scheduleTitle => 'Days and breaks';
+
+  @override
+  String get scheduleDaysTitle => 'Training days';
+
+  @override
+  String get scheduleDaysIntro =>
+      'They\'re used for the reminder and to know whether today is a training day. They don\'t change your plan: it follows your session order.';
+
+  @override
+  String scheduleDaysCount(int count, int max) {
+    return '$count of $max days chosen';
+  }
+
+  @override
+  String get scheduleDaysDefault =>
+      'No days chosen: the plan\'s days are used.';
+
+  @override
+  String scheduleDaysTooMany(int max) {
+    return 'Your plan has $max days a week: choose $max at most.';
+  }
+
+  @override
+  String get scheduleDaysSave => 'Save days';
+
+  @override
+  String get scheduleDaysSaved => 'Training days saved.';
+
+  @override
+  String get scheduleBreaksTitle => 'Breaks';
+
+  @override
+  String get scheduleBreaksIntro =>
+      'Holidays or days off (1 to 60 days). They don\'t count against your adherence, don\'t lower the load when you\'re back and the reminder stays quiet.';
+
+  @override
+  String get scheduleBreaksEmpty => 'You have no planned breaks.';
+
+  @override
+  String scheduleBreakRange(String start, String end) {
+    return 'From $start to $end';
+  }
+
+  @override
+  String scheduleBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days',
+      one: '1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleBreakAdd => 'Add break';
+
+  @override
+  String get scheduleBreakPickerHelp => 'Pick the first and last day';
+
+  @override
+  String get scheduleBreakTooLong => 'A break lasts 60 days at most.';
+
+  @override
+  String get scheduleBreakAdded => 'Break added.';
+
+  @override
+  String get scheduleBreakDelete => 'Delete break';
+
+  @override
+  String get scheduleBreakDeleteTitle => 'Delete this break?';
+
+  @override
+  String get scheduleBreakDeleteBody =>
+      'Those days will count towards your adherence again.';
+
+  @override
+  String get scheduleBreakDeleted => 'Break deleted.';
+
+  @override
+  String get scheduleReminderTitle => 'Reminder';
+
+  @override
+  String get scheduleReminderToggle => 'Remind me on training days';
+
+  @override
+  String get scheduleReminderHelp =>
+      'A notification on this phone, without going through our server. It stays quiet during breaks.';
+
+  @override
+  String scheduleReminderTime(String time) {
+    return 'Time: $time';
+  }
+
+  @override
+  String get scheduleReminderTimeEdit => 'Change the reminder time';
+
+  @override
+  String get scheduleReminderPermissionTitle => 'Shall we remind you?';
+
+  @override
+  String get scheduleReminderPermissionBody =>
+      'To remind you on training days, your phone will ask for permission to show notifications. We only use it for the reminder.';
+
+  @override
+  String get scheduleReminderPermissionContinue => 'Continue';
+
+  @override
+  String get scheduleReminderPermissionLater => 'Not now';
+
+  @override
+  String get scheduleReminderDenied =>
+      'Without permission we can\'t remind you. You can turn it on in your system settings.';
+
+  @override
+  String get reminderNotificationTitle => 'Training day today';
+
+  @override
+  String get reminderNotificationBody =>
+      'Your session is waiting in Pipos Fitness.';
+
+  @override
+  String todayBreakNotice(String date) {
+    return 'You\'re on a break until $date. You can still train if you feel like it.';
+  }
+
+  @override
+  String get todayRestDayNotice =>
+      'Today isn\'t one of your training days. You can rest or train anyway.';
+
+  @override
+  String progressAdherenceBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count days on a break: not counted',
+      one: '1 day on a break: not counted',
+    );
+    return '$_temp0';
+  }
 }

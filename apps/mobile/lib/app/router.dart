@@ -37,6 +37,7 @@ import '../features/auth/register_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/progress/progress_screen.dart';
+import '../features/settings/schedule_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/setup/setup_provider.dart';
 import '../features/today/today_providers.dart';
@@ -193,6 +194,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'profile',
                     builder: (_, __) => const ProfileEditScreen(),
                   ),
+                  GoRoute(
+                    path: 'schedule',
+                    builder: (_, __) => const ScheduleScreen(),
+                  ),
                 ],
               ),
             ],
@@ -221,7 +226,8 @@ class ScaffoldWithNav extends ConsumerWidget {
     final sync = ref.watch(syncSummaryProvider).valueOrNull;
     final showBar = isOffline || (sync != null && !sync.isClean);
     return Scaffold(
-      body: shell,
+      body: ReminderRefresher(child: shell),
+
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

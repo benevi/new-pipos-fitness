@@ -17,6 +17,8 @@ import '../../core/offline/offline_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
+import '../../models/notes_breaks.dart' show parseCalendarDate;
+
 import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../../shared/widgets.dart';
@@ -290,6 +292,20 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               in ref.watch(conflictingWorkoutsProvider).valueOrNull ??
                   const <LocalWorkout>[])
             _ConflictBanner(workout: c),
+          if (session.activeBreak != null)
+            NoticeBanner(
+              key: const Key('today-break'),
+              text: l10n.todayBreakNotice(
+                l10n.shortDate(parseCalendarDate(session.activeBreak!.endsOn)),
+              ),
+              icon: Icons.beach_access_outlined,
+            )
+          else if (!session.scheduledToday)
+            NoticeBanner(
+              key: const Key('today-rest-day'),
+              text: l10n.todayRestDayNotice,
+              icon: Icons.bedtime_outlined,
+            ),
           Semantics(
             header: true,
             child: Text(session.name, style: theme.textTheme.headlineSmall),

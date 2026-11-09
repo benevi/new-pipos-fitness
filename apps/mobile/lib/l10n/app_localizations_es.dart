@@ -1393,4 +1393,154 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get adjustRemove => 'Volver a la sesión completa';
+
+  @override
+  String get settingsSchedule => 'Días de entreno, pausas y recordatorio';
+
+  @override
+  String get settingsScheduleSubtitle =>
+      'Qué días entrenas, vacaciones y aviso en el móvil';
+
+  @override
+  String get scheduleTitle => 'Días y pausas';
+
+  @override
+  String get scheduleDaysTitle => 'Días de entreno';
+
+  @override
+  String get scheduleDaysIntro =>
+      'Sirven para el recordatorio y para saber si hoy toca. No cambian tu plan: sigue el orden de tus sesiones.';
+
+  @override
+  String scheduleDaysCount(int count, int max) {
+    return '$count de $max días elegidos';
+  }
+
+  @override
+  String get scheduleDaysDefault =>
+      'Sin días elegidos: se usan los días del plan.';
+
+  @override
+  String scheduleDaysTooMany(int max) {
+    return 'Tu plan tiene $max días por semana: elige $max como mucho.';
+  }
+
+  @override
+  String get scheduleDaysSave => 'Guardar días';
+
+  @override
+  String get scheduleDaysSaved => 'Días de entreno guardados.';
+
+  @override
+  String get scheduleBreaksTitle => 'Pausas';
+
+  @override
+  String get scheduleBreaksIntro =>
+      'Vacaciones o días sin entrenar (de 1 a 60 días). No cuentan en tu adherencia, no bajan la carga al volver y el recordatorio no suena.';
+
+  @override
+  String get scheduleBreaksEmpty => 'No tienes pausas planificadas.';
+
+  @override
+  String scheduleBreakRange(String start, String end) {
+    return 'Del $start al $end';
+  }
+
+  @override
+  String scheduleBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleBreakAdd => 'Añadir pausa';
+
+  @override
+  String get scheduleBreakPickerHelp => 'Elige el primer y el último día';
+
+  @override
+  String get scheduleBreakTooLong => 'Una pausa dura como mucho 60 días.';
+
+  @override
+  String get scheduleBreakAdded => 'Pausa añadida.';
+
+  @override
+  String get scheduleBreakDelete => 'Borrar pausa';
+
+  @override
+  String get scheduleBreakDeleteTitle => '¿Borrar esta pausa?';
+
+  @override
+  String get scheduleBreakDeleteBody =>
+      'Esos días volverán a contar en tu adherencia.';
+
+  @override
+  String get scheduleBreakDeleted => 'Pausa borrada.';
+
+  @override
+  String get scheduleReminderTitle => 'Recordatorio';
+
+  @override
+  String get scheduleReminderToggle => 'Recordarme los días de entreno';
+
+  @override
+  String get scheduleReminderHelp =>
+      'Un aviso en este móvil, sin pasar por nuestro servidor. No suena en las pausas.';
+
+  @override
+  String scheduleReminderTime(String time) {
+    return 'Hora: $time';
+  }
+
+  @override
+  String get scheduleReminderTimeEdit => 'Cambiar la hora del recordatorio';
+
+  @override
+  String get scheduleReminderPermissionTitle => '¿Te avisamos?';
+
+  @override
+  String get scheduleReminderPermissionBody =>
+      'Para avisarte los días de entreno, Android te pedirá permiso para mostrar notificaciones. Solo usamos este permiso para el recordatorio.';
+
+  @override
+  String get scheduleReminderPermissionContinue => 'Continuar';
+
+  @override
+  String get scheduleReminderPermissionLater => 'Ahora no';
+
+  @override
+  String get scheduleReminderDenied =>
+      'Sin permiso no podemos avisarte. Puedes activarlo en los ajustes del sistema.';
+
+  @override
+  String get reminderNotificationTitle => 'Hoy toca entrenar';
+
+  @override
+  String get reminderNotificationBody =>
+      'Tu sesión te espera en Pipos Fitness.';
+
+  @override
+  String todayBreakNotice(String date) {
+    return 'Estás en pausa hasta el $date. Si te apetece, puedes entrenar igualmente.';
+  }
+
+  @override
+  String get todayRestDayNotice =>
+      'Hoy no es uno de tus días de entreno. Puedes descansar o entrenar igualmente.';
+
+  @override
+  String progressAdherenceBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días en pausa: no cuentan',
+      one: '1 día en pausa: no cuenta',
+    );
+    return '$_temp0';
+  }
 }

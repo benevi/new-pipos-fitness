@@ -51,7 +51,20 @@ class SettingsScreen extends ConsumerWidget {
           ),
           const SizedBox(height: AppSpacing.md),
           const _HealthCard(),
+
           const _NutritionCard(),
+          Card(
+            child: ListTile(
+              key: const Key('settings-schedule'),
+              minTileHeight: AppSpacing.xxl + AppSpacing.md,
+              leading: const Icon(Icons.calendar_month_outlined),
+              title: Text(l10n.settingsSchedule),
+              subtitle: Text(l10n.settingsScheduleSubtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => context.go('/settings/schedule'),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
           Card(
             child: Column(
               children: [

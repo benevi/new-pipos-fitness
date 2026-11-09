@@ -10,6 +10,7 @@ import 'package:pipos_fitness/core/offline/app_database.dart';
 import 'package:pipos_fitness/core/offline/connectivity.dart';
 
 import 'package:pipos_fitness/core/offline/offline_providers.dart';
+import 'package:pipos_fitness/core/reminders/reminders.dart';
 import 'package:pipos_fitness/features/onboarding/onboarding_controller.dart';
 import 'package:pipos_fitness/features/settings/settings_providers.dart';
 import 'package:pipos_fitness/models/user.dart';
@@ -29,6 +30,32 @@ class RecordingExportSaver implements ExportSaver {
   }
 }
 
+/// Notificaciones locales en memoria (sin plugin).
+class FakeNotificationScheduler implements NotificationScheduler {
+  bool grant = true;
+  int permissionRequests = 0;
+  final Map<int, DateTime> scheduled = {};
+
+  @override
+  Future<bool> requestPermission() async {
+    permissionRequests++;
+    return grant;
+  }
+
+  @override
+  Future<void> cancelAll() async => scheduled.clear();
+
+  @override
+  Future<void> schedule({
+    required int id,
+    required DateTime when,
+    required String title,
+    required String body,
+  }) async {
+    scheduled[id] = when;
+  }
+}
+
 /// Dependencias falsas para montar [PiposRoot] en tests: sin secure storage,
 /// sin red real, sin plugins y con base de datos en memoria.
 class AppHarness {
@@ -44,7 +71,11 @@ class AppHarness {
        database = AppDatabase(NativeDatabase.memory());
 
   /// Usuario autenticado con sesión válida (GET /me responde 200).
-  factory AppHarness.signedIn({FakeBackend? backend, bool online = true}) {
+  factory AppHarness.signedIn({
+    FakeBackend? backend,
+    bool online = true,
+    DateTime Function()? clock,
+  }) {
     final h = AppHarness(
       storage: InMemoryTokenStorage(
         accessToken: 'access-1',
@@ -53,6 +84,7 @@ class AppHarness {
       ),
       backend: backend,
       online: online,
+      clock: clock,
     );
     h.adapter.reply('GET', '/me', 200, meJson());
     return h;
@@ -83,12 +115,14 @@ class AppHarness {
       ...backend.overrides,
       deviceTimezoneProvider.overrideWith((_) async => 'Europe/Madrid'),
       exportSaverProvider.overrideWithValue(exportSaver),
+      notificationSchedulerProvider.overrideWithValue(notifications),
       if (clock != null) clockProvider.overrideWithValue(clock!),
       ...overrides,
     ],
   );
 
   final RecordingExportSaver exportSaver = RecordingExportSaver();
+  final FakeNotificationScheduler notifications = FakeNotificationScheduler();
 
   /// Monta la app en español y registra la limpieza.
   Future<void> pump(
