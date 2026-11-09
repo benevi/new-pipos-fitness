@@ -275,7 +275,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get healthConsentText =>
-      'I agree that Pipos Fitness may process my health data (weight, height and limitations or discomfort by body area) for the sole purpose of adapting my training plan and my nutrition targets. I can withdraw this consent at any time from Settings; doing so deletes that data and regenerates the plan without it. Pipos Fitness does not give medical advice.';
+      'I agree that Pipos Fitness may process my health data (weight, height, limitations or discomfort by body area and body measurements: waist, neck, hip, chest, arm and thigh circumferences) to adapt my training plan and my nutrition targets, and to show me how they change and derived estimates (body mass index and estimated body-fat percentage). I can withdraw this consent at any time from Settings; doing so deletes that data, including the measurement log, and regenerates the plan without it. The estimates are not a diagnosis and Pipos Fitness does not give medical advice.';
 
   @override
   String get onboardingLimitationsTitle => 'Any area with discomfort?';
@@ -1145,4 +1145,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String loadPctValue(String pct) {
     return '$pct% of working load';
   }
+
+  @override
+  String get settingsHealthUpdateBody =>
+      'There is a new version of the text that adds body measurements (circumferences) and BMI and body-fat estimates. Your current consent still covers weight, height and limitations.';
+
+  @override
+  String get settingsHealthUpdate => 'Read and accept the new version';
 }

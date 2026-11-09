@@ -111,6 +111,12 @@ extension JsonRead on Json {
 
   DateTime? dateTimeOrNull(String key) =>
       _need(key) == null ? null : dateTime(key);
+
+  /// Campo añadido con `default` en Zod (ADR-0013): el servidor siempre lo
+  /// envía, pero una copia en caché guardada por una versión anterior de la
+  /// app puede no tenerlo. Si falta, [fallback]; si está, se lee estricto.
+  T orDefault<T>(String key, T fallback, T Function(String key) read) =>
+      containsKey(key) ? read(key) : fallback;
 }
 
 /// Serializa un instante como lo hace `Date.prototype.toISOString`

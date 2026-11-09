@@ -279,7 +279,8 @@ enum WarningCode implements WireEnum {
   priorityUncovered('PRIORITY_UNCOVERED'),
   pushPullImbalance('PUSH_PULL_IMBALANCE'),
   daysAboveLevelGuide('DAYS_ABOVE_LEVEL_GUIDE'),
-  favouriteExcluded('FAVOURITE_EXCLUDED');
+  favouriteExcluded('FAVOURITE_EXCLUDED'),
+  pinnedSubstitutionDropped('PINNED_SUBSTITUTION_DROPPED');
 
   const WarningCode(this.wire);
 
@@ -357,4 +358,104 @@ enum PlanVolumeStatus implements WireEnum {
 
   @override
   final String wire;
+}
+
+/// Material que fija el paso real de carga (PROGRAMACION.md §16.16).
+enum LoadImplement implements WireEnum {
+  barbell('barbell'),
+  trapBar('trap_bar'),
+  ezBar('ez_bar'),
+  smithMachine('smith_machine'),
+  dumbbell('dumbbell'),
+  kettlebell('kettlebell'),
+  machine('machine'),
+  cable('cable'),
+  weightPlate('weight_plate');
+
+  const LoadImplement(this.wire);
+
+  @override
+  final String wire;
+}
+
+/// Ámbitos de datos de salud cubiertos por el consentimiento (ADR-0013).
+enum HealthDataScope implements WireEnum {
+  weight('weight'),
+  height('height'),
+  limitations('limitations'),
+  bodyMeasurements('body_measurements'),
+  derivedEstimates('derived_estimates');
+
+  const HealthDataScope(this.wire);
+
+  @override
+  final String wire;
+}
+
+/// Estado de la tendencia de peso frente al ritmo del objetivo.
+enum WeightTrendStatus implements WireEnum {
+  onTrack('on_track'),
+  tooFast('too_fast'),
+  tooSlow('too_slow'),
+  noTarget('no_target'),
+  insufficientData('insufficient_data');
+
+  const WeightTrendStatus(this.wire);
+
+  @override
+  final String wire;
+}
+
+/// Categorías de IMC para adultos de la OMS.
+enum BmiCategory implements WireEnum {
+  underweight('underweight'),
+  normal('normal'),
+  preObese('pre_obese'),
+  obeseClass1('obese_class_1'),
+  obeseClass2('obese_class_2'),
+  obeseClass3('obese_class_3');
+
+  const BmiCategory(this.wire);
+
+  @override
+  final String wire;
+}
+
+/// Estado de una estimación de `GET /progress/body` (IMC, % de grasa).
+enum EstimateStatus implements WireEnum {
+  ok('ok'),
+  insufficientData('insufficient_data'),
+  consentRequired('consent_required'),
+  notApplicable('not_applicable'),
+  invalidInput('invalid_input');
+
+  const EstimateStatus(this.wire);
+
+  @override
+  final String wire;
+}
+
+/// Medidas corporales (nombres de campo del contrato).
+enum BodyField implements WireEnum {
+  weightKg('weightKg', 25, 400),
+  waistCm('waistCm', 40, 250),
+  neckCm('neckCm', 20, 70),
+  hipCm('hipCm', 50, 250),
+  chestCm('chestCm', 50, 220),
+  armCm('armCm', 15, 80),
+  thighCm('thighCm', 25, 120);
+
+  const BodyField(this.wire, this.min, this.max);
+
+  @override
+  final String wire;
+
+  /// Rango válido (BODY_MEASUREMENT_RANGES del contrato).
+  final double min;
+  final double max;
+
+  /// Los perímetros requieren el ámbito `body_measurements`; el peso, `weight`.
+  HealthDataScope get scope => this == weightKg
+      ? HealthDataScope.weight
+      : HealthDataScope.bodyMeasurements;
 }

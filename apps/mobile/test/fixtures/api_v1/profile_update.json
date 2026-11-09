@@ -31,9 +31,19 @@
       "granted": true,
       "version": "health-2026-11",
       "grantedAt": "2026-11-09T08:00:00.000Z",
-      "currentVersion": "health-2026-11"
+      "currentVersion": "health-2026-11-v2",
+      "scopes": [
+        "weight",
+        "height",
+        "limitations"
+      ]
     },
-    "updatedAt": "2026-11-09T08:00:00.000Z"
+    "updatedAt": "2026-11-09T08:00:00.000Z",
+    "trainingWeekdays": [
+      1,
+      3,
+      5
+    ]
   },
   "planVersion": {
     "id": "00000000-0000-4000-8000-000000000012",

@@ -325,13 +325,28 @@ class _HealthCardState extends ConsumerState<_HealthCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              c.isValid
+              c.granted
                   ? l10n.settingsHealthGranted(c.version ?? '')
                   : l10n.settingsHealthNotGranted,
               key: const Key('health-status'),
             ),
             const SizedBox(height: AppSpacing.sm),
-            if (c.isValid)
+            // Consentimiento de una versión anterior: sigue cubriendo sus
+            // ámbitos; para medidas y estimaciones hay que aceptar la nueva.
+            if (c.granted && !c.isValid) ...[
+              Text(
+                l10n.settingsHealthUpdateBody,
+                key: const Key('health-update-body'),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              FilledButton(
+                key: const Key('health-update'),
+                onPressed: _busy ? null : _grant,
+                child: Text(l10n.settingsHealthUpdate),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+            ],
+            if (c.granted)
               OutlinedButton(
                 key: const Key('health-withdraw'),
                 style: OutlinedButton.styleFrom(

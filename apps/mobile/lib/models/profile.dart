@@ -9,7 +9,11 @@ import 'plan.dart';
 /// (`HEALTH_CONSENT_POLICY.version` en los contratos). El texto se muestra
 /// desde los ARB (`healthConsentText`), que deben corresponder a esta
 /// versión; si cambia, hay que actualizar ambos.
-const healthConsentPolicyVersion = 'health-2026-11';
+///
+/// Desde ADR-0013 el consentimiento tiene ámbitos por versión: la anterior
+/// (`health-2026-11`) cubre peso, altura y limitaciones; esta añade medidas
+/// corporales y estimaciones derivadas (IMC, % de grasa).
+const healthConsentPolicyVersion = 'health-2026-11-v2';
 
 /// Límites del formulario (los mismos que valida Zod).
 class ProfileLimits {
@@ -90,6 +94,7 @@ class HealthConsentStatus {
     required this.version,
     required this.grantedAt,
     required this.currentVersion,
+    this.scopes = const [],
   });
 
   final bool granted;
@@ -97,14 +102,26 @@ class HealthConsentStatus {
   final DateTime? grantedAt;
   final String currentVersion;
 
+  /// Ámbitos que cubre el consentimiento vigente (vacío si no hay).
+  final List<HealthDataScope> scopes;
+
   /// Concedido y para la versión vigente del texto.
   bool get isValid => granted && version == currentVersion;
+
+  /// El consentimiento cubre este ámbito (una versión anterior sigue
+  /// cubriendo los suyos).
+  bool covers(HealthDataScope scope) => granted && scopes.contains(scope);
 
   factory HealthConsentStatus.fromJson(Json j) => HealthConsentStatus(
     granted: j.boolean('granted'),
     version: j.strOrNull('version'),
     grantedAt: j.dateTimeOrNull('grantedAt'),
     currentVersion: j.str('currentVersion'),
+    scopes: j.orDefault(
+      'scopes',
+      const [],
+      (k) => j.enumList(k, HealthDataScope.values),
+    ),
   );
 
   Json toJson() => {
@@ -112,6 +129,7 @@ class HealthConsentStatus {
     'version': version,
     'grantedAt': grantedAt == null ? null : isoUtc(grantedAt!),
     'currentVersion': currentVersion,
+    'scopes': wires(scopes),
   };
 }
 
@@ -134,6 +152,7 @@ class ProfileResponse {
     required this.heightCm,
     required this.healthConsent,
     required this.updatedAt,
+    this.trainingWeekdays = const [],
   });
 
   final TrainingGoal goal;
@@ -154,6 +173,9 @@ class ProfileResponse {
   final HealthConsentStatus healthConsent;
   final DateTime updatedAt;
 
+  /// Días de entreno preferidos (ISO: 1 = lunes … 7 = domingo).
+  final List<int> trainingWeekdays;
+
   factory ProfileResponse.fromJson(Json j) => ProfileResponse(
     goal: j.enumValue('goal', TrainingGoal.values),
     level: j.enumValue('level', TrainingLevel.values),
@@ -172,6 +194,14 @@ class ProfileResponse {
     heightCm: j.numOrNull('heightCm'),
     healthConsent: HealthConsentStatus.fromJson(j.obj('healthConsent')),
     updatedAt: j.dateTime('updatedAt'),
+    trainingWeekdays: j.orDefault(
+      'trainingWeekdays',
+      const [],
+      (k) => j.list(k, (i) {
+        if (i is int) return i;
+        throw FormatException('Elemento de "$k" no es entero');
+      }),
+    ),
   );
 
   Json toJson() => {
@@ -192,6 +222,7 @@ class ProfileResponse {
     'heightCm': heightCm == null ? null : jsonNum(heightCm!),
     'healthConsent': healthConsent.toJson(),
     'updatedAt': isoUtc(updatedAt),
+    'trainingWeekdays': trainingWeekdays,
   };
 }
 

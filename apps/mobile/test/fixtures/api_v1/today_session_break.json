@@ -1,0 +1,151 @@
+{
+  "planVersionId": "00000000-0000-4000-8000-000000000012",
+  "planSessionId": "00000000-0000-4000-8000-000000000020",
+  "order": 0,
+  "dayIndex": 0,
+  "kind": "full_body",
+  "name": "Cuerpo completo A",
+  "targetMinutes": 45,
+  "estimatedMinutes": 42.5,
+  "generalWarmupMinutes": 5,
+  "rationale": [
+    "Toca la sesión A: es la siguiente pendiente."
+  ],
+  "today": "2026-11-09",
+  "workout": null,
+  "exercises": [
+    {
+      "planExerciseId": "00000000-0000-4000-8000-000000000030",
+      "order": 0,
+      "exercise": {
+        "id": "00000000-0000-4000-8000-000000000040",
+        "slug": "squat",
+        "nameEs": "Sentadilla trasera"
+      },
+      "substitutedFrom": null,
+      "cuesEs": [
+        "Mantén el tronco firme."
+      ],
+      "movementPattern": "squat",
+      "loadType": "weighted",
+      "role": "main",
+      "restSeconds": 90,
+      "prescription": {
+        "action": "increase_load",
+        "sets": 2,
+        "repMin": 8,
+        "repMax": 10,
+        "targetRir": 2,
+        "loadKg": 62.5,
+        "isDeload": false,
+        "rationale": [
+          "La última vez completaste el techo del rango con RIR 2: subimos la carga."
+        ]
+      },
+      "warmupSets": [
+        {
+          "reps": 8,
+          "loadPct": 50,
+          "loadKg": 30
+        },
+        {
+          "reps": 5,
+          "loadPct": 75,
+          "loadKg": 47.5
+        }
+      ],
+      "loggedSets": [],
+      "loadImplement": "barbell",
+      "loadStepKg": 2.5,
+      "plates": {
+        "barKg": 20,
+        "perSide": [
+          20,
+          1.25
+        ],
+        "remainderKg": 0
+      },
+      "pinned": false,
+      "note": "Asiento en el 4; barra a la altura del pecho."
+    },
+    {
+      "planExerciseId": "00000000-0000-4000-8000-000000000031",
+      "order": 1,
+      "exercise": {
+        "id": "00000000-0000-4000-8000-000000000043",
+        "slug": "row",
+        "nameEs": "Remo con mancuerna"
+      },
+      "substitutedFrom": null,
+      "cuesEs": [
+        "Mantén el tronco firme."
+      ],
+      "movementPattern": "horizontal_pull",
+      "loadType": "weighted",
+      "role": "main",
+      "restSeconds": 90,
+      "prescription": {
+        "action": "start",
+        "sets": 2,
+        "repMin": 8,
+        "repMax": 10,
+        "targetRir": 2,
+        "loadKg": null,
+        "isDeload": false,
+        "rationale": [
+          "La última vez completaste el techo del rango con RIR 2: subimos la carga."
+        ]
+      },
+      "warmupSets": [],
+      "loggedSets": [],
+      "loadImplement": "dumbbell",
+      "loadStepKg": 2,
+      "plates": null,
+      "pinned": false,
+      "note": null
+    },
+    {
+      "planExerciseId": "00000000-0000-4000-8000-000000000032",
+      "order": 2,
+      "exercise": {
+        "id": "00000000-0000-4000-8000-000000000042",
+        "slug": "pushup",
+        "nameEs": "Flexiones"
+      },
+      "substitutedFrom": null,
+      "cuesEs": [
+        "Mantén el tronco firme."
+      ],
+      "movementPattern": "horizontal_push",
+      "loadType": "unweighted",
+      "role": "main",
+      "restSeconds": 90,
+      "prescription": {
+        "action": "increase_reps",
+        "sets": 2,
+        "repMin": 8,
+        "repMax": 10,
+        "targetRir": 2,
+        "loadKg": null,
+        "isDeload": false,
+        "rationale": [
+          "La última vez completaste el techo del rango con RIR 2: subimos la carga."
+        ]
+      },
+      "warmupSets": [],
+      "loggedSets": [],
+      "loadImplement": null,
+      "loadStepKg": null,
+      "plates": null,
+      "pinned": false,
+      "note": null
+    }
+  ],
+  "scheduledToday": false,
+  "activeBreak": {
+    "id": "00000000-0000-4000-8000-000000000070",
+    "startsOn": "2026-11-08",
+    "endsOn": "2026-11-15"
+  },
+  "adjustment": null
+}

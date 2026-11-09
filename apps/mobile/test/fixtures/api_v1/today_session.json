@@ -54,7 +54,19 @@
           "loadKg": 47.5
         }
       ],
-      "loggedSets": []
+      "loggedSets": [],
+      "loadImplement": "barbell",
+      "loadStepKg": 2.5,
+      "plates": {
+        "barKg": 20,
+        "perSide": [
+          20,
+          1.25
+        ],
+        "remainderKg": 0
+      },
+      "pinned": false,
+      "note": "Asiento en el 4; barra a la altura del pecho."
     },
     {
       "planExerciseId": "00000000-0000-4000-8000-000000000031",
@@ -85,7 +97,12 @@
         ]
       },
       "warmupSets": [],
-      "loggedSets": []
+      "loggedSets": [],
+      "loadImplement": "dumbbell",
+      "loadStepKg": 2,
+      "plates": null,
+      "pinned": false,
+      "note": null
     },
     {
       "planExerciseId": "00000000-0000-4000-8000-000000000032",
@@ -116,7 +133,15 @@
         ]
       },
       "warmupSets": [],
-      "loggedSets": []
+      "loggedSets": [],
+      "loadImplement": null,
+      "loadStepKg": null,
+      "plates": null,
+      "pinned": false,
+      "note": null
     }
-  ]
+  ],
+  "scheduledToday": true,
+  "activeBreak": null,
+  "adjustment": null
 }

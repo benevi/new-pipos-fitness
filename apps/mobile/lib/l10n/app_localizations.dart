@@ -539,7 +539,7 @@ abstract class AppLocalizations {
   /// No description provided for @healthConsentText.
   ///
   /// In es, this message translates to:
-  /// **'Acepto que Pipos Fitness trate mis datos de salud (peso, altura y limitaciones o molestias por zona del cuerpo) con el único fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales. Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos y el plan se regenera sin ellos. Pipos Fitness no da consejo médico.'**
+  /// **'Acepto que Pipos Fitness trate mis datos de salud (peso, altura, limitaciones o molestias por zona del cuerpo y medidas corporales: perímetros de cintura, cuello, cadera, pecho, brazo y muslo) con el fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales, y de mostrarme su evolución y estimaciones derivadas (índice de masa corporal y porcentaje de grasa estimado). Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos, incluido el registro de medidas, y el plan se regenera sin ellos. Las estimaciones no son un diagnóstico y Pipos Fitness no da consejo médico.'**
   String get healthConsentText;
 
   /// No description provided for @onboardingLimitationsTitle.
@@ -1585,6 +1585,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{pct} % de la carga'**
   String loadPctValue(String pct);
+
+  /// No description provided for @settingsHealthUpdateBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay una versión nueva del texto que añade las medidas corporales (perímetros) y las estimaciones de IMC y % de grasa. Tu consentimiento actual sigue cubriendo peso, altura y limitaciones.'**
+  String get settingsHealthUpdateBody;
+
+  /// No description provided for @settingsHealthUpdate.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer y aceptar la versión nueva'**
+  String get settingsHealthUpdate;
 }
 
 class _AppLocalizationsDelegate

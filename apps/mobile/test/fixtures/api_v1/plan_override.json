@@ -1,0 +1,16 @@
+{
+  "planVersionId": "00000000-0000-4000-8000-000000000012",
+  "planExerciseIds": [
+    "00000000-0000-4000-8000-000000000031"
+  ],
+  "original": {
+    "id": "00000000-0000-4000-8000-000000000043",
+    "slug": "row",
+    "nameEs": "Remo con mancuerna"
+  },
+  "pinned": {
+    "id": "00000000-0000-4000-8000-000000000044",
+    "slug": "cable-row",
+    "nameEs": "Remo en polea baja"
+  }
+}

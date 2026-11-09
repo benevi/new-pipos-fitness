@@ -172,6 +172,13 @@ class FakeBackend
       'version': version,
       'grantedAt': '2026-11-09T08:00:00.000Z',
       'currentVersion': healthConsentPolicyVersion,
+      'scopes': [
+        'weight',
+        'height',
+        'limitations',
+        'body_measurements',
+        'derived_estimates',
+      ],
     };
     profileJson = {...profileJson, 'healthConsent': status};
     return HealthConsentStatus.fromJson(status);
@@ -185,7 +192,9 @@ class FakeBackend
       'version': null,
       'grantedAt': null,
       'currentVersion': healthConsentPolicyVersion,
+      'scopes': <String>[],
     };
+
     profileJson = {
       ...profileJson,
       'healthConsent': status,
