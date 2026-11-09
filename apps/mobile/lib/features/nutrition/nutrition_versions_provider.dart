@@ -3,9 +3,10 @@ import '../../core/api/api_client.dart';
 import '../../models/nutrition_plan.dart';
 
 final nutritionVersionsProvider =
-    AsyncNotifierProvider<NutritionVersionsNotifier, List<NutritionVersionSummary>>(
-  NutritionVersionsNotifier.new,
-);
+    AsyncNotifierProvider<
+      NutritionVersionsNotifier,
+      List<NutritionVersionSummary>
+    >(NutritionVersionsNotifier.new);
 
 class NutritionVersionsNotifier
     extends AsyncNotifier<List<NutritionVersionSummary>> {
@@ -20,8 +21,7 @@ class NutritionVersionsNotifier
     final response = await api.get('/nutrition-plans/versions');
     final list = response.data as List<dynamic>;
     return list
-        .map((e) =>
-            NutritionVersionSummary.fromJson(e as Map<String, dynamic>))
+        .map((e) => NutritionVersionSummary.fromJson(e as Map<String, dynamic>))
         .toList();
   }
 

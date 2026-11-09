@@ -8,11 +8,10 @@ class FatigueBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bgColor = detected
-        ? AppColors.error.withOpacity(0.12)
-        : AppColors.success.withOpacity(0.12);
+        ? AppColors.error.withValues(alpha: 0.12)
+        : AppColors.success.withValues(alpha: 0.12);
     final fgColor = detected ? AppColors.error : AppColors.success;
-    final icon =
-        detected ? Icons.warning_amber_rounded : Icons.shield_outlined;
+    final icon = detected ? Icons.warning_amber_rounded : Icons.shield_outlined;
     final text = detected
         ? 'Fatigue detected — consider reducing volume or taking a deload.'
         : 'No fatigue detected — you are recovering well.';
@@ -30,10 +29,9 @@ class FatigueBanner extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium
-                  ?.copyWith(color: fgColor),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: fgColor),
             ),
           ),
         ],

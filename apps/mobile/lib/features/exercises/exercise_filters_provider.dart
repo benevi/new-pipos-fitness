@@ -46,8 +46,8 @@ class ExerciseFiltersState {
 
 final exerciseFiltersProvider =
     NotifierProvider<ExerciseFiltersNotifier, ExerciseFiltersState>(
-  ExerciseFiltersNotifier.new,
-);
+      ExerciseFiltersNotifier.new,
+    );
 
 class ExerciseFiltersNotifier extends Notifier<ExerciseFiltersState> {
   @override

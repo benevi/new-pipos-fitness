@@ -4,8 +4,8 @@ import '../../models/nutrition_plan.dart';
 
 final nutritionPlanProvider =
     AsyncNotifierProvider<NutritionPlanNotifier, NutritionPlan?>(
-  NutritionPlanNotifier.new,
-);
+      NutritionPlanNotifier.new,
+    );
 
 class NutritionPlanNotifier extends AsyncNotifier<NutritionPlan?> {
   @override

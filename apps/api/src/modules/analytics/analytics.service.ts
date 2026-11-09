@@ -187,8 +187,9 @@ export class AnalyticsService {
       const planSessionId = sess.planSessionId!;
       let sessionPlanned = sessionPlannedCache.get(planSessionId);
       if (sessionPlanned === undefined) {
-        const trainingSession = await this.prisma.trainingSession.findUnique({
-          where: { id: planSessionId },
+        // Ownership defensivo: sólo sesiones planificadas de planes del propio usuario.
+        const trainingSession = await this.prisma.trainingSession.findFirst({
+          where: { id: planSessionId, planVersion: { plan: { userId } } },
           include: { exercises: true },
         });
         sessionPlanned = trainingSession

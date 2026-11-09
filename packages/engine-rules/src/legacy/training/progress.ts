@@ -2,7 +2,6 @@
  * Progress analytics: e1RM, volume, adherence, fatigue. Pure, deterministic.
  */
 
-
 /** e1RM = weightKg * (1 + reps / 30). Returns null if insufficient data. */
 export function computeE1RM(weightKg: number | null, reps: number | null): number | null {
   if (weightKg == null || weightKg <= 0 || reps == null || reps <= 0) return null;

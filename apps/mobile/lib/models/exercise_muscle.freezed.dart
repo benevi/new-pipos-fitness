@@ -12,7 +12,8 @@ part of 'exercise_muscle.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 ExerciseMuscle _$ExerciseMuscleFromJson(Map<String, dynamic> json) {
   return _ExerciseMuscle.fromJson(json);
@@ -38,8 +39,9 @@ mixin _$ExerciseMuscle {
 /// @nodoc
 abstract class $ExerciseMuscleCopyWith<$Res> {
   factory $ExerciseMuscleCopyWith(
-          ExerciseMuscle value, $Res Function(ExerciseMuscle) then) =
-      _$ExerciseMuscleCopyWithImpl<$Res, ExerciseMuscle>;
+    ExerciseMuscle value,
+    $Res Function(ExerciseMuscle) then,
+  ) = _$ExerciseMuscleCopyWithImpl<$Res, ExerciseMuscle>;
   @useResult
   $Res call({String exerciseId, String muscleId, String role, Muscle? muscle});
 
@@ -66,24 +68,27 @@ class _$ExerciseMuscleCopyWithImpl<$Res, $Val extends ExerciseMuscle>
     Object? role = null,
     Object? muscle = freezed,
   }) {
-    return _then(_value.copyWith(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscleId: null == muscleId
-          ? _value.muscleId
-          : muscleId // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscle: freezed == muscle
-          ? _value.muscle
-          : muscle // ignore: cast_nullable_to_non_nullable
-              as Muscle?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            exerciseId: null == exerciseId
+                ? _value.exerciseId
+                : exerciseId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            muscleId: null == muscleId
+                ? _value.muscleId
+                : muscleId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            role: null == role
+                ? _value.role
+                : role // ignore: cast_nullable_to_non_nullable
+                      as String,
+            muscle: freezed == muscle
+                ? _value.muscle
+                : muscle // ignore: cast_nullable_to_non_nullable
+                      as Muscle?,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of ExerciseMuscle
@@ -104,9 +109,10 @@ class _$ExerciseMuscleCopyWithImpl<$Res, $Val extends ExerciseMuscle>
 /// @nodoc
 abstract class _$$ExerciseMuscleImplCopyWith<$Res>
     implements $ExerciseMuscleCopyWith<$Res> {
-  factory _$$ExerciseMuscleImplCopyWith(_$ExerciseMuscleImpl value,
-          $Res Function(_$ExerciseMuscleImpl) then) =
-      __$$ExerciseMuscleImplCopyWithImpl<$Res>;
+  factory _$$ExerciseMuscleImplCopyWith(
+    _$ExerciseMuscleImpl value,
+    $Res Function(_$ExerciseMuscleImpl) then,
+  ) = __$$ExerciseMuscleImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String exerciseId, String muscleId, String role, Muscle? muscle});
@@ -120,8 +126,9 @@ class __$$ExerciseMuscleImplCopyWithImpl<$Res>
     extends _$ExerciseMuscleCopyWithImpl<$Res, _$ExerciseMuscleImpl>
     implements _$$ExerciseMuscleImplCopyWith<$Res> {
   __$$ExerciseMuscleImplCopyWithImpl(
-      _$ExerciseMuscleImpl _value, $Res Function(_$ExerciseMuscleImpl) _then)
-      : super(_value, _then);
+    _$ExerciseMuscleImpl _value,
+    $Res Function(_$ExerciseMuscleImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ExerciseMuscle
   /// with the given fields replaced by the non-null parameter values.
@@ -133,35 +140,38 @@ class __$$ExerciseMuscleImplCopyWithImpl<$Res>
     Object? role = null,
     Object? muscle = freezed,
   }) {
-    return _then(_$ExerciseMuscleImpl(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscleId: null == muscleId
-          ? _value.muscleId
-          : muscleId // ignore: cast_nullable_to_non_nullable
-              as String,
-      role: null == role
-          ? _value.role
-          : role // ignore: cast_nullable_to_non_nullable
-              as String,
-      muscle: freezed == muscle
-          ? _value.muscle
-          : muscle // ignore: cast_nullable_to_non_nullable
-              as Muscle?,
-    ));
+    return _then(
+      _$ExerciseMuscleImpl(
+        exerciseId: null == exerciseId
+            ? _value.exerciseId
+            : exerciseId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        muscleId: null == muscleId
+            ? _value.muscleId
+            : muscleId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        role: null == role
+            ? _value.role
+            : role // ignore: cast_nullable_to_non_nullable
+                  as String,
+        muscle: freezed == muscle
+            ? _value.muscle
+            : muscle // ignore: cast_nullable_to_non_nullable
+                  as Muscle?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ExerciseMuscleImpl implements _ExerciseMuscle {
-  const _$ExerciseMuscleImpl(
-      {required this.exerciseId,
-      required this.muscleId,
-      required this.role,
-      this.muscle});
+  const _$ExerciseMuscleImpl({
+    required this.exerciseId,
+    required this.muscleId,
+    required this.role,
+    this.muscle,
+  });
 
   factory _$ExerciseMuscleImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseMuscleImplFromJson(json);
@@ -205,22 +215,23 @@ class _$ExerciseMuscleImpl implements _ExerciseMuscle {
   @pragma('vm:prefer-inline')
   _$$ExerciseMuscleImplCopyWith<_$ExerciseMuscleImpl> get copyWith =>
       __$$ExerciseMuscleImplCopyWithImpl<_$ExerciseMuscleImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ExerciseMuscleImplToJson(
-      this,
-    );
+    return _$$ExerciseMuscleImplToJson(this);
   }
 }
 
 abstract class _ExerciseMuscle implements ExerciseMuscle {
-  const factory _ExerciseMuscle(
-      {required final String exerciseId,
-      required final String muscleId,
-      required final String role,
-      final Muscle? muscle}) = _$ExerciseMuscleImpl;
+  const factory _ExerciseMuscle({
+    required final String exerciseId,
+    required final String muscleId,
+    required final String role,
+    final Muscle? muscle,
+  }) = _$ExerciseMuscleImpl;
 
   factory _ExerciseMuscle.fromJson(Map<String, dynamic> json) =
       _$ExerciseMuscleImpl.fromJson;

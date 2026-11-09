@@ -1,369 +1,155 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import * as bcrypt from 'bcrypt';
-import { vi } from 'vitest';
-import { AppModule } from '../../app.module';
-import { PrismaService } from '../../prisma/prisma.service';
+import request from 'supertest';
+import {
+  bearer,
+  createExercise,
+  createPlanSession,
+  createTestApp,
+  registerUser,
+  truncateAll,
+  type RegisteredUser,
+  type TestContext,
+} from '../../test/e2e/helpers';
+import type { PrismaService } from '../../prisma/prisma.service';
 
-describe('Analytics (e2e)', () => {
-  let app: INestApplication;
-  let accessToken: string;
-  let prisma: PrismaService;
+/** Inserta un entrenamiento completado hace 3 días con las series indicadas (true = completada). */
+async function createCompletedWorkout(
+  prisma: PrismaService,
+  userId: string,
+  exerciseId: string,
+  setsCompleted: boolean[],
+  plan?: { planSessionId: string; planVersionId: string },
+) {
+  const startedAt = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+  return prisma.workoutSession.create({
+    data: {
+      userId,
+      planSessionId: plan?.planSessionId ?? null,
+      planVersionId: plan?.planVersionId ?? null,
+      startedAt,
+      completedAt: new Date(startedAt.getTime() + 45 * 60 * 1000),
+      durationMinutes: 45,
+      exercises: {
+        create: [
+          {
+            exerciseId,
+            order: 0,
+            sets: {
+              create: setsCompleted.map((completed, setIndex) => ({
+                setIndex,
+                weightKg: 80,
+                reps: 10 - setIndex,
+                rir: 2,
+                completed,
+              })),
+            },
+          },
+        ],
+      },
+    },
+  });
+}
 
-  const userId = 'user-analytics-1';
-  const mockUser = {
-    id: userId,
-    email: 'analytics@example.com',
-    emailNormalized: 'analytics@example.com',
-    passwordHash: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    heightCm: null,
-    weightKg: null,
-    age: null,
-    sex: null,
-    trainingLevel: null,
-    preferredTrainingDays: null,
-    availableEquipment: null,
-    trainingLocation: null,
-    goals: null,
-    muscleFocus: null,
-  };
+describe('Analytics (e2e, Postgres real)', () => {
+  let ctx: TestContext;
+  let user: RegisteredUser;
+  let exerciseId: string;
+  const server = () => ctx.app.getHttpServer();
+  const progress = () =>
+    request(server()).get('/analytics/progress').set(bearer(user.accessToken)).expect(200);
 
   beforeAll(async () => {
-    mockUser.passwordHash = await bcrypt.hash('password123', 10);
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue({
-        user: { findUnique: vi.fn().mockResolvedValue(mockUser), findFirst: vi.fn(), create: vi.fn(), update: vi.fn() },
-        refreshToken: {
-          findFirst: vi.fn().mockResolvedValue({
-            id: 'rt-1',
-            userId: mockUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            revokedAt: null,
-            user: mockUser,
-          }),
-          create: vi.fn(),
-          update: vi.fn(),
-          delete: vi.fn(),
-        },
-        workoutSession: {
-          findMany: vi.fn().mockResolvedValue([]),
-        },
-        exerciseProgress: {
-          upsert: vi.fn().mockImplementation((args: { where: unknown; create: unknown; update: unknown }) => {
-            void args;
-            return Promise.resolve({
-              userId,
-              exerciseId: 'ex-1',
-              estimated1RM: null,
-              volumeLastWeek: null,
-              volumeTrend: null,
-              fatigueScore: null,
-              lastUpdated: new Date(),
-            });
-          }),
-        },
-        exerciseMuscle: { findMany: vi.fn().mockResolvedValue([]) },
-        trainingSession: {
-          findUnique: vi.fn().mockResolvedValue(null),
-        },
-      })
-      .compile();
+    ctx = await createTestApp();
+  });
 
-    app = moduleFixture.createNestApplication();
-    prisma = moduleFixture.get(PrismaService);
-    await app.init();
-
-    const loginRes = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'analytics@example.com', password: 'password123' })
-      .expect(200);
-    accessToken = loginRes.body.accessToken;
+  beforeEach(async () => {
+    await truncateAll(ctx.prisma);
+    user = await registerUser(ctx.app, 'analytics@example.com');
+    exerciseId = (await createExercise(ctx.prisma, { slug: 'bench-press' })).id;
   });
 
   afterAll(async () => {
-    await app.close();
+    await ctx.app.close();
   });
 
   describe('GET /analytics/progress', () => {
-    it('returns 200 and progress shape', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body).toHaveProperty('exercises');
-      expect(res.body).toHaveProperty('adherenceScore');
-      expect(res.body).toHaveProperty('fatigueDetected');
-      expect(Array.isArray(res.body.exercises)).toBe(true);
+    it('200 con la forma esperada', async () => {
+      const res = await progress();
+      expect(res.body).toEqual({ exercises: [], adherenceScore: null, fatigueDetected: false });
     });
 
-    it('adherence null when no workouts in window', async () => {
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([]);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.adherenceScore).toBeNull();
+    it('401 sin token', async () => {
+      await request(server()).get('/analytics/progress').expect(401);
     });
 
-    it('adherence: single workout with linked TrainingSession (session-level planned)', async () => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 3);
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([
-        {
-          id: 'ws-1',
-          userId,
-          planSessionId: 'ts-1',
-          planVersionId: 'pv-1',
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 45,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-1',
-              workoutSessionId: 'ws-1',
-              exerciseId: 'ex-1',
-              order: 0,
-              sets: [
-                { id: 's1', workoutExerciseId: 'we-1', setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true },
-                { id: 's2', workoutExerciseId: 'we-1', setIndex: 1, weightKg: 80, reps: 8, rir: 1, completed: true },
-              ],
-            },
-          ],
-        },
-      ] as never);
-      vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
-        id: 'ts-1',
-        planVersionId: 'pv-1',
-        sessionIndex: 0,
-        name: 'Day 1',
-        targetDurationMinutes: 45,
-        exercises: [
-          { id: 'tse-1', sessionId: 'ts-1', exerciseId: 'ex-1', sets: 3, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 },
-        ],
-      } as never);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
+    it('adherencia null si no hay entrenamientos en la ventana', async () => {
+      expect((await progress()).body.adherenceScore).toBeNull();
+    });
+
+    it('adherencia: un entrenamiento enlazado a una TrainingSession (planificado a nivel de sesión)', async () => {
+      const plan = await createPlanSession(ctx.prisma, user.id, exerciseId, 3);
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, true], plan);
+      const res = await progress();
       expect(res.body.adherenceScore).toBeCloseTo(2 / 3);
-      expect(res.body.adherenceScore).toBeGreaterThanOrEqual(0);
-      expect(res.body.adherenceScore).toBeLessThanOrEqual(1);
+      expect(res.body.exercises).toEqual([
+        expect.objectContaining({ exerciseId, estimated1RM: expect.any(Number) }),
+      ]);
     });
 
-    it('adherence: multiple workouts with different TrainingSessions (no over-count)', async () => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 3);
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([
-        {
-          id: 'ws-1',
-          userId,
-          planSessionId: 'ts-1',
-          planVersionId: 'pv-1',
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 45,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-1',
-              workoutSessionId: 'ws-1',
-              exerciseId: 'ex-1',
-              order: 0,
-              sets: [
-                { id: 's1', workoutExerciseId: 'we-1', setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true },
-                { id: 's2', workoutExerciseId: 'we-1', setIndex: 1, weightKg: 80, reps: 8, rir: 1, completed: true },
-              ],
-            },
-          ],
-        },
-        {
-          id: 'ws-2',
-          userId,
-          planSessionId: 'ts-2',
-          planVersionId: 'pv-2',
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 40,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-2',
-              workoutSessionId: 'ws-2',
-              exerciseId: 'ex-2',
-              order: 0,
-              sets: [
-                { id: 's3', workoutExerciseId: 'we-2', setIndex: 0, weightKg: 50, reps: 12, rir: 1, completed: true },
-                { id: 's4', workoutExerciseId: 'we-2', setIndex: 1, weightKg: 50, reps: 10, rir: 2, completed: true },
-                { id: 's5', workoutExerciseId: 'we-2', setIndex: 2, weightKg: 50, reps: 8, rir: 1, completed: true },
-              ],
-            },
-          ],
-        },
-      ] as never);
-      vi.mocked(prisma.trainingSession.findUnique)
-        .mockResolvedValueOnce({
-          id: 'ts-1',
-          planVersionId: 'pv-1',
-          sessionIndex: 0,
-          name: 'Day 1',
-          targetDurationMinutes: 45,
-          exercises: [{ id: 'tse-1', sessionId: 'ts-1', exerciseId: 'ex-1', sets: 3, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 }],
-        } as never)
-        .mockResolvedValueOnce({
-          id: 'ts-2',
-          planVersionId: 'pv-2',
-          sessionIndex: 0,
-          name: 'Day 1',
-          targetDurationMinutes: 40,
-          exercises: [{ id: 'tse-2', sessionId: 'ts-2', exerciseId: 'ex-2', sets: 4, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 }],
-        } as never);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.adherenceScore).toBeCloseTo(5 / 7);
-      expect(res.body.adherenceScore).toBeGreaterThanOrEqual(0);
-      expect(res.body.adherenceScore).toBeLessThanOrEqual(1);
+    it('adherencia: varios entrenamientos con distintas TrainingSessions (sin sobrecontar)', async () => {
+      const exercise2 = (await createExercise(ctx.prisma, { slug: 'row', movementPattern: 'pull' })).id;
+      const plan1 = await createPlanSession(ctx.prisma, user.id, exerciseId, 3);
+      const plan2 = await createPlanSession(ctx.prisma, user.id, exercise2, 4);
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, true], plan1);
+      await createCompletedWorkout(ctx.prisma, user.id, exercise2, [true, true, true], plan2);
+      expect((await progress()).body.adherenceScore).toBeCloseTo(5 / 7);
     });
 
-    it('adherence: workout without planSessionId is ignored', async () => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 3);
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([
-        {
-          id: 'ws-1',
-          userId,
-          planSessionId: null,
-          planVersionId: null,
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 45,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-1',
-              workoutSessionId: 'ws-1',
-              exerciseId: 'ex-1',
-              order: 0,
-              sets: [{ id: 's1', workoutExerciseId: 'we-1', setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true }],
-            },
-          ],
-        },
-      ] as never);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.adherenceScore).toBeNull();
+    it('adherencia: un entrenamiento sin planSessionId se ignora', async () => {
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true]);
+      expect((await progress()).body.adherenceScore).toBeNull();
     });
 
-    it('adherence: workout with incomplete sets (only completed count)', async () => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 3);
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([
-        {
-          id: 'ws-1',
-          userId,
-          planSessionId: 'ts-1',
-          planVersionId: 'pv-1',
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 45,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-1',
-              workoutSessionId: 'ws-1',
-              exerciseId: 'ex-1',
-              order: 0,
-              sets: [
-                { id: 's1', workoutExerciseId: 'we-1', setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true },
-                { id: 's2', workoutExerciseId: 'we-1', setIndex: 1, weightKg: 80, reps: 8, rir: 1, completed: false },
-              ],
-            },
-          ],
-        },
-      ] as never);
-      vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
-        id: 'ts-1',
-        planVersionId: 'pv-1',
-        sessionIndex: 0,
-        name: 'Day 1',
-        targetDurationMinutes: 45,
-        exercises: [{ id: 'tse-1', sessionId: 'ts-1', exerciseId: 'ex-1', sets: 3, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 }],
-      } as never);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.adherenceScore).toBeCloseTo(1 / 3);
-      expect(res.body.adherenceScore).toBeGreaterThanOrEqual(0);
-      expect(res.body.adherenceScore).toBeLessThanOrEqual(1);
+    it('adherencia: sólo cuentan las series completadas', async () => {
+      const plan = await createPlanSession(ctx.prisma, user.id, exerciseId, 3);
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, false], plan);
+      expect((await progress()).body.adherenceScore).toBeCloseTo(1 / 3);
     });
 
-    it('adherence: mixed completed and incomplete sets in [0,1]', async () => {
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 3);
-      vi.mocked(prisma.workoutSession.findMany).mockResolvedValueOnce([
-        {
-          id: 'ws-1',
-          userId,
-          planSessionId: 'ts-1',
-          planVersionId: 'pv-1',
-          startedAt: weekAgo,
-          completedAt: new Date(),
-          durationMinutes: 45,
-          notes: null,
-          exercises: [
-            {
-              id: 'we-1',
-              workoutSessionId: 'ws-1',
-              exerciseId: 'ex-1',
-              order: 0,
-              sets: [
-                { id: 's1', workoutExerciseId: 'we-1', setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true },
-                { id: 's2', workoutExerciseId: 'we-1', setIndex: 1, weightKg: 80, reps: 8, rir: 1, completed: true },
-                { id: 's3', workoutExerciseId: 'we-1', setIndex: 2, weightKg: 80, reps: 6, rir: 0, completed: false },
-              ],
-            },
-          ],
-        },
-      ] as never);
-      vi.mocked(prisma.trainingSession.findUnique).mockResolvedValueOnce({
-        id: 'ts-1',
-        planVersionId: 'pv-1',
-        sessionIndex: 0,
-        name: 'Day 1',
-        targetDurationMinutes: 45,
-        exercises: [{ id: 'tse-1', sessionId: 'ts-1', exerciseId: 'ex-1', sets: 3, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 }],
-      } as never);
-      const res = await request(app.getHttpServer())
-        .get('/analytics/progress')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body.adherenceScore).toBeCloseTo(2 / 3);
-      expect(res.body.adherenceScore).toBeGreaterThanOrEqual(0);
-      expect(res.body.adherenceScore).toBeLessThanOrEqual(1);
+    it('adherencia: mezcla de series completadas e incompletas en [0,1]', async () => {
+      const plan = await createPlanSession(ctx.prisma, user.id, exerciseId, 3);
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, true, false], plan);
+      const score = (await progress()).body.adherenceScore;
+      expect(score).toBeCloseTo(2 / 3);
+      expect(score).toBeGreaterThanOrEqual(0);
+      expect(score).toBeLessThanOrEqual(1);
+    });
+
+    it('ownership: una planSession de otro usuario enlazada (dato heredado) no computa', async () => {
+      const other = await registerUser(ctx.app, 'other@example.com');
+      const foreignPlan = await createPlanSession(ctx.prisma, other.id, exerciseId, 3);
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, true], foreignPlan);
+      expect((await progress()).body.adherenceScore).toBeNull();
+    });
+
+    it('no mezcla datos de otros usuarios', async () => {
+      const other = await registerUser(ctx.app, 'other@example.com');
+      await createCompletedWorkout(ctx.prisma, other.id, exerciseId, [true, true]);
+      expect((await progress()).body.exercises).toEqual([]);
     });
   });
 
   describe('GET /analytics/volume', () => {
-    it('returns 200 and volume shape', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/analytics/volume')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(res.body).toHaveProperty('byExercise');
-      expect(res.body).toHaveProperty('byMuscle');
-      expect(Array.isArray(res.body.byExercise)).toBe(true);
-      expect(Array.isArray(res.body.byMuscle)).toBe(true);
+    it('200 con volumen por ejercicio y por músculo', async () => {
+      await createCompletedWorkout(ctx.prisma, user.id, exerciseId, [true, true]);
+      const res = await request(server()).get('/analytics/volume').set(bearer(user.accessToken)).expect(200);
+      expect(res.body.byExercise).toEqual([{ exerciseId, volume: expect.any(Number) }]);
+      expect(res.body.byMuscle).toEqual([{ muscleId: 'muscle-chest', volume: expect.any(Number) }]);
+    });
+
+    it('200 vacío sin entrenamientos', async () => {
+      const res = await request(server()).get('/analytics/volume').set(bearer(user.accessToken)).expect(200);
+      expect(res.body.byExercise).toEqual([]);
+      expect(res.body.byMuscle).toEqual([]);
     });
   });
 });

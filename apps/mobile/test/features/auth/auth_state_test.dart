@@ -36,30 +36,36 @@ void main() {
     test('copyWith preserves unspecified fields', () {
       const original = AuthState(
         status: AuthStatus.authenticated,
-        error: 'prev',
+        error: AuthErrorCode.network,
+        isOffline: true,
       );
       final updated = original.copyWith(status: AuthStatus.error);
       expect(updated.status, AuthStatus.error);
+      expect(updated.isOffline, isTrue);
+      expect(updated.error, isNull, reason: 'copyWith limpia el error');
     });
 
     test('error state holds message', () {
       final state = const AuthState().copyWith(
         status: AuthStatus.error,
-        error: 'Bad credentials',
+        error: AuthErrorCode.invalidCredentials,
       );
       expect(state.status, AuthStatus.error);
-      expect(state.error, 'Bad credentials');
+      expect(state.error, AuthErrorCode.invalidCredentials);
     });
 
-    test('forced logout produces unauthenticated with session-expired message', () {
-      const state = AuthState(
-        status: AuthStatus.unauthenticated,
-        error: 'Your session has expired. Please log in again.',
-      );
-      expect(state.isAuthenticated, isFalse);
-      expect(state.isResolved, isTrue);
-      expect(state.error, contains('session has expired'));
-    });
+    test(
+      'forced logout produces unauthenticated with session-expired message',
+      () {
+        const state = AuthState(
+          status: AuthStatus.unauthenticated,
+          error: AuthErrorCode.sessionExpired,
+        );
+        expect(state.isAuthenticated, isFalse);
+        expect(state.isResolved, isTrue);
+        expect(state.error, AuthErrorCode.sessionExpired);
+      },
+    );
 
     test('unauthenticated state clears user', () {
       const state = AuthState(status: AuthStatus.unauthenticated);

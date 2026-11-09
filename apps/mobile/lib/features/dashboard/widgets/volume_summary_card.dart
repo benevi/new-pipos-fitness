@@ -32,8 +32,10 @@ class VolumeSummaryCard extends StatelessWidget {
               children: [
                 const Icon(Icons.bar_chart, color: AppColors.accent, size: 22),
                 const SizedBox(width: AppSpacing.sm),
-                Text('Weekly Volume',
-                    style: Theme.of(context).textTheme.titleMedium),
+                Text(
+                  'Weekly Volume',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
               ],
             ),
             const SizedBox(height: AppSpacing.md),
@@ -46,16 +48,10 @@ class VolumeSummaryCard extends StatelessWidget {
                   ),
                 ),
                 Expanded(
-                  child: _StatItem(
-                    label: 'Exercises',
-                    value: '$exerciseCount',
-                  ),
+                  child: _StatItem(label: 'Exercises', value: '$exerciseCount'),
                 ),
                 Expanded(
-                  child: _StatItem(
-                    label: 'Muscles',
-                    value: '$muscleCount',
-                  ),
+                  child: _StatItem(label: 'Muscles', value: '$muscleCount'),
                 ),
               ],
             ),
@@ -65,13 +61,15 @@ class VolumeSummaryCard extends StatelessWidget {
                 spacing: AppSpacing.sm,
                 runSpacing: AppSpacing.xs,
                 children: muscleVolumes
-                    .map((m) => Chip(
-                          label: Text(
-                            '${m.displayName}: ${m.volume.toStringAsFixed(0)}',
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          visualDensity: VisualDensity.compact,
-                        ))
+                    .map(
+                      (m) => Chip(
+                        label: Text(
+                          '${m.displayName}: ${m.volume.toStringAsFixed(0)}',
+                          style: const TextStyle(fontSize: 11),
+                        ),
+                        visualDensity: VisualDensity.compact,
+                      ),
+                    )
                     .toList(),
               ),
             ],
@@ -94,17 +92,16 @@ class _StatItem extends StatelessWidget {
         Text(
           value,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-                color: AppColors.accent,
-              ),
+            fontWeight: FontWeight.bold,
+            color: AppColors.accent,
+          ),
         ),
         const SizedBox(height: 2),
         Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: AppColors.onSurfaceVariant),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
     );

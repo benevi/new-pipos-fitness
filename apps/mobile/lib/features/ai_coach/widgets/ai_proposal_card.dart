@@ -57,8 +57,8 @@ class AiProposalCard extends StatelessWidget {
               Text(
                 _proposalTypeLabel(type),
                 style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
               const SizedBox(width: AppSpacing.sm),
               if (isValid)
@@ -101,14 +101,16 @@ class AiProposalCard extends StatelessWidget {
                 ),
             ],
           ),
-          if (isRejected && rejectionReason != null && rejectionReason!.isNotEmpty)
+          if (isRejected &&
+              rejectionReason != null &&
+              rejectionReason!.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.xs),
               child: Text(
                 rejectionReason!,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.onSurfaceVariant,
-                    ),
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ),
         ],

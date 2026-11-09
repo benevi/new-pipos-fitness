@@ -53,24 +53,24 @@ void main() {
       expect(vm.isEmpty, true);
     });
 
-    test('empty when progress has empty exercises, null adherence, no volume',
-        () {
-      const progress = ProgressMetrics(
-        exercises: [],
-        adherenceScore: null,
-        fatigueDetected: false,
-      );
-      final vm = _build(progress: progress);
-      expect(vm.isEmpty, true);
-    });
+    test(
+      'empty when progress has empty exercises, null adherence, no volume',
+      () {
+        const progress = ProgressMetrics(
+          exercises: [],
+          adherenceScore: null,
+          fatigueDetected: false,
+        );
+        final vm = _build(progress: progress);
+        expect(vm.isEmpty, true);
+      },
+    );
   });
 
   group('DashboardViewModel data composition', () {
     test('resolves exercise names from catalog', () {
       const progress = ProgressMetrics(
-        exercises: [
-          ExerciseProgressItem(exerciseId: 'bench-press'),
-        ],
+        exercises: [ExerciseProgressItem(exerciseId: 'bench-press')],
         adherenceScore: 0.8,
         fatigueDetected: false,
       );
@@ -90,9 +90,7 @@ void main() {
 
     test('falls back to exerciseId when catalog missing', () {
       const progress = ProgressMetrics(
-        exercises: [
-          ExerciseProgressItem(exerciseId: 'unknown-exercise'),
-        ],
+        exercises: [ExerciseProgressItem(exerciseId: 'unknown-exercise')],
         adherenceScore: null,
         fatigueDetected: false,
       );
@@ -170,7 +168,12 @@ void main() {
     test('returns name from catalog', () {
       final catalog = {
         'bench': const Exercise(
-            id: 'bench', slug: 'bench', name: 'Bench', difficulty: 3, place: 'gym'),
+          id: 'bench',
+          slug: 'bench',
+          name: 'Bench',
+          difficulty: 3,
+          place: 'gym',
+        ),
       };
       expect(exerciseName(catalog, 'bench'), 'Bench');
     });
@@ -218,7 +221,7 @@ void main() {
             'volumeTrend': 'up',
             'fatigueScore': 0.3,
             'lastUpdated': '2026-03-09T12:00:00Z',
-          }
+          },
         ],
         'adherenceScore': 0.85,
         'fatigueDetected': false,
@@ -231,10 +234,10 @@ void main() {
     test('VolumeMetrics fromJson', () {
       final json = {
         'byExercise': [
-          {'exerciseId': 'a', 'volume': 1000.0}
+          {'exerciseId': 'a', 'volume': 1000.0},
         ],
         'byMuscle': [
-          {'muscleId': 'chest', 'volume': 1000.0}
+          {'muscleId': 'chest', 'volume': 1000.0},
         ],
         'weekStart': '2026-03-03T00:00:00Z',
       };
@@ -261,7 +264,8 @@ DashboardViewModel _build({
   Map<String, Muscle>? muscleCatalog,
 }) {
   final hasExercises = progress != null && progress.exercises.isNotEmpty;
-  final hasVolume = volume != null &&
+  final hasVolume =
+      volume != null &&
       (volume.byExercise.isNotEmpty || volume.byMuscle.isNotEmpty);
   final hasAdherence = progress?.adherenceScore != null;
 

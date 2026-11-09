@@ -12,7 +12,8 @@ part of 'progress_metrics.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 ProgressMetrics _$ProgressMetricsFromJson(Map<String, dynamic> json) {
   return _ProgressMetrics.fromJson(json);
@@ -38,13 +39,15 @@ mixin _$ProgressMetrics {
 /// @nodoc
 abstract class $ProgressMetricsCopyWith<$Res> {
   factory $ProgressMetricsCopyWith(
-          ProgressMetrics value, $Res Function(ProgressMetrics) then) =
-      _$ProgressMetricsCopyWithImpl<$Res, ProgressMetrics>;
+    ProgressMetrics value,
+    $Res Function(ProgressMetrics) then,
+  ) = _$ProgressMetricsCopyWithImpl<$Res, ProgressMetrics>;
   @useResult
-  $Res call(
-      {List<ExerciseProgressItem> exercises,
-      double? adherenceScore,
-      bool fatigueDetected});
+  $Res call({
+    List<ExerciseProgressItem> exercises,
+    double? adherenceScore,
+    bool fatigueDetected,
+  });
 }
 
 /// @nodoc
@@ -66,35 +69,40 @@ class _$ProgressMetricsCopyWithImpl<$Res, $Val extends ProgressMetrics>
     Object? adherenceScore = freezed,
     Object? fatigueDetected = null,
   }) {
-    return _then(_value.copyWith(
-      exercises: null == exercises
-          ? _value.exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<ExerciseProgressItem>,
-      adherenceScore: freezed == adherenceScore
-          ? _value.adherenceScore
-          : adherenceScore // ignore: cast_nullable_to_non_nullable
-              as double?,
-      fatigueDetected: null == fatigueDetected
-          ? _value.fatigueDetected
-          : fatigueDetected // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            exercises: null == exercises
+                ? _value.exercises
+                : exercises // ignore: cast_nullable_to_non_nullable
+                      as List<ExerciseProgressItem>,
+            adherenceScore: freezed == adherenceScore
+                ? _value.adherenceScore
+                : adherenceScore // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            fatigueDetected: null == fatigueDetected
+                ? _value.fatigueDetected
+                : fatigueDetected // ignore: cast_nullable_to_non_nullable
+                      as bool,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ProgressMetricsImplCopyWith<$Res>
     implements $ProgressMetricsCopyWith<$Res> {
-  factory _$$ProgressMetricsImplCopyWith(_$ProgressMetricsImpl value,
-          $Res Function(_$ProgressMetricsImpl) then) =
-      __$$ProgressMetricsImplCopyWithImpl<$Res>;
+  factory _$$ProgressMetricsImplCopyWith(
+    _$ProgressMetricsImpl value,
+    $Res Function(_$ProgressMetricsImpl) then,
+  ) = __$$ProgressMetricsImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {List<ExerciseProgressItem> exercises,
-      double? adherenceScore,
-      bool fatigueDetected});
+  $Res call({
+    List<ExerciseProgressItem> exercises,
+    double? adherenceScore,
+    bool fatigueDetected,
+  });
 }
 
 /// @nodoc
@@ -102,8 +110,9 @@ class __$$ProgressMetricsImplCopyWithImpl<$Res>
     extends _$ProgressMetricsCopyWithImpl<$Res, _$ProgressMetricsImpl>
     implements _$$ProgressMetricsImplCopyWith<$Res> {
   __$$ProgressMetricsImplCopyWithImpl(
-      _$ProgressMetricsImpl _value, $Res Function(_$ProgressMetricsImpl) _then)
-      : super(_value, _then);
+    _$ProgressMetricsImpl _value,
+    $Res Function(_$ProgressMetricsImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ProgressMetrics
   /// with the given fields replaced by the non-null parameter values.
@@ -114,31 +123,33 @@ class __$$ProgressMetricsImplCopyWithImpl<$Res>
     Object? adherenceScore = freezed,
     Object? fatigueDetected = null,
   }) {
-    return _then(_$ProgressMetricsImpl(
-      exercises: null == exercises
-          ? _value._exercises
-          : exercises // ignore: cast_nullable_to_non_nullable
-              as List<ExerciseProgressItem>,
-      adherenceScore: freezed == adherenceScore
-          ? _value.adherenceScore
-          : adherenceScore // ignore: cast_nullable_to_non_nullable
-              as double?,
-      fatigueDetected: null == fatigueDetected
-          ? _value.fatigueDetected
-          : fatigueDetected // ignore: cast_nullable_to_non_nullable
-              as bool,
-    ));
+    return _then(
+      _$ProgressMetricsImpl(
+        exercises: null == exercises
+            ? _value._exercises
+            : exercises // ignore: cast_nullable_to_non_nullable
+                  as List<ExerciseProgressItem>,
+        adherenceScore: freezed == adherenceScore
+            ? _value.adherenceScore
+            : adherenceScore // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        fatigueDetected: null == fatigueDetected
+            ? _value.fatigueDetected
+            : fatigueDetected // ignore: cast_nullable_to_non_nullable
+                  as bool,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ProgressMetricsImpl implements _ProgressMetrics {
-  const _$ProgressMetricsImpl(
-      {required final List<ExerciseProgressItem> exercises,
-      required this.adherenceScore,
-      required this.fatigueDetected})
-      : _exercises = exercises;
+  const _$ProgressMetricsImpl({
+    required final List<ExerciseProgressItem> exercises,
+    required this.adherenceScore,
+    required this.fatigueDetected,
+  }) : _exercises = exercises;
 
   factory _$ProgressMetricsImpl.fromJson(Map<String, dynamic> json) =>
       _$$ProgressMetricsImplFromJson(json);
@@ -166,8 +177,10 @@ class _$ProgressMetricsImpl implements _ProgressMetrics {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
             other is _$ProgressMetricsImpl &&
-            const DeepCollectionEquality()
-                .equals(other._exercises, _exercises) &&
+            const DeepCollectionEquality().equals(
+              other._exercises,
+              _exercises,
+            ) &&
             (identical(other.adherenceScore, adherenceScore) ||
                 other.adherenceScore == adherenceScore) &&
             (identical(other.fatigueDetected, fatigueDetected) ||
@@ -177,10 +190,11 @@ class _$ProgressMetricsImpl implements _ProgressMetrics {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      const DeepCollectionEquality().hash(_exercises),
-      adherenceScore,
-      fatigueDetected);
+    runtimeType,
+    const DeepCollectionEquality().hash(_exercises),
+    adherenceScore,
+    fatigueDetected,
+  );
 
   /// Create a copy of ProgressMetrics
   /// with the given fields replaced by the non-null parameter values.
@@ -189,21 +203,22 @@ class _$ProgressMetricsImpl implements _ProgressMetrics {
   @pragma('vm:prefer-inline')
   _$$ProgressMetricsImplCopyWith<_$ProgressMetricsImpl> get copyWith =>
       __$$ProgressMetricsImplCopyWithImpl<_$ProgressMetricsImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ProgressMetricsImplToJson(
-      this,
-    );
+    return _$$ProgressMetricsImplToJson(this);
   }
 }
 
 abstract class _ProgressMetrics implements ProgressMetrics {
-  const factory _ProgressMetrics(
-      {required final List<ExerciseProgressItem> exercises,
-      required final double? adherenceScore,
-      required final bool fatigueDetected}) = _$ProgressMetricsImpl;
+  const factory _ProgressMetrics({
+    required final List<ExerciseProgressItem> exercises,
+    required final double? adherenceScore,
+    required final bool fatigueDetected,
+  }) = _$ProgressMetricsImpl;
 
   factory _ProgressMetrics.fromJson(Map<String, dynamic> json) =
       _$ProgressMetricsImpl.fromJson;
@@ -248,22 +263,26 @@ mixin _$ExerciseProgressItem {
 
 /// @nodoc
 abstract class $ExerciseProgressItemCopyWith<$Res> {
-  factory $ExerciseProgressItemCopyWith(ExerciseProgressItem value,
-          $Res Function(ExerciseProgressItem) then) =
-      _$ExerciseProgressItemCopyWithImpl<$Res, ExerciseProgressItem>;
+  factory $ExerciseProgressItemCopyWith(
+    ExerciseProgressItem value,
+    $Res Function(ExerciseProgressItem) then,
+  ) = _$ExerciseProgressItemCopyWithImpl<$Res, ExerciseProgressItem>;
   @useResult
-  $Res call(
-      {String exerciseId,
-      double? estimated1RM,
-      double? volumeLastWeek,
-      String? volumeTrend,
-      double? fatigueScore,
-      String? lastUpdated});
+  $Res call({
+    String exerciseId,
+    double? estimated1RM,
+    double? volumeLastWeek,
+    String? volumeTrend,
+    double? fatigueScore,
+    String? lastUpdated,
+  });
 }
 
 /// @nodoc
-class _$ExerciseProgressItemCopyWithImpl<$Res,
-        $Val extends ExerciseProgressItem>
+class _$ExerciseProgressItemCopyWithImpl<
+  $Res,
+  $Val extends ExerciseProgressItem
+>
     implements $ExerciseProgressItemCopyWith<$Res> {
   _$ExerciseProgressItemCopyWithImpl(this._value, this._then);
 
@@ -284,59 +303,65 @@ class _$ExerciseProgressItemCopyWithImpl<$Res,
     Object? fatigueScore = freezed,
     Object? lastUpdated = freezed,
   }) {
-    return _then(_value.copyWith(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      estimated1RM: freezed == estimated1RM
-          ? _value.estimated1RM
-          : estimated1RM // ignore: cast_nullable_to_non_nullable
-              as double?,
-      volumeLastWeek: freezed == volumeLastWeek
-          ? _value.volumeLastWeek
-          : volumeLastWeek // ignore: cast_nullable_to_non_nullable
-              as double?,
-      volumeTrend: freezed == volumeTrend
-          ? _value.volumeTrend
-          : volumeTrend // ignore: cast_nullable_to_non_nullable
-              as String?,
-      fatigueScore: freezed == fatigueScore
-          ? _value.fatigueScore
-          : fatigueScore // ignore: cast_nullable_to_non_nullable
-              as double?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            exerciseId: null == exerciseId
+                ? _value.exerciseId
+                : exerciseId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            estimated1RM: freezed == estimated1RM
+                ? _value.estimated1RM
+                : estimated1RM // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            volumeLastWeek: freezed == volumeLastWeek
+                ? _value.volumeLastWeek
+                : volumeLastWeek // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            volumeTrend: freezed == volumeTrend
+                ? _value.volumeTrend
+                : volumeTrend // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            fatigueScore: freezed == fatigueScore
+                ? _value.fatigueScore
+                : fatigueScore // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            lastUpdated: freezed == lastUpdated
+                ? _value.lastUpdated
+                : lastUpdated // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$ExerciseProgressItemImplCopyWith<$Res>
     implements $ExerciseProgressItemCopyWith<$Res> {
-  factory _$$ExerciseProgressItemImplCopyWith(_$ExerciseProgressItemImpl value,
-          $Res Function(_$ExerciseProgressItemImpl) then) =
-      __$$ExerciseProgressItemImplCopyWithImpl<$Res>;
+  factory _$$ExerciseProgressItemImplCopyWith(
+    _$ExerciseProgressItemImpl value,
+    $Res Function(_$ExerciseProgressItemImpl) then,
+  ) = __$$ExerciseProgressItemImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String exerciseId,
-      double? estimated1RM,
-      double? volumeLastWeek,
-      String? volumeTrend,
-      double? fatigueScore,
-      String? lastUpdated});
+  $Res call({
+    String exerciseId,
+    double? estimated1RM,
+    double? volumeLastWeek,
+    String? volumeTrend,
+    double? fatigueScore,
+    String? lastUpdated,
+  });
 }
 
 /// @nodoc
 class __$$ExerciseProgressItemImplCopyWithImpl<$Res>
     extends _$ExerciseProgressItemCopyWithImpl<$Res, _$ExerciseProgressItemImpl>
     implements _$$ExerciseProgressItemImplCopyWith<$Res> {
-  __$$ExerciseProgressItemImplCopyWithImpl(_$ExerciseProgressItemImpl _value,
-      $Res Function(_$ExerciseProgressItemImpl) _then)
-      : super(_value, _then);
+  __$$ExerciseProgressItemImplCopyWithImpl(
+    _$ExerciseProgressItemImpl _value,
+    $Res Function(_$ExerciseProgressItemImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ExerciseProgressItem
   /// with the given fields replaced by the non-null parameter values.
@@ -350,45 +375,48 @@ class __$$ExerciseProgressItemImplCopyWithImpl<$Res>
     Object? fatigueScore = freezed,
     Object? lastUpdated = freezed,
   }) {
-    return _then(_$ExerciseProgressItemImpl(
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      estimated1RM: freezed == estimated1RM
-          ? _value.estimated1RM
-          : estimated1RM // ignore: cast_nullable_to_non_nullable
-              as double?,
-      volumeLastWeek: freezed == volumeLastWeek
-          ? _value.volumeLastWeek
-          : volumeLastWeek // ignore: cast_nullable_to_non_nullable
-              as double?,
-      volumeTrend: freezed == volumeTrend
-          ? _value.volumeTrend
-          : volumeTrend // ignore: cast_nullable_to_non_nullable
-              as String?,
-      fatigueScore: freezed == fatigueScore
-          ? _value.fatigueScore
-          : fatigueScore // ignore: cast_nullable_to_non_nullable
-              as double?,
-      lastUpdated: freezed == lastUpdated
-          ? _value.lastUpdated
-          : lastUpdated // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$ExerciseProgressItemImpl(
+        exerciseId: null == exerciseId
+            ? _value.exerciseId
+            : exerciseId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        estimated1RM: freezed == estimated1RM
+            ? _value.estimated1RM
+            : estimated1RM // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        volumeLastWeek: freezed == volumeLastWeek
+            ? _value.volumeLastWeek
+            : volumeLastWeek // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        volumeTrend: freezed == volumeTrend
+            ? _value.volumeTrend
+            : volumeTrend // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        fatigueScore: freezed == fatigueScore
+            ? _value.fatigueScore
+            : fatigueScore // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        lastUpdated: freezed == lastUpdated
+            ? _value.lastUpdated
+            : lastUpdated // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ExerciseProgressItemImpl implements _ExerciseProgressItem {
-  const _$ExerciseProgressItemImpl(
-      {required this.exerciseId,
-      this.estimated1RM,
-      this.volumeLastWeek,
-      this.volumeTrend,
-      this.fatigueScore,
-      this.lastUpdated});
+  const _$ExerciseProgressItemImpl({
+    required this.exerciseId,
+    this.estimated1RM,
+    this.volumeLastWeek,
+    this.volumeTrend,
+    this.fatigueScore,
+    this.lastUpdated,
+  });
 
   factory _$ExerciseProgressItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseProgressItemImplFromJson(json);
@@ -432,8 +460,15 @@ class _$ExerciseProgressItemImpl implements _ExerciseProgressItem {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, exerciseId, estimated1RM,
-      volumeLastWeek, volumeTrend, fatigueScore, lastUpdated);
+  int get hashCode => Object.hash(
+    runtimeType,
+    exerciseId,
+    estimated1RM,
+    volumeLastWeek,
+    volumeTrend,
+    fatigueScore,
+    lastUpdated,
+  );
 
   /// Create a copy of ExerciseProgressItem
   /// with the given fields replaced by the non-null parameter values.
@@ -441,26 +476,27 @@ class _$ExerciseProgressItemImpl implements _ExerciseProgressItem {
   @override
   @pragma('vm:prefer-inline')
   _$$ExerciseProgressItemImplCopyWith<_$ExerciseProgressItemImpl>
-      get copyWith =>
-          __$$ExerciseProgressItemImplCopyWithImpl<_$ExerciseProgressItemImpl>(
-              this, _$identity);
+  get copyWith =>
+      __$$ExerciseProgressItemImplCopyWithImpl<_$ExerciseProgressItemImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ExerciseProgressItemImplToJson(
-      this,
-    );
+    return _$$ExerciseProgressItemImplToJson(this);
   }
 }
 
 abstract class _ExerciseProgressItem implements ExerciseProgressItem {
-  const factory _ExerciseProgressItem(
-      {required final String exerciseId,
-      final double? estimated1RM,
-      final double? volumeLastWeek,
-      final String? volumeTrend,
-      final double? fatigueScore,
-      final String? lastUpdated}) = _$ExerciseProgressItemImpl;
+  const factory _ExerciseProgressItem({
+    required final String exerciseId,
+    final double? estimated1RM,
+    final double? volumeLastWeek,
+    final String? volumeTrend,
+    final double? fatigueScore,
+    final String? lastUpdated,
+  }) = _$ExerciseProgressItemImpl;
 
   factory _ExerciseProgressItem.fromJson(Map<String, dynamic> json) =
       _$ExerciseProgressItemImpl.fromJson;
@@ -483,5 +519,5 @@ abstract class _ExerciseProgressItem implements ExerciseProgressItem {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$ExerciseProgressItemImplCopyWith<_$ExerciseProgressItemImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

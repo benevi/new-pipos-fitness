@@ -13,6 +13,11 @@ enum TrainingLocation {
   calisthenics
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
 enum VolumeTrend {
   up
   down
@@ -24,6 +29,7 @@ model User {
   email                 String
   emailNormalized       String            @unique
   passwordHash          String
+  role                  UserRole          @default(USER)
   createdAt             DateTime         @default(now())
   updatedAt             DateTime         @updatedAt
   heightCm              Float?
@@ -174,7 +180,7 @@ model RefreshToken {
   id                 String         @id @default(uuid())
   userId             String
   user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash          String
+  tokenHash          String         @unique
   expiresAt          DateTime
   createdAt          DateTime       @default(now())
   revokedAt          DateTime?
@@ -183,6 +189,8 @@ model RefreshToken {
   supersededBy       RefreshToken[] @relation("RefreshTokenRotation")
   createdByIp        String?
   userAgent          String?
+
+  @@index([userId])
 }
 
 model Muscle {

@@ -4,8 +4,8 @@ import '../../models/muscle.dart';
 
 final muscleCatalogProvider =
     AsyncNotifierProvider<MuscleCatalogNotifier, Map<String, Muscle>>(
-  MuscleCatalogNotifier.new,
-);
+      MuscleCatalogNotifier.new,
+    );
 
 class MuscleCatalogNotifier extends AsyncNotifier<Map<String, Muscle>> {
   @override

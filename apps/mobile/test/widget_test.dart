@@ -1,12 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pipos_fitness/main.dart';
+import 'package:pipos_fitness/features/auth/login_screen.dart';
+
+import 'helpers/app_harness.dart';
 
 void main() {
-  testWidgets('App pumps without crashing', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: PiposApp()));
+  testWidgets('la app arranca sin sesión y muestra el login (sin plugins)', (
+    tester,
+  ) async {
+    final harness = AppHarness();
+    await harness.pump(tester);
     await tester.pumpAndSettle();
+
     expect(find.byType(MaterialApp), findsOneWidget);
+    expect(find.byType(LoginScreen), findsOneWidget);
+    expect(find.text('Iniciar sesión'), findsOneWidget);
   });
 }

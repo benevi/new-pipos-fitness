@@ -12,9 +12,8 @@ class WorkoutCompleteScreen extends ConsumerWidget {
     final ws = ref.watch(workoutSessionProvider);
     final session = ws.session;
 
-    final totalSets = session?.exercises
-            .fold<int>(0, (sum, e) => sum + e.sets.length) ??
-        0;
+    final totalSets =
+        session?.exercises.fold<int>(0, (sum, e) => sum + e.sets.length) ?? 0;
     final totalExercises = session?.exercises.length ?? 0;
 
     return Scaffold(
@@ -28,7 +27,7 @@ class WorkoutCompleteScreen extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(AppSpacing.lg),
                   decoration: BoxDecoration(
-                    color: AppColors.success.withOpacity(0.15),
+                    color: AppColors.success.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -46,8 +45,8 @@ class WorkoutCompleteScreen extends ConsumerWidget {
                 Text(
                   ws.planSession?.name ?? 'Session',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: AppColors.onSurfaceVariant,
-                      ),
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.lg),
                 Row(
@@ -112,17 +111,15 @@ class _StatChip extends StatelessWidget {
         const SizedBox(height: AppSpacing.xs),
         Text(
           value,
-          style: Theme.of(context)
-              .textTheme
-              .headlineSmall
-              ?.copyWith(fontWeight: FontWeight.bold),
+          style: Theme.of(
+            context,
+          ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
         Text(
           label,
-          style: Theme.of(context)
-              .textTheme
-              .bodySmall
-              ?.copyWith(color: AppColors.onSurfaceVariant),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: AppColors.onSurfaceVariant),
         ),
       ],
     );

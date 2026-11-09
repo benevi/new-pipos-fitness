@@ -22,8 +22,18 @@ void main() {
     });
 
     test('toQueryParams omits search when empty or whitespace', () {
-      expect(const ExerciseFiltersState(search: '').toQueryParams(1, 20).containsKey('search'), false);
-      expect(const ExerciseFiltersState(search: '   ').toQueryParams(1, 20).containsKey('search'), false);
+      expect(
+        const ExerciseFiltersState(
+          search: '',
+        ).toQueryParams(1, 20).containsKey('search'),
+        false,
+      );
+      expect(
+        const ExerciseFiltersState(
+          search: '   ',
+        ).toQueryParams(1, 20).containsKey('search'),
+        false,
+      );
     });
 
     test('toQueryParams includes difficulty and place when set', () {

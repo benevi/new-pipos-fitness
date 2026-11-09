@@ -12,7 +12,8 @@ part of 'nutrition_plan.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 NutritionPlan _$NutritionPlanFromJson(Map<String, dynamic> json) {
   return _NutritionPlan.fromJson(json);
@@ -36,8 +37,9 @@ mixin _$NutritionPlan {
 /// @nodoc
 abstract class $NutritionPlanCopyWith<$Res> {
   factory $NutritionPlanCopyWith(
-          NutritionPlan value, $Res Function(NutritionPlan) then) =
-      _$NutritionPlanCopyWithImpl<$Res, NutritionPlan>;
+    NutritionPlan value,
+    $Res Function(NutritionPlan) then,
+  ) = _$NutritionPlanCopyWithImpl<$Res, NutritionPlan>;
   @useResult
   $Res call({NutritionPlanInfo plan, NutritionPlanVersion version});
 
@@ -59,20 +61,20 @@ class _$NutritionPlanCopyWithImpl<$Res, $Val extends NutritionPlan>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? plan = null,
-    Object? version = null,
-  }) {
-    return _then(_value.copyWith(
-      plan: null == plan
-          ? _value.plan
-          : plan // ignore: cast_nullable_to_non_nullable
-              as NutritionPlanInfo,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as NutritionPlanVersion,
-    ) as $Val);
+  $Res call({Object? plan = null, Object? version = null}) {
+    return _then(
+      _value.copyWith(
+            plan: null == plan
+                ? _value.plan
+                : plan // ignore: cast_nullable_to_non_nullable
+                      as NutritionPlanInfo,
+            version: null == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                      as NutritionPlanVersion,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of NutritionPlan
@@ -100,8 +102,9 @@ class _$NutritionPlanCopyWithImpl<$Res, $Val extends NutritionPlan>
 abstract class _$$NutritionPlanImplCopyWith<$Res>
     implements $NutritionPlanCopyWith<$Res> {
   factory _$$NutritionPlanImplCopyWith(
-          _$NutritionPlanImpl value, $Res Function(_$NutritionPlanImpl) then) =
-      __$$NutritionPlanImplCopyWithImpl<$Res>;
+    _$NutritionPlanImpl value,
+    $Res Function(_$NutritionPlanImpl) then,
+  ) = __$$NutritionPlanImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({NutritionPlanInfo plan, NutritionPlanVersion version});
@@ -117,27 +120,27 @@ class __$$NutritionPlanImplCopyWithImpl<$Res>
     extends _$NutritionPlanCopyWithImpl<$Res, _$NutritionPlanImpl>
     implements _$$NutritionPlanImplCopyWith<$Res> {
   __$$NutritionPlanImplCopyWithImpl(
-      _$NutritionPlanImpl _value, $Res Function(_$NutritionPlanImpl) _then)
-      : super(_value, _then);
+    _$NutritionPlanImpl _value,
+    $Res Function(_$NutritionPlanImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionPlan
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? plan = null,
-    Object? version = null,
-  }) {
-    return _then(_$NutritionPlanImpl(
-      plan: null == plan
-          ? _value.plan
-          : plan // ignore: cast_nullable_to_non_nullable
-              as NutritionPlanInfo,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as NutritionPlanVersion,
-    ));
+  $Res call({Object? plan = null, Object? version = null}) {
+    return _then(
+      _$NutritionPlanImpl(
+        plan: null == plan
+            ? _value.plan
+            : plan // ignore: cast_nullable_to_non_nullable
+                  as NutritionPlanInfo,
+        version: null == version
+            ? _value.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as NutritionPlanVersion,
+      ),
+    );
   }
 }
 
@@ -182,16 +185,15 @@ class _$NutritionPlanImpl implements _NutritionPlan {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionPlanImplToJson(
-      this,
-    );
+    return _$$NutritionPlanImplToJson(this);
   }
 }
 
 abstract class _NutritionPlan implements NutritionPlan {
-  const factory _NutritionPlan(
-      {required final NutritionPlanInfo plan,
-      required final NutritionPlanVersion version}) = _$NutritionPlanImpl;
+  const factory _NutritionPlan({
+    required final NutritionPlanInfo plan,
+    required final NutritionPlanVersion version,
+  }) = _$NutritionPlanImpl;
 
   factory _NutritionPlan.fromJson(Map<String, dynamic> json) =
       _$NutritionPlanImpl.fromJson;
@@ -232,8 +234,9 @@ mixin _$NutritionPlanInfo {
 /// @nodoc
 abstract class $NutritionPlanInfoCopyWith<$Res> {
   factory $NutritionPlanInfoCopyWith(
-          NutritionPlanInfo value, $Res Function(NutritionPlanInfo) then) =
-      _$NutritionPlanInfoCopyWithImpl<$Res, NutritionPlanInfo>;
+    NutritionPlanInfo value,
+    $Res Function(NutritionPlanInfo) then,
+  ) = _$NutritionPlanInfoCopyWithImpl<$Res, NutritionPlanInfo>;
   @useResult
   $Res call({String id, String userId, String? currentVersionId});
 }
@@ -257,29 +260,33 @@ class _$NutritionPlanInfoCopyWithImpl<$Res, $Val extends NutritionPlanInfo>
     Object? userId = null,
     Object? currentVersionId = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      currentVersionId: freezed == currentVersionId
-          ? _value.currentVersionId
-          : currentVersionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            userId: null == userId
+                ? _value.userId
+                : userId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            currentVersionId: freezed == currentVersionId
+                ? _value.currentVersionId
+                : currentVersionId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$NutritionPlanInfoImplCopyWith<$Res>
     implements $NutritionPlanInfoCopyWith<$Res> {
-  factory _$$NutritionPlanInfoImplCopyWith(_$NutritionPlanInfoImpl value,
-          $Res Function(_$NutritionPlanInfoImpl) then) =
-      __$$NutritionPlanInfoImplCopyWithImpl<$Res>;
+  factory _$$NutritionPlanInfoImplCopyWith(
+    _$NutritionPlanInfoImpl value,
+    $Res Function(_$NutritionPlanInfoImpl) then,
+  ) = __$$NutritionPlanInfoImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String userId, String? currentVersionId});
@@ -289,9 +296,10 @@ abstract class _$$NutritionPlanInfoImplCopyWith<$Res>
 class __$$NutritionPlanInfoImplCopyWithImpl<$Res>
     extends _$NutritionPlanInfoCopyWithImpl<$Res, _$NutritionPlanInfoImpl>
     implements _$$NutritionPlanInfoImplCopyWith<$Res> {
-  __$$NutritionPlanInfoImplCopyWithImpl(_$NutritionPlanInfoImpl _value,
-      $Res Function(_$NutritionPlanInfoImpl) _then)
-      : super(_value, _then);
+  __$$NutritionPlanInfoImplCopyWithImpl(
+    _$NutritionPlanInfoImpl _value,
+    $Res Function(_$NutritionPlanInfoImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionPlanInfo
   /// with the given fields replaced by the non-null parameter values.
@@ -302,28 +310,33 @@ class __$$NutritionPlanInfoImplCopyWithImpl<$Res>
     Object? userId = null,
     Object? currentVersionId = freezed,
   }) {
-    return _then(_$NutritionPlanInfoImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      userId: null == userId
-          ? _value.userId
-          : userId // ignore: cast_nullable_to_non_nullable
-              as String,
-      currentVersionId: freezed == currentVersionId
-          ? _value.currentVersionId
-          : currentVersionId // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$NutritionPlanInfoImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        userId: null == userId
+            ? _value.userId
+            : userId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        currentVersionId: freezed == currentVersionId
+            ? _value.currentVersionId
+            : currentVersionId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionPlanInfoImpl implements _NutritionPlanInfo {
-  const _$NutritionPlanInfoImpl(
-      {required this.id, required this.userId, this.currentVersionId});
+  const _$NutritionPlanInfoImpl({
+    required this.id,
+    required this.userId,
+    this.currentVersionId,
+  });
 
   factory _$NutritionPlanInfoImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionPlanInfoImplFromJson(json);
@@ -362,21 +375,22 @@ class _$NutritionPlanInfoImpl implements _NutritionPlanInfo {
   @pragma('vm:prefer-inline')
   _$$NutritionPlanInfoImplCopyWith<_$NutritionPlanInfoImpl> get copyWith =>
       __$$NutritionPlanInfoImplCopyWithImpl<_$NutritionPlanInfoImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionPlanInfoImplToJson(
-      this,
-    );
+    return _$$NutritionPlanInfoImplToJson(this);
   }
 }
 
 abstract class _NutritionPlanInfo implements NutritionPlanInfo {
-  const factory _NutritionPlanInfo(
-      {required final String id,
-      required final String userId,
-      final String? currentVersionId}) = _$NutritionPlanInfoImpl;
+  const factory _NutritionPlanInfo({
+    required final String id,
+    required final String userId,
+    final String? currentVersionId,
+  }) = _$NutritionPlanInfoImpl;
 
   factory _NutritionPlanInfo.fromJson(Map<String, dynamic> json) =
       _$NutritionPlanInfoImpl.fromJson;
@@ -424,26 +438,30 @@ mixin _$NutritionPlanVersion {
 
 /// @nodoc
 abstract class $NutritionPlanVersionCopyWith<$Res> {
-  factory $NutritionPlanVersionCopyWith(NutritionPlanVersion value,
-          $Res Function(NutritionPlanVersion) then) =
-      _$NutritionPlanVersionCopyWithImpl<$Res, NutritionPlanVersion>;
+  factory $NutritionPlanVersionCopyWith(
+    NutritionPlanVersion value,
+    $Res Function(NutritionPlanVersion) then,
+  ) = _$NutritionPlanVersionCopyWithImpl<$Res, NutritionPlanVersion>;
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion,
-      double? dailyCalorieTarget,
-      NutritionMacroTarget? dailyMacroTarget,
-      List<NutritionDay> days});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+    double? dailyCalorieTarget,
+    NutritionMacroTarget? dailyMacroTarget,
+    List<NutritionDay> days,
+  });
 
   $NutritionMacroTargetCopyWith<$Res>? get dailyMacroTarget;
 }
 
 /// @nodoc
-class _$NutritionPlanVersionCopyWithImpl<$Res,
-        $Val extends NutritionPlanVersion>
+class _$NutritionPlanVersionCopyWithImpl<
+  $Res,
+  $Val extends NutritionPlanVersion
+>
     implements $NutritionPlanVersionCopyWith<$Res> {
   _$NutritionPlanVersionCopyWithImpl(this._value, this._then);
 
@@ -466,40 +484,43 @@ class _$NutritionPlanVersionCopyWithImpl<$Res,
     Object? dailyMacroTarget = freezed,
     Object? days = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-      dailyCalorieTarget: freezed == dailyCalorieTarget
-          ? _value.dailyCalorieTarget
-          : dailyCalorieTarget // ignore: cast_nullable_to_non_nullable
-              as double?,
-      dailyMacroTarget: freezed == dailyMacroTarget
-          ? _value.dailyMacroTarget
-          : dailyMacroTarget // ignore: cast_nullable_to_non_nullable
-              as NutritionMacroTarget?,
-      days: null == days
-          ? _value.days
-          : days // ignore: cast_nullable_to_non_nullable
-              as List<NutritionDay>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            planId: null == planId
+                ? _value.planId
+                : planId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            version: null == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                      as int,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            engineVersion: null == engineVersion
+                ? _value.engineVersion
+                : engineVersion // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dailyCalorieTarget: freezed == dailyCalorieTarget
+                ? _value.dailyCalorieTarget
+                : dailyCalorieTarget // ignore: cast_nullable_to_non_nullable
+                      as double?,
+            dailyMacroTarget: freezed == dailyMacroTarget
+                ? _value.dailyMacroTarget
+                : dailyMacroTarget // ignore: cast_nullable_to_non_nullable
+                      as NutritionMacroTarget?,
+            days: null == days
+                ? _value.days
+                : days // ignore: cast_nullable_to_non_nullable
+                      as List<NutritionDay>,
+          )
+          as $Val,
+    );
   }
 
   /// Create a copy of NutritionPlanVersion
@@ -511,8 +532,9 @@ class _$NutritionPlanVersionCopyWithImpl<$Res,
       return null;
     }
 
-    return $NutritionMacroTargetCopyWith<$Res>(_value.dailyMacroTarget!,
-        (value) {
+    return $NutritionMacroTargetCopyWith<$Res>(_value.dailyMacroTarget!, (
+      value,
+    ) {
       return _then(_value.copyWith(dailyMacroTarget: value) as $Val);
     });
   }
@@ -521,20 +543,22 @@ class _$NutritionPlanVersionCopyWithImpl<$Res,
 /// @nodoc
 abstract class _$$NutritionPlanVersionImplCopyWith<$Res>
     implements $NutritionPlanVersionCopyWith<$Res> {
-  factory _$$NutritionPlanVersionImplCopyWith(_$NutritionPlanVersionImpl value,
-          $Res Function(_$NutritionPlanVersionImpl) then) =
-      __$$NutritionPlanVersionImplCopyWithImpl<$Res>;
+  factory _$$NutritionPlanVersionImplCopyWith(
+    _$NutritionPlanVersionImpl value,
+    $Res Function(_$NutritionPlanVersionImpl) then,
+  ) = __$$NutritionPlanVersionImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion,
-      double? dailyCalorieTarget,
-      NutritionMacroTarget? dailyMacroTarget,
-      List<NutritionDay> days});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+    double? dailyCalorieTarget,
+    NutritionMacroTarget? dailyMacroTarget,
+    List<NutritionDay> days,
+  });
 
   @override
   $NutritionMacroTargetCopyWith<$Res>? get dailyMacroTarget;
@@ -544,9 +568,10 @@ abstract class _$$NutritionPlanVersionImplCopyWith<$Res>
 class __$$NutritionPlanVersionImplCopyWithImpl<$Res>
     extends _$NutritionPlanVersionCopyWithImpl<$Res, _$NutritionPlanVersionImpl>
     implements _$$NutritionPlanVersionImplCopyWith<$Res> {
-  __$$NutritionPlanVersionImplCopyWithImpl(_$NutritionPlanVersionImpl _value,
-      $Res Function(_$NutritionPlanVersionImpl) _then)
-      : super(_value, _then);
+  __$$NutritionPlanVersionImplCopyWithImpl(
+    _$NutritionPlanVersionImpl _value,
+    $Res Function(_$NutritionPlanVersionImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionPlanVersion
   /// with the given fields replaced by the non-null parameter values.
@@ -562,56 +587,58 @@ class __$$NutritionPlanVersionImplCopyWithImpl<$Res>
     Object? dailyMacroTarget = freezed,
     Object? days = null,
   }) {
-    return _then(_$NutritionPlanVersionImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-      dailyCalorieTarget: freezed == dailyCalorieTarget
-          ? _value.dailyCalorieTarget
-          : dailyCalorieTarget // ignore: cast_nullable_to_non_nullable
-              as double?,
-      dailyMacroTarget: freezed == dailyMacroTarget
-          ? _value.dailyMacroTarget
-          : dailyMacroTarget // ignore: cast_nullable_to_non_nullable
-              as NutritionMacroTarget?,
-      days: null == days
-          ? _value._days
-          : days // ignore: cast_nullable_to_non_nullable
-              as List<NutritionDay>,
-    ));
+    return _then(
+      _$NutritionPlanVersionImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        planId: null == planId
+            ? _value.planId
+            : planId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        version: null == version
+            ? _value.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        engineVersion: null == engineVersion
+            ? _value.engineVersion
+            : engineVersion // ignore: cast_nullable_to_non_nullable
+                  as String,
+        dailyCalorieTarget: freezed == dailyCalorieTarget
+            ? _value.dailyCalorieTarget
+            : dailyCalorieTarget // ignore: cast_nullable_to_non_nullable
+                  as double?,
+        dailyMacroTarget: freezed == dailyMacroTarget
+            ? _value.dailyMacroTarget
+            : dailyMacroTarget // ignore: cast_nullable_to_non_nullable
+                  as NutritionMacroTarget?,
+        days: null == days
+            ? _value._days
+            : days // ignore: cast_nullable_to_non_nullable
+                  as List<NutritionDay>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionPlanVersionImpl implements _NutritionPlanVersion {
-  const _$NutritionPlanVersionImpl(
-      {required this.id,
-      required this.planId,
-      required this.version,
-      required this.createdAt,
-      required this.engineVersion,
-      this.dailyCalorieTarget,
-      this.dailyMacroTarget,
-      required final List<NutritionDay> days})
-      : _days = days;
+  const _$NutritionPlanVersionImpl({
+    required this.id,
+    required this.planId,
+    required this.version,
+    required this.createdAt,
+    required this.engineVersion,
+    this.dailyCalorieTarget,
+    this.dailyMacroTarget,
+    required final List<NutritionDay> days,
+  }) : _days = days;
 
   factory _$NutritionPlanVersionImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionPlanVersionImplFromJson(json);
@@ -665,15 +692,16 @@ class _$NutritionPlanVersionImpl implements _NutritionPlanVersion {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType,
-      id,
-      planId,
-      version,
-      createdAt,
-      engineVersion,
-      dailyCalorieTarget,
-      dailyMacroTarget,
-      const DeepCollectionEquality().hash(_days));
+    runtimeType,
+    id,
+    planId,
+    version,
+    createdAt,
+    engineVersion,
+    dailyCalorieTarget,
+    dailyMacroTarget,
+    const DeepCollectionEquality().hash(_days),
+  );
 
   /// Create a copy of NutritionPlanVersion
   /// with the given fields replaced by the non-null parameter values.
@@ -681,28 +709,29 @@ class _$NutritionPlanVersionImpl implements _NutritionPlanVersion {
   @override
   @pragma('vm:prefer-inline')
   _$$NutritionPlanVersionImplCopyWith<_$NutritionPlanVersionImpl>
-      get copyWith =>
-          __$$NutritionPlanVersionImplCopyWithImpl<_$NutritionPlanVersionImpl>(
-              this, _$identity);
+  get copyWith =>
+      __$$NutritionPlanVersionImplCopyWithImpl<_$NutritionPlanVersionImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionPlanVersionImplToJson(
-      this,
-    );
+    return _$$NutritionPlanVersionImplToJson(this);
   }
 }
 
 abstract class _NutritionPlanVersion implements NutritionPlanVersion {
-  const factory _NutritionPlanVersion(
-      {required final String id,
-      required final String planId,
-      required final int version,
-      required final String createdAt,
-      required final String engineVersion,
-      final double? dailyCalorieTarget,
-      final NutritionMacroTarget? dailyMacroTarget,
-      required final List<NutritionDay> days}) = _$NutritionPlanVersionImpl;
+  const factory _NutritionPlanVersion({
+    required final String id,
+    required final String planId,
+    required final int version,
+    required final String createdAt,
+    required final String engineVersion,
+    final double? dailyCalorieTarget,
+    final NutritionMacroTarget? dailyMacroTarget,
+    required final List<NutritionDay> days,
+  }) = _$NutritionPlanVersionImpl;
 
   factory _NutritionPlanVersion.fromJson(Map<String, dynamic> json) =
       _$NutritionPlanVersionImpl.fromJson;
@@ -729,7 +758,7 @@ abstract class _NutritionPlanVersion implements NutritionPlanVersion {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$NutritionPlanVersionImplCopyWith<_$NutritionPlanVersionImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 NutritionMacroTarget _$NutritionMacroTargetFromJson(Map<String, dynamic> json) {
@@ -754,16 +783,19 @@ mixin _$NutritionMacroTarget {
 
 /// @nodoc
 abstract class $NutritionMacroTargetCopyWith<$Res> {
-  factory $NutritionMacroTargetCopyWith(NutritionMacroTarget value,
-          $Res Function(NutritionMacroTarget) then) =
-      _$NutritionMacroTargetCopyWithImpl<$Res, NutritionMacroTarget>;
+  factory $NutritionMacroTargetCopyWith(
+    NutritionMacroTarget value,
+    $Res Function(NutritionMacroTarget) then,
+  ) = _$NutritionMacroTargetCopyWithImpl<$Res, NutritionMacroTarget>;
   @useResult
   $Res call({double proteinG, double carbsG, double fatG});
 }
 
 /// @nodoc
-class _$NutritionMacroTargetCopyWithImpl<$Res,
-        $Val extends NutritionMacroTarget>
+class _$NutritionMacroTargetCopyWithImpl<
+  $Res,
+  $Val extends NutritionMacroTarget
+>
     implements $NutritionMacroTargetCopyWith<$Res> {
   _$NutritionMacroTargetCopyWithImpl(this._value, this._then);
 
@@ -781,29 +813,33 @@ class _$NutritionMacroTargetCopyWithImpl<$Res,
     Object? carbsG = null,
     Object? fatG = null,
   }) {
-    return _then(_value.copyWith(
-      proteinG: null == proteinG
-          ? _value.proteinG
-          : proteinG // ignore: cast_nullable_to_non_nullable
-              as double,
-      carbsG: null == carbsG
-          ? _value.carbsG
-          : carbsG // ignore: cast_nullable_to_non_nullable
-              as double,
-      fatG: null == fatG
-          ? _value.fatG
-          : fatG // ignore: cast_nullable_to_non_nullable
-              as double,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            proteinG: null == proteinG
+                ? _value.proteinG
+                : proteinG // ignore: cast_nullable_to_non_nullable
+                      as double,
+            carbsG: null == carbsG
+                ? _value.carbsG
+                : carbsG // ignore: cast_nullable_to_non_nullable
+                      as double,
+            fatG: null == fatG
+                ? _value.fatG
+                : fatG // ignore: cast_nullable_to_non_nullable
+                      as double,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$NutritionMacroTargetImplCopyWith<$Res>
     implements $NutritionMacroTargetCopyWith<$Res> {
-  factory _$$NutritionMacroTargetImplCopyWith(_$NutritionMacroTargetImpl value,
-          $Res Function(_$NutritionMacroTargetImpl) then) =
-      __$$NutritionMacroTargetImplCopyWithImpl<$Res>;
+  factory _$$NutritionMacroTargetImplCopyWith(
+    _$NutritionMacroTargetImpl value,
+    $Res Function(_$NutritionMacroTargetImpl) then,
+  ) = __$$NutritionMacroTargetImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({double proteinG, double carbsG, double fatG});
@@ -813,9 +849,10 @@ abstract class _$$NutritionMacroTargetImplCopyWith<$Res>
 class __$$NutritionMacroTargetImplCopyWithImpl<$Res>
     extends _$NutritionMacroTargetCopyWithImpl<$Res, _$NutritionMacroTargetImpl>
     implements _$$NutritionMacroTargetImplCopyWith<$Res> {
-  __$$NutritionMacroTargetImplCopyWithImpl(_$NutritionMacroTargetImpl _value,
-      $Res Function(_$NutritionMacroTargetImpl) _then)
-      : super(_value, _then);
+  __$$NutritionMacroTargetImplCopyWithImpl(
+    _$NutritionMacroTargetImpl _value,
+    $Res Function(_$NutritionMacroTargetImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionMacroTarget
   /// with the given fields replaced by the non-null parameter values.
@@ -826,28 +863,33 @@ class __$$NutritionMacroTargetImplCopyWithImpl<$Res>
     Object? carbsG = null,
     Object? fatG = null,
   }) {
-    return _then(_$NutritionMacroTargetImpl(
-      proteinG: null == proteinG
-          ? _value.proteinG
-          : proteinG // ignore: cast_nullable_to_non_nullable
-              as double,
-      carbsG: null == carbsG
-          ? _value.carbsG
-          : carbsG // ignore: cast_nullable_to_non_nullable
-              as double,
-      fatG: null == fatG
-          ? _value.fatG
-          : fatG // ignore: cast_nullable_to_non_nullable
-              as double,
-    ));
+    return _then(
+      _$NutritionMacroTargetImpl(
+        proteinG: null == proteinG
+            ? _value.proteinG
+            : proteinG // ignore: cast_nullable_to_non_nullable
+                  as double,
+        carbsG: null == carbsG
+            ? _value.carbsG
+            : carbsG // ignore: cast_nullable_to_non_nullable
+                  as double,
+        fatG: null == fatG
+            ? _value.fatG
+            : fatG // ignore: cast_nullable_to_non_nullable
+                  as double,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionMacroTargetImpl implements _NutritionMacroTarget {
-  const _$NutritionMacroTargetImpl(
-      {required this.proteinG, required this.carbsG, required this.fatG});
+  const _$NutritionMacroTargetImpl({
+    required this.proteinG,
+    required this.carbsG,
+    required this.fatG,
+  });
 
   factory _$NutritionMacroTargetImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionMacroTargetImplFromJson(json);
@@ -885,23 +927,24 @@ class _$NutritionMacroTargetImpl implements _NutritionMacroTarget {
   @override
   @pragma('vm:prefer-inline')
   _$$NutritionMacroTargetImplCopyWith<_$NutritionMacroTargetImpl>
-      get copyWith =>
-          __$$NutritionMacroTargetImplCopyWithImpl<_$NutritionMacroTargetImpl>(
-              this, _$identity);
+  get copyWith =>
+      __$$NutritionMacroTargetImplCopyWithImpl<_$NutritionMacroTargetImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionMacroTargetImplToJson(
-      this,
-    );
+    return _$$NutritionMacroTargetImplToJson(this);
   }
 }
 
 abstract class _NutritionMacroTarget implements NutritionMacroTarget {
-  const factory _NutritionMacroTarget(
-      {required final double proteinG,
-      required final double carbsG,
-      required final double fatG}) = _$NutritionMacroTargetImpl;
+  const factory _NutritionMacroTarget({
+    required final double proteinG,
+    required final double carbsG,
+    required final double fatG,
+  }) = _$NutritionMacroTargetImpl;
 
   factory _NutritionMacroTarget.fromJson(Map<String, dynamic> json) =
       _$NutritionMacroTargetImpl.fromJson;
@@ -918,7 +961,7 @@ abstract class _NutritionMacroTarget implements NutritionMacroTarget {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$NutritionMacroTargetImplCopyWith<_$NutritionMacroTargetImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }
 
 NutritionDay _$NutritionDayFromJson(Map<String, dynamic> json) {
@@ -944,8 +987,9 @@ mixin _$NutritionDay {
 /// @nodoc
 abstract class $NutritionDayCopyWith<$Res> {
   factory $NutritionDayCopyWith(
-          NutritionDay value, $Res Function(NutritionDay) then) =
-      _$NutritionDayCopyWithImpl<$Res, NutritionDay>;
+    NutritionDay value,
+    $Res Function(NutritionDay) then,
+  ) = _$NutritionDayCopyWithImpl<$Res, NutritionDay>;
   @useResult
   $Res call({String id, int dayIndex, List<NutritionMeal> meals});
 }
@@ -969,29 +1013,33 @@ class _$NutritionDayCopyWithImpl<$Res, $Val extends NutritionDay>
     Object? dayIndex = null,
     Object? meals = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      dayIndex: null == dayIndex
-          ? _value.dayIndex
-          : dayIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      meals: null == meals
-          ? _value.meals
-          : meals // ignore: cast_nullable_to_non_nullable
-              as List<NutritionMeal>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            dayIndex: null == dayIndex
+                ? _value.dayIndex
+                : dayIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
+            meals: null == meals
+                ? _value.meals
+                : meals // ignore: cast_nullable_to_non_nullable
+                      as List<NutritionMeal>,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$NutritionDayDataImplCopyWith<$Res>
     implements $NutritionDayCopyWith<$Res> {
-  factory _$$NutritionDayDataImplCopyWith(_$NutritionDayDataImpl value,
-          $Res Function(_$NutritionDayDataImpl) then) =
-      __$$NutritionDayDataImplCopyWithImpl<$Res>;
+  factory _$$NutritionDayDataImplCopyWith(
+    _$NutritionDayDataImpl value,
+    $Res Function(_$NutritionDayDataImpl) then,
+  ) = __$$NutritionDayDataImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, int dayIndex, List<NutritionMeal> meals});
@@ -1001,9 +1049,10 @@ abstract class _$$NutritionDayDataImplCopyWith<$Res>
 class __$$NutritionDayDataImplCopyWithImpl<$Res>
     extends _$NutritionDayCopyWithImpl<$Res, _$NutritionDayDataImpl>
     implements _$$NutritionDayDataImplCopyWith<$Res> {
-  __$$NutritionDayDataImplCopyWithImpl(_$NutritionDayDataImpl _value,
-      $Res Function(_$NutritionDayDataImpl) _then)
-      : super(_value, _then);
+  __$$NutritionDayDataImplCopyWithImpl(
+    _$NutritionDayDataImpl _value,
+    $Res Function(_$NutritionDayDataImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionDay
   /// with the given fields replaced by the non-null parameter values.
@@ -1014,31 +1063,33 @@ class __$$NutritionDayDataImplCopyWithImpl<$Res>
     Object? dayIndex = null,
     Object? meals = null,
   }) {
-    return _then(_$NutritionDayDataImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      dayIndex: null == dayIndex
-          ? _value.dayIndex
-          : dayIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      meals: null == meals
-          ? _value._meals
-          : meals // ignore: cast_nullable_to_non_nullable
-              as List<NutritionMeal>,
-    ));
+    return _then(
+      _$NutritionDayDataImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        dayIndex: null == dayIndex
+            ? _value.dayIndex
+            : dayIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
+        meals: null == meals
+            ? _value._meals
+            : meals // ignore: cast_nullable_to_non_nullable
+                  as List<NutritionMeal>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionDayDataImpl implements _NutritionDayData {
-  const _$NutritionDayDataImpl(
-      {required this.id,
-      required this.dayIndex,
-      required final List<NutritionMeal> meals})
-      : _meals = meals;
+  const _$NutritionDayDataImpl({
+    required this.id,
+    required this.dayIndex,
+    required final List<NutritionMeal> meals,
+  }) : _meals = meals;
 
   factory _$NutritionDayDataImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionDayDataImplFromJson(json);
@@ -1074,7 +1125,11 @@ class _$NutritionDayDataImpl implements _NutritionDayData {
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
-      runtimeType, id, dayIndex, const DeepCollectionEquality().hash(_meals));
+    runtimeType,
+    id,
+    dayIndex,
+    const DeepCollectionEquality().hash(_meals),
+  );
 
   /// Create a copy of NutritionDay
   /// with the given fields replaced by the non-null parameter values.
@@ -1083,21 +1138,22 @@ class _$NutritionDayDataImpl implements _NutritionDayData {
   @pragma('vm:prefer-inline')
   _$$NutritionDayDataImplCopyWith<_$NutritionDayDataImpl> get copyWith =>
       __$$NutritionDayDataImplCopyWithImpl<_$NutritionDayDataImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionDayDataImplToJson(
-      this,
-    );
+    return _$$NutritionDayDataImplToJson(this);
   }
 }
 
 abstract class _NutritionDayData implements NutritionDay {
-  const factory _NutritionDayData(
-      {required final String id,
-      required final int dayIndex,
-      required final List<NutritionMeal> meals}) = _$NutritionDayDataImpl;
+  const factory _NutritionDayData({
+    required final String id,
+    required final int dayIndex,
+    required final List<NutritionMeal> meals,
+  }) = _$NutritionDayDataImpl;
 
   factory _NutritionDayData.fromJson(Map<String, dynamic> json) =
       _$NutritionDayDataImpl.fromJson;
@@ -1142,15 +1198,17 @@ mixin _$NutritionMeal {
 /// @nodoc
 abstract class $NutritionMealCopyWith<$Res> {
   factory $NutritionMealCopyWith(
-          NutritionMeal value, $Res Function(NutritionMeal) then) =
-      _$NutritionMealCopyWithImpl<$Res, NutritionMeal>;
+    NutritionMeal value,
+    $Res Function(NutritionMeal) then,
+  ) = _$NutritionMealCopyWithImpl<$Res, NutritionMeal>;
   @useResult
-  $Res call(
-      {String id,
-      int mealIndex,
-      String name,
-      String? templateId,
-      List<NutritionMealItem> items});
+  $Res call({
+    String id,
+    int mealIndex,
+    String name,
+    String? templateId,
+    List<NutritionMealItem> items,
+  });
 }
 
 /// @nodoc
@@ -1174,28 +1232,31 @@ class _$NutritionMealCopyWithImpl<$Res, $Val extends NutritionMeal>
     Object? templateId = freezed,
     Object? items = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      mealIndex: null == mealIndex
-          ? _value.mealIndex
-          : mealIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      templateId: freezed == templateId
-          ? _value.templateId
-          : templateId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      items: null == items
-          ? _value.items
-          : items // ignore: cast_nullable_to_non_nullable
-              as List<NutritionMealItem>,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            mealIndex: null == mealIndex
+                ? _value.mealIndex
+                : mealIndex // ignore: cast_nullable_to_non_nullable
+                      as int,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            templateId: freezed == templateId
+                ? _value.templateId
+                : templateId // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            items: null == items
+                ? _value.items
+                : items // ignore: cast_nullable_to_non_nullable
+                      as List<NutritionMealItem>,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -1203,16 +1264,18 @@ class _$NutritionMealCopyWithImpl<$Res, $Val extends NutritionMeal>
 abstract class _$$NutritionMealImplCopyWith<$Res>
     implements $NutritionMealCopyWith<$Res> {
   factory _$$NutritionMealImplCopyWith(
-          _$NutritionMealImpl value, $Res Function(_$NutritionMealImpl) then) =
-      __$$NutritionMealImplCopyWithImpl<$Res>;
+    _$NutritionMealImpl value,
+    $Res Function(_$NutritionMealImpl) then,
+  ) = __$$NutritionMealImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      int mealIndex,
-      String name,
-      String? templateId,
-      List<NutritionMealItem> items});
+  $Res call({
+    String id,
+    int mealIndex,
+    String name,
+    String? templateId,
+    List<NutritionMealItem> items,
+  });
 }
 
 /// @nodoc
@@ -1220,8 +1283,9 @@ class __$$NutritionMealImplCopyWithImpl<$Res>
     extends _$NutritionMealCopyWithImpl<$Res, _$NutritionMealImpl>
     implements _$$NutritionMealImplCopyWith<$Res> {
   __$$NutritionMealImplCopyWithImpl(
-      _$NutritionMealImpl _value, $Res Function(_$NutritionMealImpl) _then)
-      : super(_value, _then);
+    _$NutritionMealImpl _value,
+    $Res Function(_$NutritionMealImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionMeal
   /// with the given fields replaced by the non-null parameter values.
@@ -1234,41 +1298,43 @@ class __$$NutritionMealImplCopyWithImpl<$Res>
     Object? templateId = freezed,
     Object? items = null,
   }) {
-    return _then(_$NutritionMealImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      mealIndex: null == mealIndex
-          ? _value.mealIndex
-          : mealIndex // ignore: cast_nullable_to_non_nullable
-              as int,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      templateId: freezed == templateId
-          ? _value.templateId
-          : templateId // ignore: cast_nullable_to_non_nullable
-              as String?,
-      items: null == items
-          ? _value._items
-          : items // ignore: cast_nullable_to_non_nullable
-              as List<NutritionMealItem>,
-    ));
+    return _then(
+      _$NutritionMealImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        mealIndex: null == mealIndex
+            ? _value.mealIndex
+            : mealIndex // ignore: cast_nullable_to_non_nullable
+                  as int,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        templateId: freezed == templateId
+            ? _value.templateId
+            : templateId // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        items: null == items
+            ? _value._items
+            : items // ignore: cast_nullable_to_non_nullable
+                  as List<NutritionMealItem>,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionMealImpl implements _NutritionMeal {
-  const _$NutritionMealImpl(
-      {required this.id,
-      required this.mealIndex,
-      required this.name,
-      this.templateId,
-      required final List<NutritionMealItem> items})
-      : _items = items;
+  const _$NutritionMealImpl({
+    required this.id,
+    required this.mealIndex,
+    required this.name,
+    this.templateId,
+    required final List<NutritionMealItem> items,
+  }) : _items = items;
 
   factory _$NutritionMealImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionMealImplFromJson(json);
@@ -1310,8 +1376,14 @@ class _$NutritionMealImpl implements _NutritionMeal {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, mealIndex, name, templateId,
-      const DeepCollectionEquality().hash(_items));
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    mealIndex,
+    name,
+    templateId,
+    const DeepCollectionEquality().hash(_items),
+  );
 
   /// Create a copy of NutritionMeal
   /// with the given fields replaced by the non-null parameter values.
@@ -1323,19 +1395,18 @@ class _$NutritionMealImpl implements _NutritionMeal {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionMealImplToJson(
-      this,
-    );
+    return _$$NutritionMealImplToJson(this);
   }
 }
 
 abstract class _NutritionMeal implements NutritionMeal {
-  const factory _NutritionMeal(
-      {required final String id,
-      required final int mealIndex,
-      required final String name,
-      final String? templateId,
-      required final List<NutritionMealItem> items}) = _$NutritionMealImpl;
+  const factory _NutritionMeal({
+    required final String id,
+    required final int mealIndex,
+    required final String name,
+    final String? templateId,
+    required final List<NutritionMealItem> items,
+  }) = _$NutritionMealImpl;
 
   factory _NutritionMeal.fromJson(Map<String, dynamic> json) =
       _$NutritionMealImpl.fromJson;
@@ -1382,8 +1453,9 @@ mixin _$NutritionMealItem {
 /// @nodoc
 abstract class $NutritionMealItemCopyWith<$Res> {
   factory $NutritionMealItemCopyWith(
-          NutritionMealItem value, $Res Function(NutritionMealItem) then) =
-      _$NutritionMealItemCopyWithImpl<$Res, NutritionMealItem>;
+    NutritionMealItem value,
+    $Res Function(NutritionMealItem) then,
+  ) = _$NutritionMealItemCopyWithImpl<$Res, NutritionMealItem>;
   @useResult
   $Res call({String id, String foodId, double quantityG});
 }
@@ -1407,29 +1479,33 @@ class _$NutritionMealItemCopyWithImpl<$Res, $Val extends NutritionMealItem>
     Object? foodId = null,
     Object? quantityG = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      foodId: null == foodId
-          ? _value.foodId
-          : foodId // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantityG: null == quantityG
-          ? _value.quantityG
-          : quantityG // ignore: cast_nullable_to_non_nullable
-              as double,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            foodId: null == foodId
+                ? _value.foodId
+                : foodId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            quantityG: null == quantityG
+                ? _value.quantityG
+                : quantityG // ignore: cast_nullable_to_non_nullable
+                      as double,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$NutritionMealItemImplCopyWith<$Res>
     implements $NutritionMealItemCopyWith<$Res> {
-  factory _$$NutritionMealItemImplCopyWith(_$NutritionMealItemImpl value,
-          $Res Function(_$NutritionMealItemImpl) then) =
-      __$$NutritionMealItemImplCopyWithImpl<$Res>;
+  factory _$$NutritionMealItemImplCopyWith(
+    _$NutritionMealItemImpl value,
+    $Res Function(_$NutritionMealItemImpl) then,
+  ) = __$$NutritionMealItemImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String foodId, double quantityG});
@@ -1439,9 +1515,10 @@ abstract class _$$NutritionMealItemImplCopyWith<$Res>
 class __$$NutritionMealItemImplCopyWithImpl<$Res>
     extends _$NutritionMealItemCopyWithImpl<$Res, _$NutritionMealItemImpl>
     implements _$$NutritionMealItemImplCopyWith<$Res> {
-  __$$NutritionMealItemImplCopyWithImpl(_$NutritionMealItemImpl _value,
-      $Res Function(_$NutritionMealItemImpl) _then)
-      : super(_value, _then);
+  __$$NutritionMealItemImplCopyWithImpl(
+    _$NutritionMealItemImpl _value,
+    $Res Function(_$NutritionMealItemImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionMealItem
   /// with the given fields replaced by the non-null parameter values.
@@ -1452,28 +1529,33 @@ class __$$NutritionMealItemImplCopyWithImpl<$Res>
     Object? foodId = null,
     Object? quantityG = null,
   }) {
-    return _then(_$NutritionMealItemImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      foodId: null == foodId
-          ? _value.foodId
-          : foodId // ignore: cast_nullable_to_non_nullable
-              as String,
-      quantityG: null == quantityG
-          ? _value.quantityG
-          : quantityG // ignore: cast_nullable_to_non_nullable
-              as double,
-    ));
+    return _then(
+      _$NutritionMealItemImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        foodId: null == foodId
+            ? _value.foodId
+            : foodId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        quantityG: null == quantityG
+            ? _value.quantityG
+            : quantityG // ignore: cast_nullable_to_non_nullable
+                  as double,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionMealItemImpl implements _NutritionMealItem {
-  const _$NutritionMealItemImpl(
-      {required this.id, required this.foodId, required this.quantityG});
+  const _$NutritionMealItemImpl({
+    required this.id,
+    required this.foodId,
+    required this.quantityG,
+  });
 
   factory _$NutritionMealItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionMealItemImplFromJson(json);
@@ -1512,21 +1594,22 @@ class _$NutritionMealItemImpl implements _NutritionMealItem {
   @pragma('vm:prefer-inline')
   _$$NutritionMealItemImplCopyWith<_$NutritionMealItemImpl> get copyWith =>
       __$$NutritionMealItemImplCopyWithImpl<_$NutritionMealItemImpl>(
-          this, _$identity);
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionMealItemImplToJson(
-      this,
-    );
+    return _$$NutritionMealItemImplToJson(this);
   }
 }
 
 abstract class _NutritionMealItem implements NutritionMealItem {
-  const factory _NutritionMealItem(
-      {required final String id,
-      required final String foodId,
-      required final double quantityG}) = _$NutritionMealItemImpl;
+  const factory _NutritionMealItem({
+    required final String id,
+    required final String foodId,
+    required final double quantityG,
+  }) = _$NutritionMealItemImpl;
 
   factory _NutritionMealItem.fromJson(Map<String, dynamic> json) =
       _$NutritionMealItemImpl.fromJson;
@@ -1547,7 +1630,8 @@ abstract class _NutritionMealItem implements NutritionMealItem {
 }
 
 NutritionVersionSummary _$NutritionVersionSummaryFromJson(
-    Map<String, dynamic> json) {
+  Map<String, dynamic> json,
+) {
   return _NutritionVersionSummary.fromJson(json);
 }
 
@@ -1571,21 +1655,25 @@ mixin _$NutritionVersionSummary {
 
 /// @nodoc
 abstract class $NutritionVersionSummaryCopyWith<$Res> {
-  factory $NutritionVersionSummaryCopyWith(NutritionVersionSummary value,
-          $Res Function(NutritionVersionSummary) then) =
-      _$NutritionVersionSummaryCopyWithImpl<$Res, NutritionVersionSummary>;
+  factory $NutritionVersionSummaryCopyWith(
+    NutritionVersionSummary value,
+    $Res Function(NutritionVersionSummary) then,
+  ) = _$NutritionVersionSummaryCopyWithImpl<$Res, NutritionVersionSummary>;
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+  });
 }
 
 /// @nodoc
-class _$NutritionVersionSummaryCopyWithImpl<$Res,
-        $Val extends NutritionVersionSummary>
+class _$NutritionVersionSummaryCopyWithImpl<
+  $Res,
+  $Val extends NutritionVersionSummary
+>
     implements $NutritionVersionSummaryCopyWith<$Res> {
   _$NutritionVersionSummaryCopyWithImpl(this._value, this._then);
 
@@ -1605,28 +1693,31 @@ class _$NutritionVersionSummaryCopyWithImpl<$Res,
     Object? createdAt = null,
     Object? engineVersion = null,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            planId: null == planId
+                ? _value.planId
+                : planId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            version: null == version
+                ? _value.version
+                : version // ignore: cast_nullable_to_non_nullable
+                      as int,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            engineVersion: null == engineVersion
+                ? _value.engineVersion
+                : engineVersion // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -1634,28 +1725,32 @@ class _$NutritionVersionSummaryCopyWithImpl<$Res,
 abstract class _$$NutritionVersionSummaryImplCopyWith<$Res>
     implements $NutritionVersionSummaryCopyWith<$Res> {
   factory _$$NutritionVersionSummaryImplCopyWith(
-          _$NutritionVersionSummaryImpl value,
-          $Res Function(_$NutritionVersionSummaryImpl) then) =
-      __$$NutritionVersionSummaryImplCopyWithImpl<$Res>;
+    _$NutritionVersionSummaryImpl value,
+    $Res Function(_$NutritionVersionSummaryImpl) then,
+  ) = __$$NutritionVersionSummaryImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String planId,
-      int version,
-      String createdAt,
-      String engineVersion});
+  $Res call({
+    String id,
+    String planId,
+    int version,
+    String createdAt,
+    String engineVersion,
+  });
 }
 
 /// @nodoc
 class __$$NutritionVersionSummaryImplCopyWithImpl<$Res>
-    extends _$NutritionVersionSummaryCopyWithImpl<$Res,
-        _$NutritionVersionSummaryImpl>
+    extends
+        _$NutritionVersionSummaryCopyWithImpl<
+          $Res,
+          _$NutritionVersionSummaryImpl
+        >
     implements _$$NutritionVersionSummaryImplCopyWith<$Res> {
   __$$NutritionVersionSummaryImplCopyWithImpl(
-      _$NutritionVersionSummaryImpl _value,
-      $Res Function(_$NutritionVersionSummaryImpl) _then)
-      : super(_value, _then);
+    _$NutritionVersionSummaryImpl _value,
+    $Res Function(_$NutritionVersionSummaryImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of NutritionVersionSummary
   /// with the given fields replaced by the non-null parameter values.
@@ -1668,40 +1763,43 @@ class __$$NutritionVersionSummaryImplCopyWithImpl<$Res>
     Object? createdAt = null,
     Object? engineVersion = null,
   }) {
-    return _then(_$NutritionVersionSummaryImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      planId: null == planId
-          ? _value.planId
-          : planId // ignore: cast_nullable_to_non_nullable
-              as String,
-      version: null == version
-          ? _value.version
-          : version // ignore: cast_nullable_to_non_nullable
-              as int,
-      createdAt: null == createdAt
-          ? _value.createdAt
-          : createdAt // ignore: cast_nullable_to_non_nullable
-              as String,
-      engineVersion: null == engineVersion
-          ? _value.engineVersion
-          : engineVersion // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+    return _then(
+      _$NutritionVersionSummaryImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        planId: null == planId
+            ? _value.planId
+            : planId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        version: null == version
+            ? _value.version
+            : version // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        engineVersion: null == engineVersion
+            ? _value.engineVersion
+            : engineVersion // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$NutritionVersionSummaryImpl implements _NutritionVersionSummary {
-  const _$NutritionVersionSummaryImpl(
-      {required this.id,
-      required this.planId,
-      required this.version,
-      required this.createdAt,
-      required this.engineVersion});
+  const _$NutritionVersionSummaryImpl({
+    required this.id,
+    required this.planId,
+    required this.version,
+    required this.createdAt,
+    required this.engineVersion,
+  });
 
   factory _$NutritionVersionSummaryImpl.fromJson(Map<String, dynamic> json) =>
       _$$NutritionVersionSummaryImplFromJson(json);
@@ -1747,24 +1845,25 @@ class _$NutritionVersionSummaryImpl implements _NutritionVersionSummary {
   @override
   @pragma('vm:prefer-inline')
   _$$NutritionVersionSummaryImplCopyWith<_$NutritionVersionSummaryImpl>
-      get copyWith => __$$NutritionVersionSummaryImplCopyWithImpl<
-          _$NutritionVersionSummaryImpl>(this, _$identity);
+  get copyWith =>
+      __$$NutritionVersionSummaryImplCopyWithImpl<
+        _$NutritionVersionSummaryImpl
+      >(this, _$identity);
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$NutritionVersionSummaryImplToJson(
-      this,
-    );
+    return _$$NutritionVersionSummaryImplToJson(this);
   }
 }
 
 abstract class _NutritionVersionSummary implements NutritionVersionSummary {
-  const factory _NutritionVersionSummary(
-      {required final String id,
-      required final String planId,
-      required final int version,
-      required final String createdAt,
-      required final String engineVersion}) = _$NutritionVersionSummaryImpl;
+  const factory _NutritionVersionSummary({
+    required final String id,
+    required final String planId,
+    required final int version,
+    required final String createdAt,
+    required final String engineVersion,
+  }) = _$NutritionVersionSummaryImpl;
 
   factory _NutritionVersionSummary.fromJson(Map<String, dynamic> json) =
       _$NutritionVersionSummaryImpl.fromJson;
@@ -1785,5 +1884,5 @@ abstract class _NutritionVersionSummary implements NutritionVersionSummary {
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
   _$$NutritionVersionSummaryImplCopyWith<_$NutritionVersionSummaryImpl>
-      get copyWith => throw _privateConstructorUsedError;
+  get copyWith => throw _privateConstructorUsedError;
 }

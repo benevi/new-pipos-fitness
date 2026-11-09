@@ -15,7 +15,10 @@ class ExerciseFilterBar extends ConsumerWidget {
     final muscleCatalogAsync = ref.watch(muscleCatalogProvider);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+      padding: const EdgeInsets.symmetric(
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.sm,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
@@ -65,7 +68,11 @@ class ExerciseFilterBar extends ConsumerWidget {
                 _DifficultyChip(
                   label: 'Difficulty',
                   value: filters.difficulty,
-                  onTap: () => _showDifficultyMenu(context, notifier, filters.difficulty),
+                  onTap: () => _showDifficultyMenu(
+                    context,
+                    notifier,
+                    filters.difficulty,
+                  ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
                 _MuscleChip(
@@ -81,7 +88,11 @@ class ExerciseFilterBar extends ConsumerWidget {
     );
   }
 
-  void _showDifficultyMenu(BuildContext context, ExerciseFiltersNotifier notifier, int? current) {
+  void _showDifficultyMenu(
+    BuildContext context,
+    ExerciseFiltersNotifier notifier,
+    int? current,
+  ) {
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -111,7 +122,11 @@ class ExerciseFilterBar extends ConsumerWidget {
     );
   }
 
-  void _showMuscleMenu(BuildContext context, WidgetRef ref, String? currentMuscleId) {
+  void _showMuscleMenu(
+    BuildContext context,
+    WidgetRef ref,
+    String? currentMuscleId,
+  ) {
     final catalog = ref.read(muscleCatalogProvider).valueOrNull;
     final notifier = ref.read(exerciseFiltersProvider.notifier);
     if (catalog == null || catalog.isEmpty) {
@@ -126,12 +141,15 @@ class ExerciseFilterBar extends ConsumerWidget {
       );
       return;
     }
-    final muscles = catalog.values.toList()..sort((a, b) => a.name.compareTo(b.name));
+    final muscles = catalog.values.toList()
+      ..sort((a, b) => a.name.compareTo(b.name));
     showModalBottomSheet<void>(
       context: context,
       builder: (ctx) => SafeArea(
         child: ConstrainedBox(
-          constraints: BoxConstraints(maxHeight: MediaQuery.of(ctx).size.height * 0.5),
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.of(ctx).size.height * 0.5,
+          ),
           child: ListView(
             shrinkWrap: true,
             children: [
@@ -143,14 +161,16 @@ class ExerciseFilterBar extends ConsumerWidget {
                   Navigator.pop(ctx);
                 },
               ),
-              ...muscles.map((m) => ListTile(
-                    title: Text(m.name),
-                    selected: currentMuscleId == m.id,
-                    onTap: () {
-                      notifier.setMuscleId(m.id);
-                      Navigator.pop(ctx);
-                    },
-                  )),
+              ...muscles.map(
+                (m) => ListTile(
+                  title: Text(m.name),
+                  selected: currentMuscleId == m.id,
+                  onTap: () {
+                    notifier.setMuscleId(m.id);
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ),
             ],
           ),
         ),

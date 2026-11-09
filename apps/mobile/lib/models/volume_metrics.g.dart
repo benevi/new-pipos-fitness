@@ -27,18 +27,18 @@ Map<String, dynamic> _$$VolumeMetricsImplToJson(_$VolumeMetricsImpl instance) =>
     };
 
 _$VolumeByExerciseImpl _$$VolumeByExerciseImplFromJson(
-        Map<String, dynamic> json) =>
-    _$VolumeByExerciseImpl(
-      exerciseId: json['exerciseId'] as String,
-      volume: (json['volume'] as num).toDouble(),
-    );
+  Map<String, dynamic> json,
+) => _$VolumeByExerciseImpl(
+  exerciseId: json['exerciseId'] as String,
+  volume: (json['volume'] as num).toDouble(),
+);
 
 Map<String, dynamic> _$$VolumeByExerciseImplToJson(
-        _$VolumeByExerciseImpl instance) =>
-    <String, dynamic>{
-      'exerciseId': instance.exerciseId,
-      'volume': instance.volume,
-    };
+  _$VolumeByExerciseImpl instance,
+) => <String, dynamic>{
+  'exerciseId': instance.exerciseId,
+  'volume': instance.volume,
+};
 
 _$VolumeByMuscleImpl _$$VolumeByMuscleImplFromJson(Map<String, dynamic> json) =>
     _$VolumeByMuscleImpl(
@@ -47,8 +47,8 @@ _$VolumeByMuscleImpl _$$VolumeByMuscleImplFromJson(Map<String, dynamic> json) =>
     );
 
 Map<String, dynamic> _$$VolumeByMuscleImplToJson(
-        _$VolumeByMuscleImpl instance) =>
-    <String, dynamic>{
-      'muscleId': instance.muscleId,
-      'volume': instance.volume,
-    };
+  _$VolumeByMuscleImpl instance,
+) => <String, dynamic>{
+  'muscleId': instance.muscleId,
+  'volume': instance.volume,
+};

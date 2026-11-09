@@ -44,34 +44,37 @@ class MealCard extends StatelessWidget {
                 ),
                 Text(
                   '${meal.items.length} item${meal.items.length == 1 ? '' : 's'}',
-                  style: tt.bodySmall
-                      ?.copyWith(color: AppColors.onSurfaceVariant),
+                  style: tt.bodySmall?.copyWith(
+                    color: AppColors.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
             if (meal.items.isNotEmpty) ...[
               const Divider(height: AppSpacing.lg),
-              ...meal.items.map((item) => Padding(
-                    padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            item.displayName,
-                            style: tt.bodyMedium,
-                            overflow: TextOverflow.ellipsis,
-                          ),
+              ...meal.items.map(
+                (item) => Padding(
+                  padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          item.displayName,
+                          style: tt.bodyMedium,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        Text(
-                          '${item.quantityG.toStringAsFixed(0)}g',
-                          style: tt.bodyMedium?.copyWith(
-                            color: AppColors.onSurfaceVariant,
-                            fontWeight: FontWeight.w500,
-                          ),
+                      ),
+                      Text(
+                        '${item.quantityG.toStringAsFixed(0)}g',
+                        style: tt.bodyMedium?.copyWith(
+                          color: AppColors.onSurfaceVariant,
+                          fontWeight: FontWeight.w500,
                         ),
-                      ],
-                    ),
-                  )),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ],
         ),

@@ -1,0 +1,57 @@
+{
+  "@@locale": "es",
+
+  "appTitle": "Pipos Fitness",
+  "@appTitle": { "description": "Nombre de la app" },
+
+  "splashLoading": "Cargando tu sesión…",
+  "@splashLoading": { "description": "Texto accesible de la pantalla de arranque" },
+
+  "navHome": "Inicio",
+  "navWorkouts": "Entrenos",
+  "navNutrition": "Nutrición",
+  "navCoach": "Coach IA",
+  "navProfile": "Perfil",
+
+  "offlineBanner": "Sin conexión: mostrando datos guardados",
+  "pendingSyncCount": "{count, plural, =1{1 serie pendiente de sincronizar} other{{count} series pendientes de sincronizar}}",
+  "@pendingSyncCount": {
+    "description": "Series registradas offline que aún no se han enviado",
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "fieldEmail": "Correo electrónico",
+  "fieldPassword": "Contraseña",
+  "fieldConfirmPassword": "Confirmar contraseña",
+
+  "validationEmailInvalid": "Introduce un correo válido",
+  "validationPasswordRequired": "Introduce tu contraseña",
+  "validationPasswordTooShort": "La contraseña debe tener al menos {min} caracteres",
+  "@validationPasswordTooShort": {
+    "placeholders": { "min": { "type": "int" } }
+  },
+  "validationPasswordsDontMatch": "Las contraseñas no coinciden",
+
+  "loginSubmit": "Iniciar sesión",
+  "loginGoToRegister": "¿No tienes cuenta? Regístrate",
+
+  "registerTitle": "Crear cuenta",
+  "registerSubmit": "Crear cuenta",
+  "registerGoToLogin": "¿Ya tienes cuenta? Inicia sesión",
+
+  "authErrorInvalidCredentials": "Correo o contraseña incorrectos.",
+  "authErrorEmailAlreadyRegistered": "Ya existe una cuenta con este correo.",
+  "authErrorInvalidInput": "Revisa los datos introducidos.",
+  "authErrorSessionExpired": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+
+  "errorNetwork": "Sin conexión a internet.",
+  "errorTimeout": "La petición ha tardado demasiado. Inténtalo de nuevo.",
+  "errorServer": "Error del servidor. Inténtalo más tarde.",
+  "errorUnauthorized": "Tu sesión ha caducado. Vuelve a iniciar sesión.",
+  "errorBadRequest": "La solicitud no es válida.",
+  "errorParse": "El servidor devolvió una respuesta inesperada.",
+  "errorUnknown": "Ha ocurrido un error inesperado.",
+
+  "configErrorTitle": "Configuración incompleta",
+  "configErrorBody": "Esta compilación no define la URL de la API. Vuelve a compilar con --dart-define=API_BASE_URL=https://…"
+}

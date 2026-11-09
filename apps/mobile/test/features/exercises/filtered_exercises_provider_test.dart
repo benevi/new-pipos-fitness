@@ -24,9 +24,7 @@ void main() {
         },
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -41,9 +39,7 @@ void main() {
     test('build returns error when API throws', () async {
       final fakeApi = _FakeExercisesApi(throwOnGet: true);
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
@@ -59,7 +55,13 @@ void main() {
       final fakeApi = _FakeExercisesApi(
         response: {
           'items': [
-            {'id': 'e1', 'slug': 'e1', 'name': 'Squat', 'difficulty': 2, 'place': 'gym'},
+            {
+              'id': 'e1',
+              'slug': 'e1',
+              'name': 'Squat',
+              'difficulty': 2,
+              'place': 'gym',
+            },
           ],
           'totalCount': 1,
           'page': 1,
@@ -67,16 +69,20 @@ void main() {
         },
       );
       final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
+        overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
       );
       addTearDown(container.dispose);
 
       await container.read(filteredExercisesProvider.future);
       fakeApi.response = {
         'items': [
-          {'id': 'e2', 'slug': 'e2', 'name': 'Updated', 'difficulty': 1, 'place': 'home'},
+          {
+            'id': 'e2',
+            'slug': 'e2',
+            'name': 'Updated',
+            'difficulty': 1,
+            'place': 'home',
+          },
         ],
         'totalCount': 1,
         'page': 1,
@@ -88,54 +94,63 @@ void main() {
       expect(state.items.first.name, 'Updated');
     });
 
-    test('loadMore appends next page and hasMore becomes false when exhausted', () async {
-      final fakeApi = _FakeExercisesApi(
-        response: {
+    test(
+      'loadMore appends next page and hasMore becomes false when exhausted',
+      () async {
+        final fakeApi = _FakeExercisesApi(
+          response: {
+            'items': List.generate(
+              20,
+              (i) => {
+                'id': 'e$i',
+                'slug': 'e$i',
+                'name': 'Ex $i',
+                'difficulty': 1,
+                'place': 'gym',
+              },
+            ),
+            'totalCount': 25,
+            'page': 1,
+            'limit': 20,
+          },
+        );
+        final container = ProviderContainer(
+          overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
+        );
+        addTearDown(container.dispose);
+
+        await container.read(filteredExercisesProvider.future);
+        var state = container.read(filteredExercisesProvider).value!;
+        expect(state.items.length, 20);
+        expect(state.hasMore, true);
+
+        fakeApi.response = {
           'items': List.generate(
-            20,
-            (i) => {'id': 'e$i', 'slug': 'e$i', 'name': 'Ex $i', 'difficulty': 1, 'place': 'gym'},
+            5,
+            (i) => {
+              'id': 'p2-$i',
+              'slug': 'p2-$i',
+              'name': 'Page2 $i',
+              'difficulty': 1,
+              'place': 'gym',
+            },
           ),
           'totalCount': 25,
-          'page': 1,
+          'page': 2,
           'limit': 20,
-        },
-      );
-      final container = ProviderContainer(
-        overrides: [
-          apiClientProvider.overrideWith((ref) => fakeApi),
-        ],
-      );
-      addTearDown(container.dispose);
+        };
+        await container.read(filteredExercisesProvider.notifier).loadMore();
 
-      await container.read(filteredExercisesProvider.future);
-      var state = container.read(filteredExercisesProvider).value!;
-      expect(state.items.length, 20);
-      expect(state.hasMore, true);
-
-      fakeApi.response = {
-        'items': List.generate(
-          5,
-          (i) => {'id': 'p2-$i', 'slug': 'p2-$i', 'name': 'Page2 $i', 'difficulty': 1, 'place': 'gym'},
-        ),
-        'totalCount': 25,
-        'page': 2,
-        'limit': 20,
-      };
-      await container.read(filteredExercisesProvider.notifier).loadMore();
-
-      state = container.read(filteredExercisesProvider).value!;
-      expect(state.items.length, 25);
-      expect(state.hasMore, false);
-    });
+        state = container.read(filteredExercisesProvider).value!;
+        expect(state.items.length, 25);
+        expect(state.hasMore, false);
+      },
+    );
   });
 }
 
 class _FakeExercisesApi extends ApiClient {
-  _FakeExercisesApi({
-    Map<String, dynamic>? response,
-    this.throwOnGet = false,
-  })  : response = response,
-        super(Dio());
+  _FakeExercisesApi({this.response, this.throwOnGet = false}) : super(Dio());
 
   Map<String, dynamic>? response;
   final bool throwOnGet;

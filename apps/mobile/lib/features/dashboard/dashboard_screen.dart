@@ -57,8 +57,11 @@ class _ErrorView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.cloud_off,
-                  size: 48, color: AppColors.onSurfaceVariant),
+              const Icon(
+                Icons.cloud_off,
+                size: 48,
+                color: AppColors.onSurfaceVariant,
+              ),
               const SizedBox(height: AppSpacing.md),
               const Text('Failed to load analytics'),
               const SizedBox(height: AppSpacing.md),
@@ -83,17 +86,22 @@ class _EmptyView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.insights, size: 64, color: AppColors.onSurfaceVariant),
+              const Icon(
+                Icons.insights,
+                size: 64,
+                color: AppColors.onSurfaceVariant,
+              ),
               const SizedBox(height: AppSpacing.md),
-              Text('No progress data yet',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'No progress data yet',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Complete a workout to see your stats',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: AppColors.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -130,8 +138,10 @@ class _LoadedDashboard extends StatelessWidget {
             children: [
               const Icon(Icons.trending_up, color: AppColors.accent, size: 22),
               const SizedBox(width: AppSpacing.sm),
-              Text('Exercise Progress',
-                  style: Theme.of(context).textTheme.titleMedium),
+              Text(
+                'Exercise Progress',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.sm),

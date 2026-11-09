@@ -1,26 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'app/router.dart';
-import 'app/theme.dart';
+
+import 'app/app.dart';
+import 'app/config.dart';
+import 'core/auth/token_storage.dart';
+import 'core/offline/app_database.dart';
 
 void main() {
-  runApp(const ProviderScope(child: PiposApp()));
-}
+  WidgetsFlutterBinding.ensureInitialized();
 
-class PiposApp extends ConsumerWidget {
-  const PiposApp({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final router = ref.watch(routerProvider);
-
-    return MaterialApp.router(
-      title: 'Pipos Fitness',
-      debugShowCheckedModeBanner: false,
-      themeMode: ThemeMode.dark,
-      theme: AppTheme.light,
-      darkTheme: AppTheme.dark,
-      routerConfig: router,
-    );
+  final config = AppConfig.resolve();
+  if (config == null) {
+    runApp(const ConfigErrorApp());
+    return;
   }
+
+  runApp(
+    PiposRoot(
+      config: config,
+      tokenStorage: SecureTokenStorage(),
+      database: AppDatabase(),
+    ),
+  );
 }

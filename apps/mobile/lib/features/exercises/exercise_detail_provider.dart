@@ -3,11 +3,14 @@ import '../../core/api/api_client.dart';
 import '../../models/exercise_detail.dart';
 
 final exerciseDetailProvider =
-    AsyncNotifierProvider.family<ExerciseDetailNotifier, ExerciseDetail?, String>(
-  ExerciseDetailNotifier.new,
-);
+    AsyncNotifierProvider.family<
+      ExerciseDetailNotifier,
+      ExerciseDetail?,
+      String
+    >(ExerciseDetailNotifier.new);
 
-class ExerciseDetailNotifier extends FamilyAsyncNotifier<ExerciseDetail?, String> {
+class ExerciseDetailNotifier
+    extends FamilyAsyncNotifier<ExerciseDetail?, String> {
   @override
   Future<ExerciseDetail?> build(String id) async {
     if (id.isEmpty) return null;

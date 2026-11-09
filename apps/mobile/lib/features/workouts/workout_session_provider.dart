@@ -1,8 +1,14 @@
-import 'package:dio/dio.dart';
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
+
 import '../../core/api/api_client.dart';
-import '../../core/api/dio_error_mapper.dart';
+import '../../core/api/api_failure.dart';
+import '../../core/offline/app_database.dart';
+import '../../core/offline/offline_providers.dart';
+import '../../core/offline/sync_service.dart';
 import '../../models/training_plan.dart';
 import '../../models/workout_session.dart';
 
@@ -63,15 +69,43 @@ class WorkoutSessionState {
 
 final workoutSessionProvider =
     StateNotifierProvider<WorkoutSessionNotifier, WorkoutSessionState>(
-  (ref) => WorkoutSessionNotifier(ref),
-);
+      (ref) =>
+          WorkoutSessionNotifier(ref, sync: ref.watch(syncServiceProvider)),
+    );
 
+/// Registro de entrenos.
+///
+/// Las series se registran offline-first: [logSet] las escribe en la cola
+/// local (drift) a través del [SyncService], las muestra al instante
+/// (UI optimista) y el servicio las envía cuando hay red. Cuando la API
+/// confirma una serie, la sesión del servidor reemplaza a la local y se
+/// vuelven a aplicar encima las series que siguen pendientes.
 class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
   final Ref _ref;
+  final SyncService? _sync;
+  final Uuid _uuid;
+  StreamSubscription<SyncedSetLog>? _syncedSub;
 
-  WorkoutSessionNotifier(this._ref) : super(const WorkoutSessionState());
+  /// Series mostradas de forma optimista, aún sin confirmar (por clientId).
+  final Map<String, WorkoutSet> _optimistic = {};
+
+  WorkoutSessionNotifier(this._ref, {SyncService? sync, Uuid? uuid})
+    : _sync = sync,
+      _uuid = uuid ?? const Uuid(),
+      super(const WorkoutSessionState()) {
+    _syncedSub = _sync?.synced.listen(_onSynced);
+  }
 
   ApiClient get _api => _ref.read(apiClientProvider);
+
+  @override
+  void dispose() {
+    _syncedSub?.cancel();
+    super.dispose();
+  }
+
+  /// Ids de las series que aún no ha confirmado la API.
+  Set<String> get pendingSetIds => Set.unmodifiable(_optimistic.keys);
 
   /// Atomic start: creates session + adds all exercises.
   /// State becomes active only after both steps succeed.
@@ -89,11 +123,9 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
         '/workouts/start',
         data: {'planSessionId': planSession.id},
       );
-      session = WorkoutSession.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+      session = WorkoutSession.fromJson(response.data as Map<String, dynamic>);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
       state = WorkoutSessionState(
         status: WorkoutStatus.error,
         planSession: planSession,
@@ -109,12 +141,10 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
           '/workouts/${session.id}/exercises',
           data: {'exerciseId': planExercise.exerciseId},
         );
-        session = WorkoutSession.fromJson(
-          resp.data as Map<String, dynamic>,
-        );
+        session = WorkoutSession.fromJson(resp.data as Map<String, dynamic>);
       }
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
       state = WorkoutSessionState(
         status: WorkoutStatus.error,
         planSession: planSession,
@@ -147,8 +177,8 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
     try {
       final resp = await _api.get('/workouts/$sessionId');
       current = WorkoutSession.fromJson(resp.data as Map<String, dynamic>);
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
       state = state.copyWith(
         status: WorkoutStatus.error,
         error: 'Failed to load session: ${failure.message}',
@@ -156,8 +186,9 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
       return false;
     }
 
-    final existingExerciseIds =
-        current.exercises.map((e) => e.exerciseId).toSet();
+    final existingExerciseIds = current.exercises
+        .map((e) => e.exerciseId)
+        .toSet();
     final missing = planSession.exercises
         .where((pe) => !existingExerciseIds.contains(pe.exerciseId))
         .toList();
@@ -168,12 +199,10 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
           '/workouts/$sessionId/exercises',
           data: {'exerciseId': planExercise.exerciseId},
         );
-        current = WorkoutSession.fromJson(
-          resp.data as Map<String, dynamic>,
-        );
+        current = WorkoutSession.fromJson(resp.data as Map<String, dynamic>);
       }
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
       state = WorkoutSessionState(
         status: WorkoutStatus.error,
         planSession: planSession,
@@ -195,8 +224,9 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
   Future<bool> resumeWorkout(String sessionId) async {
     try {
       final resp = await _api.get('/workouts/$sessionId');
-      final session = WorkoutSession.fromJson(
-        resp.data as Map<String, dynamic>,
+      await _restorePendingFor(sessionId);
+      final session = _applyOptimistic(
+        WorkoutSession.fromJson(resp.data as Map<String, dynamic>),
       );
 
       // Restore currentExerciseIndex: first exercise with fewer completed sets
@@ -210,8 +240,8 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
         currentExerciseIndex: exerciseIndex,
       );
       return true;
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
       state = state.copyWith(error: 'Failed to resume: ${failure.message}');
       return false;
     }
@@ -258,28 +288,122 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
     int? reps,
     int? rir,
   }) async {
-    if (state.session == null) return false;
+    final session = state.session;
+    final sync = _sync;
+    if (session == null || sync == null) return false;
 
+    final exercise = session.exercises
+        .where((e) => e.id == workoutExerciseId)
+        .firstOrNull;
+    if (exercise == null) return false;
+
+    final clientId = _uuid.v4();
+    final setIndex = exercise.sets.length;
     try {
-      final response = await _api.post(
-        '/workouts/${state.session!.id}/exercises/$workoutExerciseId/sets',
-        data: {
-          if (weightKg != null) 'weightKg': weightKg,
-          if (reps != null) 'reps': reps,
-          if (rir != null) 'rir': rir,
-          'completed': true,
-        },
+      await sync.enqueue(
+        clientId: clientId,
+        workoutSessionId: session.id,
+        workoutExerciseId: workoutExerciseId,
+        exerciseId: exercise.exerciseId,
+        setIndex: setIndex,
+        reps: reps,
+        loadKg: weightKg,
+        rir: rir,
       );
-      // Backend returns the full updated session
-      final updated = WorkoutSession.fromJson(
-        response.data as Map<String, dynamic>,
-      );
-      state = state.copyWith(session: updated);
-      return true;
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
-      state = state.copyWith(error: failure.message);
+    } catch (e) {
+      if (!mounted) return false;
+      state = state.copyWith(error: ApiFailure.from(e).message);
       return false;
+    }
+    if (!mounted) return true;
+
+    final optimistic = WorkoutSet(
+      id: clientId,
+      workoutExerciseId: workoutExerciseId,
+      setIndex: setIndex,
+      weightKg: weightKg,
+      reps: reps,
+      rir: rir,
+      completed: true,
+    );
+    _optimistic[clientId] = optimistic;
+    // Leemos el estado de nuevo: pudo cambiar mientras se escribía en disco.
+    final current = state.session;
+    if (current != null) {
+      state = state.copyWith(session: _applyOptimistic(current));
+    }
+    return true;
+  }
+
+  void _onSynced(SyncedSetLog event) {
+    _optimistic.remove(event.clientId);
+    if (!mounted) return;
+    final current = state.session;
+    if (current == null || current.id != event.workoutSessionId) return;
+
+    final data = event.responseData;
+    WorkoutSession? server;
+    if (data is Map<String, dynamic>) {
+      try {
+        server = WorkoutSession.fromJson(data);
+      } catch (_) {
+        server = null; // Respuesta inesperada: mantenemos la vista local.
+      }
+    }
+    if (server == null) return;
+    state = state.copyWith(session: _applyOptimistic(server));
+  }
+
+  /// Añade a [base] las series optimistas que aún no contiene.
+  WorkoutSession _applyOptimistic(WorkoutSession base) {
+    if (_optimistic.isEmpty) return base;
+    final byExercise = <String, List<WorkoutSet>>{};
+    for (final set in _optimistic.values) {
+      byExercise.putIfAbsent(set.workoutExerciseId, () => []).add(set);
+    }
+    return base.copyWith(
+      exercises: [
+        for (final ex in base.exercises)
+          if (!byExercise.containsKey(ex.id))
+            ex
+          else
+            _withPending(ex, byExercise[ex.id]!),
+      ],
+    );
+  }
+
+  WorkoutExercise _withPending(WorkoutExercise ex, List<WorkoutSet> pending) {
+    final existingIds = ex.sets.map((s) => s.id).toSet();
+    final sets = [...ex.sets];
+    final toAdd = pending.where((p) => !existingIds.contains(p.id)).toList()
+      ..sort((a, b) => a.setIndex.compareTo(b.setIndex));
+    for (final p in toAdd) {
+      sets.add(p.copyWith(setIndex: sets.length));
+    }
+    return ex.copyWith(sets: sets);
+  }
+
+  /// Recupera de la cola local las series pendientes de [sessionId] (p. ej.
+  /// tras reiniciar la app) para seguir mostrándolas.
+  Future<void> _restorePendingFor(String sessionId) async {
+    final sync = _sync;
+    if (sync == null) return;
+    final List<PendingSetLog> queue;
+    try {
+      queue = await sync.queue();
+    } catch (_) {
+      return;
+    }
+    for (final item in queue.where((q) => q.workoutSessionId == sessionId)) {
+      _optimistic[item.clientId] = WorkoutSet(
+        id: item.clientId,
+        workoutExerciseId: item.workoutExerciseId,
+        setIndex: item.setIndex,
+        weightKg: item.loadKg,
+        reps: item.reps,
+        rir: item.rir,
+        completed: true,
+      );
     }
   }
 
@@ -304,6 +428,11 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
 
     state = state.copyWith(status: WorkoutStatus.finishing);
 
+    // Best effort: intenta vaciar la cola antes de cerrar la sesión.
+    try {
+      await _sync?.syncNow();
+    } catch (_) {}
+
     try {
       await _api.post(
         '/workouts/${state.session!.id}/finish',
@@ -315,8 +444,14 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
 
       state = state.copyWith(status: WorkoutStatus.completed);
       return true;
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      final failure = ApiFailure.from(e);
+      // 409: la sesión ya estaba terminada (p. ej. reintento tras perder la
+      // respuesta). Para el usuario el resultado es el mismo.
+      if (failure.statusCode == 409) {
+        state = state.copyWith(status: WorkoutStatus.completed);
+        return true;
+      }
       state = state.copyWith(
         status: WorkoutStatus.active,
         error: failure.message,
@@ -326,6 +461,7 @@ class WorkoutSessionNotifier extends StateNotifier<WorkoutSessionState> {
   }
 
   void reset() {
+    _optimistic.clear();
     state = const WorkoutSessionState();
   }
 

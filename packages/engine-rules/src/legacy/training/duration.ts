@@ -7,7 +7,6 @@ import { ESTIMATED_SECONDS_PER_SET } from './model.js';
 
 export function estimateSessionDurationMinutes(
   session: PlanSession,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- firma pública congelada (legacy)
   _catalog: Map<string, CatalogExerciseSnapshot>,
 ): number {
   let totalSeconds = 0;

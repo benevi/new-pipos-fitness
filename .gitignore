@@ -31,9 +31,6 @@ pnpm-debug.log*
 coverage/
 .nyc_output/
 
-# Prisma
-apps/api/prisma/migrations/**/migration_lock.toml
-
 # Flutter
 apps/mobile/.dart_tool/
 apps/mobile/.packages
@@ -44,6 +41,10 @@ apps/mobile/.flutter-plugins-dependencies
 
 # Misc
 *.local
+
+# Herramientas locales y temporales (no versionar)
+.tools/
+_tmp_*
 
 # Worktrees de agentes de Claude Code
 .claude/worktrees/

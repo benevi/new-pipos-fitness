@@ -12,7 +12,8 @@ part of 'equipment_item.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 EquipmentItem _$EquipmentItemFromJson(Map<String, dynamic> json) {
   return _EquipmentItem.fromJson(json);
@@ -37,8 +38,9 @@ mixin _$EquipmentItem {
 /// @nodoc
 abstract class $EquipmentItemCopyWith<$Res> {
   factory $EquipmentItemCopyWith(
-          EquipmentItem value, $Res Function(EquipmentItem) then) =
-      _$EquipmentItemCopyWithImpl<$Res, EquipmentItem>;
+    EquipmentItem value,
+    $Res Function(EquipmentItem) then,
+  ) = _$EquipmentItemCopyWithImpl<$Res, EquipmentItem>;
   @useResult
   $Res call({String id, String name, String category});
 }
@@ -57,25 +59,24 @@ class _$EquipmentItemCopyWithImpl<$Res, $Val extends EquipmentItem>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? category = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
-          ? _value.category
-          : category // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  $Res call({Object? id = null, Object? name = null, Object? category = null}) {
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            category: null == category
+                ? _value.category
+                : category // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -83,8 +84,9 @@ class _$EquipmentItemCopyWithImpl<$Res, $Val extends EquipmentItem>
 abstract class _$$EquipmentItemImplCopyWith<$Res>
     implements $EquipmentItemCopyWith<$Res> {
   factory _$$EquipmentItemImplCopyWith(
-          _$EquipmentItemImpl value, $Res Function(_$EquipmentItemImpl) then) =
-      __$$EquipmentItemImplCopyWithImpl<$Res>;
+    _$EquipmentItemImpl value,
+    $Res Function(_$EquipmentItemImpl) then,
+  ) = __$$EquipmentItemImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String name, String category});
@@ -95,40 +97,42 @@ class __$$EquipmentItemImplCopyWithImpl<$Res>
     extends _$EquipmentItemCopyWithImpl<$Res, _$EquipmentItemImpl>
     implements _$$EquipmentItemImplCopyWith<$Res> {
   __$$EquipmentItemImplCopyWithImpl(
-      _$EquipmentItemImpl _value, $Res Function(_$EquipmentItemImpl) _then)
-      : super(_value, _then);
+    _$EquipmentItemImpl _value,
+    $Res Function(_$EquipmentItemImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of EquipmentItem
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-    Object? category = null,
-  }) {
-    return _then(_$EquipmentItemImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-      category: null == category
-          ? _value.category
-          : category // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? id = null, Object? name = null, Object? category = null}) {
+    return _then(
+      _$EquipmentItemImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        category: null == category
+            ? _value.category
+            : category // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$EquipmentItemImpl implements _EquipmentItem {
-  const _$EquipmentItemImpl(
-      {required this.id, required this.name, required this.category});
+  const _$EquipmentItemImpl({
+    required this.id,
+    required this.name,
+    required this.category,
+  });
 
   factory _$EquipmentItemImpl.fromJson(Map<String, dynamic> json) =>
       _$$EquipmentItemImplFromJson(json);
@@ -170,17 +174,16 @@ class _$EquipmentItemImpl implements _EquipmentItem {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$EquipmentItemImplToJson(
-      this,
-    );
+    return _$$EquipmentItemImplToJson(this);
   }
 }
 
 abstract class _EquipmentItem implements EquipmentItem {
-  const factory _EquipmentItem(
-      {required final String id,
-      required final String name,
-      required final String category}) = _$EquipmentItemImpl;
+  const factory _EquipmentItem({
+    required final String id,
+    required final String name,
+    required final String category,
+  }) = _$EquipmentItemImpl;
 
   factory _EquipmentItem.fromJson(Map<String, dynamic> json) =
       _$EquipmentItemImpl.fromJson;

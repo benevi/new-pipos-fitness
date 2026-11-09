@@ -8,7 +8,9 @@ import 'package:pipos_fitness/features/exercises/exercise_detail_screen.dart';
 
 void main() {
   group('ExerciseDetailScreen', () {
-    testWidgets('shows no video available when media endpoint returns empty', (tester) async {
+    testWidgets('shows no video available when media endpoint returns empty', (
+      tester,
+    ) async {
       final fakeApi = _FakeDetailAndMediaApi(
         detailResponse: {
           'id': 'e1',
@@ -23,9 +25,7 @@ void main() {
       );
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            apiClientProvider.overrideWith((ref) => fakeApi),
-          ],
+          overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
           child: MaterialApp(
             theme: AppTheme.dark,
             home: const ExerciseDetailScreen(exerciseId: 'e1'),
@@ -60,9 +60,7 @@ void main() {
       );
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            apiClientProvider.overrideWith((ref) => fakeApi),
-          ],
+          overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
           child: MaterialApp(
             theme: AppTheme.dark,
             home: const ExerciseDetailScreen(exerciseId: 'e1'),
@@ -75,46 +73,46 @@ void main() {
       expect(find.text('Fitness Channel'), findsOneWidget);
     });
 
-    testWidgets('shows detail content and media error when media endpoint fails', (tester) async {
-      final fakeApi = _FakeDetailAndMediaApi(
-        detailResponse: {
-          'id': 'e1',
-          'slug': 'bench',
-          'name': 'Bench Press',
-          'difficulty': 2,
-          'place': 'gym',
-          'muscles': [],
-          'media': [],
-        },
-        mediaFails: true,
-      );
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            apiClientProvider.overrideWith((ref) => fakeApi),
-          ],
-          child: MaterialApp(
-            theme: AppTheme.dark,
-            home: const ExerciseDetailScreen(exerciseId: 'e1'),
+    testWidgets(
+      'shows detail content and media error when media endpoint fails',
+      (tester) async {
+        final fakeApi = _FakeDetailAndMediaApi(
+          detailResponse: {
+            'id': 'e1',
+            'slug': 'bench',
+            'name': 'Bench Press',
+            'difficulty': 2,
+            'place': 'gym',
+            'muscles': [],
+            'media': [],
+          },
+          mediaFails: true,
+        );
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [apiClientProvider.overrideWith((ref) => fakeApi)],
+            child: MaterialApp(
+              theme: AppTheme.dark,
+              home: const ExerciseDetailScreen(exerciseId: 'e1'),
+            ),
           ),
-        ),
-      );
-      await tester.pumpAndSettle();
+        );
+        await tester.pumpAndSettle();
 
-      expect(find.text('Bench Press'), findsOneWidget);
-      expect(find.text('Couldn\'t load videos'), findsOneWidget);
-    });
+        expect(find.text('Bench Press'), findsOneWidget);
+        expect(find.text('Couldn\'t load videos'), findsOneWidget);
+      },
+    );
   });
 }
 
 class _FakeDetailAndMediaApi extends ApiClient {
   _FakeDetailAndMediaApi({
-    Map<String, dynamic>? detailResponse,
+    this.detailResponse,
     List<dynamic>? mediaResponse,
     this.mediaFails = false,
-  })  : detailResponse = detailResponse,
-        mediaResponse = mediaResponse ?? [],
-        super(Dio());
+  }) : mediaResponse = mediaResponse ?? [],
+       super(Dio());
 
   final Map<String, dynamic>? detailResponse;
   final List<dynamic> mediaResponse;

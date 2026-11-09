@@ -12,7 +12,8 @@ part of 'food.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 Food _$FoodFromJson(Map<String, dynamic> json) {
   return _Food.fromJson(json);
@@ -54,28 +55,29 @@ class _$FoodCopyWithImpl<$Res, $Val extends Food>
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-  }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-    ) as $Val);
+  $Res call({Object? id = null, Object? name = null}) {
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
   }
 }
 
 /// @nodoc
 abstract class _$$FoodImplCopyWith<$Res> implements $FoodCopyWith<$Res> {
   factory _$$FoodImplCopyWith(
-          _$FoodImpl value, $Res Function(_$FoodImpl) then) =
-      __$$FoodImplCopyWithImpl<$Res>;
+    _$FoodImpl value,
+    $Res Function(_$FoodImpl) then,
+  ) = __$$FoodImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({String id, String name});
@@ -86,26 +88,25 @@ class __$$FoodImplCopyWithImpl<$Res>
     extends _$FoodCopyWithImpl<$Res, _$FoodImpl>
     implements _$$FoodImplCopyWith<$Res> {
   __$$FoodImplCopyWithImpl(_$FoodImpl _value, $Res Function(_$FoodImpl) _then)
-      : super(_value, _then);
+    : super(_value, _then);
 
   /// Create a copy of Food
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
-  $Res call({
-    Object? id = null,
-    Object? name = null,
-  }) {
-    return _then(_$FoodImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      name: null == name
-          ? _value.name
-          : name // ignore: cast_nullable_to_non_nullable
-              as String,
-    ));
+  $Res call({Object? id = null, Object? name = null}) {
+    return _then(
+      _$FoodImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
   }
 }
 
@@ -150,9 +151,7 @@ class _$FoodImpl implements _Food {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$FoodImplToJson(
-      this,
-    );
+    return _$$FoodImplToJson(this);
   }
 }
 

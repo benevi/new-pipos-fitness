@@ -12,7 +12,8 @@ part of 'exercise_media.dart';
 T _$identity<T>(T value) => value;
 
 final _privateConstructorUsedError = UnsupportedError(
-    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+  'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
+);
 
 ExerciseMedia _$ExerciseMediaFromJson(Map<String, dynamic> json) {
   return _ExerciseMedia.fromJson(json);
@@ -42,18 +43,20 @@ mixin _$ExerciseMedia {
 /// @nodoc
 abstract class $ExerciseMediaCopyWith<$Res> {
   factory $ExerciseMediaCopyWith(
-          ExerciseMedia value, $Res Function(ExerciseMedia) then) =
-      _$ExerciseMediaCopyWithImpl<$Res, ExerciseMedia>;
+    ExerciseMedia value,
+    $Res Function(ExerciseMedia) then,
+  ) = _$ExerciseMediaCopyWithImpl<$Res, ExerciseMedia>;
   @useResult
-  $Res call(
-      {String id,
-      String exerciseId,
-      String youtubeVideoId,
-      String? channelName,
-      bool isPrimary,
-      int? startSeconds,
-      int? endSeconds,
-      String? curationStatus});
+  $Res call({
+    String id,
+    String exerciseId,
+    String youtubeVideoId,
+    String? channelName,
+    bool isPrimary,
+    int? startSeconds,
+    int? endSeconds,
+    String? curationStatus,
+  });
 }
 
 /// @nodoc
@@ -80,40 +83,43 @@ class _$ExerciseMediaCopyWithImpl<$Res, $Val extends ExerciseMedia>
     Object? endSeconds = freezed,
     Object? curationStatus = freezed,
   }) {
-    return _then(_value.copyWith(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      youtubeVideoId: null == youtubeVideoId
-          ? _value.youtubeVideoId
-          : youtubeVideoId // ignore: cast_nullable_to_non_nullable
-              as String,
-      channelName: freezed == channelName
-          ? _value.channelName
-          : channelName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: null == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool,
-      startSeconds: freezed == startSeconds
-          ? _value.startSeconds
-          : startSeconds // ignore: cast_nullable_to_non_nullable
-              as int?,
-      endSeconds: freezed == endSeconds
-          ? _value.endSeconds
-          : endSeconds // ignore: cast_nullable_to_non_nullable
-              as int?,
-      curationStatus: freezed == curationStatus
-          ? _value.curationStatus
-          : curationStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ) as $Val);
+    return _then(
+      _value.copyWith(
+            id: null == id
+                ? _value.id
+                : id // ignore: cast_nullable_to_non_nullable
+                      as String,
+            exerciseId: null == exerciseId
+                ? _value.exerciseId
+                : exerciseId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            youtubeVideoId: null == youtubeVideoId
+                ? _value.youtubeVideoId
+                : youtubeVideoId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            channelName: freezed == channelName
+                ? _value.channelName
+                : channelName // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            isPrimary: null == isPrimary
+                ? _value.isPrimary
+                : isPrimary // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            startSeconds: freezed == startSeconds
+                ? _value.startSeconds
+                : startSeconds // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            endSeconds: freezed == endSeconds
+                ? _value.endSeconds
+                : endSeconds // ignore: cast_nullable_to_non_nullable
+                      as int?,
+            curationStatus: freezed == curationStatus
+                ? _value.curationStatus
+                : curationStatus // ignore: cast_nullable_to_non_nullable
+                      as String?,
+          )
+          as $Val,
+    );
   }
 }
 
@@ -121,19 +127,21 @@ class _$ExerciseMediaCopyWithImpl<$Res, $Val extends ExerciseMedia>
 abstract class _$$ExerciseMediaImplCopyWith<$Res>
     implements $ExerciseMediaCopyWith<$Res> {
   factory _$$ExerciseMediaImplCopyWith(
-          _$ExerciseMediaImpl value, $Res Function(_$ExerciseMediaImpl) then) =
-      __$$ExerciseMediaImplCopyWithImpl<$Res>;
+    _$ExerciseMediaImpl value,
+    $Res Function(_$ExerciseMediaImpl) then,
+  ) = __$$ExerciseMediaImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call(
-      {String id,
-      String exerciseId,
-      String youtubeVideoId,
-      String? channelName,
-      bool isPrimary,
-      int? startSeconds,
-      int? endSeconds,
-      String? curationStatus});
+  $Res call({
+    String id,
+    String exerciseId,
+    String youtubeVideoId,
+    String? channelName,
+    bool isPrimary,
+    int? startSeconds,
+    int? endSeconds,
+    String? curationStatus,
+  });
 }
 
 /// @nodoc
@@ -141,8 +149,9 @@ class __$$ExerciseMediaImplCopyWithImpl<$Res>
     extends _$ExerciseMediaCopyWithImpl<$Res, _$ExerciseMediaImpl>
     implements _$$ExerciseMediaImplCopyWith<$Res> {
   __$$ExerciseMediaImplCopyWithImpl(
-      _$ExerciseMediaImpl _value, $Res Function(_$ExerciseMediaImpl) _then)
-      : super(_value, _then);
+    _$ExerciseMediaImpl _value,
+    $Res Function(_$ExerciseMediaImpl) _then,
+  ) : super(_value, _then);
 
   /// Create a copy of ExerciseMedia
   /// with the given fields replaced by the non-null parameter values.
@@ -158,55 +167,58 @@ class __$$ExerciseMediaImplCopyWithImpl<$Res>
     Object? endSeconds = freezed,
     Object? curationStatus = freezed,
   }) {
-    return _then(_$ExerciseMediaImpl(
-      id: null == id
-          ? _value.id
-          : id // ignore: cast_nullable_to_non_nullable
-              as String,
-      exerciseId: null == exerciseId
-          ? _value.exerciseId
-          : exerciseId // ignore: cast_nullable_to_non_nullable
-              as String,
-      youtubeVideoId: null == youtubeVideoId
-          ? _value.youtubeVideoId
-          : youtubeVideoId // ignore: cast_nullable_to_non_nullable
-              as String,
-      channelName: freezed == channelName
-          ? _value.channelName
-          : channelName // ignore: cast_nullable_to_non_nullable
-              as String?,
-      isPrimary: null == isPrimary
-          ? _value.isPrimary
-          : isPrimary // ignore: cast_nullable_to_non_nullable
-              as bool,
-      startSeconds: freezed == startSeconds
-          ? _value.startSeconds
-          : startSeconds // ignore: cast_nullable_to_non_nullable
-              as int?,
-      endSeconds: freezed == endSeconds
-          ? _value.endSeconds
-          : endSeconds // ignore: cast_nullable_to_non_nullable
-              as int?,
-      curationStatus: freezed == curationStatus
-          ? _value.curationStatus
-          : curationStatus // ignore: cast_nullable_to_non_nullable
-              as String?,
-    ));
+    return _then(
+      _$ExerciseMediaImpl(
+        id: null == id
+            ? _value.id
+            : id // ignore: cast_nullable_to_non_nullable
+                  as String,
+        exerciseId: null == exerciseId
+            ? _value.exerciseId
+            : exerciseId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        youtubeVideoId: null == youtubeVideoId
+            ? _value.youtubeVideoId
+            : youtubeVideoId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        channelName: freezed == channelName
+            ? _value.channelName
+            : channelName // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        isPrimary: null == isPrimary
+            ? _value.isPrimary
+            : isPrimary // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        startSeconds: freezed == startSeconds
+            ? _value.startSeconds
+            : startSeconds // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        endSeconds: freezed == endSeconds
+            ? _value.endSeconds
+            : endSeconds // ignore: cast_nullable_to_non_nullable
+                  as int?,
+        curationStatus: freezed == curationStatus
+            ? _value.curationStatus
+            : curationStatus // ignore: cast_nullable_to_non_nullable
+                  as String?,
+      ),
+    );
   }
 }
 
 /// @nodoc
 @JsonSerializable()
 class _$ExerciseMediaImpl implements _ExerciseMedia {
-  const _$ExerciseMediaImpl(
-      {required this.id,
-      required this.exerciseId,
-      required this.youtubeVideoId,
-      this.channelName,
-      this.isPrimary = false,
-      this.startSeconds,
-      this.endSeconds,
-      this.curationStatus});
+  const _$ExerciseMediaImpl({
+    required this.id,
+    required this.exerciseId,
+    required this.youtubeVideoId,
+    this.channelName,
+    this.isPrimary = false,
+    this.startSeconds,
+    this.endSeconds,
+    this.curationStatus,
+  });
 
   factory _$ExerciseMediaImpl.fromJson(Map<String, dynamic> json) =>
       _$$ExerciseMediaImplFromJson(json);
@@ -258,8 +270,17 @@ class _$ExerciseMediaImpl implements _ExerciseMedia {
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(runtimeType, id, exerciseId, youtubeVideoId,
-      channelName, isPrimary, startSeconds, endSeconds, curationStatus);
+  int get hashCode => Object.hash(
+    runtimeType,
+    id,
+    exerciseId,
+    youtubeVideoId,
+    channelName,
+    isPrimary,
+    startSeconds,
+    endSeconds,
+    curationStatus,
+  );
 
   /// Create a copy of ExerciseMedia
   /// with the given fields replaced by the non-null parameter values.
@@ -271,22 +292,21 @@ class _$ExerciseMediaImpl implements _ExerciseMedia {
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$ExerciseMediaImplToJson(
-      this,
-    );
+    return _$$ExerciseMediaImplToJson(this);
   }
 }
 
 abstract class _ExerciseMedia implements ExerciseMedia {
-  const factory _ExerciseMedia(
-      {required final String id,
-      required final String exerciseId,
-      required final String youtubeVideoId,
-      final String? channelName,
-      final bool isPrimary,
-      final int? startSeconds,
-      final int? endSeconds,
-      final String? curationStatus}) = _$ExerciseMediaImpl;
+  const factory _ExerciseMedia({
+    required final String id,
+    required final String exerciseId,
+    required final String youtubeVideoId,
+    final String? channelName,
+    final bool isPrimary,
+    final int? startSeconds,
+    final int? endSeconds,
+    final String? curationStatus,
+  }) = _$ExerciseMediaImpl;
 
   factory _ExerciseMedia.fromJson(Map<String, dynamic> json) =
       _$ExerciseMediaImpl.fromJson;
