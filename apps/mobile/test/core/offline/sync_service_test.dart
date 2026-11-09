@@ -1,303 +1,215 @@
-import 'package:dio/dio.dart';
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/core/offline/app_database.dart';
 import 'package:pipos_fitness/core/offline/connectivity.dart';
-import 'package:pipos_fitness/core/offline/set_log_uploader.dart';
 import 'package:pipos_fitness/core/offline/sync_service.dart';
+import 'package:pipos_fitness/data/pipos_api.dart';
+import 'package:pipos_fitness/models/enums.dart';
+import 'package:pipos_fitness/models/workout.dart';
 
-import '../../helpers/fake_http_adapter.dart';
+import '../../helpers/fake_backend.dart';
 
-/// Uploader programable: devuelve los resultados de [script] en orden y
-/// luego [fallback].
-class ScriptedUploader implements SetLogUploader {
-  ScriptedUploader([List<UploadOutcome>? script]) : script = [...?script];
+const planSession = '00000000-0000-4000-8000-000000000020';
+const planExercise = '00000000-0000-4000-8000-000000000030';
+const exercise = '00000000-0000-4000-8000-000000000040';
 
-  final List<UploadOutcome> script;
-  UploadOutcome fallback = const UploadSucceeded();
-  final List<String> sent = [];
-
+/// Backend que falla las series con un error permanente.
+class _RejectingBackend extends FakeBackend {
   @override
-  Future<UploadOutcome> upload(PendingSetLog item) async {
-    sent.add(item.clientId);
-    return script.isNotEmpty ? script.removeAt(0) : fallback;
-  }
+  Future<Upserted<SetLog>> upsertSet(
+    String workoutId,
+    UpsertSetRequest request,
+  ) async => throw const ApiFailure(
+    type: ApiFailureType.badRequest,
+    message: 'bad',
+    statusCode: 400,
+    code: ApiErrorCode.validationFailed,
+  );
 }
 
 void main() {
   late AppDatabase db;
   late ManualConnectivitySource connectivity;
+  late FakeBackend backend;
   late DateTime now;
-  final services = <SyncService>[];
+  late SyncService service;
+  var ids = 0;
 
-  SyncService makeService(SetLogUploader uploader, {String? userId = 'u1'}) {
-    final s = SyncService(
-      database: db,
-      uploader: uploader,
-      connectivity: connectivity,
-      userId: userId,
-      clock: () => now,
-      backoff: const BackoffPolicy(
-        baseDelay: Duration(seconds: 2),
-        maxDelay: Duration(minutes: 1),
-        maxAttempts: 4,
-      ),
-    );
-    services.add(s);
-    return s;
-  }
-
-  Future<void> enqueue(SyncService s, String id, int setIndex) => s.enqueue(
-    clientId: id,
-    workoutSessionId: 'ws1',
-    workoutExerciseId: 'we1',
-    exerciseId: 'ex1',
-    setIndex: setIndex,
-    reps: 10,
-    loadKg: 60,
-    rir: 2,
-    completedAt: now.add(Duration(seconds: setIndex)),
+  SyncService build({FakeBackend? api}) => SyncService(
+    database: db,
+    api: api ?? backend,
+    connectivity: connectivity,
+    userId: 'user-1',
+    clock: () => now,
+    idGenerator: () =>
+        '00000000-0000-4000-9000-${(++ids).toString().padLeft(12, '0')}',
   );
 
   setUp(() {
     db = AppDatabase(NativeDatabase.memory());
     connectivity = ManualConnectivitySource(online: false);
-    now = DateTime(2026, 1, 1, 10);
+    backend = FakeBackend();
+    now = DateTime.utc(2026, 11, 9, 8);
+    service = build();
   });
 
   tearDown(() async {
-    for (final s in services) {
-      await s.dispose();
-    }
-    services.clear();
+    await service.dispose();
     await connectivity.dispose();
     await db.close();
   });
 
-  test('sin red: la serie queda pending y no se envía', () async {
-    final uploader = ScriptedUploader();
-    final service = makeService(uploader);
-    await enqueue(service, 'c1', 0);
+  Future<LocalSetLog> logOne({int index = 0}) async {
+    final w = await service.startWorkout(planSessionId: planSession);
+    return service.logSet(
+      workoutClientId: w.clientId,
+      planExerciseId: planExercise,
+      exerciseId: exercise,
+      setIndex: index,
+      reps: 8,
+      loadKg: 60,
+      rir: 2,
+    );
+  }
 
-    final report = await service.syncNow();
+  test(
+    'sin red la serie queda en drift como pending; con red se envía una vez',
+    () async {
+      final set = await logOne();
+      expect((await service.syncNow()).offline, isTrue);
+      expect(
+        (await service.setsOf(set.workoutClientId)).single.status,
+        SetSyncStatus.pending,
+      );
+      expect(backend.sets, isEmpty);
 
-    expect(report.offline, isTrue);
-    expect(uploader.sent, isEmpty);
-    final queue = await service.queue();
-    expect(queue.single.status, PendingSetLogStatus.pending);
-    expect(queue.single.attempts, 0);
-  });
+      connectivity.online = true;
+      final report = await service.syncNow();
 
-  test('con red: envía en orden y borra de la cola', () async {
-    final uploader = ScriptedUploader();
-    final service = makeService(uploader);
-    await enqueue(service, 'c2', 1);
-    await enqueue(service, 'c1', 0);
+      expect(report.sent, 2, reason: 'inicio del entrenamiento + serie');
+      expect(backend.workouts, hasLength(1));
+      expect(backend.sets.keys, [set.clientId]);
+      expect(
+        (await service.setsOf(set.workoutClientId)).single.status,
+        SetSyncStatus.synced,
+      );
+      final w = await service.workoutByClientId(set.workoutClientId);
+      expect(w!.serverId, 'srv-${set.workoutClientId}');
+    },
+  );
 
+  test(
+    'respuesta perdida → reintento con el mismo clientId → 200, sin duplicado',
+    () async {
+      connectivity.online = true;
+      backend.loseNextSetResponse = true;
+      final set = await logOne();
+      await service.syncNow();
+
+      final row = (await service.setsOf(set.workoutClientId)).single;
+      expect(row.status, SetSyncStatus.pending);
+      expect(row.attempts, 1);
+      expect(row.nextAttemptAt, isNotNull);
+      expect(backend.setsCreated, 1);
+
+      now = now.add(const Duration(minutes: 1));
+      await service.syncNow();
+
+      expect(backend.sets, hasLength(1));
+      expect(backend.setsReplayed, 1);
+      expect(
+        (await service.setsOf(set.workoutClientId)).single.status,
+        SetSyncStatus.synced,
+      );
+    },
+  );
+
+  test(
+    'una serie syncing huérfana (app muerta) vuelve a pending y se reenvía',
+    () async {
+      final set = await logOne();
+      await (db.update(db.localSetLogs)).write(
+        const LocalSetLogsCompanion(status: Value(SetSyncStatus.syncing)),
+      );
+      await service.recoverInterrupted();
+      expect(
+        (await service.setsOf(set.workoutClientId)).single.status,
+        SetSyncStatus.pending,
+      );
+      connectivity.online = true;
+      await service.syncNow();
+      expect(backend.sets, hasLength(1));
+    },
+  );
+
+  test(
+    'error permanente → failed; retryFailed la vuelve a poner en cola',
+    () async {
+      await service.dispose();
+      final rejecting = _RejectingBackend();
+      service = build(api: rejecting);
+      connectivity.online = true;
+      final set = await logOne();
+      await service.syncNow();
+      final row = (await service.setsOf(set.workoutClientId)).single;
+      expect(row.status, SetSyncStatus.failed);
+      expect(row.lastError, ApiErrorCode.validationFailed);
+
+      final summary = await service.watchSummary().first;
+      expect(summary.failed, 1);
+
+      await service.retryFailed();
+      expect(
+        (await service.setsOf(set.workoutClientId)).single.attempts,
+        anyOf(0, 1),
+      );
+    },
+  );
+
+  test('el finish se envía después de todas las series', () async {
+    final set = await logOne();
+    await logOne(index: 1);
+    await service.finishWorkout(set.workoutClientId);
     connectivity.online = true;
-    final synced = <String>[];
-    service.synced.listen((e) => synced.add(e.clientId));
-    final report = await service.syncNow();
-    await Future<void>.delayed(Duration.zero);
-
-    expect(report.sent, 2);
-    expect(uploader.sent, ['c1', 'c2'], reason: 'orden por completedAt');
-    expect(await service.queue(), isEmpty);
-    expect(synced, ['c1', 'c2']);
-  });
-
-  test('al volver la conectividad se sincroniza sola', () async {
-    final uploader = ScriptedUploader();
-    final service = makeService(uploader);
-    await service.start();
-    await enqueue(service, 'c1', 0);
-    expect(uploader.sent, isEmpty);
-
-    connectivity.online = true;
-    for (var i = 0; i < 20 && uploader.sent.isEmpty; i++) {
-      await Future<void>.delayed(const Duration(milliseconds: 10));
-    }
     await service.syncNow();
-    expect(uploader.sent, ['c1']);
-    expect(await service.queue(), isEmpty);
-  });
-
-  test('respuesta duplicada (409) cuenta como sincronizada', () async {
-    final uploader = ScriptedUploader([const UploadDuplicate()]);
-    final service = makeService(uploader);
-    await enqueue(service, 'c1', 0);
-    connectivity.online = true;
-
-    final report = await service.syncNow();
-
-    expect(report.sent, 1);
-    expect(await service.queue(), isEmpty);
-  });
-
-  test('error transitorio → reintenta con backoff exponencial', () async {
-    final uploader = ScriptedUploader([
-      const UploadTransientFailure('HTTP 503'),
-      const UploadTransientFailure('HTTP 503'),
-    ]);
-    final service = makeService(uploader);
-    await enqueue(service, 'c1', 0);
-    await enqueue(service, 'c2', 1);
-    connectivity.online = true;
-
-    var report = await service.syncNow();
-    expect(report.deferred, 2, reason: 'se detiene para no desordenar');
-    var item = (await service.queue()).first;
-    expect(item.status, PendingSetLogStatus.pending);
-    expect(item.attempts, 1);
-    expect(item.lastError, 'HTTP 503');
-    expect(item.nextAttemptAt, now.add(const Duration(seconds: 2)));
-
-    // Antes de que venza el backoff no se reintenta.
-    now = now.add(const Duration(seconds: 1));
+    expect(backend.sets, hasLength(2));
+    expect(backend.finishes, 1);
+    final w = await service.workoutByClientId(set.workoutClientId);
+    expect(w!.finishSynced, isTrue);
+    // Reenviar no vuelve a terminarlo.
     await service.syncNow();
-    expect(uploader.sent, ['c1']);
-
-    // Vence el primer backoff (2 s) → nuevo fallo → espera 4 s.
-    now = now.add(const Duration(seconds: 1));
-    await service.syncNow();
-    item = (await service.queue()).first;
-    expect(item.attempts, 2);
-    expect(item.nextAttemptAt, now.add(const Duration(seconds: 4)));
-
-    now = now.add(const Duration(seconds: 4));
-    report = await service.syncNow();
-    expect(report.sent, 2);
-    expect(uploader.sent, ['c1', 'c1', 'c1', 'c2']);
-    expect(await service.queue(), isEmpty);
+    expect(backend.finishes, 1);
   });
 
-  test('error permanente o reintentos agotados → failed, sin bloquear al '
-      'resto', () async {
-    final uploader = ScriptedUploader([
-      const UploadPermanentFailure('HTTP 400'),
-    ]);
-    final service = makeService(uploader);
-    await enqueue(service, 'c1', 0);
-    await enqueue(service, 'c2', 1);
-    connectivity.online = true;
+  test(
+    'adoptar el entrenamiento en curso de la API reutiliza su clientId',
+    () async {
+      final adopted = await service.startWorkout(
+        planSessionId: planSession,
+        adopt: TodayWorkoutRef(
+          id: 'srv-x',
+          clientId: 'client-x',
+          status: WorkoutStatus.inProgress,
+          startedAt: now,
+        ),
+      );
+      expect(adopted.clientId, 'client-x');
+      expect(adopted.serverId, 'srv-x');
+      final again = await service.startWorkout(planSessionId: planSession);
+      expect(again.clientId, 'client-x');
+    },
+  );
 
-    final report = await service.syncNow();
-
-    expect(report.failed, 1);
-    expect(report.sent, 1);
-    final queue = await service.queue();
-    expect(queue.single.clientId, 'c1');
-    expect(queue.single.status, PendingSetLogStatus.failed);
-
-    await service.retryFailed();
-    await service.syncNow();
-    expect(await service.queue(), isEmpty);
-  });
-
-  test('BackoffPolicy: 2^n acotado', () {
+  test('BackoffPolicy: exponencial y acotado', () {
     const p = BackoffPolicy(
       baseDelay: Duration(seconds: 2),
-      maxDelay: Duration(seconds: 30),
+      maxDelay: Duration(seconds: 10),
     );
     expect(p.delayFor(1), const Duration(seconds: 2));
     expect(p.delayFor(2), const Duration(seconds: 4));
     expect(p.delayFor(3), const Duration(seconds: 8));
-    expect(p.delayFor(10), const Duration(seconds: 30));
-  });
-
-  test('sobrevive a un "reinicio": otra instancia sobre la misma BD envía lo '
-      'pendiente, incluidos envíos interrumpidos', () async {
-    final first = makeService(ScriptedUploader());
-    await enqueue(first, 'c1', 0);
-    await enqueue(first, 'c2', 1);
-    // Simula que la app murió a mitad del envío de c1.
-    await (db.update(
-      db.pendingSetLogs,
-    )..where((t) => t.clientId.equals('c1'))).write(
-      const PendingSetLogsCompanion(status: Value(PendingSetLogStatus.syncing)),
-    );
-    await first.dispose();
-
-    connectivity.online = true;
-    final uploader = ScriptedUploader();
-    final second = makeService(uploader);
-    await second.start();
-    await second.syncNow();
-
-    expect(uploader.sent, ['c1', 'c2']);
-    expect(await second.queue(), isEmpty);
-  });
-
-  test('solo sincroniza las series del usuario de la sesión', () async {
-    final a = makeService(ScriptedUploader(), userId: 'ana');
-    await enqueue(a, 'ana-1', 0);
-    connectivity.online = false;
-
-    connectivity.online = true;
-    final uploader = ScriptedUploader();
-    final b = makeService(uploader, userId: 'bob');
-    await b.syncNow();
-
-    expect(uploader.sent, isEmpty);
-    expect(await b.queue(), isEmpty);
-    expect((await a.queue()).single.clientId, 'ana-1');
-  });
-
-  group('ApiSetLogUploader', () {
-    late FakeHttpAdapter adapter;
-    late Dio dio;
-
-    setUp(() {
-      adapter = FakeHttpAdapter();
-      dio = Dio(BaseOptions(baseUrl: 'http://api.test'))
-        ..httpClientAdapter = adapter;
-    });
-
-    Future<PendingSetLog> item() async {
-      final s = makeService(ScriptedUploader());
-      return s.enqueue(
-        clientId: 'cid-1',
-        workoutSessionId: 'ws1',
-        workoutExerciseId: 'we1',
-        setIndex: 0,
-        reps: 8,
-        loadKg: 50,
-      );
-    }
-
-    test('envía clientId y datos a la ruta de sets', () async {
-      const path = '/workouts/ws1/exercises/we1/sets';
-      adapter.reply('POST', path, 201, {'id': 'ws1'});
-
-      final outcome = await ApiSetLogUploader(dio).upload(await item());
-
-      expect(outcome, isA<UploadSucceeded>());
-      final body = adapter.requests.single.data as Map;
-      expect(body['clientId'], 'cid-1');
-      expect(body['weightKg'], 50);
-      expect(body['reps'], 8);
-      expect(body['completed'], isTrue);
-    });
-
-    test(
-      'mapea 409 → duplicado, 5xx/sin red → transitorio, 400 → permanente',
-      () async {
-        const path = '/workouts/ws1/exercises/we1/sets';
-        final pending = await item();
-        final uploader = ApiSetLogUploader(dio);
-
-        adapter.reply('POST', path, 409, {'message': 'duplicate'});
-        expect(await uploader.upload(pending), isA<UploadDuplicate>());
-        adapter.reply('POST', path, 200, {'id': 'ws1'});
-        expect(await uploader.upload(pending), isA<UploadSucceeded>());
-        adapter.reply('POST', path, 503);
-        expect(await uploader.upload(pending), isA<UploadTransientFailure>());
-        adapter.on('POST', path, (_) async => const FakeResponse.offline());
-        expect(await uploader.upload(pending), isA<UploadTransientFailure>());
-        adapter.reply('POST', path, 400, {'message': 'bad'});
-        expect(await uploader.upload(pending), isA<UploadPermanentFailure>());
-      },
-    );
+    expect(p.delayFor(4), const Duration(seconds: 10));
   });
 }

@@ -1,0 +1,16 @@
+{
+  "engineVersion": "2.0.0",
+  "kcal": 2350,
+  "proteinG": 125,
+  "fatG": 70,
+  "carbsG": 300,
+  "reeKcal": 1400,
+  "tdeeKcal": 2100,
+  "pal": 1.5,
+  "adjustmentKcal": 250,
+  "warnings": [],
+  "rationale": [
+    "Superávit moderado para ganar músculo."
+  ],
+  "nutritionGoal": "muscle_gain"
+}

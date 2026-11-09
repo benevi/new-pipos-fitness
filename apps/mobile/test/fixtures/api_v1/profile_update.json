@@ -1,0 +1,49 @@
+{
+  "profile": {
+    "goal": "hypertrophy",
+    "level": "beginner",
+    "daysPerWeek": 3,
+    "minutesPerSession": 45,
+    "equipment": [
+      "bodyweight",
+      "barbell",
+      "dumbbell",
+      "bench",
+      "squat_rack"
+    ],
+    "priorityMuscles": [
+      "glutes"
+    ],
+    "timezone": "Europe/Madrid",
+    "activityLevel": "active",
+    "birthYear": 1996,
+    "sex": "female",
+    "bannedExerciseSlugs": [],
+    "favouriteExerciseSlugs": [
+      "back-squat"
+    ],
+    "limitations": [
+      "shoulder"
+    ],
+    "weightKg": 62.5,
+    "heightCm": 168,
+    "healthConsent": {
+      "granted": true,
+      "version": "health-2026-11",
+      "grantedAt": "2026-11-09T08:00:00.000Z",
+      "currentVersion": "health-2026-11"
+    },
+    "updatedAt": "2026-11-09T08:00:00.000Z"
+  },
+  "planVersion": {
+    "id": "00000000-0000-4000-8000-000000000012",
+    "planId": "00000000-0000-4000-8000-000000000010",
+    "version": 2,
+    "engineVersion": "2.0.0",
+    "splitType": "full_body",
+    "mesocycleWeeks": 5,
+    "objectiveScore": 0.87,
+    "sessionCount": 2,
+    "createdAt": "2026-11-09T08:00:00.000Z"
+  }
+}

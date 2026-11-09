@@ -1,0 +1,26 @@
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000040",
+      "slug": "back-squat",
+      "nameEs": "Sentadilla trasera",
+      "nameEn": "Back squat",
+      "movementPattern": "squat",
+      "isCompound": true,
+      "isUnilateral": false,
+      "minLevel": "beginner",
+      "equipment": [
+        "barbell",
+        "squat_rack"
+      ],
+      "loadType": "weighted",
+      "primaryMuscles": [
+        "quads",
+        "glutes"
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 1
+}

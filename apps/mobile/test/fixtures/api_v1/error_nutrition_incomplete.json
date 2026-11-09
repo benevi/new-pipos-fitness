@@ -1,0 +1,15 @@
+{
+  "statusCode": 422,
+  "code": "NUTRITION_INPUT_INCOMPLETE",
+  "message": "Missing data",
+  "issues": [
+    {
+      "path": "weightKg",
+      "message": "Required"
+    },
+    {
+      "path": "birthYear",
+      "message": "Required"
+    }
+  ]
+}

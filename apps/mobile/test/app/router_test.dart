@@ -18,12 +18,12 @@ void main() {
     const signedIn = AuthState(status: AuthStatus.authenticated);
 
     test('sin resolver → splash', () {
-      expect(authRedirect(unknown, '/dashboard'), AppRoutes.splash);
+      expect(authRedirect(unknown, '/today'), AppRoutes.splash);
       expect(authRedirect(unknown, AppRoutes.splash), isNull);
     });
 
     test('no autenticado → login (salvo rutas de auth)', () {
-      expect(authRedirect(signedOut, '/dashboard'), AppRoutes.login);
+      expect(authRedirect(signedOut, '/today'), AppRoutes.login);
       expect(authRedirect(signedOut, AppRoutes.splash), AppRoutes.login);
       expect(authRedirect(signedOut, AppRoutes.login), isNull);
       expect(authRedirect(signedOut, AppRoutes.register), isNull);
@@ -33,11 +33,11 @@ void main() {
     test('autenticado → home desde auth/splash; resto sin cambios', () {
       expect(authRedirect(signedIn, AppRoutes.login), AppRoutes.home);
       expect(authRedirect(signedIn, AppRoutes.splash), AppRoutes.home);
-      expect(authRedirect(signedIn, '/workouts'), isNull);
+      expect(authRedirect(signedIn, '/plan'), isNull);
     });
   });
 
-  testWidgets('(d) unauth → /login y auth → /dashboard con el MISMO router', (
+  testWidgets('(d) unauth → /login y auth → /today con el MISMO router', (
     tester,
   ) async {
     final harness = AppHarness();

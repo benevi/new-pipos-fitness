@@ -86,4 +86,10 @@ Map<String, dynamic> authResponseJson({
 Map<String, dynamic> meJson({
   String id = 'user-1',
   String email = 'ana@pipos.app',
-}) => {'id': id, 'email': email, 'trainingLevel': 'beginner'};
+}) => {
+  'id': id,
+  'email': email,
+  'role': 'user',
+  'locale': 'es',
+  'createdAt': '2026-11-09T08:00:00.000Z',
+};

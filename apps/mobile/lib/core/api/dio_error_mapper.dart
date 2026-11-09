@@ -49,39 +49,51 @@ ApiFailure _mapBadResponse(DioException e) {
   final data = e.response?.data;
 
   final serverMessage = _extractServerMessage(data);
+  final code = data is Map && data['code'] is String
+      ? data['code'] as String
+      : null;
+  final issues = _extractIssues(data);
 
+  final ApiFailureType type;
+  final String fallback;
   if (statusCode == 401) {
-    return ApiFailure(
-      type: ApiFailureType.unauthorized,
-      message: serverMessage ?? 'Session expired. Please log in again.',
-      statusCode: statusCode,
-    );
-  }
-
-  if (statusCode >= 400 && statusCode < 500) {
-    return ApiFailure(
-      type: ApiFailureType.badRequest,
-      message: serverMessage ?? 'Invalid request.',
-      statusCode: statusCode,
-    );
-  }
-
-  if (statusCode >= 500) {
-    return ApiFailure(
-      type: ApiFailureType.server,
-      message: serverMessage ?? 'Server error. Please try again later.',
-      statusCode: statusCode,
-    );
+    type = ApiFailureType.unauthorized;
+    fallback = 'Session expired. Please log in again.';
+  } else if (statusCode >= 400 && statusCode < 500) {
+    type = ApiFailureType.badRequest;
+    fallback = 'Invalid request.';
+  } else if (statusCode >= 500) {
+    type = ApiFailureType.server;
+    fallback = 'Server error. Please try again later.';
+  } else {
+    type = ApiFailureType.unknown;
+    fallback = 'An unexpected error occurred.';
   }
 
   return ApiFailure(
-    type: ApiFailureType.unknown,
-    message: serverMessage ?? 'An unexpected error occurred.',
+    type: type,
+    message: serverMessage ?? fallback,
     statusCode: statusCode,
+    code: code,
+    issues: issues,
   );
 }
 
-/// Nest devuelve `message` como String o como lista (errores de validación).
+List<FieldIssue> _extractIssues(Object? data) {
+  if (data is! Map) return const [];
+  final raw = data['issues'];
+  if (raw is! List) return const [];
+  return [
+    for (final i in raw)
+      if (i is Map && i['path'] is String)
+        FieldIssue(
+          path: i['path'] as String,
+          message: i['message'] is String ? i['message'] as String : '',
+        ),
+  ];
+}
+
+/// `message` puede venir como String o como lista (errores de validación).
 String? _extractServerMessage(Object? data) {
   if (data is! Map) return null;
   final raw = data['message'];
