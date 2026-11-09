@@ -1539,4 +1539,243 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get progressTabTraining => 'Training';
+
+  @override
+  String get progressTabBody => 'Body';
+
+  @override
+  String get bodyConsentNeededTitle => 'Your measurements are health data';
+
+  @override
+  String get bodyConsentNeededBody =>
+      'To log your weight and circumferences and see how they change we need your consent. You can withdraw it at any time and they\'re deleted.';
+
+  @override
+  String get bodyConsentUpgradeBody =>
+      'Your consent covers weight. For circumferences, BMI and estimated body fat, accept the new version of the text.';
+
+  @override
+  String get bodyConsentReview => 'Read and accept';
+
+  @override
+  String get bodyAddMeasurement => 'Add measurements';
+
+  @override
+  String get bodyEmpty =>
+      'You haven\'t logged any measurements yet. Weigh and measure yourself in similar conditions each time (for example, in the morning).';
+
+  @override
+  String get bodyWeightTitle => 'Weight';
+
+  @override
+  String bodyWeightLatest(String kg, String date) {
+    return 'Latest: $kg ($date)';
+  }
+
+  @override
+  String bodyTrendStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'on_track': 'You\'re on track',
+      'too_fast': 'You\'re going too fast',
+      'too_slow': 'Slower than expected',
+      'no_target': 'Your goal doesn\'t set a pace',
+      'insufficient_data': 'Not enough data for a trend',
+      'other': '$status',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyTrendRate(String rate) {
+    return '$rate% per week';
+  }
+
+  @override
+  String bodyTrendTarget(String direction, String min, String max) {
+    String _temp0 = intl.Intl.selectLogic(direction, {
+      'loss': 'Target: lose $min–$max% per week',
+      'gain': 'Target: gain $min–$max% per week',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyChartLabel(String first, String last, int count) {
+    return '7-day average: from $first to $last over $count entries';
+  }
+
+  @override
+  String get bodyChartTitle => '7-day average';
+
+  @override
+  String get bodyEstimateLabel => 'Estimate — not a diagnosis';
+
+  @override
+  String get bodyBmiTitle => 'Body mass index (BMI)';
+
+  @override
+  String bmiCategoryLabel(String category) {
+    String _temp0 = intl.Intl.selectLogic(category, {
+      'underweight': 'Underweight',
+      'normal': 'Normal weight',
+      'pre_obese': 'Overweight (pre-obesity)',
+      'obese_class_1': 'Obesity class I',
+      'obese_class_2': 'Obesity class II',
+      'obese_class_3': 'Obesity class III',
+      'other': '$category',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiWhoNote => 'WHO categories for adults.';
+
+  @override
+  String get bodyFatTitle => 'Estimated body fat';
+
+  @override
+  String bodyFatValue(String value) {
+    return '$value%';
+  }
+
+  @override
+  String get bodyFatMethod =>
+      'US Navy circumference method (Hodgdon and Beckett, 1984). No categories: compare your own trend.';
+
+  @override
+  String get bodyNotApplicable => 'Not applicable';
+
+  @override
+  String bodyEstimateStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'insufficient_data': 'Not enough data to calculate it.',
+      'consent_required':
+          'Requires accepting the new version of the health consent.',
+      'invalid_input': 'Check your measurements: it can\'t be calculated.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiMissing => 'Needs your weight and your height (profile).';
+
+  @override
+  String get bodyFatMissing =>
+      'Needs waist, neck and, for women, hip from the same day, plus your height.';
+
+  @override
+  String bodyMeasuredOn(String date) {
+    return 'Measured on $date';
+  }
+
+  @override
+  String get bodyCircumferencesTitle => 'Circumferences';
+
+  @override
+  String get bodyCircumferencesNote =>
+      'Chest, arm and thigh are for tracking only.';
+
+  @override
+  String bodyFieldLabel(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'Weight',
+      'waistCm': 'Waist',
+      'neckCm': 'Neck',
+      'hipCm': 'Hip',
+      'chestCm': 'Chest',
+      'armCm': 'Arm',
+      'thighCm': 'Thigh',
+      'other': '$field',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyFieldHelp(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'In the morning, after using the toilet and before eating.',
+      'waistCm':
+          'Men: at navel height. Women: at the narrowest part of the waist. At the end of a normal breath out.',
+      'neckCm': 'Just below the Adam\'s apple (larynx).',
+      'hipCm': 'At the widest part of the buttocks.',
+      'chestCm': 'At nipple height, at the end of a normal breath out.',
+      'armCm': 'Relaxed arm, halfway between shoulder and elbow.',
+      'thighCm': 'Halfway between groin and kneecap.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyCm(String value) {
+    return '$value cm';
+  }
+
+  @override
+  String bodyLatestValue(String value, String date) {
+    return '$value ($date)';
+  }
+
+  @override
+  String bodyChange(String weeks, String change) {
+    String _temp0 = intl.Intl.selectLogic(weeks, {
+      'w4': 'Δ 4 wk: $change',
+      'w12': 'Δ 12 wk: $change',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyNoValue => 'No data';
+
+  @override
+  String get bodyHistoryTitle => 'Entries';
+
+  @override
+  String bodyHistoryDelete(String date) {
+    return 'Delete the measurements of $date';
+  }
+
+  @override
+  String get bodyHistoryDeleted => 'Measurements deleted.';
+
+  @override
+  String get measureTitle => 'Add measurements';
+
+  @override
+  String get measureIntro =>
+      'All are optional: fill in at least one. Always measure the same way and in similar conditions.';
+
+  @override
+  String measureDate(String date) {
+    return 'Date: $date';
+  }
+
+  @override
+  String get measureDateEdit => 'Change the date';
+
+  @override
+  String get measureAtLeastOne => 'Enter at least one measurement.';
+
+  @override
+  String get measureNeedsConsent =>
+      'Circumferences require accepting the new version of the health consent.';
+
+  @override
+  String get measureSave => 'Save measurements';
+
+  @override
+  String get measureSaved => 'Measurements saved.';
+
+  @override
+  String get measureUnitKg => 'kg';
+
+  @override
+  String get measureUnitCm => 'cm';
 }

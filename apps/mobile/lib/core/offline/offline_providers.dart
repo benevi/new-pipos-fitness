@@ -62,6 +62,9 @@ class CacheKeys {
 
   /// Medidas corporales (lista del último año).
   static const measurements = 'me/measurements';
+
+  /// Evolución corporal (`GET /progress/body`).
+  static const bodyProgress = 'progress/body';
 }
 
 /// Última respuesta JSON de lecturas clave, por usuario (modo avión).

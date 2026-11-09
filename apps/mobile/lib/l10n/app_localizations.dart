@@ -2149,6 +2149,294 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{1 día en pausa: no cuenta} other{{count} días en pausa: no cuentan}}'**
   String progressAdherenceBreakDays(int count);
+
+  /// No description provided for @progressTabTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Entreno'**
+  String get progressTabTraining;
+
+  /// No description provided for @progressTabBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuerpo'**
+  String get progressTabBody;
+
+  /// No description provided for @bodyConsentNeededTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus medidas son datos de salud'**
+  String get bodyConsentNeededTitle;
+
+  /// No description provided for @bodyConsentNeededBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar peso y perímetros y ver su evolución necesitamos tu consentimiento. Puedes retirarlo cuando quieras y se borran.'**
+  String get bodyConsentNeededBody;
+
+  /// No description provided for @bodyConsentUpgradeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu consentimiento cubre el peso. Para perímetros, IMC y % de grasa estimado acepta la versión nueva del texto.'**
+  String get bodyConsentUpgradeBody;
+
+  /// No description provided for @bodyConsentReview.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer y aceptar'**
+  String get bodyConsentReview;
+
+  /// No description provided for @bodyAddMeasurement.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir medidas'**
+  String get bodyAddMeasurement;
+
+  /// No description provided for @bodyEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has registrado medidas. Pésate y mide siempre en condiciones parecidas (por ejemplo, por la mañana).'**
+  String get bodyEmpty;
+
+  /// No description provided for @bodyWeightTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso'**
+  String get bodyWeightTitle;
+
+  /// No description provided for @bodyWeightLatest.
+  ///
+  /// In es, this message translates to:
+  /// **'Último: {kg} ({date})'**
+  String bodyWeightLatest(String kg, String date);
+
+  /// No description provided for @bodyTrendStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'{status, select, on_track{Vas a buen ritmo} too_fast{Vas demasiado rápido} too_slow{Vas más lento de lo previsto} no_target{Tu objetivo no fija un ritmo} insufficient_data{Faltan datos para ver el ritmo} other{{status}}}'**
+  String bodyTrendStatus(String status);
+
+  /// No description provided for @bodyTrendRate.
+  ///
+  /// In es, this message translates to:
+  /// **'{rate} % por semana'**
+  String bodyTrendRate(String rate);
+
+  /// No description provided for @bodyTrendTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{direction, select, loss{Objetivo: perder entre el {min} y el {max} % por semana} gain{Objetivo: ganar entre el {min} y el {max} % por semana} other{}}'**
+  String bodyTrendTarget(String direction, String min, String max);
+
+  /// No description provided for @bodyChartLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Media de 7 días: de {first} a {last} en {count} registros'**
+  String bodyChartLabel(String first, String last, int count);
+
+  /// No description provided for @bodyChartTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Media de 7 días'**
+  String get bodyChartTitle;
+
+  /// No description provided for @bodyEstimateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Estimación — no es un diagnóstico'**
+  String get bodyEstimateLabel;
+
+  /// No description provided for @bodyBmiTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Índice de masa corporal (IMC)'**
+  String get bodyBmiTitle;
+
+  /// No description provided for @bmiCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{category, select, underweight{Bajo peso} normal{Peso normal} pre_obese{Sobrepeso (preobesidad)} obese_class_1{Obesidad de clase I} obese_class_2{Obesidad de clase II} obese_class_3{Obesidad de clase III} other{{category}}}'**
+  String bmiCategoryLabel(String category);
+
+  /// No description provided for @bodyBmiWhoNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías de la OMS para adultos.'**
+  String get bodyBmiWhoNote;
+
+  /// No description provided for @bodyFatTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'% de grasa estimado'**
+  String get bodyFatTitle;
+
+  /// No description provided for @bodyFatValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} %'**
+  String bodyFatValue(String value);
+
+  /// No description provided for @bodyFatMethod.
+  ///
+  /// In es, this message translates to:
+  /// **'Método de circunferencias de la Marina de EE. UU. (Hodgdon y Beckett, 1984). Sin categorías: compara tu evolución.'**
+  String get bodyFatMethod;
+
+  /// No description provided for @bodyNotApplicable.
+  ///
+  /// In es, this message translates to:
+  /// **'No aplica'**
+  String get bodyNotApplicable;
+
+  /// No description provided for @bodyEstimateStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'{status, select, insufficient_data{Faltan datos para calcularlo.} consent_required{Requiere aceptar la versión nueva del consentimiento de salud.} invalid_input{Revisa las medidas: no se puede calcular.} other{}}'**
+  String bodyEstimateStatus(String status);
+
+  /// No description provided for @bodyBmiMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesita tu peso y tu altura (perfil).'**
+  String get bodyBmiMissing;
+
+  /// No description provided for @bodyFatMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesita cintura, cuello y, en mujeres, cadera del mismo día, y tu altura.'**
+  String get bodyFatMissing;
+
+  /// No description provided for @bodyMeasuredOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Medido el {date}'**
+  String bodyMeasuredOn(String date);
+
+  /// No description provided for @bodyCircumferencesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Perímetros'**
+  String get bodyCircumferencesTitle;
+
+  /// No description provided for @bodyCircumferencesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Pecho, brazo y muslo son solo de seguimiento.'**
+  String get bodyCircumferencesNote;
+
+  /// No description provided for @bodyFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{field, select, weightKg{Peso} waistCm{Cintura} neckCm{Cuello} hipCm{Cadera} chestCm{Pecho} armCm{Brazo} thighCm{Muslo} other{{field}}}'**
+  String bodyFieldLabel(String field);
+
+  /// No description provided for @bodyFieldHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'{field, select, weightKg{Por la mañana, tras ir al baño y antes de comer.} waistCm{Hombres: a la altura del ombligo. Mujeres: en la parte más estrecha de la cintura. Al final de una espiración normal.} neckCm{Justo por debajo de la nuez (laringe).} hipCm{En la parte más ancha de los glúteos.} chestCm{A la altura de los pezones, al final de una espiración normal.} armCm{Brazo relajado, en el punto medio entre el hombro y el codo.} thighCm{En el punto medio entre la ingle y la rótula.} other{}}'**
+  String bodyFieldHelp(String field);
+
+  /// No description provided for @bodyCm.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} cm'**
+  String bodyCm(String value);
+
+  /// No description provided for @bodyLatestValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} ({date})'**
+  String bodyLatestValue(String value, String date);
+
+  /// No description provided for @bodyChange.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, select, w4{Δ 4 sem: {change}} w12{Δ 12 sem: {change}} other{}}'**
+  String bodyChange(String weeks, String change);
+
+  /// No description provided for @bodyNoValue.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos'**
+  String get bodyNoValue;
+
+  /// No description provided for @bodyHistoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros'**
+  String get bodyHistoryTitle;
+
+  /// No description provided for @bodyHistoryDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar las medidas del {date}'**
+  String bodyHistoryDelete(String date);
+
+  /// No description provided for @bodyHistoryDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Medidas borradas.'**
+  String get bodyHistoryDeleted;
+
+  /// No description provided for @measureTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir medidas'**
+  String get measureTitle;
+
+  /// No description provided for @measureIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas son opcionales: rellena al menos una. Mide siempre igual y en condiciones parecidas.'**
+  String get measureIntro;
+
+  /// No description provided for @measureDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha: {date}'**
+  String measureDate(String date);
+
+  /// No description provided for @measureDateEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar la fecha'**
+  String get measureDateEdit;
+
+  /// No description provided for @measureAtLeastOne.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce al menos una medida.'**
+  String get measureAtLeastOne;
+
+  /// No description provided for @measureNeedsConsent.
+  ///
+  /// In es, this message translates to:
+  /// **'Los perímetros requieren aceptar la versión nueva del consentimiento de salud.'**
+  String get measureNeedsConsent;
+
+  /// No description provided for @measureSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar medidas'**
+  String get measureSave;
+
+  /// No description provided for @measureSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Medidas guardadas.'**
+  String get measureSaved;
+
+  /// No description provided for @measureUnitKg.
+  ///
+  /// In es, this message translates to:
+  /// **'kg'**
+  String get measureUnitKg;
+
+  /// No description provided for @measureUnitCm.
+  ///
+  /// In es, this message translates to:
+  /// **'cm'**
+  String get measureUnitCm;
 }
 
 class _AppLocalizationsDelegate

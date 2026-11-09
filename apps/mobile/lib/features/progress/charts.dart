@@ -73,7 +73,35 @@ class _SparklinePainter extends CustomPainter {
       old.values != values || old.color != color;
 }
 
+/// Línea de tendencia a todo el ancho (media de 7 días del peso). El
+/// significado se da también en texto ([semanticLabel]).
+class TrendChart extends StatelessWidget {
+  const TrendChart({
+    super.key,
+    required this.values,
+    required this.semanticLabel,
+  });
+
+  final List<double> values;
+  final String semanticLabel;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.primary;
+    return Semantics(
+      label: semanticLabel,
+      image: true,
+      child: SizedBox(
+        height: AppSpacing.xxl * 2,
+        width: double.infinity,
+        child: CustomPaint(painter: _SparklinePainter(values, color)),
+      ),
+    );
+  }
+}
+
 /// Barra horizontal: relleno = series hechas; banda = rango objetivo.
+
 class VolumeRangeBar extends StatelessWidget {
   const VolumeRangeBar({
     super.key,

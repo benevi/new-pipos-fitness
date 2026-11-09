@@ -15,6 +15,7 @@ import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
 import '../../models/progress.dart';
 import '../../shared/widgets.dart';
+import 'body_view.dart';
 import 'charts.dart';
 
 class ProgressData {
@@ -59,37 +60,66 @@ class ProgressScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final data = ref.watch(progressProvider);
-    return Scaffold(
-      appBar: AppBar(title: Text(l10n.progressTitle)),
-      body: data.when(
-        loading: () => const LoadingView(),
-        error: (e, _) => ErrorView(
-          error: e,
-          onRetry: () => ref.invalidate(progressProvider),
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(l10n.progressTitle),
+          bottom: TabBar(
+            tabs: [
+              Tab(
+                key: const Key('progress-tab-training'),
+                text: l10n.progressTabTraining,
+              ),
+              Tab(
+                key: const Key('progress-tab-body'),
+                text: l10n.progressTabBody,
+              ),
+            ],
+          ),
         ),
-        data: (d) => RefreshIndicator(
-          onRefresh: () => ref.refresh(progressProvider.future),
-          child: d.isEmpty
-              ? ListView(
-                  children: [
-                    EmptyState(
-                      key: const Key('progress-empty'),
-                      icon: Icons.insights_outlined,
-                      title: l10n.progressEmptyTitle,
-                      body: l10n.progressEmptyBody,
-                    ),
-                  ],
-                )
-              : ListView(
-                  key: const Key('progress-filled'),
-                  padding: const EdgeInsets.all(AppSpacing.md),
-                  children: [
-                    _E1rmSection(series: d.e1rm.series),
-                    _VolumeSection(week: d.currentWeek),
-                    _AdherenceSection(adherence: d.adherence),
-                  ],
-                ),
+        body: TabBarView(
+          children: [
+            _trainingTab(context, ref, data),
+            const BodyProgressView(),
+          ],
         ),
+      ),
+    );
+  }
+
+  Widget _trainingTab(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<ProgressData> data,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    return data.when(
+      loading: () => const LoadingView(),
+      error: (e, _) =>
+          ErrorView(error: e, onRetry: () => ref.invalidate(progressProvider)),
+      data: (d) => RefreshIndicator(
+        onRefresh: () => ref.refresh(progressProvider.future),
+        child: d.isEmpty
+            ? ListView(
+                children: [
+                  EmptyState(
+                    key: const Key('progress-empty'),
+                    icon: Icons.insights_outlined,
+                    title: l10n.progressEmptyTitle,
+                    body: l10n.progressEmptyBody,
+                  ),
+                ],
+              )
+            : ListView(
+                key: const Key('progress-filled'),
+                padding: const EdgeInsets.all(AppSpacing.md),
+                children: [
+                  _E1rmSection(series: d.e1rm.series),
+                  _VolumeSection(week: d.currentWeek),
+                  _AdherenceSection(adherence: d.adherence),
+                ],
+              ),
       ),
     );
   }

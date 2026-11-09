@@ -1543,4 +1543,244 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String get progressTabTraining => 'Entreno';
+
+  @override
+  String get progressTabBody => 'Cuerpo';
+
+  @override
+  String get bodyConsentNeededTitle => 'Tus medidas son datos de salud';
+
+  @override
+  String get bodyConsentNeededBody =>
+      'Para registrar peso y perímetros y ver su evolución necesitamos tu consentimiento. Puedes retirarlo cuando quieras y se borran.';
+
+  @override
+  String get bodyConsentUpgradeBody =>
+      'Tu consentimiento cubre el peso. Para perímetros, IMC y % de grasa estimado acepta la versión nueva del texto.';
+
+  @override
+  String get bodyConsentReview => 'Leer y aceptar';
+
+  @override
+  String get bodyAddMeasurement => 'Añadir medidas';
+
+  @override
+  String get bodyEmpty =>
+      'Aún no has registrado medidas. Pésate y mide siempre en condiciones parecidas (por ejemplo, por la mañana).';
+
+  @override
+  String get bodyWeightTitle => 'Peso';
+
+  @override
+  String bodyWeightLatest(String kg, String date) {
+    return 'Último: $kg ($date)';
+  }
+
+  @override
+  String bodyTrendStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'on_track': 'Vas a buen ritmo',
+      'too_fast': 'Vas demasiado rápido',
+      'too_slow': 'Vas más lento de lo previsto',
+      'no_target': 'Tu objetivo no fija un ritmo',
+      'insufficient_data': 'Faltan datos para ver el ritmo',
+      'other': '$status',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyTrendRate(String rate) {
+    return '$rate % por semana';
+  }
+
+  @override
+  String bodyTrendTarget(String direction, String min, String max) {
+    String _temp0 = intl.Intl.selectLogic(direction, {
+      'loss': 'Objetivo: perder entre el $min y el $max % por semana',
+      'gain': 'Objetivo: ganar entre el $min y el $max % por semana',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyChartLabel(String first, String last, int count) {
+    return 'Media de 7 días: de $first a $last en $count registros';
+  }
+
+  @override
+  String get bodyChartTitle => 'Media de 7 días';
+
+  @override
+  String get bodyEstimateLabel => 'Estimación — no es un diagnóstico';
+
+  @override
+  String get bodyBmiTitle => 'Índice de masa corporal (IMC)';
+
+  @override
+  String bmiCategoryLabel(String category) {
+    String _temp0 = intl.Intl.selectLogic(category, {
+      'underweight': 'Bajo peso',
+      'normal': 'Peso normal',
+      'pre_obese': 'Sobrepeso (preobesidad)',
+      'obese_class_1': 'Obesidad de clase I',
+      'obese_class_2': 'Obesidad de clase II',
+      'obese_class_3': 'Obesidad de clase III',
+      'other': '$category',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiWhoNote => 'Categorías de la OMS para adultos.';
+
+  @override
+  String get bodyFatTitle => '% de grasa estimado';
+
+  @override
+  String bodyFatValue(String value) {
+    return '$value %';
+  }
+
+  @override
+  String get bodyFatMethod =>
+      'Método de circunferencias de la Marina de EE. UU. (Hodgdon y Beckett, 1984). Sin categorías: compara tu evolución.';
+
+  @override
+  String get bodyNotApplicable => 'No aplica';
+
+  @override
+  String bodyEstimateStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'insufficient_data': 'Faltan datos para calcularlo.',
+      'consent_required':
+          'Requiere aceptar la versión nueva del consentimiento de salud.',
+      'invalid_input': 'Revisa las medidas: no se puede calcular.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiMissing => 'Necesita tu peso y tu altura (perfil).';
+
+  @override
+  String get bodyFatMissing =>
+      'Necesita cintura, cuello y, en mujeres, cadera del mismo día, y tu altura.';
+
+  @override
+  String bodyMeasuredOn(String date) {
+    return 'Medido el $date';
+  }
+
+  @override
+  String get bodyCircumferencesTitle => 'Perímetros';
+
+  @override
+  String get bodyCircumferencesNote =>
+      'Pecho, brazo y muslo son solo de seguimiento.';
+
+  @override
+  String bodyFieldLabel(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'Peso',
+      'waistCm': 'Cintura',
+      'neckCm': 'Cuello',
+      'hipCm': 'Cadera',
+      'chestCm': 'Pecho',
+      'armCm': 'Brazo',
+      'thighCm': 'Muslo',
+      'other': '$field',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyFieldHelp(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'Por la mañana, tras ir al baño y antes de comer.',
+      'waistCm':
+          'Hombres: a la altura del ombligo. Mujeres: en la parte más estrecha de la cintura. Al final de una espiración normal.',
+      'neckCm': 'Justo por debajo de la nuez (laringe).',
+      'hipCm': 'En la parte más ancha de los glúteos.',
+      'chestCm':
+          'A la altura de los pezones, al final de una espiración normal.',
+      'armCm': 'Brazo relajado, en el punto medio entre el hombro y el codo.',
+      'thighCm': 'En el punto medio entre la ingle y la rótula.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyCm(String value) {
+    return '$value cm';
+  }
+
+  @override
+  String bodyLatestValue(String value, String date) {
+    return '$value ($date)';
+  }
+
+  @override
+  String bodyChange(String weeks, String change) {
+    String _temp0 = intl.Intl.selectLogic(weeks, {
+      'w4': 'Δ 4 sem: $change',
+      'w12': 'Δ 12 sem: $change',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyNoValue => 'Sin datos';
+
+  @override
+  String get bodyHistoryTitle => 'Registros';
+
+  @override
+  String bodyHistoryDelete(String date) {
+    return 'Borrar las medidas del $date';
+  }
+
+  @override
+  String get bodyHistoryDeleted => 'Medidas borradas.';
+
+  @override
+  String get measureTitle => 'Añadir medidas';
+
+  @override
+  String get measureIntro =>
+      'Todas son opcionales: rellena al menos una. Mide siempre igual y en condiciones parecidas.';
+
+  @override
+  String measureDate(String date) {
+    return 'Fecha: $date';
+  }
+
+  @override
+  String get measureDateEdit => 'Cambiar la fecha';
+
+  @override
+  String get measureAtLeastOne => 'Introduce al menos una medida.';
+
+  @override
+  String get measureNeedsConsent =>
+      'Los perímetros requieren aceptar la versión nueva del consentimiento de salud.';
+
+  @override
+  String get measureSave => 'Guardar medidas';
+
+  @override
+  String get measureSaved => 'Medidas guardadas.';
+
+  @override
+  String get measureUnitKg => 'kg';
+
+  @override
+  String get measureUnitCm => 'cm';
 }
