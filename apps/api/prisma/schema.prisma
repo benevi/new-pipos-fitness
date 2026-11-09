@@ -1,3 +1,8 @@
+// Modelo de datos v1 — ver docs/MODELO_DATOS.md (fuente de verdad) y docs/adr/0009.
+// Lo que Prisma no expresa (CHECK, índices parciales) está en SQL crudo al final de
+// prisma/migrations/*_init/migration.sql. Los valores de enum coinciden 1:1 con
+// packages/contracts (lo comprueba src/contracts-enums.spec.ts).
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,368 +12,606 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum TrainingLocation {
-  home
-  gym
-  calisthenics
+// ─────────────────────────────────────────────────────────────
+// ENUMS
+// ─────────────────────────────────────────────────────────────
+
+enum Role {
+  user
+  admin
 }
 
-enum UserRole {
-  USER
-  ADMIN
+enum Locale {
+  es
+  en
 }
 
-enum VolumeTrend {
-  up
-  down
-  stable
+enum Sex {
+  male
+  female
+  other
 }
 
-model User {
-  id                    String            @id @default(uuid())
-  email                 String
-  emailNormalized       String            @unique
-  passwordHash          String
-  role                  UserRole          @default(USER)
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @updatedAt
-  heightCm              Float?
-  weightKg              Float?
-  age                   Int?
-  sex                   String?
-  trainingLevel         String?
-  preferredTrainingDays Int?
-  availableEquipment    Json?
-  trainingLocation      TrainingLocation?
-  goals                 Json?
-  muscleFocus           Json?
-  dislikedFoodIds       Json?
-  refreshTokens         RefreshToken[]
-  trainingPlans         TrainingPlan[]
-  nutritionPlans        NutritionPlan[]
-  workoutSessions       WorkoutSession[]
-  exerciseProgress      ExerciseProgress[]
-  aiInteractions        AIInteraction[]
+enum TrainingGoal {
+  strength
+  hypertrophy
+  general_health
+  fat_loss
+  muscular_endurance
 }
 
-model AIInteraction {
-  id               String   @id @default(uuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt        DateTime @default(now())
-  question         String
-  responseType     String
-  proposalType     String?
-  proposalValid    Boolean
-  contextSummary   Json
-  responseSummary  Json
-  @@index([userId, createdAt])
+enum TrainingLevel {
+  beginner
+  intermediate
+  advanced
 }
 
-model ExerciseProgress {
-  id               String      @id @default(uuid())
-  userId           String
-  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exerciseId       String
-  estimated1RM     Float?
-  volumeLastWeek   Float?
-  volumeTrend      VolumeTrend?
-  fatigueScore     Float?
-  lastUpdated      DateTime    @default(now())
-  @@unique([userId, exerciseId])
-  @@index([userId])
-  @@index([userId, lastUpdated])
+enum ActivityLevel {
+  sedentary_light
+  active
+  vigorous
 }
 
-model TrainingPlan {
-  id                String              @id @default(uuid())
-  userId            String
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime             @default(now())
-  currentVersionId  String?
-  currentVersion   TrainingPlanVersion?  @relation("CurrentVersion", fields: [currentVersionId], references: [id])
-  versions          TrainingPlanVersion[] @relation("PlanVersions")
-  @@index([userId])
+enum Equipment {
+  bodyweight
+  barbell
+  ez_bar
+  trap_bar
+  dumbbell
+  kettlebell
+  weight_plate
+  bench
+  squat_rack
+  cable
+  machine
+  smith_machine
+  pull_up_bar
+  dip_station
+  gymnastic_rings
+  suspension_trainer
+  resistance_band
+  medicine_ball
+  plyo_box
 }
 
-model TrainingPlanVersion {
-  id               String               @id @default(uuid())
-  planId           String
-  plan             TrainingPlan         @relation("PlanVersions", fields: [planId], references: [id], onDelete: Cascade)
-  currentOfPlan    TrainingPlan[]       @relation("CurrentVersion")
-  version          Int
-  createdAt        DateTime             @default(now())
-  engineVersion    String
-  objectiveScore   Float
-  sessions         TrainingSession[]
-  workoutSessions  WorkoutSession[]
-  @@unique([planId, version])
-  @@index([planId])
+enum BodyZone {
+  shoulder
+  elbow
+  wrist
+  lumbar
+  hip
+  knee
+  ankle
 }
 
-model TrainingSession {
-  id                     String                   @id @default(uuid())
-  planVersionId          String
-  planVersion            TrainingPlanVersion      @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
-  sessionIndex           Int
-  name                   String
-  targetDurationMinutes  Int
-  exercises              TrainingSessionExercise[]
-  workoutSessions        WorkoutSession[]
-  @@unique([planVersionId, sessionIndex])
-  @@index([planVersionId])
+enum Muscle {
+  chest
+  front_delts
+  side_delts
+  rear_delts
+  lats
+  upper_back
+  traps
+  biceps
+  triceps
+  forearms
+  abs
+  obliques
+  lower_back
+  glutes
+  quads
+  hamstrings
+  adductors
+  abductors
+  calves
 }
 
-model WorkoutSession {
-  id                String               @id @default(uuid())
-  userId            String
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planSessionId     String?
-  planSession       TrainingSession?     @relation(fields: [planSessionId], references: [id], onDelete: SetNull)
-  planVersionId    String?
-  planVersion       TrainingPlanVersion? @relation(fields: [planVersionId], references: [id], onDelete: SetNull)
-  startedAt         DateTime             @default(now())
-  completedAt       DateTime?
-  durationMinutes   Int?
-  notes             String?
-  exercises         WorkoutExercise[]
-  @@index([userId])
-  @@index([userId, startedAt])
-  @@index([planSessionId])
-  @@index([planVersionId])
+enum MuscleRole {
+  primary
+  secondary
 }
 
-model WorkoutExercise {
-  id               String        @id @default(uuid())
-  workoutSessionId String
-  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
-  exerciseId       String
-  exercise         Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
-  order            Int
-  sets             WorkoutSet[]
-  @@unique([workoutSessionId, order])
-  @@index([workoutSessionId])
+enum MovementPattern {
+  squat
+  hinge
+  lunge
+  horizontal_push
+  vertical_push
+  horizontal_pull
+  vertical_pull
+  elbow_flexion
+  elbow_extension
+  shoulder_isolation
+  knee_extension
+  knee_flexion
+  hip_isolation
+  calf_raise
+  core_anti_extension
+  core_anti_rotation
+  core_flexion
+  carry
 }
 
-model WorkoutSet {
-  id                String          @id @default(uuid())
-  workoutExerciseId String
-  workoutExercise   WorkoutExercise  @relation(fields: [workoutExerciseId], references: [id], onDelete: Cascade)
-  setIndex          Int
-  weightKg          Float?
-  reps              Int?
-  rir               Int?
-  completed         Boolean         @default(true)
-  @@unique([workoutExerciseId, setIndex])
-  @@index([workoutExerciseId])
+enum LoadType {
+  weighted
+  unweighted
 }
 
-model TrainingSessionExercise {
-  id             String          @id @default(uuid())
-  sessionId      String
-  session        TrainingSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  exerciseId     String
-  sets           Int
-  repRangeMin    Int
-  repRangeMax    Int
-  restSeconds    Int
-  rirTarget      Int
-  @@index([sessionId])
+enum RiskLevel {
+  caution
+  avoid
 }
 
-model RefreshToken {
-  id                 String         @id @default(uuid())
-  userId             String
-  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  tokenHash          String         @unique
-  expiresAt          DateTime
-  createdAt          DateTime       @default(now())
-  revokedAt          DateTime?
-  replacedByTokenId   String?
-  replacedByToken    RefreshToken?  @relation("RefreshTokenRotation", fields: [replacedByTokenId], references: [id])
-  supersededBy       RefreshToken[] @relation("RefreshTokenRotation")
-  createdByIp        String?
-  userAgent          String?
-
-  @@index([userId])
+enum ExercisePreferenceKind {
+  banned
+  favourite
 }
 
-model Muscle {
-  id           String          @id @default(uuid())
-  name         String
-  region       String
-  meshRegionId String?
-  exercises    ExerciseMuscle[]
+enum MediaKind {
+  youtube
+  image
 }
 
-model EquipmentItem {
-  id        String           @id @default(uuid())
-  name      String
-  category  String
-  exercises ExerciseEquipment[]
-}
-
-model Exercise {
-  id               String                @id @default(uuid())
-  slug             String                @unique
-  name             String
-  description      String?
-  difficulty       Int
-  movementPattern  String?
-  place            TrainingLocation
-  muscles          ExerciseMuscle[]
-  equipment        ExerciseEquipment[]
-  variants         ExerciseVariant[]     @relation("ExerciseVariants")
-  variantOf        ExerciseVariant[]      @relation("VariantOf")
-  media            ExerciseMediaYouTube[]
-  workoutExercises WorkoutExercise[]
-}
-
-model ExerciseMuscle {
-  exerciseId String
-  muscleId   String
-  role       String
-  exercise   Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-  muscle     Muscle   @relation(fields: [muscleId], references: [id], onDelete: Cascade)
-
-  @@id([exerciseId, muscleId])
-  @@index([muscleId])
-}
-
-model ExerciseEquipment {
-  exerciseId      String
-  equipmentItemId String
-  exercise        Exercise      @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
-  equipmentItem   EquipmentItem @relation(fields: [equipmentItemId], references: [id], onDelete: Cascade)
-
-  @@id([exerciseId, equipmentItemId])
-  @@index([equipmentItemId])
-}
-
-model ExerciseVariant {
-  id                 String   @id @default(uuid())
-  exerciseId         String
-  variantExerciseId String
-  reason             String?
-  exercise           Exercise @relation("ExerciseVariants", fields: [exerciseId], references: [id], onDelete: Cascade)
-  variantExercise   Exercise @relation("VariantOf", fields: [variantExerciseId], references: [id], onDelete: Cascade)
-
-  @@index([exerciseId])
-}
-
-enum CurationStatus {
-  approved
+enum ModerationStatus {
   pending
+  approved
   rejected
   unavailable
 }
 
-model ExerciseMediaYouTube {
-  id             String         @id @default(uuid())
-  exerciseId     String
-  youtubeVideoId String
-  channelName    String?
-  isPrimary      Boolean        @default(false)
-  startSeconds   Int?
-  endSeconds     Int?
-  curationStatus CurationStatus @default(pending)
-  exercise       Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+enum ConsentPurpose {
+  health_data_processing
+}
 
+enum ConsentAction {
+  granted
+  withdrawn
+}
+
+enum RefreshTokenRevokeReason {
+  rotated
+  logout
+  reuse_detected
+  password_changed
+  account_deleted
+  admin
+}
+
+enum PlanStatus {
+  active
+  archived
+}
+
+enum SessionKind {
+  full_body
+  upper
+  lower
+  push
+  pull
+  legs
+}
+
+enum ExerciseRole {
+  main
+  secondary
+  accessory
+  core
+}
+
+enum WorkoutStatus {
+  in_progress
+  completed
+  abandoned
+}
+
+// ─────────────────────────────────────────────────────────────
+// IDENTIDAD Y AUTH
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(uuid()) @db.Uuid
+  email           String
+  emailNormalized String   @unique
+  passwordHash    String
+  role            Role     @default(user)
+  locale          Locale   @default(es)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  refreshTokens       RefreshToken[]
+  trainingProfile     TrainingProfile?
+  exercisePreferences UserExercisePreference[]
+  consentEvents       ConsentEvent[]
+  trainingPlans       TrainingPlan[]
+  workoutSessions     WorkoutSession[]
+  setLogs             SetLog[]
+  substitutions       WorkoutSubstitution[]
+  e1rmHistory         ExerciseE1rm[]
+  weeklyMuscleVolume  WeeklyMuscleVolume[]
+  weeklyAdherence     WeeklyAdherence[]
+  moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
+}
+
+model RefreshToken {
+  id            String                    @id @default(uuid()) @db.Uuid
+  userId        String                    @db.Uuid
+  user          User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// = id del primer token del login; se hereda en cada rotación.
+  familyId      String                    @db.Uuid
+  /// SHA-256 (hex) del token opaco; nunca el token en claro.
+  tokenHash     String                    @unique
+  expiresAt     DateTime                  @db.Timestamptz(3)
+  createdAt     DateTime                  @default(now()) @db.Timestamptz(3)
+  rotatedAt     DateTime?                 @db.Timestamptz(3)
+  revokedAt     DateTime?                 @db.Timestamptz(3)
+  revokedReason RefreshTokenRevokeReason?
+  replacedById  String?                   @unique @db.Uuid
+  replacedBy    RefreshToken?             @relation("Rotation", fields: [replacedById], references: [id], onDelete: SetNull)
+  replaces      RefreshToken?             @relation("Rotation")
+  createdByIp   String?                   @db.Inet
+  userAgent     String?                   @db.VarChar(512)
+
+  @@index([userId])
+  @@index([familyId])
+  @@index([expiresAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PERFIL DE ENTRENAMIENTO (1:1 con User)
+// ─────────────────────────────────────────────────────────────
+
+model TrainingProfile {
+  userId            String         @id @db.Uuid
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  goal              TrainingGoal
+  level             TrainingLevel
+  daysPerWeek       Int            @db.SmallInt
+  minutesPerSession Int            @db.SmallInt
+  equipment         Equipment[]
+  priorityMuscles   Muscle[]
+  /// Zona horaria IANA del usuario: fija los límites de semana de la analítica.
+  timezone          String         @db.VarChar(64)
+  activityLevel     ActivityLevel?
+  // ── categoría especial (art. 9): solo con consentimiento vigente ──
+  limitations       BodyZone[]     @default([])
+  weightKg          Decimal?       @db.Decimal(5, 2)
+  heightCm          Decimal?       @db.Decimal(5, 1)
+  // ── datos personales ordinarios ──
+  birthYear         Int?           @db.SmallInt
+  sex               Sex?
+  createdAt         DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt         DateTime       @updatedAt @db.Timestamptz(3)
+}
+
+model UserExercisePreference {
+  userId     String                 @db.Uuid
+  user       User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId String                 @db.Uuid
+  exercise   Exercise               @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  kind       ExercisePreferenceKind
+  createdAt  DateTime               @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, exerciseId])
   @@index([exerciseId])
 }
 
-model YouTubeChannel {
-  id           String   @id @default(uuid())
-  channelName  String   @unique
-  trustedScore Float?
-  whitelisted  Boolean  @default(false)
+/// Registro append-only. Estado vigente = último evento por (userId, purpose).
+model ConsentEvent {
+  id            String         @id @default(uuid()) @db.Uuid
+  userId        String         @db.Uuid
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  purpose       ConsentPurpose
+  action        ConsentAction
+  policyVersion String         @db.VarChar(32)
+  /// SHA-256 del texto exacto mostrado.
+  textHash      String         @db.Char(64)
+  locale        Locale
+  occurredAt    DateTime       @default(now()) @db.Timestamptz(3)
+  ip            String?        @db.Inet
+  userAgent     String?        @db.VarChar(512)
+
+  @@index([userId, purpose, occurredAt(sort: Desc)])
 }
 
-model Food {
-  id               String            @id @default(uuid())
-  name             String
-  caloriesPer100g  Float
-  proteinPer100g   Float
-  carbsPer100g     Float
-  fatPer100g       Float
-  mealTemplateFoods MealTemplateFood[]
-  nutritionMealItems NutritionMealItem[]
-  @@index([name])
+// ─────────────────────────────────────────────────────────────
+// CATÁLOGO DE EJERCICIOS (seed desde @pipos/catalog; borrado lógico)
+// ─────────────────────────────────────────────────────────────
+
+model SubstitutionGroup {
+  id        String     @id @default(uuid()) @db.Uuid
+  key       String     @unique @db.VarChar(64)
+  exercises Exercise[]
 }
 
-model MealTemplate {
-  id               String             @id @default(uuid())
-  name             String
-  mealTemplateFoods MealTemplateFood[]
-  nutritionMeals   NutritionMeal[]
-  @@index([name])
+model Exercise {
+  id                  String             @id @default(uuid()) @db.Uuid
+  slug                String             @unique @db.VarChar(96)
+  nameEs              String
+  nameEn              String
+  descriptionEs       String?
+  descriptionEn       String?
+  movementPattern     MovementPattern
+  isCompound          Boolean
+  isUnilateral        Boolean            @default(false)
+  minLevel            TrainingLevel
+  equipment           Equipment[]
+  loadType            LoadType
+  substitutionGroupId String?            @db.Uuid
+  substitutionGroup   SubstitutionGroup? @relation(fields: [substitutionGroupId], references: [id], onDelete: SetNull)
+  cuesEs              String[]           @default([])
+  cuesEn              String[]           @default([])
+  createdAt           DateTime           @default(now()) @db.Timestamptz(3)
+  updatedAt           DateTime           @updatedAt @db.Timestamptz(3)
+  deletedAt           DateTime?          @db.Timestamptz(3)
+
+  muscles       ExerciseMuscle[]
+  riskTags      ExerciseRiskTag[]
+  media         ExerciseMedia[]
+  planExercises PlanExercise[]
+  setLogs       SetLog[]
+  substitutions WorkoutSubstitution[]
+  e1rmHistory   ExerciseE1rm[]
+  preferences   UserExercisePreference[]
+
+  @@index([movementPattern])
+  @@index([substitutionGroupId])
+  @@index([equipment], type: Gin)
 }
 
-model MealTemplateFood {
-  id              String        @id @default(uuid())
-  mealTemplateId  String
-  foodId          String
-  quantityG       Float
-  mealTemplate    MealTemplate  @relation(fields: [mealTemplateId], references: [id], onDelete: Cascade)
-  food            Food          @relation(fields: [foodId], references: [id], onDelete: Cascade)
-  @@unique([mealTemplateId, foodId])
-  @@index([mealTemplateId])
-  @@index([foodId])
+model ExerciseMuscle {
+  exerciseId String     @db.Uuid
+  exercise   Exercise   @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  muscle     Muscle
+  role       MuscleRole
+  fraction   Decimal    @db.Decimal(3, 2)
+
+  @@id([exerciseId, muscle])
+  @@index([muscle, role])
 }
 
-model NutritionPlan {
-  id                String               @id @default(uuid())
-  userId            String
-  user              User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  currentVersionId  String?
-  currentVersion    NutritionPlanVersion? @relation("CurrentNutritionVersion", fields: [currentVersionId], references: [id])
-  versions          NutritionPlanVersion[] @relation("NutritionPlanVersions")
-  @@index([userId])
+model ExerciseRiskTag {
+  exerciseId String    @db.Uuid
+  exercise   Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  zone       BodyZone
+  level      RiskLevel
+
+  @@id([exerciseId, zone])
+  @@index([zone])
 }
 
-model NutritionPlanVersion {
-  id               String           @id @default(uuid())
-  planId           String
-  plan             NutritionPlan    @relation("NutritionPlanVersions", fields: [planId], references: [id], onDelete: Cascade)
-  currentOfPlan    NutritionPlan[]  @relation("CurrentNutritionVersion")
-  version          Int
-  createdAt        DateTime         @default(now())
-  engineVersion    String
-  days             NutritionDay[]
+model ExerciseMedia {
+  id               String           @id @default(uuid()) @db.Uuid
+  exerciseId       String           @db.Uuid
+  exercise         Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  kind             MediaKind
+  externalId       String?          @db.VarChar(64)
+  url              String?
+  channelName      String?
+  startSeconds     Int?
+  endSeconds       Int?
+  locale           Locale?
+  isPrimary        Boolean          @default(false)
+  moderationStatus ModerationStatus @default(pending)
+  moderatedById    String?          @db.Uuid
+  moderatedBy      User?            @relation("MediaModeratedBy", fields: [moderatedById], references: [id], onDelete: SetNull)
+  moderatedAt      DateTime?        @db.Timestamptz(3)
+  createdAt        DateTime         @default(now()) @db.Timestamptz(3)
+
+  @@index([exerciseId, moderationStatus])
+  @@index([moderationStatus, createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// PLANES (versionados, inmutables por versión). userId desnormalizado
+// para imponer en BD, con FK compuestas, que todo cuelga del mismo usuario.
+// ─────────────────────────────────────────────────────────────
+
+model TrainingPlan {
+  id        String        @id @default(uuid()) @db.Uuid
+  userId    String        @db.Uuid
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    PlanStatus    @default(active)
+  createdAt DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime      @updatedAt @db.Timestamptz(3)
+  versions  PlanVersion[]
+
+  @@unique([id, userId])
+  @@index([userId, status])
+}
+
+model PlanVersion {
+  id             String        @id @default(uuid()) @db.Uuid
+  planId         String        @db.Uuid
+  userId         String        @db.Uuid
+  plan           TrainingPlan  @relation(fields: [planId, userId], references: [id, userId], onDelete: Cascade)
+  version        Int
+  engineVersion  String        @db.VarChar(32)
+  objectiveScore Float
+  mesocycleWeeks Int           @db.SmallInt
+  /// Explicación estructurada del motor (split, rationale, warnings, volumen, score).
+  rationale      Json
+  /// Perfil usado (puede contener datos art. 9; se redacta al retirar el consentimiento).
+  inputSnapshot  Json
+  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
+  sessions       PlanSession[]
+
   @@unique([planId, version])
-  @@index([planId])
+  @@unique([id, userId])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
-model NutritionDay {
-  id                 String          @id @default(uuid())
-  planVersionId      String
-  planVersion        NutritionPlanVersion @relation(fields: [planVersionId], references: [id], onDelete: Cascade)
-  dayIndex           Int
-  meals              NutritionMeal[]
-  @@unique([planVersionId, dayIndex])
-  @@index([planVersionId])
-}
-
-model NutritionMeal {
-  id               String             @id @default(uuid())
-  nutritionDayId   String
-  nutritionDay     NutritionDay       @relation(fields: [nutritionDayId], references: [id], onDelete: Cascade)
-  mealIndex        Int
+model PlanSession {
+  id               String           @id @default(uuid()) @db.Uuid
+  planVersionId    String           @db.Uuid
+  userId           String           @db.Uuid
+  planVersion      PlanVersion      @relation(fields: [planVersionId, userId], references: [id, userId], onDelete: Cascade)
+  dayIndex         Int              @db.SmallInt
+  order            Int              @db.SmallInt
+  kind             SessionKind
   name             String
-  templateId       String?
-  template         MealTemplate?      @relation(fields: [templateId], references: [id], onDelete: SetNull)
-  items            NutritionMealItem[]
-  @@index([nutritionDayId])
-  @@index([templateId])
+  targetMinutes    Int              @db.SmallInt
+  estimatedMinutes Float
+  rationale        Json?
+  exercises        PlanExercise[]
+  workoutSessions  WorkoutSession[]
+
+  @@unique([planVersionId, order])
+  @@unique([planVersionId, dayIndex])
+  @@unique([id, userId])
 }
 
-model NutritionMealItem {
-  id              String        @id @default(uuid())
-  nutritionMealId String
-  foodId          String
-  quantityG       Float
-  nutritionMeal   NutritionMeal @relation(fields: [nutritionMealId], references: [id], onDelete: Cascade)
-  food            Food          @relation(fields: [foodId], references: [id], onDelete: Cascade)
-  @@index([nutritionMealId])
-  @@index([foodId])
+model PlanExercise {
+  id                    String                @id @default(uuid()) @db.Uuid
+  planSessionId         String                @db.Uuid
+  planSession           PlanSession           @relation(fields: [planSessionId], references: [id], onDelete: Cascade)
+  exerciseId            String                @db.Uuid
+  exercise              Exercise              @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  order                 Int                   @db.SmallInt
+  role                  ExerciseRole
+  sets                  Int                   @db.SmallInt
+  repMin                Int                   @db.SmallInt
+  repMax                Int                   @db.SmallInt
+  targetRir             Int                   @db.SmallInt
+  restSeconds           Int                   @db.SmallInt
+  initialLoadKg         Decimal?              @db.Decimal(6, 2)
+  initialLoadIsEstimate Boolean               @default(true)
+  /// Rampa de aproximación [{ reps, loadPct }] calculada por el motor.
+  warmupSets            Json
+  estimatedMinutes      Float
+  rationale             Json?
+  setLogs               SetLog[]
+  substitutions         WorkoutSubstitution[]
+
+  @@unique([planSessionId, order])
+  @@index([exerciseId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// REGISTRO DE ENTRENAMIENTOS (idempotente por clientId, ADR-0007)
+// ─────────────────────────────────────────────────────────────
+
+model WorkoutSession {
+  id            String                @id @default(uuid()) @db.Uuid
+  clientId      String                @db.Uuid
+  userId        String                @db.Uuid
+  user          User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planSessionId String                @db.Uuid
+  planSession   PlanSession           @relation(fields: [planSessionId, userId], references: [id, userId], onDelete: NoAction)
+  status        WorkoutStatus         @default(in_progress)
+  startedAt     DateTime              @db.Timestamptz(3)
+  completedAt   DateTime?             @db.Timestamptz(3)
+  createdAt     DateTime              @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime              @updatedAt @db.Timestamptz(3)
+  setLogs       SetLog[]
+  substitutions WorkoutSubstitution[]
+  e1rmEntries   ExerciseE1rm[]
+
+  @@unique([userId, clientId])
+  @@unique([id, userId])
+  @@index([userId, startedAt(sort: Desc)])
+  @@index([planSessionId])
+}
+
+model SetLog {
+  id               String         @id @default(uuid()) @db.Uuid
+  clientId         String         @db.Uuid
+  userId           String         @db.Uuid
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutSessionId String         @db.Uuid
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId, userId], references: [id, userId], onDelete: Cascade)
+  planExerciseId   String?        @db.Uuid
+  planExercise     PlanExercise?  @relation(fields: [planExerciseId], references: [id], onDelete: NoAction)
+  exerciseId       String         @db.Uuid
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  setIndex         Int            @db.SmallInt
+  reps             Int            @db.SmallInt
+  loadKg           Decimal        @db.Decimal(6, 2)
+  rir              Int?           @db.SmallInt
+  isWarmup         Boolean        @default(false)
+  /// Reloj del cliente: cuándo se hizo la serie.
+  completedAt      DateTime       @db.Timestamptz(3)
+  /// Reloj del cliente: última edición (última escritura gana, ADR-0007).
+  clientUpdatedAt  DateTime       @db.Timestamptz(3)
+  /// Borrado lógico (la cola offline puede reenviar una serie borrada).
+  deletedAt        DateTime?      @db.Timestamptz(3)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@unique([userId, clientId])
+  @@index([workoutSessionId, exerciseId, setIndex])
+  @@index([userId, exerciseId, completedAt(sort: Desc)])
+  @@index([planExerciseId])
+}
+
+/// Cambio de ejercicio dentro de un entrenamiento (CUJ-4). Uno por hueco del plan.
+model WorkoutSubstitution {
+  id               String         @id @default(uuid()) @db.Uuid
+  userId           String         @db.Uuid
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutSessionId String         @db.Uuid
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId, userId], references: [id, userId], onDelete: Cascade)
+  planExerciseId   String         @db.Uuid
+  planExercise     PlanExercise   @relation(fields: [planExerciseId], references: [id], onDelete: NoAction)
+  exerciseId       String         @db.Uuid
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  createdAt        DateTime       @default(now()) @db.Timestamptz(3)
+  updatedAt        DateTime       @updatedAt @db.Timestamptz(3)
+
+  @@unique([workoutSessionId, planExerciseId])
+  @@index([userId])
+  @@index([planExerciseId])
+  @@index([exerciseId])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ANALÍTICA (calculada al escribir, misma transacción; ADR-0008)
+// Proyecciones reconstruibles desde SetLog (pnpm analytics:rebuild).
+// ─────────────────────────────────────────────────────────────
+
+model ExerciseE1rm {
+  id               String         @id @default(uuid()) @db.Uuid
+  userId           String         @db.Uuid
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId       String         @db.Uuid
+  exercise         Exercise       @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  workoutSessionId String         @db.Uuid
+  workoutSession   WorkoutSession @relation(fields: [workoutSessionId], references: [id], onDelete: Cascade)
+  performedOn      DateTime       @db.Date
+  e1rmKg           Decimal        @db.Decimal(6, 2)
+  sourceSetLogId   String?        @db.Uuid
+  formulaVersion   String         @db.VarChar(16)
+  computedAt       DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, exerciseId, workoutSessionId])
+  @@index([userId, exerciseId, performedOn(sort: Desc)])
+  @@index([workoutSessionId])
+  @@index([exerciseId])
+}
+
+model WeeklyMuscleVolume {
+  userId         String   @db.Uuid
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Lunes ISO en la zona horaria del usuario.
+  weekStart      DateTime @db.Date
+  muscle         Muscle
+  effectiveSets  Decimal  @db.Decimal(6, 2)
+  tonnageKg      Decimal  @db.Decimal(10, 2)
+  formulaVersion String   @db.VarChar(16)
+  computedAt     DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, weekStart, muscle])
+}
+
+model WeeklyAdherence {
+  userId            String   @db.Uuid
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart         DateTime @db.Date
+  plannedSessions   Int      @db.SmallInt
+  completedSessions Int      @db.SmallInt
+  plannedSets       Int      @db.SmallInt
+  completedSets     Int      @db.SmallInt
+  planVersionId     String?  @db.Uuid
+  computedAt        DateTime @default(now()) @db.Timestamptz(3)
+
+  @@id([userId, weekStart])
 }
