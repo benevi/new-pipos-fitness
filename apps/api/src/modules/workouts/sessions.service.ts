@@ -10,7 +10,11 @@ import { EngineInputService } from '../plans/engine-input.service';
 import { warmupsFor } from '../plans/plan-mapper';
 import { toSetResponse } from './workout-mapper';
 
-/** Semanas dentro del ciclo de descarga (la descarga programada cae cada `deloadEveryWeeks`). */
+/**
+ * Semanas dentro del ciclo de descarga (la descarga programada cae cada `deloadEveryWeeks`).
+ * `planStart` es el inicio del PLAN (TrainingPlan.createdAt), no de la versión: editar el perfil
+ * o regenerar crea versiones nuevas del mismo plan y no debe reiniciar el ciclo.
+ */
 export function weeksSinceDeload(planStart: string, today: string): number {
   const weeks = Math.max(0, Math.floor(daysBetween(planStart, today) / 7));
   return weeks % (PROGRAMMING.progression.deloadEveryWeeks.value + 1);
@@ -51,7 +55,7 @@ export class SessionsService {
     const version = await this.prisma.planVersion.findFirst({
       where: { userId, plan: { status: 'active' } },
       orderBy: { version: 'desc' },
-      select: { id: true, createdAt: true, sessions: { select: { id: true, order: true }, orderBy: { order: 'asc' } } },
+      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true }, orderBy: { order: 'asc' } } },
     });
     if (!version || version.sessions.length === 0) {
       throw new ApiError(HttpStatus.NOT_FOUND, 'PLAN_REQUIRED', 'No training plan yet');
@@ -97,7 +101,7 @@ export class SessionsService {
       ...(workout ? { excludeWorkoutId: workout.id } : {}),
     });
     const today = localDate(this.clock.now(), tz);
-    const weeks = weeksSinceDeload(localDate(version.createdAt, tz), today);
+    const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
 
     const exercises: TodayExercise[] = session.exercises.map((slot) => {
       const performedId = swaps.get(slot.id) ?? slot.exerciseId;

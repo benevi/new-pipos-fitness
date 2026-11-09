@@ -244,7 +244,7 @@ describe('SessionsService', () => {
     const { prisma, sessions } = setup();
     prisma.trainingProfile.findUnique.mockResolvedValue(profileRow());
     prisma.planVersion.findFirst.mockResolvedValue({
-      id: 'v1', createdAt: new Date('2026-11-01T00:00:00Z'),
+      id: 'v1', plan: { createdAt: new Date('2026-11-01T00:00:00Z') },
       sessions: [{ id: 'ps0', order: 0 }, { id: 'ps1', order: 1 }, { id: 'ps2', order: 2 }],
     });
     prisma.workoutSession.findFirst.mockResolvedValue(null);
@@ -262,7 +262,7 @@ describe('SessionsService', () => {
   it('today con entrenamiento en curso y sustitución aplicada', async () => {
     const { prisma, sessions } = setup();
     prisma.trainingProfile.findUnique.mockResolvedValue(profileRow());
-    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1', createdAt: NOW, sessions: [{ id: 'ps1', order: 1 }] });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1', plan: { createdAt: NOW }, sessions: [{ id: 'ps1', order: 1 }] });
     prisma.workoutSession.findFirst.mockResolvedValue({
       ...workoutRow({ planSessionId: 'ps1' }),
       setLogs: [setRow({ exerciseId: 'id:press-banca-mancuernas' })],
