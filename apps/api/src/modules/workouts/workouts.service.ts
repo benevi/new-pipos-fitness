@@ -16,6 +16,9 @@ import { isUniqueViolation, PrismaService, type TransactionClient } from '../../
 import { AnalyticsService } from '../analytics/analytics.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
+import { dateColumn, fromDateColumn, localDate } from '../../common/time';
+import { log } from '../../logging/logging';
+import { isDeloadSession, SessionsService, startsNewDeload } from './sessions.service';
 import { toSetResponse, toWorkoutResponse, workoutInclude } from './workout-mapper';
 
 export interface Upserted<T> {
@@ -54,6 +57,7 @@ export class WorkoutsService {
     private readonly catalog: CatalogService,
     private readonly engineInput: EngineInputService,
     private readonly clock: Clock,
+    private readonly sessions: SessionsService,
   ) {}
 
   async start(userId: string, input: StartWorkoutRequest): Promise<Upserted<WorkoutResponse>> {
@@ -207,6 +211,7 @@ export class WorkoutsService {
   }
 
   async finish(userId: string, workoutId: string, input: FinishWorkoutRequest): Promise<WorkoutResponse> {
+    const deload = await this.wasDeload(userId, workoutId);
     await this.prisma.$transaction(async (tx) => {
       await this.analytics.lockUser(tx, userId);
       const workout = await this.ownedWorkout(tx, userId, workoutId);
@@ -217,8 +222,47 @@ export class WorkoutsService {
       }
       await tx.workoutSession.update({ where: { id: workoutId }, data: { status: 'completed', completedAt } });
       await this.analytics.onWorkoutFinished(tx, workout);
+      if (deload) await this.recordDeload(tx, userId, workout);
     });
     return this.get(userId, workoutId);
+  }
+
+  /**
+   * ¿La prescripción de este entrenamiento (el que está en curso) era de descarga? Se calcula con
+   * la misma sesión de hoy que ve el usuario. Si no se puede calcular, no se registra nada (el
+   * cierre nunca falla por esto).
+   */
+  private async wasDeload(userId: string, workoutId: string): Promise<boolean> {
+    try {
+      const today = await this.sessions.today(userId);
+      return today.workout?.id === workoutId && isDeloadSession(today.exercises);
+    } catch (error) {
+      // Un ApiError (sin perfil, sin plan…) es un caso de dominio: simplemente no hay descarga.
+      if (!(error instanceof ApiError)) {
+        log('warn', 'Could not compute the deload state of a finished workout', { name: (error as Error)?.name });
+      }
+      return false;
+    }
+  }
+
+  /** Issue #15: guarda la última descarga real en el plan para anclar el ciclo de descarga. */
+  private async recordDeload(
+    tx: TransactionClient,
+    userId: string,
+    workout: { startedAt: Date; planSessionId: string },
+  ): Promise<void> {
+    const session = await tx.planSession.findFirst({
+      where: { id: workout.planSessionId, userId },
+      select: { planVersion: { select: { plan: { select: { id: true, lastDeloadOn: true } } } } },
+    });
+    const plan = session?.planVersion.plan;
+    if (!plan) return;
+    const profile = await tx.trainingProfile.findUnique({ where: { userId }, select: { timezone: true } });
+    const day = localDate(workout.startedAt, profile?.timezone ?? 'UTC');
+    const last = plan.lastDeloadOn ? fromDateColumn(plan.lastDeloadOn) : null;
+    if (startsNewDeload(last, day)) {
+      await tx.trainingPlan.update({ where: { id: plan.id }, data: { lastDeloadOn: dateColumn(day) } });
+    }
   }
 
   /**

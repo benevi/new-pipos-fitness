@@ -492,13 +492,16 @@ model ExerciseMedia {
 // ─────────────────────────────────────────────────────────────
 
 model TrainingPlan {
-  id        String        @id @default(uuid()) @db.Uuid
-  userId    String        @db.Uuid
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    PlanStatus    @default(active)
-  createdAt DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(3)
-  versions  PlanVersion[]
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @db.Uuid
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       PlanStatus    @default(active)
+  /// Fecha local (zona del usuario) del primer entreno de la última descarga real, programada o
+  /// reactiva (issue #15). Ancla el ciclo de descarga programada; null = se cuenta desde createdAt.
+  lastDeloadOn DateTime?     @db.Date
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+  versions     PlanVersion[]
 
   @@unique([id, userId])
   @@index([userId, status])

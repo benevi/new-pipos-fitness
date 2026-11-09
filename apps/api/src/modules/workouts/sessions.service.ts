@@ -28,10 +28,38 @@ import { toSetResponse } from './workout-mapper';
  * Semanas dentro del ciclo de descarga (la descarga programada cae cada `deloadEveryWeeks`).
  * `planStart` es el inicio del PLAN (TrainingPlan.createdAt), no de la versión: editar el perfil
  * o regenerar crea versiones nuevas del mismo plan y no debe reiniciar el ciclo.
+ *
+ * Issue #15: si hubo una descarga real (`lastDeloadOn`, programada o reactiva), el ciclo se ancla
+ * a ella: durante sus `deloadDurationDays` sigue la semana de descarga (devuelve
+ * `deloadEveryWeeks`) y, después, se cuentan las semanas desde que terminó. Así una descarga
+ * reactiva no va seguida de una programada poco después.
  */
-export function weeksSinceDeload(planStart: string, today: string): number {
+export function weeksSinceDeload(planStart: string, today: string, lastDeloadOn: string | null = null): number {
+  const every = PROGRAMMING.progression.deloadEveryWeeks.value;
+  if (lastDeloadOn !== null && lastDeloadOn >= planStart && lastDeloadOn <= today) {
+    const duration = PROGRAMMING.progression.deloadDurationDays.value;
+    const days = daysBetween(lastDeloadOn, today);
+    if (days < duration) return every;
+    return Math.floor((days - duration) / 7) % (every + 1);
+  }
   const weeks = Math.max(0, Math.floor(daysBetween(planStart, today) / 7));
-  return weeks % (PROGRAMMING.progression.deloadEveryWeeks.value + 1);
+  return weeks % (every + 1);
+}
+
+/**
+ * ¿Fue una sesión de descarga? Sí si al menos la mitad de sus ejercicios tenían prescripción de
+ * descarga (issue #15): la programada descarga todos; la reactiva de un solo ejercicio estancado
+ * no cuenta como semana de descarga del plan.
+ */
+export function isDeloadSession(exercises: readonly { prescription: { isDeload: boolean } }[]): boolean {
+  if (exercises.length === 0) return false;
+  const deloads = exercises.filter((e) => e.prescription.isDeload).length;
+  return deloads * 2 >= exercises.length;
+}
+
+/** ¿Se registra `today` como nueva última descarga? Solo si no estamos ya dentro de la anterior. */
+export function startsNewDeload(lastDeloadOn: string | null, today: string): boolean {
+  return lastDeloadOn === null || daysBetween(lastDeloadOn, today) >= PROGRAMMING.progression.deloadDurationDays.value;
 }
 
 /** Carga de trabajo actual: la última que hizo (series de trabajo) o la inicial del plan. */
@@ -77,7 +105,7 @@ export class SessionsService {
     const version = await this.prisma.planVersion.findFirst({
       where: { userId, plan: { status: 'active' } },
       orderBy: { version: 'desc' },
-      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true, dayIndex: true }, orderBy: { order: 'asc' } } },
+      select: { id: true, plan: { select: { createdAt: true, lastDeloadOn: true } }, sessions: { select: { id: true, order: true, dayIndex: true }, orderBy: { order: 'asc' } } },
     });
     if (!version || version.sessions.length === 0) {
       throw new ApiError(HttpStatus.NOT_FOUND, 'PLAN_REQUIRED', 'No training plan yet');
@@ -128,7 +156,8 @@ export class SessionsService {
       ...(workout ? { excludeWorkoutId: workout.id } : {}),
     });
     const today = localDate(this.clock.now(), tz);
-    const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
+    const lastDeloadOn = version.plan.lastDeloadOn ? fromDateColumn(version.plan.lastDeloadOn) : null;
+    const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today, lastDeloadOn);
     // Pausas planificadas recientes y vigentes (idea 6): no cuentan como ausencia (§16.18).
     const breakRows = await this.prisma.trainingBreak.findMany({
       where: { userId, endsOn: { gte: dateColumn(addDays(today, -HISTORY_DAYS)) } },

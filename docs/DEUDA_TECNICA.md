@@ -71,12 +71,16 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   `versionForWeek`/`plannedOf`. e2e con dos versiones (3 → 5 días):
   `adherence-versions.e2e-spec.ts`. Tras desplegar, `analytics:rebuild` corrige las filas antiguas.
 
-### [Motor] La descarga reactiva no reinicia el ciclo de descarga programada
-- **Severidad:** Baja
-- **Impacto:** `weeksSinceDeload` se cuenta desde el inicio del plan (corregido en la Fase 5), pero
-  una descarga reactiva no se registra, así que puede haber una programada poco después.
-- **Propuesta:** registrar la última semana de descarga real (p. ej. `TrainingPlan.lastDeloadOn`,
-  actualizado al cerrar un entreno cuya prescripción era `deload`) y anclar el ciclo a ella.
+### ~~[Motor] La descarga reactiva no reinicia el ciclo de descarga programada~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #15.
+- **Qué se hizo:** `TrainingPlan.lastDeloadOn` (fecha local, migración incremental) se fija al
+  cerrar un entrenamiento cuya prescripción era de descarga: la sesión cuenta como descarga si al
+  menos la mitad de sus ejercicios la tenían (la programada descarga todos; la reactiva de un solo
+  ejercicio estancado no es una semana de descarga del plan). Solo se mueve si ya terminó la
+  descarga anterior (`deloadDurationDays`, 7). `weeksSinceDeload` se ancla a esa fecha: durante
+  esos 7 días sigue la descarga y después cuenta las semanas desde que terminó; sin descarga
+  registrada, desde el inicio del plan como antes. Unit (`weeksSinceDeload`, `isDeloadSession`,
+  `startsNewDeload`, cierre) y e2e (`deload.e2e-spec.ts`).
 
 ### [Seguridad] Enumeración de emails por `409 AUTH_EMAIL_TAKEN` en el registro
 - **Severidad:** Media
@@ -147,8 +151,9 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 ### [Motor] Anclar la descarga programada al final de una pausa planificada
 - **Severidad:** Baja
 - **Impacto:** tras una pausa de 7 días o más (ADR-0013, idea 6) la descarga programada puede caer
-  poco después de volver. Se cruza con «La descarga reactiva no reinicia el ciclo».
-- **Propuesta:** reiniciar `weeksSinceDeload` al terminar una pausa de 7 días o más.
+  poco después de volver. La descarga reactiva ya ancla el ciclo (issue #15); la pausa todavía no.
+- **Propuesta:** reiniciar `weeksSinceDeload` al terminar una pausa de 7 días o más (con el ancla
+  `TrainingPlan.lastDeloadOn` del issue #15 basta con tratar el fin de la pausa como una descarga).
 
 ### [RGPD] DPIA: medidas corporales, estimaciones derivadas y notas de texto libre
 - **Severidad:** Media (bloquea el lanzamiento público junto con la DPIA pendiente)
