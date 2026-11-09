@@ -1,50 +1,77 @@
 /// API Client Responsibility
 ///
-/// - Single Dio instance shared across the app via [dioProvider].
-/// - [AuthInterceptor] handles token attachment and refresh.
-///   On refresh failure, it delegates to [AuthSessionCoordinator].
-/// - [ApiClient] is a thin typed wrapper; it does NOT catch errors.
-///   Providers catch DioExceptions and map them via [mapDioException].
+/// - [publicDioProvider]: Dio SIN [AuthInterceptor]. Lo usan login, registro,
+///   refresh y logout: un 401 ahí (p. ej. contraseña incorrecta) es un error
+///   de formulario, nunca un motivo para refrescar o cerrar sesión.
+/// - [dioProvider]: Dio autenticado con [AuthInterceptor].
+/// - Ambos comparten base URL, timeouts ([ApiTimeouts]) y, en tests, el
+///   adaptador HTTP ([httpClientAdapterProvider]).
+/// - [ApiClient] es un wrapper fino; NO captura errores. Los providers
+///   capturan y convierten con `ApiFailure.from`.
 library;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../../app/constants.dart';
-import '../auth/auth_session_coordinator.dart';
+import '../auth/session_providers.dart';
 import 'auth_interceptor.dart';
 
-final secureStorageProvider = Provider<FlutterSecureStorage>(
-  (_) => const FlutterSecureStorage(),
+/// Base URL de la API. `PiposRoot` lo sobreescribe con `AppConfig`.
+final apiBaseUrlProvider = Provider<String>(
+  (_) => throw StateError(
+    'API_BASE_URL no configurada. Sobrescribe apiBaseUrlProvider '
+    '(PiposRoot lo hace a partir de --dart-define=API_BASE_URL=...).',
+  ),
+);
+
+/// Adaptador HTTP opcional (solo tests). `null` = adaptador por defecto.
+final httpClientAdapterProvider = Provider<HttpClientAdapter?>((_) => null);
+
+Dio _buildDio(Ref ref) {
+  final dio = Dio(
+    BaseOptions(
+      baseUrl: ref.watch(apiBaseUrlProvider),
+      connectTimeout: ApiTimeouts.connect,
+      receiveTimeout: ApiTimeouts.receive,
+      sendTimeout: ApiTimeouts.send,
+      headers: {'Content-Type': 'application/json'},
+    ),
+  );
+  final adapter = ref.watch(httpClientAdapterProvider);
+  if (adapter != null) dio.httpClientAdapter = adapter;
+  return dio;
+}
+
+final publicDioProvider = Provider<Dio>((ref) {
+  final dio = _buildDio(ref);
+  ref.onDispose(dio.close);
+  return dio;
+});
+
+final tokenRefresherProvider = Provider<TokenRefresher>(
+  (ref) => DioTokenRefresher(
+    publicDio: ref.watch(publicDioProvider),
+    storage: ref.watch(tokenStorageProvider),
+  ),
 );
 
 final dioProvider = Provider<Dio>((ref) {
-  const baseUrl = AppConstants.baseUrl;
-  if (baseUrl.isEmpty) {
-    throw StateError(
-      'API_BASE_URL is not configured. Provide it via --dart-define=API_BASE_URL=...',
-    );
-  }
-
-  final dio = Dio(BaseOptions(
-    baseUrl: baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 15),
-    headers: {'Content-Type': 'application/json'},
-  ));
-
-  final storage = ref.read(secureStorageProvider);
-  final interceptor = AuthInterceptor(
-    dio: dio,
-    storage: storage,
-    coordinator: authSessionCoordinator,
+  final dio = _buildDio(ref);
+  dio.interceptors.add(
+    AuthInterceptor(
+      dio: dio,
+      storage: ref.watch(tokenStorageProvider),
+      refresher: ref.watch(tokenRefresherProvider),
+      coordinator: ref.watch(authSessionCoordinatorProvider),
+    ),
   );
-  dio.interceptors.add(interceptor);
-
+  ref.onDispose(dio.close);
   return dio;
 });
 
 final apiClientProvider = Provider<ApiClient>((ref) {
-  return ApiClient(ref.read(dioProvider));
+  return ApiClient(ref.watch(dioProvider));
 });
 
 class ApiClient {
