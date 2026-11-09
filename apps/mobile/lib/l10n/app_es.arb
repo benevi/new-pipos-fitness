@@ -197,6 +197,7 @@
   "todayFinishUnsynced": "{count, plural, =1{Hay 1 serie sin enviar.} other{Hay {count} series sin enviar.}} Se reintentará antes de cerrar el entrenamiento; mientras no se envíe, el cierre queda en espera.",
   "@todayFinishUnsynced": { "placeholders": { "count": { "type": "int" } } },
   "todayFinishRetryNow": "Reintentar envío",
+  "todayNoUserOffline": "No se pudo registrar la serie: conéctate a internet una vez para verificar tu sesión.",
   "todayConflictBody": "Un entrenamiento guardado en este móvil ({count, plural, =1{1 serie} other{{count} series}}) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.",
   "@todayConflictBody": { "placeholders": { "count": { "type": "int" } } },
   "todayConflictDiscard": "Descartar",

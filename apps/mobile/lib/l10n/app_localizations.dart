@@ -980,6 +980,12 @@ abstract class AppLocalizations {
   /// **'Reintentar envío'**
   String get todayFinishRetryNow;
 
+  /// No description provided for @todayNoUserOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo registrar la serie: conéctate a internet una vez para verificar tu sesión.'**
+  String get todayNoUserOffline;
+
   /// No description provided for @todayConflictBody.
   ///
   /// In es, this message translates to:

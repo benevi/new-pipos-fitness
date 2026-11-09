@@ -118,7 +118,21 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     double load,
     int? rir,
   ) async {
-    final workout = await _ensureWorkout();
+    final LocalWorkout workout;
+    try {
+      workout = await _ensureWorkout();
+    } on StateError {
+      // Sin usuario conocido (sesión offline sin datos cacheados) no hay
+      // cola a la que asociar la serie.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).todayNoUserOffline),
+          ),
+        );
+      }
+      return;
+    }
     await ref
         .read(syncServiceProvider)
         .logSet(

@@ -128,6 +128,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final response = await _dio.get<dynamic>('/me');
       final user = AuthUser.fromJson(response.data as Map<String, dynamic>);
       await _storage.saveCachedUser(user);
+      await _rememberOwner(user.id);
       if (!mounted) return;
       state = AuthState(status: AuthStatus.authenticated, user: user);
     } catch (e) {
@@ -144,14 +145,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return;
       }
       // Sin red / servidor caído / respuesta rara: dejamos entrar con los
-      // datos cacheados y marcamos la sesión como no verificada.
+      // datos cacheados y marcamos la sesión como no verificada. Si falta
+      // el usuario cacheado se usa el id guardado con los tokens (la cola
+      // offline solo necesita el id).
+      final ownerId = cachedUser == null ? await _storage.readUserId() : null;
+      if (!mounted) return;
       state = AuthState(
         status: AuthStatus.authenticated,
-        user: cachedUser,
+        user:
+            cachedUser ??
+            (ownerId == null ? null : AuthUser(id: ownerId, email: '')),
         isOffline: true,
       );
       _revalidateWhenOnline();
     }
+  }
+
+  /// Sesiones guardadas antes de que los tokens llevaran el id del dueño:
+  /// se completa en cuanto /me lo confirma.
+  Future<void> _rememberOwner(String userId) async {
+    if (await _storage.readUserId() != null) return;
+    final access = await _storage.readAccessToken();
+    final refresh = await _storage.readRefreshToken();
+    if (access == null || refresh == null) return;
+    await _storage.saveTokens(
+      accessToken: access,
+      refreshToken: refresh,
+      userId: userId,
+    );
   }
 
   /// En modo offline, al recuperar la red se vuelve a validar con /me.
@@ -189,6 +210,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       await _storage.saveTokens(
         accessToken: auth.accessToken,
         refreshToken: auth.refreshToken,
+        userId: auth.user.id,
       );
       await _storage.saveCachedUser(auth.user);
       _coordinator.onSessionStarted();

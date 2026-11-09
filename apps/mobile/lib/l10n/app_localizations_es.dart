@@ -565,6 +565,10 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinishRetryNow => 'Reintentar envío';
 
   @override
+  String get todayNoUserOffline =>
+      'No se pudo registrar la serie: conéctate a internet una vez para verificar tu sesión.';
+
+  @override
   String todayConflictBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

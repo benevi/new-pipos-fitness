@@ -564,6 +564,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinishRetryNow => 'Retry sending';
 
   @override
+  String get todayNoUserOffline =>
+      'Couldn\'t log the set: connect to the internet once to verify your session.';
+
+  @override
   String todayConflictBody(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
