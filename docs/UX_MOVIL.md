@@ -57,6 +57,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Consentimiento de salud** en un paso propio, con el texto versionado (`health-2026-11-v2` desde ADR-0013; quien aceptó `health-2026-11` conserva sus ámbitos y Ajustes le ofrece la versión nueva), «Acepto» y «Continuar sin datos de salud» con el mismo peso visual. Si se salta, no se piden limitaciones ni peso/altura y la revisión explica la consecuencia. Retirarlo en Ajustes pide confirmación y explica qué se borra.
 - **Borrar cuenta:** diálogo con icono de aviso, consecuencias en una frase, contraseña obligatoria y botón destructivo con el color de error. Contraseña incorrecta (403) → error en el campo; la sesión sigue abierta.
 - **Cambiar el perfil** reutiliza el cuestionario. Si la API crea versión nueva, un diálogo lo explica («hemos creado la versión N… tu historial se conserva») y ofrece «Ver el plan».
+- **Tipografía.** Fuente del sistema de cada plataforma (Roboto en Android, San Francisco en iOS) vía `Typography.material2021`, sin fuentes empaquetadas. `AppTheme` fusiona la escala de `AppTypography` (tamaños, pesos, colores) sobre esa base, de modo que todos los estilos llevan `fontFamily`, y los estilos de botones, AppBar, pestañas y barra de navegación salen de ese `TextTheme` fusionado (nunca de `AppTypography` en crudo). Así no hay mezcla de familias en iOS. Lo comprueba `test/app/tokens_contrast_test.dart` (Android e iOS).
 
 ### Ideas recuperadas (ADR-0013)
 

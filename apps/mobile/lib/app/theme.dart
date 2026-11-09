@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'tokens.dart';
@@ -31,7 +32,21 @@ class AppTheme {
           error: t.error,
           onError: t.onError,
         );
-    final textTheme = AppTypography.textTheme(t);
+    // Tipografía: la fuente del sistema de cada plataforma (Roboto en
+    // Android, San Francisco en iOS) según `Typography.material2021`. La
+    // escala de AppTypography se fusiona SOBRE esa base para que cada estilo
+    // lleve `fontFamily`; los estilos de componentes (botones, AppBar,
+    // pestañas, barra de navegación) salen de este TextTheme ya fusionado y
+    // no de AppTypography en crudo, que no tiene familia y en iOS caía en
+    // otra fuente que el resto de la app (docs/UX_MOVIL.md §3).
+    final typography = Typography.material2021(
+      platform: defaultTargetPlatform,
+      colorScheme: colorScheme,
+    );
+    final base = t.brightness == Brightness.dark
+        ? typography.white
+        : typography.black;
+    final textTheme = base.merge(AppTypography.textTheme(t));
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.md),
     );
@@ -41,6 +56,7 @@ class AppTheme {
       brightness: t.brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: t.background,
+      typography: typography,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -48,6 +64,10 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: textTheme.titleLarge,
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelStyle: textTheme.titleSmall,
+        unselectedLabelStyle: textTheme.titleSmall,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: t.surfaceVariant,

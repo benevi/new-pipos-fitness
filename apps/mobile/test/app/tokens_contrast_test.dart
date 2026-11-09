@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/app/config.dart';
@@ -45,6 +46,41 @@ void main() {
           .resolve({});
       expect(fg, AppColorTokens.dark.onAccent);
     });
+  });
+
+  group('tipografía: misma familia en texto y componentes', () {
+    for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
+      test(platform.name, () {
+        debugDefaultTargetPlatformOverride = platform;
+        try {
+          for (final theme in [AppTheme.dark, AppTheme.light]) {
+            final family = theme.textTheme.bodyMedium!.fontFamily;
+            expect(family, isNotNull);
+            final styles = <String, TextStyle?>{
+              'filled': theme.filledButtonTheme.style!.textStyle!.resolve({}),
+              'outlined': theme.outlinedButtonTheme.style!.textStyle!
+                  .resolve({}),
+              'text': theme.textButtonTheme.style!.textStyle!.resolve({}),
+              'appBar': theme.appBarTheme.titleTextStyle,
+              'tab': theme.tabBarTheme.labelStyle,
+              'nav': theme.navigationBarTheme.labelTextStyle!.resolve({}),
+              'titleLarge': theme.textTheme.titleLarge,
+              'labelLarge': theme.textTheme.labelLarge,
+            };
+            styles.forEach((name, style) {
+              expect(style?.fontFamily, isNotNull, reason: name);
+            });
+            // Los textos de cuerpo y de componentes comparten familia de
+            // texto (en iOS los display usan la variante «Display»).
+            for (final name in ['filled', 'outlined', 'text', 'tab', 'nav']) {
+              expect(styles[name]!.fontFamily, family, reason: name);
+            }
+          }
+        } finally {
+          debugDefaultTargetPlatformOverride = null;
+        }
+      });
+    }
   });
 
   group('AppConfig', () {
