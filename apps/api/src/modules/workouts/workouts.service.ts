@@ -51,9 +51,19 @@ export class WorkoutsService {
 
     const planSession = await this.prisma.planSession.findFirst({
       where: { id: input.planSessionId, userId },
-      select: { id: true },
+      select: { id: true, planVersionId: true },
     });
     if (!planSession) throw ApiError.notFound('Plan session not found');
+    // Un entrenamiento NUEVO solo sobre la versión vigente: el de una versión antigua no avanzaría
+    // el microciclo vigente (issue #10). Los ya empezados (reenvío por clientId, arriba) y sus
+    // series se siguen aceptando: la cola offline puede entregarlos tras un cambio de plan.
+    if (planSession.planVersionId !== (await this.currentVersionId(userId))) {
+      throw new ApiError(
+        HttpStatus.CONFLICT,
+        'PLAN_SESSION_OUTDATED',
+        'This plan session belongs to an older plan version; refresh GET /sessions/today',
+      );
+    }
 
     const inProgress = await this.prisma.workoutSession.findFirst({
       where: { userId, status: 'in_progress' },
@@ -249,6 +259,16 @@ export class WorkoutsService {
       update: { exerciseId },
     });
     return { workoutId, planExerciseId, exercise: target, substitutedFrom: slot.exercise };
+  }
+
+  /** Versión vigente = la de mayor número del plan activo (como PlansService.currentVersionId). */
+  private async currentVersionId(userId: string): Promise<string | null> {
+    const row = await this.prisma.planVersion.findFirst({
+      where: { userId, plan: { status: 'active' } },
+      orderBy: { version: 'desc' },
+      select: { id: true },
+    });
+    return row?.id ?? null;
   }
 
   private replayStart(existing: Parameters<typeof toWorkoutResponse>[0], input: StartWorkoutRequest): Upserted<WorkoutResponse> {

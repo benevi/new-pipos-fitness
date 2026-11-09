@@ -19,16 +19,14 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   1 salto, cabecera ignorada con 0, dos réplicas compartiendo el contador, upsert concurrente sin
   pérdidas. Ya no hace falta una sola instancia (DEPLOY_CHECKLIST actualizado).
 
-### [API] Rechazar entrenamientos sobre sesiones de una versión de plan antigua
-- **Severidad:** Baja
-- **Impacto:** `POST /workouts` acepta una `planSessionId` de una versión no vigente
-  (`workouts.service.ts`, `start`). El entreno cuenta para la analítica, pero no avanza el
-  microciclo de la versión vigente (`nextPendingSession` solo mira la vigente).
-- **Por qué no se hizo en la Fase 5:** la cola offline de la app trata cualquier 4xx como fallo
-  permanente: rechazarlo podría dejar en `failed` un entreno hecho sin red justo antes de un cambio
-  de perfil hecho desde otro dispositivo.
-- **Propuesta:** devolver `409 PLAN_SESSION_OUTDATED` solo para entrenos nuevos sin series, y en la
-  app refrescar `/sessions/today` ante ese código; o aceptar y mapear la sesión a la vigente por `order`.
+### ~~[API] Rechazar entrenamientos sobre sesiones de una versión de plan antigua~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #10. Falta el manejo en la app
+  (entrada «[Móvil] Manejar `409 PLAN_SESSION_OUTDATED`» más abajo).
+- **Qué se hizo:** `POST /workouts` devuelve `409 PLAN_SESSION_OUTDATED` si `planSessionId` no es de
+  la versión vigente del plan activo, **solo al crear** un entrenamiento (que nunca tiene series
+  todavía). Reenviar un `clientId` ya registrado devuelve el existente (200) aunque su versión ya
+  no sea la vigente, y ese entrenamiento sigue aceptando series, ediciones, sustituciones y cierre.
+  e2e: `plan-outdated.e2e-spec.ts`.
 
 ### [API] Idempotencia de `POST /plans/generate` (doble toque → dos versiones)
 - **Severidad:** Baja
@@ -150,6 +148,24 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 ## App móvil
 
 Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
+
+### [Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento
+- **Severidad:** Media (sin esto, un inicio encolado offline justo antes de un cambio de plan
+  hecho en otro dispositivo queda en `failed` con sus series)
+- **Contexto:** desde el issue #10 la API rechaza `POST /workouts` con una sesión de una versión
+  del plan que ya no es la vigente. Solo afecta a entrenamientos **nuevos**: si el `clientId` ya
+  existe en el servidor, el reenvío devuelve 200 y las series se siguen aceptando.
+- **Comportamiento esperado del cliente:**
+  1. Tratar `PLAN_SESSION_OUTDATED` como recuperable, **no** como fallo permanente de la cola.
+  2. Refrescar `GET /sessions/today` (y la caché del plan, `GET /plans/current`).
+  3. Si el entrenamiento local **no tiene series**: reapuntarlo a la `planSessionId` vigente que
+     devuelve `/sessions/today` y reintentar el `POST /workouts` con el **mismo `clientId`**.
+  4. Si **ya tiene series** locales (hechas offline con la sesión antigua): no se pueden subir a
+     la sesión nueva (sus `planExerciseId` son de la versión antigua → 400). Avisar al usuario
+     («tu plan cambió mientras entrenabas sin conexión») y ofrecer descartar el entrenamiento
+     local o rehacerlo con la sesión vigente; nunca dejarlo bloqueando la cola.
+  5. Test de sincronización: inicio encolado + regeneración del plan → reintento con la sesión
+     vigente y el mismo `clientId`.
 
 ### [Móvil] Poder descartar una serie rechazada de forma permanente por la API
 - **Severidad:** Media

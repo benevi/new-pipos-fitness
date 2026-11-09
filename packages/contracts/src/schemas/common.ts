@@ -65,6 +65,8 @@ export const ERROR_CODES = [
   'PLAN_VERSION_CONFLICT',
   'UNKNOWN_EXERCISE',
   'WORKOUT_IN_PROGRESS',
+  /** POST /workouts con una sesión de una versión del plan que ya no es la vigente (issue #10). */
+  'PLAN_SESSION_OUTDATED',
   'WORKOUT_FINISHED',
   'CLIENT_ID_CONFLICT',
   'NUTRITION_INPUT_INCOMPLETE',

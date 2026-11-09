@@ -63,7 +63,8 @@ describe('WorkoutsService.start', () => {
     prisma.workoutSession.findUnique.mockResolvedValue(null);
     prisma.planSession.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.start(UID, startBody), 'NOT_FOUND', 404);
-    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1' });
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
     prisma.workoutSession.findFirst.mockResolvedValueOnce({ id: 'w0' });
     await rejectsWithCode(service.start(UID, startBody), 'WORKOUT_IN_PROGRESS', 409);
     prisma.workoutSession.findFirst.mockResolvedValueOnce(null);
@@ -75,7 +76,8 @@ describe('WorkoutsService.start', () => {
 
   it('carrera P2002: devuelve la del mismo clientId o 409; otros errores se propagan', async () => {
     const { prisma, service } = setup();
-    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1' });
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1' });
     prisma.workoutSession.findFirst.mockResolvedValue(null);
     prisma.workoutSession.findUnique.mockResolvedValueOnce(null).mockResolvedValueOnce(workoutRow());
     prisma.workoutSession.create.mockRejectedValueOnce(p2002());
@@ -86,6 +88,25 @@ describe('WorkoutsService.start', () => {
     await rejectsWithCode(service.start(UID, startBody), 'WORKOUT_IN_PROGRESS');
     prisma.workoutSession.create.mockRejectedValueOnce(new Error('x'));
     await expect(service.start(UID, startBody)).rejects.toThrow('x');
+  });
+
+  it('sesión de una versión antigua del plan → 409 PLAN_SESSION_OUTDATED (sin crear nada)', async () => {
+    const { prisma, service } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(null);
+    prisma.planSession.findFirst.mockResolvedValue({ id: 'ps1', planVersionId: 'v1' });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v2' });
+    await rejectsWithCode(service.start(UID, startBody), 'PLAN_SESSION_OUTDATED', 409);
+    expect(prisma.workoutSession.create).not.toHaveBeenCalled();
+    // Sin plan activo tampoco es la vigente.
+    prisma.planVersion.findFirst.mockResolvedValue(null);
+    await rejectsWithCode(service.start(UID, startBody), 'PLAN_SESSION_OUTDATED', 409);
+  });
+
+  it('el reenvío de un entrenamiento ya creado sobre una versión antigua se acepta (idempotencia)', async () => {
+    const { prisma, service } = setup();
+    prisma.workoutSession.findUnique.mockResolvedValue(workoutRow());
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v2' });
+    expect((await service.start(UID, startBody)).created).toBe(false);
   });
 
   it('get: 404 si no es suyo', async () => {

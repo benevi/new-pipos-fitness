@@ -8842,6 +8842,7 @@
           "workouts"
         ],
         "summary": "Empezar un entrenamiento (idempotente por clientId)",
+        "description": "409 WORKOUT_IN_PROGRESS si hay otro en curso; 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.",
         "security": [
           {
             "bearer": []
