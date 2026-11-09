@@ -37,6 +37,7 @@ final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
       TodaySession.fromJson(cached.json),
       savedAt: cached.savedAt,
       fromCache: true,
+      isStale: !isSameLocalDay(cached.savedAt, ref.read(clockProvider)()),
     );
   }
 });

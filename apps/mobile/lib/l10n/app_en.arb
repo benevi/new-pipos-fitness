@@ -161,6 +161,7 @@
   "todayFinishConfirm": "Finish",
   "todayFinishUnsynced": "{count, plural, =1{1 set hasn't been sent.} other{{count} sets haven't been sent.}} They'll be retried before closing the workout; until they're sent, closing stays on hold.",
   "todayFinishRetryNow": "Retry sending",
+  "todayStaleSession": "Session saved on {date}. Offline we can't tell which session is due today; you can still log it and it will sync when you're back online.",
   "todayNoUserOffline": "Couldn't log the set: connect to the internet once to verify your session.",
   "todayConflictBody": "A workout saved on this phone ({count, plural, =1{1 set} other{{count} sets}}) couldn't be started on the server: another workout is in progress on your account. Finish that workout and tap “Retry”, or discard the one on this phone.",
   "todayConflictDiscard": "Discard",

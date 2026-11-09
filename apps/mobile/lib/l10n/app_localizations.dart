@@ -980,6 +980,12 @@ abstract class AppLocalizations {
   /// **'Reintentar envío'**
   String get todayFinishRetryNow;
 
+  /// No description provided for @todayStaleSession.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión guardada del {date}. Sin conexión no podemos saber qué sesión toca hoy; puedes registrarla igualmente y se sincronizará al volver la red.'**
+  String todayStaleSession(String date);
+
   /// No description provided for @todayNoUserOffline.
   ///
   /// In es, this message translates to:

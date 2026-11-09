@@ -564,6 +564,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinishRetryNow => 'Retry sending';
 
   @override
+  String todayStaleSession(String date) {
+    return 'Session saved on $date. Offline we can\'t tell which session is due today; you can still log it and it will sync when you\'re back online.';
+  }
+
+  @override
   String get todayNoUserOffline =>
       'Couldn\'t log the set: connect to the internet once to verify your session.';
 

@@ -565,6 +565,11 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinishRetryNow => 'Reintentar envío';
 
   @override
+  String todayStaleSession(String date) {
+    return 'Sesión guardada del $date. Sin conexión no podemos saber qué sesión toca hoy; puedes registrarla igualmente y se sincronizará al volver la red.';
+  }
+
+  @override
   String get todayNoUserOffline =>
       'No se pudo registrar la serie: conéctate a internet una vez para verificar tu sesión.';
 

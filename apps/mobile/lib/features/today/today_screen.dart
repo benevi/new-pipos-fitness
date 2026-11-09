@@ -251,7 +251,15 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         key: const Key('today-list'),
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          if (widget.cached.fromCache && widget.cached.savedAt != null)
+          if (widget.cached.isStale && widget.cached.savedAt != null)
+            NoticeBanner(
+              key: const Key('today-stale'),
+              text: l10n.todayStaleSession(
+                l10n.shortDate(widget.cached.savedAt!),
+              ),
+              icon: Icons.history,
+            )
+          else if (widget.cached.fromCache && widget.cached.savedAt != null)
             NoticeBanner(
               key: const Key('today-cached'),
               text: l10n.cachedDataNotice(
