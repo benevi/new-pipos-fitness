@@ -14,14 +14,16 @@
   },
   "files": [
     "dist",
-    "data"
+    "data",
+    "media"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "lint": "eslint src --ext .ts --max-warnings 0",
+    "lint": "eslint src scripts --ext .ts --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:ci": "vitest run --reporter=verbose"
+    "test:ci": "vitest run --reporter=verbose",
+    "media:check": "tsc -p tsconfig.build.json && node dist/scripts/media-check.js"
   },
   "dependencies": {
     "@pipos/contracts": "workspace:*"
