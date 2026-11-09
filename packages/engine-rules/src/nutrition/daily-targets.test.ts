@@ -1,6 +1,5 @@
 import fc from 'fast-check';
 import { describe, expect, it } from 'vitest';
-import { generateNutritionPlan, NutritionInputError } from '../legacy/nutrition.js';
 import { dailyTargets, mifflinStJeor } from './daily-targets.js';
 
 const base = {
@@ -122,40 +121,5 @@ describe('dailyTargets', () => {
       ),
       { numRuns: 300 },
     );
-  });
-});
-
-describe('compatibilidad: generateNutritionPlan (legacy)', () => {
-  const catalog = { foods: [], mealTemplates: [] };
-  it('usa dailyTargets y ya no genera comidas', () => {
-    const out = generateNutritionPlan({
-      user: { sex: 'male', age: 30, weightKg: 80, heightCm: 180, preferredTrainingDays: 4 },
-      goal: 'maintain',
-      catalog,
-    });
-    expect(out.metadata.dailyCalorieTarget).toBe(Math.round(1780 * 1.85));
-    expect(out.weekPlan.days).toEqual([]);
-  });
-
-  it('con datos incompletos lanza en vez de inventar 70 kg / 2000 kcal', () => {
-    expect(() =>
-      generateNutritionPlan({ user: { sex: 'male', age: 30, heightCm: 180, preferredTrainingDays: 3 }, goal: 'lose_fat', catalog }),
-    ).toThrow(NutritionInputError);
-    expect(() => generateNutritionPlan({ user: {}, goal: 'nope', catalog })).toThrow(NutritionInputError);
-    expect(() =>
-      generateNutritionPlan({ user: { sex: 'male', age: 30, weightKg: 80, heightCm: 180 }, goal: 'build_muscle', catalog }),
-    ).toThrow(/incompletos/);
-  });
-
-  it('mapea días de entrenamiento a PAL', () => {
-    const k = (days: number, goal: 'lose_fat' | 'build_muscle' | 'maintain' = 'maintain') =>
-      generateNutritionPlan({
-        user: { sex: 'female', age: 40, weightKg: 60, heightCm: 165, preferredTrainingDays: days },
-        goal,
-        catalog,
-      }).metadata.dailyCalorieTarget;
-    expect(k(1)).toBeLessThan(k(4));
-    expect(k(4)).toBeLessThan(k(7));
-    expect(k(4, 'lose_fat')).toBeLessThan(k(4, 'build_muscle'));
   });
 });
