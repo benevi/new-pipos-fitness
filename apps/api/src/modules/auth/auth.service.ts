@@ -8,6 +8,7 @@ import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { APP_ENV, type Env } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import type { JwtPayload } from './jwt.strategy';
 
 export const BCRYPT_COST = 12;
@@ -51,6 +52,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly clock: Clock,
     @Inject(APP_ENV) private readonly env: Env,
+    private readonly audit: AuditService,
   ) {}
 
   async register(input: RegisterRequest): Promise<AuthResponse> {
@@ -71,8 +73,11 @@ export class AuthService {
     // Siempre se ejecuta un bcrypt.compare para igualar tiempos exista o no el usuario.
     const valid = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
     if (!user || !valid) {
+      // Auditoría (issue #17): con un email desconocido no se guarda nada que lo identifique.
+      await this.audit.record('login_failed', user?.id ?? null);
       throw new ApiError(HttpStatus.UNAUTHORIZED, 'AUTH_INVALID_CREDENTIALS', 'Invalid email or password');
     }
+    await this.audit.record('login_succeeded', user.id);
     return this.issueTokens(user);
   }
 
@@ -155,9 +160,12 @@ export class AuthService {
         'Refresh token was just rotated; use the newest token',
       );
     }
-    await this.prisma.refreshToken.updateMany({
-      where: { userId: token.userId, revokedAt: null },
-      data: { revokedAt: now, revokedReason: 'reuse_detected' },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.refreshToken.updateMany({
+        where: { userId: token.userId, revokedAt: null },
+        data: { revokedAt: now, revokedReason: 'reuse_detected' },
+      });
+      await this.audit.record('refresh_reuse_detected', token.userId, tx);
     });
     throw new ApiError(HttpStatus.UNAUTHORIZED, AUTH_REFRESH_REUSED, 'Refresh token was already used');
   }

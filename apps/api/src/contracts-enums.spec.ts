@@ -31,6 +31,7 @@ const PAIRS: Record<string, readonly string[]> = {
   SessionKind: c.SESSION_KINDS,
   ExerciseRole: c.EXERCISE_ROLES,
   WorkoutStatus: c.WORKOUT_STATUSES,
+  AuditEventType: c.AUDIT_EVENT_TYPES,
 };
 
 describe('enums BD ↔ contratos', () => {

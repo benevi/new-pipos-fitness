@@ -11,6 +11,7 @@ import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsService } from '../analytics/analytics.service';
+import { AuditService } from '../audit/audit.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { buildEngineProfile, EngineInputService } from '../plans/engine-input.service';
 import { PlansService } from '../plans/plans.service';
@@ -29,6 +30,21 @@ export function stableStringify(value: unknown): string {
 }
 
 /** Campos de salud con valor (art. 9) en una petición. */
+/** ¿Cambian las limitaciones, el peso o la altura respecto a lo guardado? (sin perfil: si tienen valor). */
+export function healthFieldsChanged(
+  stored: Pick<TrainingProfile, 'limitations' | 'weightKg' | 'heightCm'> | null,
+  input: Pick<ProfileUpsert, 'limitations' | 'weightKg' | 'heightCm'>,
+): boolean {
+  const num = (v: { toString(): string } | null) => (v === null ? null : Number(v.toString()));
+  const zones = (z: readonly string[]) => [...z].sort().join(',');
+  if (!stored) return input.limitations.length > 0 || input.weightKg !== null || input.heightCm !== null;
+  return (
+    zones(stored.limitations) !== zones(input.limitations) ||
+    num(stored.weightKg) !== input.weightKg ||
+    num(stored.heightCm) !== input.heightCm
+  );
+}
+
 export function healthFieldsWithValue(input: Pick<ProfileUpsert, 'limitations' | 'weightKg' | 'heightCm'>): FieldIssue[] {
   const issues: FieldIssue[] = [];
   if (input.limitations.length > 0) issues.push({ path: 'body.limitations', message: 'Requires health data consent' });
@@ -74,6 +90,7 @@ export class ProfileService {
     private readonly plans: PlansService,
     private readonly clock: Clock,
     private readonly analytics: AnalyticsService,
+    private readonly audit: AuditService,
   ) {}
 
   async find(userId: string): Promise<ProfileResponse | null> {
@@ -183,6 +200,8 @@ export class ProfileService {
       // La zona horaria fija los límites de semana de la analítica (ADR-0008): si cambia, las
       // proyecciones se reconstruyen desde SetLog en la misma transacción.
       if (before && before.profile.timezone !== input.timezone) await this.analytics.rebuildUser(tx, userId);
+      // Auditoría (issue #17): solo que cambiaron datos de salud, nunca cuáles ni sus valores.
+      if (healthFieldsChanged(before?.profile ?? null, input)) await this.audit.record('health_profile_changed', userId, tx);
       return prepared ? this.plans.persistVersion(tx, userId, prepared) : null;
     });
 

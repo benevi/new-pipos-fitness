@@ -11,6 +11,7 @@ import { THROTTLE_LIMITS } from './config/throttle';
 import { HealthModule } from './health/health.module';
 import { AccountModule } from './modules/account/account.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
 import { NutritionModule } from './modules/nutrition/nutrition.module';
@@ -49,6 +50,7 @@ export const FEATURE_MODULES = [
       }),
     }),
     AnalyticsModule,
+    AuditModule,
     ...FEATURE_MODULES,
   ],
   providers: [

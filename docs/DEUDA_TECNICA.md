@@ -87,12 +87,18 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 - **Impacto:** el registro revela si un email existe; solo lo frena el rate limiting (5/min/IP).
 - **Propuesta:** respuesta neutra y verificación por email (requiere proveedor de correo).
 
-### [Seguridad] Sin registro de auditoría de autenticación ni de cambios de datos de salud
-- **Severidad:** Media
-- **Impacto:** no hay trazabilidad de logins, revocaciones por reutilización ni cambios del
-  perfil (salvo `ConsentEvent`).
-- **Propuesta:** tabla `AuditEvent` append-only sin datos personales (tipo, userId, fecha) con
-  retención limitada; registrar login, refresh reutilizado, cambio/borrado de datos de salud.
+### ~~[Seguridad] Sin registro de auditoría de autenticación ni de cambios de datos de salud~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #17.
+- **Qué se hizo:** tabla `AuditEvent` append-only (un trigger rechaza UPDATE; INSERT y DELETE sí)
+  con solo `type`, `userId`, `subjectRef` y `createdAt`. Eventos: `login_succeeded`,
+  `login_failed` (con un email desconocido, `userId` null y nada que lo identifique: ni email ni
+  hash), `refresh_reuse_detected`, `health_consent_granted`/`withdrawn`,
+  `health_profile_changed` (limitaciones, peso o altura: solo el tipo), `body_measurement_saved`/
+  `deleted` y `account_deleted`. Decisión RGPD: al borrar la cuenta sus eventos se borran en
+  cascada y queda solo `account_deleted` **sin userId**, con un id de borrado aleatorio
+  (`subjectRef`, también en el log). Retención `AUDIT_RETENTION_DAYS` = 180 días con
+  `pnpm --filter @pipos/api audit:cleanup` (tarea diaria, DEPLOY_CHECKLIST). Se incluye en
+  `GET /me/export` (`auditEvents`: tipo y fecha). Unit + e2e (`audit.e2e-spec.ts`).
 
 ### ~~[CI] Dependabot y `pnpm audit` / `flutter pub outdated` en CI~~ — RESUELTO
 - **Estado:** resuelto (PR pendiente); cierra el issue #18.

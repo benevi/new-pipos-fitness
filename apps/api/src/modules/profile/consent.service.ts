@@ -10,6 +10,7 @@ import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsService } from '../analytics/analytics.service';
+import { AuditService } from '../audit/audit.service';
 import { buildEngineProfile, EngineInputService } from '../plans/engine-input.service';
 import { PlansService, type PreparedPlan } from '../plans/plans.service';
 import { HEALTH_POLICY_TEXT_HASH, healthConsentStatus, latestHealthConsent } from './consent-status';
@@ -27,6 +28,7 @@ export class ConsentService {
     private readonly plans: PlansService,
     private readonly clock: Clock,
     private readonly analytics: AnalyticsService,
+    private readonly audit: AuditService,
   ) {}
 
   async status(userId: string): Promise<HealthConsentStatus> {
@@ -48,16 +50,19 @@ export class ConsentService {
     const current = healthConsentStatus(await latestHealthConsent(this.prisma, userId));
     // Idempotente: no duplica el evento. Con una versión anterior, sí se registra la nueva.
     if (current.granted && current.version === HEALTH_CONSENT_POLICY.version) return current;
-    await this.prisma.consentEvent.create({
-      data: {
-        userId,
-        purpose: 'health_data_processing',
-        action: 'granted',
-        policyVersion: input.version,
-        textHash: HEALTH_POLICY_TEXT_HASH,
-        locale: input.locale,
-        occurredAt: this.clock.now(),
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.consentEvent.create({
+        data: {
+          userId,
+          purpose: 'health_data_processing',
+          action: 'granted',
+          policyVersion: input.version,
+          textHash: HEALTH_POLICY_TEXT_HASH,
+          locale: input.locale,
+          occurredAt: this.clock.now(),
+        },
+      });
+      await this.audit.record('health_consent_granted', userId, tx);
     });
     return this.status(userId);
   }
@@ -87,6 +92,7 @@ export class ConsentService {
             occurredAt: this.clock.now(),
           },
         });
+        await this.audit.record('health_consent_withdrawn', userId, tx);
       }
       await tx.trainingProfile.updateMany({
         where: { userId },

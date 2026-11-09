@@ -75,6 +75,9 @@
 
 ### Monitorización
 
+- [ ] Tarea diaria `pnpm --filter @pipos/api audit:cleanup` (planificador del hosting): borra los
+      `AuditEvent` con más de 180 días (`AUDIT_RETENTION_DAYS`, issue #17). Retención acordada en la EIPD.
+
 - [ ] Sondas del orquestador: liveness `GET /health`, readiness `GET /health/ready` (503 sin BD).
 - [ ] Logs JSON a un sistema con retención limitada y acceso restringido; comprobar que no salen
       cuerpos ni datos personales (redacción por clave, errores sin mensaje).

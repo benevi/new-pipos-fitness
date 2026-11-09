@@ -102,7 +102,7 @@ DEUDA_TECNICA) · ⚠️ riesgo aceptado.
 | S | Reutilización de refresh token robado | Rotación en cada uso; reutilizar uno revocado fuera de la ventana de gracia revoca **todas** las sesiones (`AUTH_REFRESH_REUSED`) | ✅ e2e |
 | T | Dos refresh concurrentes → dos sesiones | Rotación atómica (`updateMany … revokedAt IS NULL`, `count === 1`) | ✅ e2e |
 | T | Contraseñas > 72 bytes truncadas por bcrypt | Registro exige 8–72 bytes UTF-8 | ✅ |
-| R | Sin auditoría de inicios de sesión / revocaciones | — | ⏳ deuda |
+| R | Sin auditoría de inicios de sesión / revocaciones | `AuditEvent` append-only (trigger sin UPDATE): login correcto/fallido (email desconocido → sin userId ni nada que lo identifique) y revocación por reutilización de refresh token | ✅ e2e (`audit.e2e-spec.ts`; issue #17) |
 | I | Fuga de hashes o tokens | Respuestas tipadas; solo SHA-256 del refresh token; redacción en logs | ✅ |
 | E | Escalada de rol | Rol en BD leído en cada petición por `JwtStrategy`; no existe ninguna ruta admin en v1 | ✅ |
 
@@ -128,7 +128,7 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | T | Datos de salud guardados sin consentimiento por carrera con la retirada | Candado por usuario (`pg_advisory_xact_lock`) y relectura del consentimiento dentro de la transacción | ✅ e2e (Fase 5) |
 | D | Generación de planes en bucle | 10/min por IP | ✅ e2e |
 | D | Throttler en memoria por instancia; tras un proxy todas las IPs son la del proxy | `TRUST_PROXY_HOPS` (`trust proxy` de Express) y contadores compartidos en Postgres (`THROTTLE_STORE=postgres`, upsert atómico con caducidad) | ✅ e2e (`throttle-proxy.e2e-spec.ts`; issue #9) |
-| R | Sin trazabilidad de escrituras sensibles (salvo `ConsentEvent`, append-only) | — | ⏳ deuda |
+| R | Sin trazabilidad de escrituras sensibles (salvo `ConsentEvent`, append-only) | `AuditEvent`: concesión/retirada del consentimiento, cambio de datos de salud del perfil y alta/borrado de medidas (solo el tipo, nunca valores), borrado de la cuenta; retención 180 días | ✅ e2e (issue #17) |
 
 ### 6.3 Superficie HTTP, configuración y logs
 
@@ -179,6 +179,7 @@ desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato de hash `$2
 | Resto del perfil, preferencias, planes, entrenos, series, analítica | Confidencial | Sí | RGPD |
 | `User.email`, `emailNormalized` | Confidencial | Sí | RGPD |
 | `ConsentEvent` (acción, versión, hash del texto, idioma, fecha) | Confidencial | Sí | RGPD (prueba del consentimiento) |
+| `AuditEvent` (tipo, userId, fecha; issue #17). Sin emails, IPs, tokens ni valores de salud; `account_deleted` sin userId, con un id de borrado aleatorio | Confidencial | Sí (vinculado al userId) | RGPD; retención 180 días (`audit:cleanup`); se exporta y se borra con la cuenta |
 | `User.passwordHash`, `RefreshToken.tokenHash`, JWT | **Restringido** (credencial) | Vinculado | — |
 | `JWT_ACCESS_SECRET`, `DATABASE_URL` | **Restringido** (secreto) | No | — |
 | Catálogo | Público | No | — |
@@ -205,7 +206,8 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 | Retirada del consentimiento: en una transacción borra limitaciones/peso/altura, redacta `inputSnapshot` de todas las versiones, **borra las explicaciones derivadas de la limitación** de todas las versiones y ejercicios, y regenera el plan sin ellos | ✅ e2e (Fase 5: versión antigua, `/me/export` y BD sin rastro de la zona) |
 | Acceso/portabilidad: `GET /me/export` (JSON con todo, sin hashes) | ✅ e2e |
 | ADR-0013: consentimiento por ámbitos (`health-2026-11-v2` cubre perímetros y estimaciones; la versión anterior solo peso, altura y limitaciones); la retirada borra `BodyMeasurement`; notas, pausas, cambios fijados y medidas en la exportación y en `DELETE /me` | ✅ e2e (`ideas.e2e-spec.ts`) |
-| Supresión: `DELETE /me` con contraseña; borrado real en cascada | ✅ e2e (0 filas del usuario) |
+| Supresión: `DELETE /me` con contraseña; borrado real en cascada (también sus eventos de auditoría; queda solo `account_deleted` sin userId) | ✅ e2e (0 filas del usuario) |
+| Registro de auditoría sin datos personales ni de salud, con retención limitada (180 días) e incluido en `GET /me/export` | ✅ e2e (issue #17) |
 | Minimización: sin IP ni user-agent | ✅ (Fase 5) |
 | Política de privacidad y texto legal del consentimiento revisados por un jurista | ⏳ antes de producción |
 | Evaluación de impacto (EIPD/DPIA), probablemente obligatoria (salud a escala) | ⏳ antes de producción |

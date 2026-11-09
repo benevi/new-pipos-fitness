@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { setLogSink } from '../../logging/logging';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { catalogServiceMock, FixedClock, prismaMock, profileRow, rejectsWithCode, UID } from '../../test/unit/support';
+import { AuditService } from '../audit/audit.service';
 import type { AuthService } from '../auth/auth.service';
 import { CatalogService, toEngineExercise } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
@@ -65,6 +66,7 @@ describe('AccountService', () => {
       auth as unknown as AuthService,
       profiles as unknown as ProfileService,
       new FixedClock(NOW),
+      new AuditService(prisma as unknown as PrismaService, new FixedClock(NOW)),
     );
     return { prisma, auth, profiles, service };
   }
@@ -131,6 +133,11 @@ describe('AccountService', () => {
     expect(lines[0]).toContain('account deleted');
     expect(lines[0]).not.toContain(UID);
     expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: UID } });
+    // Queda solo `account_deleted`, sin userId y con un id aleatorio (issue #17).
+    const audit = prisma.auditEvent.create.mock.calls[0][0].data;
+    expect(audit).toMatchObject({ type: 'account_deleted', userId: null });
+    expect(audit.subjectRef).not.toBe(UID);
+    expect(lines[0]).toContain(audit.subjectRef);
   });
 });
 

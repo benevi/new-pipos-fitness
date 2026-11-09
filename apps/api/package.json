@@ -20,6 +20,7 @@
     "prisma:seed": "prisma db seed",
     "prisma:diff": "prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url \"$DATABASE_URL_SHADOW\" --exit-code",
     "analytics:rebuild": "tsx scripts/analytics-rebuild.ts",
+    "audit:cleanup": "tsx scripts/audit-cleanup.ts",
     "openapi:generate": "tsx scripts/openapi.ts write",
     "openapi:check": "tsx scripts/openapi.ts check"
   },

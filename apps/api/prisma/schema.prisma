@@ -247,6 +247,7 @@ model User {
   planOverrides       PlanExerciseOverride[]
   trainingBreaks      TrainingBreak[]
   bodyMeasurements    BodyMeasurement[]
+  auditEvents         AuditEvent[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -745,6 +746,42 @@ model WeeklyAdherence {
   computedAt        DateTime @default(now()) @db.Timestamptz(3)
 
   @@id([userId, weekStart])
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUDITORÍA (issue #17)
+// ─────────────────────────────────────────────────────────────
+
+enum AuditEventType {
+  login_succeeded
+  login_failed
+  /// Reutilización de un refresh token rotado: se revocaron todas las sesiones.
+  refresh_reuse_detected
+  health_consent_granted
+  health_consent_withdrawn
+  /// Cambio de limitaciones, peso o altura del perfil (solo el tipo, nunca los valores).
+  health_profile_changed
+  body_measurement_saved
+  body_measurement_deleted
+  account_deleted
+}
+
+/// Registro de auditoría append-only (un trigger impide UPDATE). SIN datos personales ni de
+/// salud: solo tipo, usuario y fecha. Un login fallido de un email desconocido no guarda nada que
+/// lo identifique (userId null). Se borra con la cuenta (supresión, RGPD art. 17) salvo el propio
+/// `account_deleted`, que se guarda sin userId y con un id de borrado aleatorio (`subjectRef`).
+/// Retención: AUDIT_RETENTION_DAYS (180) con `pnpm --filter @pipos/api audit:cleanup`.
+model AuditEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  type       AuditEventType
+  userId     String?        @db.Uuid
+  user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Id aleatorio sin relación con el usuario (solo en `account_deleted`).
+  subjectRef String?        @db.Uuid
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
 }
 
 // ─────────────────────────────────────────────────────────────
