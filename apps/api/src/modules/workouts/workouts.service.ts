@@ -24,6 +24,20 @@ export interface Upserted<T> {
   created: boolean;
 }
 
+/**
+ * Un entrenamiento en curso sin actividad (inicio o última serie) desde hace más de estas horas
+ * se abandona automáticamente al empezar otro (issue #13): uno olvidado no bloquea los siguientes
+ * con 409 WORKOUT_IN_PROGRESS. 12 h: ninguna sesión real dura tanto y deja margen a quien empieza
+ * por la mañana y cierra por la noche. Los abandonados no cuentan en la analítica ni la adherencia.
+ */
+export const STALE_WORKOUT_HOURS = 12;
+const HOUR_MS = 60 * 60 * 1000;
+
+/** ¿Lleva el entrenamiento en curso más de STALE_WORKOUT_HOURS sin actividad? */
+export function isStaleWorkout(lastActivity: Date, now: Date): boolean {
+  return now.getTime() - lastActivity.getTime() > STALE_WORKOUT_HOURS * HOUR_MS;
+}
+
 /** Cuántas alternativas pide la validación de un cambio (las 3 visibles + margen). */
 const SUBSTITUTE_VALIDATION_LIMIT = 50;
 
@@ -67,9 +81,22 @@ export class WorkoutsService {
 
     const inProgress = await this.prisma.workoutSession.findFirst({
       where: { userId, status: 'in_progress' },
-      select: { id: true },
+      select: {
+        id: true,
+        userId: true,
+        startedAt: true,
+        setLogs: { orderBy: { completedAt: 'desc' }, take: 1, select: { completedAt: true } },
+      },
     });
-    if (inProgress) throw this.inProgressError(inProgress.id);
+    if (inProgress) {
+      const lastSet = inProgress.setLogs[0]?.completedAt;
+      const lastActivity = lastSet && lastSet > inProgress.startedAt ? lastSet : inProgress.startedAt;
+      if (!isStaleWorkout(lastActivity, this.clock.now())) throw this.inProgressError(inProgress.id);
+      await this.prisma.$transaction(async (tx) => {
+        await this.analytics.lockUser(tx, userId);
+        await this.markAbandoned(tx, inProgress);
+      });
+    }
 
     try {
       // La FK compuesta (planSessionId, userId) impide en BD apuntar a la sesión de otro usuario.
@@ -192,6 +219,34 @@ export class WorkoutsService {
       await this.analytics.onWorkoutFinished(tx, workout);
     });
     return this.get(userId, workoutId);
+  }
+
+  /**
+   * Abandonar un entrenamiento en curso (issue #13). Idempotente: abandonar uno ya abandonado
+   * devuelve el mismo estado; uno terminado → 409 WORKOUT_FINISHED. Sus series se conservan
+   * pero dejan de contar en e1RM, volumen y adherencia; no se admiten series nuevas.
+   */
+  async abandon(userId: string, workoutId: string): Promise<WorkoutResponse> {
+    await this.prisma.$transaction(async (tx) => {
+      await this.analytics.lockUser(tx, userId);
+      const workout = await this.ownedWorkout(tx, userId, workoutId);
+      if (workout.status === 'abandoned') return;
+      this.assertInProgress(workout.status);
+      await this.markAbandoned(tx, workout);
+    });
+    return this.get(userId, workoutId);
+  }
+
+  /** Pasa a `abandoned` si sigue en curso (condición en el UPDATE: no pisa un cierre simultáneo). */
+  private async markAbandoned(
+    tx: TransactionClient,
+    workout: { id: string; userId: string; startedAt: Date },
+  ): Promise<void> {
+    const updated = await tx.workoutSession.updateMany({
+      where: { id: workout.id, userId: workout.userId, status: 'in_progress' },
+      data: { status: 'abandoned' },
+    });
+    if (updated.count === 1) await this.analytics.onWorkoutAbandoned(tx, workout);
   }
 
   /** CUJ-4: 3 alternativas del motor que respetan patrón, músculos, material y limitaciones. */

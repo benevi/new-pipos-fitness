@@ -72,7 +72,7 @@ export class WorkoutsController {
     tag: 'workouts',
     summary: 'Empezar un entrenamiento (idempotente por clientId)',
     description:
-      '409 WORKOUT_IN_PROGRESS si hay otro en curso; 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.',
+      '409 WORKOUT_IN_PROGRESS si hay otro en curso con actividad en las últimas 12 h (si no, ese se abandona automáticamente y se empieza el nuevo); 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.',
     body: StartWorkoutRequestSchema,
     response: WorkoutResponseSchema,
     status: 201,
@@ -154,6 +154,20 @@ export class WorkoutsController {
   })
   finish(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: FinishWorkoutRequest) {
     return this.workouts.finish(user.id, id, body);
+  }
+
+  @Post('workouts/:id/abandon')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Abandonar el entrenamiento en curso (idempotente; 409 si ya estaba terminado)',
+    description:
+      'Las series se conservan pero dejan de contar en e1RM, volumen y adherencia, y no se admiten series nuevas (409 WORKOUT_FINISHED). Al empezar otro entrenamiento, uno en curso sin actividad desde hace más de 12 h se abandona solo.',
+    params: IdParamsSchema,
+    response: WorkoutResponseSchema,
+    errors: [404, 409],
+  })
+  abandon(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.workouts.abandon(user.id, id);
   }
 
   @Post('workouts/:id/exercises/:planExerciseId/substitute')

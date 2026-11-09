@@ -48,12 +48,19 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   supera el 10 %) y bajadas; desglose de discos por lado en la sesión de hoy. Test de propiedad
   «la carga propuesta es múltiplo del paso del material».
 
-### [API] Estado `abandoned` sin flujo: un entreno en curso olvidado bloquea los siguientes
-- **Severidad:** Media
-- **Impacto:** `WorkoutStatus.abandoned` existe pero ningún endpoint lo usa. Un entreno sin
-  cerrar devuelve `409 WORKOUT_IN_PROGRESS` a cualquier inicio nuevo hasta que se cierre.
-- **Propuesta:** `POST /workouts/:id/abandon` (idempotente) y/o abandono automático al iniciar uno
-  nuevo si el anterior lleva > 12 h; excluirlo de adherencia (ya se excluye de la analítica).
+### ~~[API] Estado `abandoned` sin flujo: un entreno en curso olvidado bloquea los siguientes~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #13.
+- **Qué se hizo:** `POST /workouts/:id/abandon` (idempotente: abandonar uno ya abandonado devuelve
+  200 con el mismo estado; uno terminado → `409 WORKOUT_FINISHED`; ajeno → 404). Al empezar un
+  entrenamiento, si el que está en curso lleva más de `STALE_WORKOUT_HOURS` = **12 h** sin
+  actividad (inicio o última serie, reloj del cliente) se abandona solo y se crea el nuevo; si no,
+  sigue el `409 WORKOUT_IN_PROGRESS`. Un abandonado conserva sus series pero no cuenta en e1RM,
+  volumen ni adherencia (se recalcula su semana en la misma transacción) y no admite series nuevas
+  ni cierre (`409 WORKOUT_FINISHED`). e2e: `abandon.e2e-spec.ts`.
+- **Para la app:** botón «Descartar entrenamiento» que llame a `abandon` (idempotente, apto para la
+  cola offline). Si una serie encolada recibe `409 WORKOUT_FINISHED` y `GET /workouts/:id` dice
+  `abandoned`, avisar de que ese entrenamiento se descartó (automáticamente tras 12 h) y no
+  reintentar.
 
 ### [API] La adherencia de semanas pasadas usa la versión vigente del plan
 - **Severidad:** Baja

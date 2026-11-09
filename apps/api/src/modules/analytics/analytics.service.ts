@@ -48,6 +48,16 @@ export class AnalyticsService {
     await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
   }
 
+  /**
+   * Tras abandonar un entrenamiento (issue #13): sus series dejan de contar (e1RM, volumen y
+   * adherencia excluyen los abandonados), así que se borra su e1RM y se recalcula su semana.
+   */
+  async onWorkoutAbandoned(tx: TransactionClient, workout: WorkoutForAnalytics): Promise<void> {
+    await tx.exerciseE1rm.deleteMany({ where: { userId: workout.userId, workoutSessionId: workout.id } });
+    const tz = await this.timezoneOf(tx, workout.userId);
+    await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
+  }
+
   async recomputeE1rm(tx: TransactionClient, workout: WorkoutForAnalytics, exerciseId: string, tz: string): Promise<void> {
     const sets = await tx.setLog.findMany({
       where: { workoutSessionId: workout.id, exerciseId, deletedAt: null, isWarmup: false },

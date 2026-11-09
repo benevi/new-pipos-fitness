@@ -8870,7 +8870,7 @@
           "workouts"
         ],
         "summary": "Empezar un entrenamiento (idempotente por clientId)",
-        "description": "409 WORKOUT_IN_PROGRESS si hay otro en curso; 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.",
+        "description": "409 WORKOUT_IN_PROGRESS si hay otro en curso con actividad en las últimas 12 h (si no, ese se abandona automáticamente y se empieza el nuevo); 409 PLAN_SESSION_OUTDATED si planSessionId es de una versión del plan que ya no es la vigente (solo al crear: reenviar un clientId ya registrado devuelve el entrenamiento existente). Ante PLAN_SESSION_OUTDATED, el cliente debe volver a pedir GET /sessions/today y empezar con la sesión vigente.",
         "security": [
           {
             "bearer": []
@@ -9027,6 +9027,104 @@
           },
           "404": {
             "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/workouts/{id}/abandon": {
+      "post": {
+        "operationId": "Workouts_abandon",
+        "tags": [
+          "workouts"
+        ],
+        "summary": "Abandonar el entrenamiento en curso (idempotente; 409 si ya estaba terminado)",
+        "description": "Las series se conservan pero dejan de contar en e1RM, volumen y adherencia, y no se admiten series nuevas (409 WORKOUT_FINISHED). Al empezar otro entrenamiento, uno en curso sin actividad desde hace más de 12 h se abandona solo.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkoutResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
             "content": {
               "application/json": {
                 "schema": {

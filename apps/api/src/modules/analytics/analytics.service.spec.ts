@@ -119,6 +119,13 @@ describe('AnalyticsService (escritura)', () => {
     await analytics.lockUser(prisma as never, UID);
     expect(prisma.$queryRaw).toHaveBeenCalled();
   });
+
+  it('onWorkoutAbandoned: borra el e1RM de ese entrenamiento y recalcula su semana', async () => {
+    const { prisma, analytics } = setup();
+    await analytics.onWorkoutAbandoned(prisma as never, workout);
+    expect(prisma.exerciseE1rm.deleteMany.mock.calls[0][0]).toEqual({ where: { userId: workout.userId, workoutSessionId: workout.id } });
+    expect(prisma.weeklyAdherence.upsert).toHaveBeenCalledTimes(1);
+  });
 });
 
 describe('ProgressService (lectura)', () => {
