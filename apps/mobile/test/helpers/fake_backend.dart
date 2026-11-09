@@ -242,7 +242,42 @@ class FakeBackend
   Future<TodaySession> getToday() async {
     _guard('GET /sessions/today');
     if (!hasPlan) throw _error(404, ApiErrorCode.planRequired);
+    // Como la API: si hay un entrenamiento en curso, la sesión de hoy es la
+    // suya y lleva su referencia.
+    for (final w in workouts.values) {
+      if (w.status != WorkoutStatus.inProgress) continue;
+      return TodaySession.fromJson({
+        ...todayJson,
+        'planSessionId': w.planSessionId,
+        'workout': {
+          'id': w.id,
+          'clientId': w.clientId,
+          'status': w.status.wire,
+          'startedAt': isoUtc(w.startedAt),
+        },
+      });
+    }
     return TodaySession.fromJson(todayJson);
+  }
+
+  /// Simula un entrenamiento empezado en otro dispositivo.
+  Workout seedInProgress({
+    required String clientId,
+    required String planSessionId,
+    required DateTime startedAt,
+  }) {
+    final w = Workout(
+      id: 'srv-$clientId',
+      clientId: clientId,
+      planSessionId: planSessionId,
+      status: WorkoutStatus.inProgress,
+      startedAt: startedAt,
+      completedAt: null,
+      sets: const [],
+      substitutions: const [],
+    );
+    workouts[clientId] = w;
+    return w;
   }
 
   @override
@@ -250,6 +285,9 @@ class FakeBackend
     _guard('POST /workouts');
     final existing = workouts[request.clientId];
     if (existing != null) return Upserted(existing, created: false);
+    if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
+      throw _error(409, ApiErrorCode.workoutInProgress);
+    }
     final w = Workout(
       id: 'srv-${request.clientId}',
       clientId: request.clientId,

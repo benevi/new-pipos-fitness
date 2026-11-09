@@ -565,6 +565,35 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinishRetryNow => 'Reintentar envío';
 
   @override
+  String todayConflictBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series',
+      one: '1 serie',
+    );
+    return 'Un entrenamiento guardado en este móvil ($_temp0) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.';
+  }
+
+  @override
+  String get todayConflictDiscard => 'Descartar';
+
+  @override
+  String get todayConflictDiscardTitle =>
+      '¿Descartar el entrenamiento de este móvil?';
+
+  @override
+  String todayConflictDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se borrarán $count series que no llegaron al servidor.',
+      one: 'Se borrará 1 serie que no llegó al servidor.',
+    );
+    return '$_temp0 No se puede deshacer.';
+  }
+
+  @override
   String get todayStartHint =>
       'El entrenamiento empieza al confirmar la primera serie.';
 

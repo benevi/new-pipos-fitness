@@ -564,6 +564,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinishRetryNow => 'Retry sending';
 
   @override
+  String todayConflictBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return 'A workout saved on this phone ($_temp0) couldn\'t be started on the server: another workout is in progress on your account. Finish that workout and tap “Retry”, or discard the one on this phone.';
+  }
+
+  @override
+  String get todayConflictDiscard => 'Discard';
+
+  @override
+  String get todayConflictDiscardTitle => 'Discard the workout on this phone?';
+
+  @override
+  String todayConflictDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets that never reached the server will be deleted.',
+      one: '1 set that never reached the server will be deleted.',
+    );
+    return '$_temp0 This can\'t be undone.';
+  }
+
+  @override
   String get todayStartHint =>
       'The workout starts when you confirm the first set.';
 

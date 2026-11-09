@@ -49,6 +49,13 @@ final openWorkoutProvider = StreamProvider.autoDispose
           ref.watch(syncServiceProvider).watchOpenWorkout(planSessionId),
     );
 
+/// Entrenamientos locales bloqueados por otro en curso en la cuenta
+/// (`409 WORKOUT_IN_PROGRESS` de otra sesión del plan).
+final conflictingWorkoutsProvider =
+    StreamProvider.autoDispose<List<LocalWorkout>>(
+      (ref) => ref.watch(syncServiceProvider).watchConflictingWorkouts(),
+    );
+
 /// Series locales del entrenamiento.
 final localSetsProvider = StreamProvider.autoDispose
     .family<List<LocalSetLog>, String>(

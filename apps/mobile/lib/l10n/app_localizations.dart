@@ -980,6 +980,30 @@ abstract class AppLocalizations {
   /// **'Reintentar envío'**
   String get todayFinishRetryNow;
 
+  /// No description provided for @todayConflictBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Un entrenamiento guardado en este móvil ({count, plural, =1{1 serie} other{{count} series}}) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.'**
+  String todayConflictBody(int count);
+
+  /// No description provided for @todayConflictDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get todayConflictDiscard;
+
+  /// No description provided for @todayConflictDiscardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Descartar el entrenamiento de este móvil?'**
+  String get todayConflictDiscardTitle;
+
+  /// No description provided for @todayConflictDiscardBody.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Se borrará 1 serie que no llegó al servidor.} other{Se borrarán {count} series que no llegaron al servidor.}} No se puede deshacer.'**
+  String todayConflictDiscardBody(int count);
+
   /// No description provided for @todayStartHint.
   ///
   /// In es, this message translates to:

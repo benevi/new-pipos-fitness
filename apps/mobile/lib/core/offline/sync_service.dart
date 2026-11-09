@@ -32,6 +32,7 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../data/pipos_api.dart';
+import '../../models/enums.dart';
 import '../../models/workout.dart';
 import '../api/api_failure.dart';
 import 'app_database.dart';
@@ -469,15 +470,76 @@ class SyncService {
     final w = await workoutByClientId(workoutClientId);
     if (w == null) throw StateError('Entrenamiento local desconocido');
     if (w.serverId != null) return w.serverId!;
-    final result = await _api.startWorkout(
-      StartWorkoutRequest(
-        clientId: w.clientId,
-        planSessionId: w.planSessionId,
-        startedAt: w.startedAt,
-      ),
+    return _startOnServer(w);
+  }
+
+  /// `POST /workouts`. Si la API responde `409 WORKOUT_IN_PROGRESS` (ya hay
+  /// otro entrenamiento en curso en la cuenta, p. ej. empezado en otro
+  /// dispositivo), se consulta `GET /sessions/today` —que devuelve la
+  /// sesión del entrenamiento en curso y su referencia— y, si es de la
+  /// MISMA sesión del plan, se adopta: el entrenamiento local queda
+  /// enlazado al id remoto y sus series se envían allí. Si es de otra
+  /// sesión se propaga el 409 (la UI ofrece reintentar o descartar).
+  Future<String> _startOnServer(LocalWorkout w) async {
+    try {
+      final result = await _api.startWorkout(
+        StartWorkoutRequest(
+          clientId: w.clientId,
+          planSessionId: w.planSessionId,
+          startedAt: w.startedAt,
+        ),
+      );
+      await _saveServerId(w.clientId, result.value.id);
+      return result.value.id;
+    } catch (e) {
+      final f = ApiFailure.from(e);
+      if (f.code != ApiErrorCode.workoutInProgress) rethrow;
+      final today = await _api.getToday();
+      final remote = today.workout;
+      if (remote != null &&
+          remote.status == WorkoutStatus.inProgress &&
+          today.planSessionId == w.planSessionId) {
+        await _saveServerId(w.clientId, remote.id);
+        return remote.id;
+      }
+      throw f;
+    }
+  }
+
+  /// Entrenamientos locales cuyo inicio rechazó la API porque hay otro en
+  /// curso (de otra sesión) en la cuenta. La UI ofrece reintentar (tras
+  /// terminar el otro) o descartar el local.
+  Stream<List<LocalWorkout>> watchConflictingWorkouts() {
+    final userId = _userId;
+    if (userId == null) return Stream.value(const []);
+    return _watch(
+      () =>
+          (_db.select(_workouts)..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.serverId.isNull() &
+                    t.lastError.equals(ApiErrorCode.workoutInProgress),
+              ))
+              .get(),
     );
-    await _saveServerId(w.clientId, result.value.id);
-    return result.value.id;
+  }
+
+  /// Borra un entrenamiento local y sus series (acción «Descartar»).
+  Future<void> discardWorkout(String workoutClientId) async {
+    final userId = _uid;
+    await _db.transaction(() async {
+      await (_db.delete(_sets)..where(
+            (t) =>
+                t.userId.equals(userId) &
+                t.workoutClientId.equals(workoutClientId),
+          ))
+          .go();
+      await (_db.delete(_workouts)..where(
+            (t) => t.userId.equals(userId) & t.clientId.equals(workoutClientId),
+          ))
+          .go();
+    });
+    _notify();
   }
 
   // ── Sincronización ──
@@ -532,14 +594,7 @@ class SyncService {
         return SyncReport(sent: sent, failed: failed, deferred: 1);
       }
       try {
-        final result = await _api.startWorkout(
-          StartWorkoutRequest(
-            clientId: w.clientId,
-            planSessionId: w.planSessionId,
-            startedAt: w.startedAt,
-          ),
-        );
-        await _saveServerId(w.clientId, result.value.id);
+        await _startOnServer(w);
         sent++;
       } catch (e) {
         final f = ApiFailure.from(e);
@@ -567,7 +622,20 @@ class SyncService {
       final item = items[i];
       final workout = await workoutByClientId(item.workoutClientId);
       final serverId = workout?.serverId;
-      if (serverId == null) continue; // espera a que el inicio sincronice
+      if (serverId == null) {
+        // Inicio rechazado de forma definitiva: la serie no podrá enviarse
+        // hasta que el usuario reintente; se marca `failed` (visible) en
+        // vez de quedar `pending` para siempre.
+        if (workout != null && workout.attempts >= backoff.maxAttempts) {
+          await _markSetFailed(
+            item,
+            workout.lastError ?? 'WORKOUT_NOT_STARTED',
+            item.attempts,
+          );
+          failed++;
+        }
+        continue; // espera a que el inicio sincronice
+      }
       if (_deferIfNotDue(item.nextAttemptAt)) {
         return SyncReport(
           sent: sent,

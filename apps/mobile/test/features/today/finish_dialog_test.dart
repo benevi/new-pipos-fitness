@@ -59,4 +59,48 @@ void main() {
     expect(backend.finishes, 1);
     await harness.drainAndUnmount(tester);
   });
+
+  testWidgets('409 WORKOUT_IN_PROGRESS de otra sesión: aviso accionable y '
+      '«Descartar» borra el entrenamiento local', (tester) async {
+    usePhoneSize(tester);
+    final backend = FakeBackend();
+    final harness = AppHarness.signedIn(backend: backend);
+    await harness.pump(tester);
+    await tester.pumpAndSettle();
+
+    harness.setOnline(false);
+    await tapKey(tester, 'confirm-$squat', settle: false);
+    await pumpFrames(tester);
+    await tapKey(tester, 'rest-skip', settle: false);
+
+    // Mientras, otro dispositivo empezó otra sesión del plan.
+    backend.seedInProgress(
+      clientId: 'other-device',
+      planSessionId: '00000000-0000-4000-8000-000000000099',
+      startedAt: DateTime.utc(2026, 11, 9, 7),
+    );
+    harness.setOnline(true);
+    await pumpFrames(tester);
+    await scrollToTop(tester);
+
+    final banner = find.byWidgetPredicate(
+      (w) =>
+          w.key is ValueKey<String> &&
+          (w.key! as ValueKey<String>).value.startsWith('workout-conflict-'),
+    );
+    expect(banner, findsOneWidget);
+    expect(find.textContaining('ya hay otro en curso'), findsOneWidget);
+
+    await tapKey(tester, 'conflict-discard', settle: false);
+    await pumpFrames(tester);
+    await tester.tap(find.byKey(const Key('conflict-discard-confirm')));
+    await pumpFrames(tester);
+    expect(banner, findsNothing);
+    final db = harness.database;
+    expect(
+      await tester.runAsync(() => db.select(db.localWorkouts).get()),
+      isEmpty,
+    );
+    await harness.drainAndUnmount(tester);
+  });
 }

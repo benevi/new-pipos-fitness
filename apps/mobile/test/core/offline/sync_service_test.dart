@@ -334,6 +334,68 @@ void main() {
     expect(await db.select(db.localWorkouts).get(), hasLength(1));
   });
 
+  test('409 WORKOUT_IN_PROGRESS de la MISMA sesión: adopta el remoto y '
+      'envía allí las series', () async {
+    final remote = backend.seedInProgress(
+      clientId: 'other-device',
+      planSessionId: planSession,
+      startedAt: now,
+    );
+    final set = await logOne();
+    connectivity.online = true;
+    await service.syncNow();
+
+    final w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.serverId, remote.id);
+    expect(w.lastError, isNull);
+    expect(backend.sets[set.clientId]!.workoutId, remote.id);
+    expect(
+      (await service.setsOf(set.workoutClientId)).single.status,
+      SetSyncStatus.synced,
+    );
+  });
+
+  test('409 WORKOUT_IN_PROGRESS de OTRA sesión: conflicto visible, series '
+      'failed (no pending para siempre) y se puede descartar', () async {
+    final remote = backend.seedInProgress(
+      clientId: 'other-device',
+      planSessionId: '00000000-0000-4000-8000-000000000099',
+      startedAt: now,
+    );
+    final set = await logOne();
+    connectivity.online = true;
+    await service.syncNow();
+
+    final conflicts = await service.watchConflictingWorkouts().first;
+    expect(conflicts.single.clientId, set.workoutClientId);
+    expect(
+      (await service.setsOf(set.workoutClientId)).single.status,
+      SetSyncStatus.failed,
+    );
+    // Una serie registrada después tampoco queda pendiente para siempre.
+    final later = await logOne(index: 1);
+    await service.syncNow();
+    expect(
+      (await service.setsOf(later.workoutClientId)).last.status,
+      SetSyncStatus.failed,
+    );
+
+    // Tras terminar el otro, «Reintentar» lo arranca y envía las series.
+    backend.workouts[remote.clientId] = (await backend.finishWorkout(
+      remote.id,
+      now,
+    ));
+    await service.retryFailed();
+    await service.syncNow();
+    expect(await service.watchConflictingWorkouts().first, isEmpty);
+    expect(backend.sets, hasLength(2));
+
+    // Descartar borra el entrenamiento local y sus series.
+    await service.discardWorkout(set.workoutClientId);
+    expect(await service.workoutByClientId(set.workoutClientId), isNull);
+    expect(await service.setsOf(set.workoutClientId), isEmpty);
+  });
+
   test('BackoffPolicy: exponencial y acotado', () {
     const p = BackoffPolicy(
       baseDelay: Duration(seconds: 2),
