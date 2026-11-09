@@ -88,13 +88,28 @@ List<DateTime> planReminders({
   return result;
 }
 
+/// Canal de Android de cada tipo de aviso (el usuario puede silenciarlos
+/// por separado en los ajustes del sistema).
+enum NotificationChannel {
+  reminders('training_reminders'),
+  restTimer('rest_timer');
+
+  const NotificationChannel(this.id);
+  final String id;
+}
+
 /// Lo que la app necesita del sistema de notificaciones (sustituible en
 /// tests).
 abstract class NotificationScheduler {
   /// Pide permiso (Android 13+ / iOS). true si se puede notificar.
   Future<bool> requestPermission();
 
+  /// true si la app ya puede notificar (sin pedir permiso).
+  Future<bool> hasPermission();
+
   Future<void> cancelAll();
+
+  Future<void> cancel(int id);
 
   /// Programa un aviso en [when] (hora local del dispositivo).
   Future<void> schedule({
@@ -102,6 +117,7 @@ abstract class NotificationScheduler {
     required DateTime when,
     required String title,
     required String body,
+    NotificationChannel channel = NotificationChannel.reminders,
   });
 }
 
@@ -113,8 +129,6 @@ class LocalNotificationScheduler implements NotificationScheduler {
 
   final FlutterLocalNotificationsPlugin _plugin;
   Future<void>? _ready;
-
-  static const _channelId = 'training_reminders';
 
   Future<void> _init() => _ready ??= () async {
     tzdata.initializeTimeZones();
@@ -158,9 +172,35 @@ class LocalNotificationScheduler implements NotificationScheduler {
   }
 
   @override
+  Future<bool> hasPermission() async {
+    await _init();
+    final android = _plugin
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >();
+    if (android != null) {
+      return await android.areNotificationsEnabled() ?? false;
+    }
+    final ios = _plugin
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >();
+    if (ios != null) {
+      return (await ios.checkPermissions())?.isEnabled ?? false;
+    }
+    return true;
+  }
+
+  @override
   Future<void> cancelAll() async {
     await _init();
     await _plugin.cancelAll();
+  }
+
+  @override
+  Future<void> cancel(int id) async {
+    await _init();
+    await _plugin.cancel(id: id);
   }
 
   @override
@@ -169,6 +209,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
     required DateTime when,
     required String title,
     required String body,
+    NotificationChannel channel = NotificationChannel.reminders,
   }) async {
     await _init();
     await _plugin.zonedSchedule(
@@ -178,7 +219,7 @@ class LocalNotificationScheduler implements NotificationScheduler {
       body: body,
       notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
-          _channelId,
+          channel.id,
           title,
           importance: Importance.defaultImportance,
         ),

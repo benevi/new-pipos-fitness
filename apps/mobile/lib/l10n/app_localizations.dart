@@ -176,6 +176,102 @@ abstract class AppLocalizations {
   /// **'No se pudo enviar'**
   String get syncStatusFailed;
 
+  /// No description provided for @setRejectedInvalid.
+  ///
+  /// In es, this message translates to:
+  /// **'La API no la acepta: el ejercicio o los datos no valen para este hueco.'**
+  String get setRejectedInvalid;
+
+  /// No description provided for @setRejectedFinished.
+  ///
+  /// In es, this message translates to:
+  /// **'La API no la acepta: el entrenamiento ya estaba terminado.'**
+  String get setRejectedFinished;
+
+  /// No description provided for @setRejectedNotStarted.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar: el entrenamiento no llegó a empezar en el servidor.'**
+  String get setRejectedNotStarted;
+
+  /// No description provided for @setRejectedOther.
+  ///
+  /// In es, this message translates to:
+  /// **'No se pudo enviar ({code}).'**
+  String setRejectedOther(String code);
+
+  /// No description provided for @setDiscard.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar'**
+  String get setDiscard;
+
+  /// No description provided for @setDiscardFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Descartar la serie {number}'**
+  String setDiscardFor(int number);
+
+  /// No description provided for @setDiscardTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Descartar la serie {number}?'**
+  String setDiscardTitle(int number);
+
+  /// No description provided for @setDiscardBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se quitará de este móvil y no contará en el entrenamiento. No se puede deshacer.'**
+  String get setDiscardBody;
+
+  /// No description provided for @setActionsFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Opciones de la serie {number}'**
+  String setActionsFor(int number);
+
+  /// No description provided for @setEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar'**
+  String get setEdit;
+
+  /// No description provided for @setEditTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Corregir la serie {number}'**
+  String setEditTitle(int number);
+
+  /// No description provided for @setEditHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Se guarda en este móvil y se envía cuando haya conexión.'**
+  String get setEditHint;
+
+  /// No description provided for @setEditSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar cambios'**
+  String get setEditSave;
+
+  /// No description provided for @setDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar'**
+  String get setDelete;
+
+  /// No description provided for @setDeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar la serie {number}?'**
+  String setDeleteTitle(int number);
+
+  /// No description provided for @setDeleteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Dejará de contar en el entrenamiento y en tu progreso. No se puede deshacer.'**
+  String get setDeleteBody;
+
   /// No description provided for @cachedDataNotice.
   ///
   /// In es, this message translates to:
@@ -950,6 +1046,42 @@ abstract class AppLocalizations {
   /// **'Terminar entrenamiento'**
   String get todayFinish;
 
+  /// No description provided for @todayAbandon.
+  ///
+  /// In es, this message translates to:
+  /// **'Abandonar entrenamiento'**
+  String get todayAbandon;
+
+  /// No description provided for @todayAbandonTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Abandonar el entrenamiento?'**
+  String get todayAbandonTitle;
+
+  /// No description provided for @todayAbandonBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo registrado se conserva pero no contará en tu progreso ni en la adherencia, y no podrás añadir más series. Se enviará aunque ahora no tengas conexión.'**
+  String get todayAbandonBody;
+
+  /// No description provided for @todayAbandoned.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenamiento abandonado.'**
+  String get todayAbandoned;
+
+  /// No description provided for @todayClosedRemotely.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu entrenamiento anterior se cerró en el servidor (p. ej., se abandonó solo tras 12 h sin actividad). {count, plural, =0{No quedó nada sin subir.} =1{1 serie no llegó a subirse.} other{{count} series no llegaron a subirse.}}'**
+  String todayClosedRemotely(int count);
+
+  /// No description provided for @actionUnderstood.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get actionUnderstood;
+
   /// No description provided for @todayFinishConfirmTitle.
   ///
   /// In es, this message translates to:
@@ -997,6 +1129,18 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Un entrenamiento guardado en este móvil ({count, plural, =1{1 serie} other{{count} series}}) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.'**
   String todayConflictBody(int count);
+
+  /// No description provided for @todayPlanOutdatedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan cambió mientras entrenabas sin conexión: este entrenamiento guardado en el móvil ({count, plural, =1{1 serie} other{{count} series}}) es de la sesión anterior y no se puede subir. Se conserva aquí hasta que lo descartes.'**
+  String todayPlanOutdatedBody(int count);
+
+  /// No description provided for @setRejectedPlanOutdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan cambió: esta serie es de la sesión anterior y no se puede subir.'**
+  String get setRejectedPlanOutdated;
 
   /// No description provided for @todayConflictDiscard.
   ///
@@ -1052,6 +1196,18 @@ abstract class AppLocalizations {
   /// **'Descanso terminado'**
   String get restTimerDone;
 
+  /// No description provided for @restNotificationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descanso terminado'**
+  String get restNotificationTitle;
+
+  /// No description provided for @restNotificationBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca para seguir con la siguiente serie.'**
+  String get restNotificationBody;
+
   /// No description provided for @swapTitle.
   ///
   /// In es, this message translates to:
@@ -1081,6 +1237,30 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ejercicio cambiado por {name}'**
   String swapDone(String name);
+
+  /// No description provided for @swapQueued.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio a {name} guardado. Se enviará al recuperar la conexión.'**
+  String swapQueued(String name);
+
+  /// No description provided for @swapOfflineNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión: alternativas guardadas hoy. El cambio de hoy se enviará al volver la red; fijarlo en el plan necesita conexión.'**
+  String get swapOfflineNotice;
+
+  /// No description provided for @swapPinNeedsNetwork.
+  ///
+  /// In es, this message translates to:
+  /// **'Fijar el cambio en el plan necesita conexión. Sin red puedes cambiarlo solo para hoy.'**
+  String get swapPinNeedsNetwork;
+
+  /// No description provided for @swapPendingBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio pendiente de enviar'**
+  String get swapPendingBadge;
 
   /// No description provided for @completeTitle.
   ///
@@ -1286,6 +1466,12 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Ajustes'**
   String get settingsTitle;
+
+  /// No description provided for @settingsEmailOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión: tu correo aparecerá al recuperar la red.'**
+  String get settingsEmailOffline;
 
   /// No description provided for @settingsProfile.
   ///

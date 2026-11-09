@@ -28,6 +28,13 @@ class ApiErrorCode {
   static const unknownExercise = 'UNKNOWN_EXERCISE';
   static const workoutInProgress = 'WORKOUT_IN_PROGRESS';
   static const workoutFinished = 'WORKOUT_FINISHED';
+
+  /// `POST /workouts` con una sesión de una versión del plan que ya no es la
+  /// vigente (issue #10): hay que releer `GET /sessions/today`.
+  static const planSessionOutdated = 'PLAN_SESSION_OUTDATED';
+
+  /// Misma `Idempotency-Key` con otra entrada (issue #11): clave nueva.
+  static const idempotencyKeyReused = 'IDEMPOTENCY_KEY_REUSED';
   static const clientIdConflict = 'CLIENT_ID_CONFLICT';
   static const nutritionInputIncomplete = 'NUTRITION_INPUT_INCOMPLETE';
 }

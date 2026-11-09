@@ -46,6 +46,7 @@ const map = {
   today_session_adjusted: 'TodaySessionResponseSchema',
   today_session_break: 'TodaySessionResponseSchema',
   start_workout_adjusted: 'StartWorkoutRequestSchema',
+  patch_set_request: 'PatchSetRequestSchema',
   training_break: 'TrainingBreakResponseSchema',
   training_breaks: 'TrainingBreakListResponseSchema',
   training_break_request: 'CreateTrainingBreakRequestSchema',

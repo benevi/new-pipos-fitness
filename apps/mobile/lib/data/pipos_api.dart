@@ -43,7 +43,11 @@ abstract class ProfileApi {
 }
 
 abstract class PlanApi {
-  Future<PlanVersion> generatePlan();
+  /// `POST /plans/generate`. Con [idempotencyKey] (un UUID v4 por intento,
+  /// igual en cada reintento) repetir devuelve la misma versión (200) en vez
+  /// de crear otra; misma clave con otro perfil → `422
+  /// IDEMPOTENCY_KEY_REUSED`.
+  Future<PlanVersion> generatePlan({String? idempotencyKey});
 
   /// `null` si no hay plan (404 PLAN_REQUIRED).
   Future<PlanVersion?> getCurrentPlan();
@@ -71,6 +75,21 @@ abstract class WorkoutApi {
     UpsertSetRequest request,
   );
   Future<Workout> finishWorkout(String workoutId, DateTime completedAt);
+
+  /// `POST /workouts/:id/abandon` (idempotente; 409 WORKOUT_FINISHED si ya
+  /// estaba terminado).
+  Future<Workout> abandonWorkout(String workoutId);
+
+  /// `DELETE /workouts/:id/sets/:clientId` (borrado lógico, idempotente;
+  /// 404 si la serie nunca llegó al servidor).
+  Future<SetLog> deleteSet(String workoutId, String clientId);
+
+  /// `PATCH /workouts/:id/sets/:clientId` (gana la última escritura).
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  );
   Future<SubstitutesResponse> getSubstitutes(String exerciseId);
   Future<Substitution> substitute({
     required String workoutId,
@@ -218,9 +237,17 @@ class DioPiposApi
 
   // ── Planes ──
   @override
-  Future<PlanVersion> generatePlan() => _call(
-    () async =>
-        PlanVersion.fromJson(_json(await _client.post('/plans/generate'))),
+  Future<PlanVersion> generatePlan({String? idempotencyKey}) => _call(
+    () async => PlanVersion.fromJson(
+      _json(
+        await _client.post(
+          '/plans/generate',
+          headers: idempotencyKey == null
+              ? null
+              : {'Idempotency-Key': idempotencyKey},
+        ),
+      ),
+    ),
   );
 
   @override
@@ -325,6 +352,36 @@ class DioPiposApi
           ),
         ),
       );
+
+  @override
+  Future<Workout> abandonWorkout(String workoutId) => _call(
+    () async => Workout.fromJson(
+      _json(await _client.post('/workouts/$workoutId/abandon')),
+    ),
+  );
+
+  @override
+  Future<SetLog> deleteSet(String workoutId, String clientId) => _call(
+    () async => SetLog.fromJson(
+      _json(await _client.delete('/workouts/$workoutId/sets/$clientId')),
+    ),
+  );
+
+  @override
+  Future<SetLog> patchSet(
+    String workoutId,
+    String clientId,
+    PatchSetRequest request,
+  ) => _call(
+    () async => SetLog.fromJson(
+      _json(
+        await _client.patch(
+          '/workouts/$workoutId/sets/$clientId',
+          data: request.toJson(),
+        ),
+      ),
+    ),
+  );
 
   @override
   Future<SubstitutesResponse> getSubstitutes(String exerciseId) => _call(

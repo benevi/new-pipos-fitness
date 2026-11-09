@@ -46,6 +46,9 @@ class ApiMutationSender implements MutationSender {
         await _body.putMeasurement(BodyMeasurement.fromJson(p));
       case MutationKind.measurementDelete:
         await _body.deleteMeasurement(p['date'] as String);
+      case MutationKind.substitute:
+        // Los envía el SyncService en orden con las series.
+        throw StateError('La sustitución no pasa por MutationSender');
     }
   }
 }

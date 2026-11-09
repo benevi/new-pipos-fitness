@@ -33,10 +33,34 @@ class SettingsScreen extends ConsumerWidget {
       body: ListView(
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          if (email != null)
+          if (email != null && email.isNotEmpty)
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.md),
               child: Text(email, style: Theme.of(context).textTheme.bodyMedium),
+            )
+          else if (email != null)
+            // Entrada sin red con solo el id del usuario guardado (sesiones
+            // antiguas): se marca en vez de dejar el correo vacío (#26).
+            Padding(
+              key: const Key('settings-email-offline'),
+              padding: const EdgeInsets.only(bottom: AppSpacing.md),
+              child: Row(
+                children: [
+                  ExcludeSemantics(
+                    child: Icon(
+                      Icons.cloud_off_outlined,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Expanded(
+                    child: Text(
+                      l10n.settingsEmailOffline,
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ),
+                ],
+              ),
             ),
           _TileCard(
             child: ListTile(

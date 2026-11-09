@@ -145,9 +145,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return;
       }
       // Sin red / servidor caído / respuesta rara: dejamos entrar con los
-      // datos cacheados y marcamos la sesión como no verificada. Si falta
-      // el usuario cacheado se usa el id guardado con los tokens (la cola
-      // offline solo necesita el id).
+      // datos cacheados y marcamos la sesión como no verificada. El usuario
+      // completo se guarda también junto a los tokens; si aun así solo hay
+      // id (sesiones antiguas), el email queda vacío y Ajustes lo marca como
+      // «sin conexión» hasta revalidar (la cola offline solo necesita el
+      // id).
       final ownerId = cachedUser == null ? await _storage.readUserId() : null;
       if (!mounted) return;
       state = AuthState(

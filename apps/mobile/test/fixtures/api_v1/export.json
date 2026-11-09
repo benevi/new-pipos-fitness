@@ -218,6 +218,16 @@
     }
   ],
   "workouts": [],
+  "auditEvents": [
+    {
+      "type": "login_succeeded",
+      "occurredAt": "2026-11-09T07:55:00.000Z"
+    },
+    {
+      "type": "health_consent_granted",
+      "occurredAt": "2026-11-09T07:58:00.000Z"
+    }
+  ],
   "analytics": {
     "e1rm": [],
     "weeklyMuscleVolume": [],

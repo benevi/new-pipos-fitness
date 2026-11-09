@@ -123,6 +123,16 @@ void main() {
       const ProfileScheduleRequest([1, 3, 5]).toJson(),
       fixture('profile_schedule_request'),
     );
+    // Editar una serie (#22).
+    expect(
+      PatchSetRequest(
+        reps: 9,
+        loadKg: 62.5,
+        rir: 1,
+        clientUpdatedAt: DateTime.utc(2026, 11, 9, 8, 5),
+      ).toJson(),
+      fixture('patch_set_request'),
+    );
     // Sin ajuste no se envía el campo (clientes anteriores).
     expect(
       StartWorkoutRequest(
@@ -160,6 +170,14 @@ void main() {
     final e = AccountExport.fromJson(fixture('export'));
     expect(e.formatVersion, 1);
     expect(e.raw, equals(fixture('export')));
+    // Registro de auditoría (issue #17): se conserva tal cual en el fichero.
+    expect(e.raw['auditEvents'], hasLength(2));
+    // Las exportaciones anteriores, sin `auditEvents`, siguen valiendo.
+    final legacy = fixture('export')..remove('auditEvents');
+    expect(
+      AccountExport.fromJson(legacy).raw.containsKey('auditEvents'),
+      isFalse,
+    );
   });
 
   test(
