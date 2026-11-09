@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
+import { setLogSink } from '../../logging/logging';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { catalogServiceMock, FixedClock, prismaMock, profileRow, rejectsWithCode, UID } from '../../test/unit/support';
 import type { AuthService } from '../auth/auth.service';
@@ -114,7 +115,15 @@ describe('AccountService', () => {
     await rejectsWithCode(service.delete(UID, 'x'), 'AUTH_INVALID_CREDENTIALS', 403);
     expect(prisma.user.delete).not.toHaveBeenCalled();
     auth.verifyPassword.mockResolvedValueOnce(true);
-    await service.delete(UID, 'ok');
+    const lines: string[] = [];
+    const restore = setLogSink((l) => lines.push(l));
+    try {
+      await service.delete(UID, 'ok');
+    } finally {
+      restore();
+    }
+    expect(lines[0]).toContain('account deleted');
+    expect(lines[0]).not.toContain(UID);
     expect(prisma.user.delete).toHaveBeenCalledWith({ where: { id: UID } });
   });
 });

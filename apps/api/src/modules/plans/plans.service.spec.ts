@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { Prisma } from '@prisma/client';
+import { setLogSink } from '../../logging/logging';
 import type { PrismaService } from '../../prisma/prisma.service';
 import {
   catalogServiceMock,
@@ -108,7 +109,14 @@ describe('PlansService', () => {
   it('prepare: catálogo inválido → 500', async () => {
     const { plans, catalog } = setup();
     catalog.engineCatalog.mockResolvedValueOnce({ exercises: [{ slug: 'x' }], bySlug: new Map(), byId: new Map() });
-    await rejectsWithCode(plans.prepare(UID, engineProfile, 'UTC'), 'PLAN_GENERATION_FAILED', 500);
+    const lines: string[] = [];
+    const restore = setLogSink((l) => lines.push(l));
+    try {
+      await rejectsWithCode(plans.prepare(UID, engineProfile, 'UTC'), 'PLAN_GENERATION_FAILED', 500);
+    } finally {
+      restore();
+    }
+    expect(lines[0]).toContain('INVALID_CATALOG');
   });
 
   it('persistVersion: crea el plan si no hay y numera la versión siguiente', async () => {

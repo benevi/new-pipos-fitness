@@ -18,7 +18,7 @@ export type PrismaMock = Record<string, Record<string, Mock>> & {
 export function prismaMock(): PrismaMock {
   const models = new Map<string, Record<string, Mock>>();
   const special = new Map<string, Mock>();
-  let root: PrismaMock;
+
   const model = (name: string) => {
     let m = models.get(name);
     if (!m) {
@@ -33,7 +33,7 @@ export function prismaMock(): PrismaMock {
     }
     return m;
   };
-  root = new Proxy({} as PrismaMock, {
+  const root: PrismaMock = new Proxy({} as PrismaMock, {
     get: (_t, prop: string | symbol) => {
       if (typeof prop === 'symbol' || prop === 'then') return undefined;
       if (prop.startsWith('$')) {

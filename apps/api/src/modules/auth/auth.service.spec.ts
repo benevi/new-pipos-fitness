@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { parseEnv } from '../../config/env';
@@ -134,6 +134,5 @@ describe('AuthService', () => {
     expect(service.isWithinGrace({ revokedReason: 'logout', rotatedAt: now }, now)).toBe(false);
     expect(service.isWithinGrace({ revokedReason: 'rotated', rotatedAt: null }, now)).toBe(false);
     expect(service.isWithinGrace({ revokedReason: 'rotated', rotatedAt: now }, now)).toBe(true);
-    vi.useRealTimers();
   });
 });
