@@ -15,4 +15,12 @@ paralelo.
 | 4b | App móvil v1 | `reconstruccion/fase-4b-movil-v1` | #6 | Pantallas de v1, i18n, accesibilidad, sincronización, integration test headless y APK en CI. |
 | 5 | Cierre | `reconstruccion/fase-5-*` | #7, #8, #30 | Revisiones independientes y correcciones (RGPD, motor, analítica, catálogo), docs coherentes, archivo histórico, [checklist de despliegue](DEPLOY_CHECKLIST.md), [deuda técnica](DEUDA_TECNICA.md) (issues #9–#29) e [informe final](INFORME_FINAL.md). |
 
+## Mejoras posteriores
+
+| Mejora | PR | Contenido |
+|---|---|---|
+| Ideas recuperadas (ADR-0013) | #31, #32 | Carga real y discos, nota por ejercicio, cambio fijado, sesión corta, días y pausas, medidas corporales. |
+| Deuda técnica | #33, #45 | Issues #9–#15, #17, #18, #21–#26. |
+| Guía de ejercicios (ADR-0014) | #46 (plan) y una PR por fase | Ver [PLAN_GUIA_EJERCICIOS.md](PLAN_GUIA_EJERCICIOS.md). |
+
 Los documentos de las «fases 1–16» del proyecto original están en [archivo/](archivo/README.md).
