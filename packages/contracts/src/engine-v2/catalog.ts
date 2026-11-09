@@ -11,6 +11,10 @@ import {
 
 export const SLUG_REGEX = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+/** Límites del contenido de la ficha del ejercicio (ADR-0014, PLAN_GUIA_EJERCICIOS §Fase 2). */
+export const EXERCISE_DESCRIPTION_MAX = 400;
+export const EXERCISE_MISTAKE_MAX = 120;
+
 export const CatalogMuscleSchema = z
   .object({
     muscle: MuscleSchema,
@@ -54,6 +58,13 @@ export const CatalogExerciseSchema = z
       .max(64)
       .regex(/^[a-z0-9_]+$/),
     cuesEs: z.array(z.string().min(3).max(120)).min(2).max(3),
+    /**
+     * Qué es el movimiento y qué trabaja, en 1-3 frases (ADR-0014). Sin promesas de efectos sin
+     * fuente. Contenido pendiente de revisión por un entrenador titulado antes del lanzamiento.
+     */
+    descriptionEs: z.string().min(20).max(EXERCISE_DESCRIPTION_MAX).optional(),
+    /** Errores comunes (0-3), cada uno ≤ 120 caracteres (ADR-0014). */
+    mistakesEs: z.array(z.string().min(3).max(EXERCISE_MISTAKE_MAX)).max(3).optional(),
     media: z.null(),
   })
   .strict()

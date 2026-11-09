@@ -144,3 +144,52 @@ describe('catálogo de ejercicios', () => {
     expect(loadCatalog()).toBe(loadCatalog());
   });
 });
+
+/** Frases de un texto: cortes tras «.», «!» o «?» seguidos de espacio o fin. */
+function sentences(text: string): number {
+  return text.split(/[.!?](?:\s|$)/).filter((s) => s.trim().length > 0).length;
+}
+
+describe('ficha del ejercicio: descripción y errores comunes (ADR-0014)', () => {
+  it('informa de la cobertura del contenido', () => {
+    const list = loadCatalog();
+    const withDescription = list.filter((e) => e.descriptionEs).length;
+    const withMistakes = list.filter((e) => e.mistakesEs !== undefined).length;
+    console.info(
+      `Cobertura de la ficha: ${withDescription}/${list.length} con descripción, ${withMistakes}/${list.length} con errores comunes`,
+    );
+    expect(withDescription).toBeLessThanOrEqual(list.length);
+  });
+
+  it('ningún texto supera los límites: 1-3 frases y ≤ 400 caracteres; 0-3 errores de ≤ 120', () => {
+    for (const e of loadCatalog()) {
+      if (e.descriptionEs !== undefined) {
+        expect(e.descriptionEs.length, e.slug).toBeLessThanOrEqual(engineV2.EXERCISE_DESCRIPTION_MAX);
+        expect(sentences(e.descriptionEs), e.slug).toBeGreaterThanOrEqual(1);
+        expect(sentences(e.descriptionEs), e.slug).toBeLessThanOrEqual(3);
+        expect(e.descriptionEs, e.slug).not.toMatch(/\n/);
+      }
+      for (const m of e.mistakesEs ?? []) {
+        expect(m.length, e.slug).toBeLessThanOrEqual(engineV2.EXERCISE_MISTAKE_MAX);
+      }
+      expect((e.mistakesEs ?? []).length, e.slug).toBeLessThanOrEqual(3);
+    }
+  });
+
+  it('sin promesas de efectos sin fuente', () => {
+    const banned = /quema(r)? grasa|previene lesiones|evita lesiones|tonific|el mejor ejercicio|garantiza|adelgaza/i;
+    for (const e of loadCatalog()) {
+      const text = [e.descriptionEs ?? '', ...(e.mistakesEs ?? [])].join(' ');
+      expect(text, e.slug).not.toMatch(banned);
+    }
+  });
+
+  it('el esquema rechaza una descripción o errores fuera de límites', () => {
+    const first = loadCatalog()[0];
+    expect(() => parseCatalog([{ ...first, descriptionEs: 'x'.repeat(401) }])).toThrow(CatalogValidationError);
+    expect(() => parseCatalog([{ ...first, mistakesEs: ['a', 'b', 'c', 'd'].map((c) => c.repeat(10)) }])).toThrow(
+      CatalogValidationError,
+    );
+    expect(() => parseCatalog([{ ...first, mistakesEs: ['x'.repeat(121)] }])).toThrow(CatalogValidationError);
+  });
+});
