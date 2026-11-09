@@ -23,7 +23,7 @@ const IPV4_OR_6 = /^[0-9a-fA-F:.]{2,45}$/;
 /**
  * Consentimiento explícito para datos de salud (RGPD art. 9.2.a; ADR-0011).
  * Registro append-only en ConsentEvent; la retirada borra los datos de salud, redacta las
- * instantáneas de los planes y regenera el plan sin ellos, todo en una transacción.
+ * instantáneas de los planes y los textos derivados de salud de sus explicaciones, y regenera el plan sin ellos, todo en una transacción.
  */
 @Injectable()
 export class ConsentService {
@@ -104,6 +104,29 @@ export class ConsentService {
         SET "inputSnapshot" = (("inputSnapshot" - 'limitations') #- '{body,weightKg}' #- '{body,heightCm}')
                               || jsonb_build_object('redacted', true)
         WHERE "userId" = ${userId}::uuid`;
+      // Y los textos derivados de salud (zona limitada) de las explicaciones guardadas:
+      // las del plan (healthNotes y avisos con health: true) y las de cada ejercicio.
+      await tx.$executeRaw`
+        UPDATE "PlanVersion"
+        SET "rationale" = jsonb_set(
+              jsonb_set("rationale", '{healthNotes}', '[]'::jsonb),
+              '{warnings}',
+              COALESCE(
+                (SELECT jsonb_agg(w ORDER BY i)
+                   FROM jsonb_array_elements("rationale" -> 'warnings') WITH ORDINALITY AS t(w, i)
+                  WHERE COALESCE(w ->> 'health', 'false') <> 'true'),
+                '[]'::jsonb))
+        WHERE "userId" = ${userId}::uuid`;
+      await tx.$executeRaw`
+        UPDATE "PlanExercise" pe
+        SET "rationale" = COALESCE(
+              (SELECT jsonb_agg(e ORDER BY i)
+                 FROM jsonb_array_elements(pe."rationale") WITH ORDINALITY AS t(e, i)
+                WHERE jsonb_typeof(e) <> 'object' OR COALESCE(e ->> 'health', 'false') <> 'true'),
+              '[]'::jsonb)
+        FROM "PlanSession" ps
+        WHERE pe."planSessionId" = ps."id" AND ps."userId" = ${userId}::uuid
+          AND jsonb_typeof(pe."rationale") = 'array'`;
       return prepared ? this.plans.persistVersion(tx, userId, prepared) : null;
     });
 

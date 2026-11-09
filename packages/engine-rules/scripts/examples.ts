@@ -159,7 +159,7 @@ function render(ex: Example, plan: engineV2.PlanDraft): string {
     }
     out.push('', ...s.rationale.map((r) => `- ${r}`), '');
     out.push('<details><summary>Por qué cada ejercicio</summary>', '');
-    for (const e of s.exercises) out.push(`- **${e.nameEs}**: ${e.rationale.join(' ')}`);
+    for (const e of s.exercises) out.push(`- **${e.nameEs}**: ${[...e.rationale, ...e.healthNotes].join(' ')}`);
     out.push('', '</details>', '');
   }
   out.push('## Volumen semanal por grupo (series efectivas)', '', '| Grupo | Series | Rango | Sesiones/sem | Estado |', '|---|---|---|---|---|');
@@ -168,8 +168,8 @@ function render(ex: Example, plan: engineV2.PlanDraft): string {
     out.push(`| ${GROUP_ES[v.group]}${v.isPriority ? ' ★' : ''} | ${v.effectiveSets} | ${v.min}-${v.max} | ${v.sessions} | ${st} |`);
   }
   out.push('', '## Avisos', '');
-  out.push(...(plan.warnings.length ? plan.warnings.map((w) => `- \`${w.code}\`: ${w.message}`) : ['- Ninguno.']), '');
-  out.push('## Explicación del plan', '', ...plan.rationale.map((r) => `- ${r}`), '');
+  out.push(...(plan.warnings.length ? plan.warnings.map((w) => `- \`${w.code}\`${w.health ? ' (salud)' : ''}: ${w.message}`) : ['- Ninguno.']), '');
+  out.push('## Explicación del plan', '', ...plan.rationale.map((r) => `- ${r}`), ...plan.healthNotes.map((r) => `- (salud) ${r}`), '');
   out.push(
     '## Puntuación',
     '',

@@ -76,6 +76,28 @@ describe('Perfil, consentimiento de salud y nutrición (e2e, Postgres real)', ()
     expect(await ctx.prisma.consentEvent.count({ where: { userId: u.id } })).toBe(2);
   });
 
+  it('retirar el consentimiento borra la zona limitada de las explicaciones guardadas (versión antigua y export)', async () => {
+    const ZONE_TEXT = /rodilla|limitaci/i;
+    const u = await registerUser(ctx.app);
+    await grantHealthConsent(ctx.app, u.accessToken);
+    // Limitación de rodilla + un patrón que solo admite variantes de riesgo para la rodilla.
+    await putProfile(ctx.app, u.accessToken, { ...BEGINNER_GYM, limitations: ['knee'] });
+    const v1 = await request(server()).post('/plans/generate').set(bearer(u.accessToken)).expect(201);
+    // Antes de retirar: la explicación del plan sí menciona la rodilla (control positivo).
+    expect(JSON.stringify(v1.body)).toMatch(ZONE_TEXT);
+
+    await request(server()).delete('/me/consents/health').set(bearer(u.accessToken)).expect(200);
+
+    const old = await request(server()).get(`/plans/versions/${v1.body.id}`).set(bearer(u.accessToken)).expect(200);
+    expect(JSON.stringify(old.body)).not.toMatch(ZONE_TEXT);
+    expect(old.body.rationale.length).toBeGreaterThan(0); // el resto de la explicación se conserva
+    const exported = await request(server()).get('/me/export').set(bearer(u.accessToken)).expect(200);
+    expect(JSON.stringify(exported.body.plans)).not.toMatch(ZONE_TEXT);
+    // Ni rastro en BD (incluidas las explicaciones de cada ejercicio).
+    const rows = await ctx.prisma.planVersion.findMany({ where: { userId: u.id }, include: { sessions: { include: { exercises: true } } } });
+    expect(JSON.stringify(rows)).not.toMatch(ZONE_TEXT);
+  });
+
   it('PUT /me/profile: valida con issues por campo y rechaza ejercicios desconocidos con 422', async () => {
     const u = await registerUser(ctx.app);
     const invalid = await request(server()).put('/me/profile').set(bearer(u.accessToken))

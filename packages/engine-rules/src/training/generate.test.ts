@@ -47,13 +47,13 @@ describe('casos límite fijos (PLAN §3)', () => {
     for (const e of exercises(pl)) {
       const tag = bySlug.get(e.exerciseId)?.riskTags.find((r) => r.zone === 'shoulder');
       expect(tag?.level, e.exerciseId).not.toBe('avoid');
-      if (tag?.level === 'caution') expect(e.rationale.join(' ')).toMatch(/hombro/);
+      if (tag?.level === 'caution') expect(e.healthNotes.join(' ')).toMatch(/hombro/);
     }
     const slugs = exercises(pl).map((e) => e.exerciseId);
     for (const banned of ['press-tras-nuca', 'fondos-paralelas', 'remo-menton-barra', 'press-militar-barra']) {
       expect(slugs).not.toContain(banned);
     }
-    expect(pl.rationale.join(' ')).toMatch(/hombro/);
+    expect(pl.healthNotes.join(' ')).toMatch(/hombro/);
     // El empuje vertical sigue cubierto con variantes de precaución.
     expect(exercises(pl).some((e) => e.movementPattern === 'vertical_push')).toBe(true);
   });
@@ -117,6 +117,24 @@ describe('casos límite fijos (PLAN §3)', () => {
     const w = pl.warnings.find((x) => x.code === 'PATTERN_UNCOVERED' && x.data?.pattern === 'vertical_push');
     expect(w?.data?.reason).toBe('limitation');
     expect(w?.message).toMatch(/limitaciones/);
+    expect(w?.health).toBe(true);
+  });
+
+  it('los textos derivados de salud van solo en healthNotes / avisos con health: true', () => {
+    const ZONE_WORDS = /limitaci|precauci|rodilla/i;
+    const pl = plan(profile({ limitations: ['knee', 'shoulder'], equipment: ['barbell', 'dumbbell', 'bench', 'squat_rack', 'cable', 'machine'] }));
+    expect(pl.healthNotes.join(' ')).toMatch(/rodilla/);
+    expect(exercises(pl).some((e) => e.healthNotes.length > 0)).toBe(true);
+    const nonHealth = [
+      ...pl.rationale,
+      ...pl.split.rationale,
+      ...pl.sessions.flatMap((s) => [...s.rationale, ...s.exercises.flatMap((e) => e.rationale)]),
+      ...pl.warnings.filter((w) => !w.health).map((w) => w.message),
+    ];
+    for (const t of nonHealth) expect(t).not.toMatch(ZONE_WORDS);
+    const none = plan(profile());
+    expect(none.healthNotes).toEqual([]);
+    expect(exercises(none).every((e) => e.healthNotes.length === 0)).toBe(true);
   });
 });
 

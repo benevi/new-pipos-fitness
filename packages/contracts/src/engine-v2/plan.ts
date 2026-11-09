@@ -42,6 +42,11 @@ export const PlannedExerciseSchema = z
     warmupSets: z.array(WarmupSetSchema),
     estimatedMinutes: z.number().min(0),
     rationale: z.array(z.string()),
+    /**
+     * Explicaciones derivadas de datos de salud (art. 9 RGPD: limitaciones). Van aparte para
+     * que la API pueda borrarlas al retirar el consentimiento sin tocar el resto.
+     */
+    healthNotes: z.array(z.string()),
   })
   .strict();
 export type PlannedExercise = z.infer<typeof PlannedExerciseSchema>;
@@ -97,6 +102,8 @@ export const EngineWarningSchema = z
     code: WarningCodeSchema,
     message: z.string(),
     data: z.record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
+    /** true si el aviso se deriva de datos de salud (se borra al retirar el consentimiento). */
+    health: z.boolean().optional(),
   })
   .strict();
 export type EngineWarning = z.infer<typeof EngineWarningSchema>;
@@ -126,6 +133,8 @@ export const PlanDraftSchema = z
     muscleVolume: z.array(MuscleVolumeSchema),
     warnings: z.array(EngineWarningSchema),
     rationale: z.array(z.string()),
+    /** Explicaciones del plan derivadas de datos de salud (ver PlannedExercise.healthNotes). */
+    healthNotes: z.array(z.string()),
     score: ScoreBreakdownSchema,
     meta: z
       .object({

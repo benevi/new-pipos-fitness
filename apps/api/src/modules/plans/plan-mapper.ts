@@ -14,6 +14,12 @@ import type { CatalogEntry } from '../catalog/catalog.service';
 export interface StoredRationale {
   split: engineV2.PlanDraft['split'];
   rationale: string[];
+  /**
+   * Explicaciones derivadas de datos de salud (limitaciones). Se vacían al retirar el
+   * consentimiento (ConsentService.withdraw); las versiones antiguas pueden no tenerlo.
+   */
+  healthNotes?: string[];
+  /** Los avisos con `health: true` se borran al retirar el consentimiento. */
   warnings: engineV2.EngineWarning[];
   weeklyVolume: engineV2.GroupVolume[];
   muscleVolume: engineV2.MuscleVolume[];
@@ -55,6 +61,27 @@ export function warmupsFor(stored: unknown, workingLoad: number | null): WarmupS
 
 const asStrings = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : []);
 
+/**
+ * Explicación de un ejercicio tal y como se guarda en `PlanExercise.rationale`: textos
+ * normales como string y los derivados de salud como `{ text, health: true }`, para poder
+ * borrarlos con SQL al retirar el consentimiento (RGPD art. 9; ConsentService.withdraw).
+ */
+export type StoredExerciseRationale = (string | { text: string; health: true })[];
+
+export function exerciseRationaleToStore(e: Pick<engineV2.PlannedExercise, 'rationale' | 'healthNotes'>): StoredExerciseRationale {
+  return [...e.rationale, ...e.healthNotes.map((text) => ({ text, health: true as const }))];
+}
+
+/** Lee `PlanExercise.rationale` (strings y entradas marcadas) como lista de textos. */
+export function readExerciseRationale(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  return v.flatMap((x): string[] => {
+    if (typeof x === 'string') return [x];
+    if (x && typeof x === 'object' && typeof (x as { text?: unknown }).text === 'string') return [(x as { text: string }).text];
+    return [];
+  });
+}
+
 /** Borrador del motor → `sessions.create` anidado (una sola escritura dentro de la transacción). */
 export function draftToSessionsCreate(
   draft: engineV2.PlanDraft,
@@ -86,7 +113,7 @@ export function draftToSessionsCreate(
             initialLoadIsEstimate: e.initialLoadIsEstimate,
             warmupSets: e.warmupSets.map((w) => ({ reps: w.reps, loadPct: w.loadPct })),
             estimatedMinutes: e.estimatedMinutes,
-            rationale: e.rationale,
+            rationale: exerciseRationaleToStore(e),
           };
         }),
       },
@@ -98,6 +125,7 @@ export function storedRationale(draft: engineV2.PlanDraft): StoredRationale {
   return {
     split: draft.split,
     rationale: draft.rationale,
+    healthNotes: draft.healthNotes,
     warnings: draft.warnings,
     weeklyVolume: draft.weeklyVolume,
     muscleVolume: draft.muscleVolume,
@@ -145,7 +173,7 @@ export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exerci
     initialLoadIsEstimate: e.initialLoadIsEstimate,
     warmupSets: warmupsFor(e.warmupSets, initial),
     estimatedMinutes: e.estimatedMinutes,
-    rationale: asStrings(e.rationale),
+    rationale: readExerciseRationale(e.rationale),
   };
 }
 
@@ -168,7 +196,7 @@ export function toVersionResponse(row: PlanVersionRow): PlanVersionResponse {
   return {
     ...toSummary(row),
     split: r.split,
-    rationale: r.rationale,
+    rationale: [...r.rationale, ...(r.healthNotes ?? [])],
     warnings: r.warnings,
     weeklyVolume: r.weeklyVolume,
     sessions: row.sessions.map(toSessionResponse),
