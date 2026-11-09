@@ -22,7 +22,11 @@ function describeUnexpected(error: unknown): Record<string, unknown> {
     return {
       errorName: error.name,
       ...(typeof code === 'string' ? { errorCode: code } : {}),
-      stack: error.stack?.split('\n').slice(1, 8).join('\n'),
+      stack: error.stack
+        ?.split('\n')
+        .filter((l) => l.trimStart().startsWith('at '))
+        .slice(0, 6)
+        .join('\n'),
     };
   }
   return { errorName: typeof error };

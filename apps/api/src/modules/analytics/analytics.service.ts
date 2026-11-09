@@ -19,7 +19,7 @@ export interface WorkoutForAnalytics {
 export class AnalyticsService {
   /** Serializa las escrituras de un usuario: evita perder un recálculo en escrituras concurrentes. */
   async lockUser(tx: TransactionClient, userId: string): Promise<void> {
-    await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${userId}, 0))`;
+    await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtextextended(${userId}, 0))`;
   }
 
   async timezoneOf(tx: TransactionClient, userId: string): Promise<string> {
