@@ -4,5 +4,9 @@
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["src/**/*", "data/*.json"]
+  "include": [
+    "src/**/*",
+    "scripts/**/*",
+    "data/*.json"
+  ]
 }

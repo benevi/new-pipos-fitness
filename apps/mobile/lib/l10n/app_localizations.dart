@@ -2805,6 +2805,60 @@ abstract class AppLocalizations {
   /// **'Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.'**
   String get exerciseDetailWatchZonesNote;
 
+  /// No description provided for @exerciseVideoButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver vídeo (YouTube)'**
+  String get exerciseVideoButton;
+
+  /// No description provided for @exerciseVideoSemantics.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver vídeo de técnica de {name} en YouTube. Sales de Pipos.'**
+  String exerciseVideoSemantics(String name);
+
+  /// No description provided for @exerciseVideoChannel.
+  ///
+  /// In es, this message translates to:
+  /// **'Vídeo revisado del canal {channel}. Se abre en YouTube, fuera de Pipos.'**
+  String exerciseVideoChannel(String channel);
+
+  /// No description provided for @exerciseVideoLeaveTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Vas a salir de Pipos'**
+  String get exerciseVideoLeaveTitle;
+
+  /// No description provided for @exerciseVideoLeaveBody.
+  ///
+  /// In es, this message translates to:
+  /// **'El vídeo del canal {channel} se abre en YouTube (la app o el navegador). Pipos no envía ningún dato tuyo; lo que hagas allí lo gestiona YouTube.'**
+  String exerciseVideoLeaveBody(String channel);
+
+  /// No description provided for @exerciseVideoLeaveConfirm.
+  ///
+  /// In es, this message translates to:
+  /// **'Abrir YouTube'**
+  String get exerciseVideoLeaveConfirm;
+
+  /// No description provided for @exerciseVideoOffline.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin conexión: el vídeo necesita internet. Inténtalo cuando vuelvas a tener red.'**
+  String get exerciseVideoOffline;
+
+  /// No description provided for @exerciseVideoUnavailable.
+  ///
+  /// In es, this message translates to:
+  /// **'Este ejercicio ya no tiene un vídeo revisado.'**
+  String get exerciseVideoUnavailable;
+
+  /// No description provided for @exerciseVideoOpenFailed.
+  ///
+  /// In es, this message translates to:
+  /// **'No se ha podido abrir YouTube.'**
+  String get exerciseVideoOpenFailed;
+
   /// No description provided for @planExercisesByMuscle.
   ///
   /// In es, this message translates to:

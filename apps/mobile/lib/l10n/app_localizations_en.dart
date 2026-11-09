@@ -2054,6 +2054,41 @@ class AppLocalizationsEn extends AppLocalizations {
       'Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional.';
 
   @override
+  String get exerciseVideoButton => 'Watch video (YouTube)';
+
+  @override
+  String exerciseVideoSemantics(String name) {
+    return 'Watch the $name technique video on YouTube. You leave Pipos.';
+  }
+
+  @override
+  String exerciseVideoChannel(String channel) {
+    return 'Reviewed video from the $channel channel. It opens in YouTube, outside Pipos.';
+  }
+
+  @override
+  String get exerciseVideoLeaveTitle => 'You\'re leaving Pipos';
+
+  @override
+  String exerciseVideoLeaveBody(String channel) {
+    return 'The video from the $channel channel opens in YouTube (app or browser). Pipos sends none of your data; what you do there is handled by YouTube.';
+  }
+
+  @override
+  String get exerciseVideoLeaveConfirm => 'Open YouTube';
+
+  @override
+  String get exerciseVideoOffline =>
+      'You\'re offline: the video needs internet. Try again when you\'re back online.';
+
+  @override
+  String get exerciseVideoUnavailable =>
+      'This exercise no longer has a reviewed video.';
+
+  @override
+  String get exerciseVideoOpenFailed => 'YouTube couldn\'t be opened.';
+
+  @override
   String get planExercisesByMuscle => 'Browse exercises by muscle';
 
   @override

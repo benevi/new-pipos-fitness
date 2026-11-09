@@ -2347,15 +2347,21 @@
                         "image"
                       ]
                     },
-                    "url": {
+                    "file": {
                       "type": "string",
-                      "format": "uri"
+                      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*\\.(?:webp|png|jpg)$"
                     },
                     "credit": {
                       "type": "string"
                     },
                     "licence": {
-                      "type": "string"
+                      "type": "string",
+                      "enum": [
+                        "own-work",
+                        "CC0-1.0",
+                        "CC-BY-4.0",
+                        "CC-BY-SA-4.0"
+                      ]
                     },
                     "isPrimary": {
                       "type": "boolean"
@@ -2363,7 +2369,7 @@
                   },
                   "required": [
                     "kind",
-                    "url",
+                    "file",
                     "credit",
                     "licence",
                     "isPrimary"
@@ -2372,6 +2378,7 @@
                 }
               ]
             },
+            "maxItems": 2,
             "default": []
           }
         },
@@ -5082,6 +5089,10 @@
                   },
                   "maxItems": 19,
                   "default": []
+                },
+                "hasVideo": {
+                  "type": "boolean",
+                  "default": false
                 }
               },
               "required": [

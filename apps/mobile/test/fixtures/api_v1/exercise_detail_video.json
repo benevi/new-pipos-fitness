@@ -1,0 +1,85 @@
+{
+  "id": "00000000-0000-4000-8000-000000000040",
+  "slug": "sentadilla-trasera-barra",
+  "nameEs": "Sentadilla trasera con barra",
+  "nameEn": "Barbell back squat",
+  "movementPattern": "squat",
+  "isCompound": true,
+  "isUnilateral": false,
+  "minLevel": "intermediate",
+  "equipment": [
+    "barbell",
+    "squat_rack"
+  ],
+  "loadType": "weighted",
+  "primaryMuscles": [
+    "quads",
+    "glutes"
+  ],
+  "muscles": [
+    {
+      "muscle": "quads",
+      "role": "primary",
+      "fraction": 1
+    },
+    {
+      "muscle": "glutes",
+      "role": "primary",
+      "fraction": 1
+    },
+    {
+      "muscle": "adductors",
+      "role": "secondary",
+      "fraction": 0.5
+    },
+    {
+      "muscle": "lower_back",
+      "role": "secondary",
+      "fraction": 0.5
+    }
+  ],
+  "riskTags": [
+    {
+      "zone": "knee",
+      "level": "caution"
+    },
+    {
+      "zone": "lumbar",
+      "level": "caution"
+    },
+    {
+      "zone": "hip",
+      "level": "caution"
+    }
+  ],
+  "substitutionGroup": "squat_bilateral",
+  "cuesEs": [
+    "Barra apoyada en la parte alta de la espalda",
+    "Rodillas en la dirección de los pies",
+    "Baja hasta donde mantengas la espalda neutra"
+  ],
+  "descriptionEs": "Sentadilla con la barra apoyada sobre la parte alta de la espalda, sacada del rack: flexionas cadera y rodillas a la vez y vuelves a subir empujando el suelo. Trabaja sobre todo cuádriceps y glúteos, con los aductores y la zona lumbar como apoyo para estabilizar.",
+  "mistakesEs": [
+    "Levantar los talones del suelo al bajar",
+    "Subir primero la cadera y dejar el pecho atrás, convirtiéndola en un buen día",
+    "Perder la tensión abajo y rebotar con la espalda redondeada"
+  ],
+  "media": [
+    {
+      "kind": "youtube",
+      "videoId": "AAAAAAAAAA1",
+      "startSeconds": 42,
+      "endSeconds": 95,
+      "channelName": "Canal de prueba",
+      "locale": "es",
+      "isPrimary": true
+    },
+    {
+      "kind": "image",
+      "file": "prueba-tecnica.webp",
+      "credit": "Equipo Pipos",
+      "licence": "own-work",
+      "isPrimary": false
+    }
+  ]
+}

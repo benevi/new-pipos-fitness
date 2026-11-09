@@ -36,6 +36,10 @@ carga sesión a sesión.
   grupo lleva en 3 toques a cualquier ejercicio que trabaje un músculo como principal, con tu material o
   todo el catálogo y por nivel; desde la ficha, «Añadir a favoritos» o «No quiero hacerlo» abren la edición
   del perfil ([ADR-0014](docs/adr/0014-guia-de-ejercicios.md), Fase 3; `GET /exercises?muscle=…&role=…`).
+- **Vídeo de técnica** — botón «Ver vídeo (YouTube)» en la ficha y en Hoy que abre un vídeo concreto y
+  revisado **fuera** de la app, con aviso de salida (ADR-0014, Fase 4). El código está listo, pero el
+  catálogo aún **no tiene vídeos**: cada uno lo elige y aprueba una persona por PR
+  ([procedimiento](packages/catalog/README.md)); hasta entonces no aparece ningún botón.
 - **Progreso** — e1RM por ejercicio, series efectivas semanales por músculo/grupo frente al rango
   objetivo (en barras y en un mapa de la semana sobre la figura del cuerpo, con color y trama) y
   adherencia, calculados **al escribir** ([ADR-0008](docs/adr/0008-analytics-al-escribir.md)).

@@ -60,7 +60,7 @@
       "Subir primero la cadera y dejar el pecho atrás, convirtiéndola en un buen día",
       "Perder la tensión abajo y rebotar con la espalda redondeada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-frontal-barra",
@@ -126,7 +126,7 @@
       "Agarrar la barra con toda la mano y cargar el peso en las muñecas",
       "Inclinar el tronco al salir del fondo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-goblet-mancuerna",
@@ -175,7 +175,7 @@
       "Bajar a medias por miedo a perder el equilibrio",
       "Cerrar las rodillas al empezar a subir"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-goblet-kettlebell",
@@ -223,7 +223,7 @@
       "Encoger los hombros hacia las orejas al sujetarla",
       "Desplazar el peso a las puntas de los pies"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-peso-corporal",
@@ -266,7 +266,7 @@
       "Despegar los talones del suelo",
       "Acelerar el ritmo y acortar el recorrido en las últimas repeticiones"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-banda-elastica",
@@ -309,7 +309,7 @@
       "Quedarse corto arriba porque la banda tensa al final",
       "Dejarse llevar por la banda al bajar en lugar de controlar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "prensa-piernas",
@@ -365,7 +365,7 @@
       "Empujar con las puntas y despegar los talones de la plataforma",
       "Apoyar las manos en las rodillas para ayudarse a subir"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-hack-maquina",
@@ -412,7 +412,7 @@
       "Levantar los talones de la plataforma al bajar",
       "Bloquear las rodillas con brusquedad al terminar cada repetición"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-multipower",
@@ -455,7 +455,7 @@
       "Recostarse en la barra y dejar que la cadera se adelante al subir",
       "Olvidar los seguros del carril a la altura adecuada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-barra",
@@ -523,7 +523,7 @@
       "Despegar la barra de golpe sin haber tensado antes el cuerpo",
       "Echar el tronco hacia atrás al terminar, hiperextendiendo la zona lumbar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-barra",
@@ -572,7 +572,7 @@
       "Separar la barra de las piernas al bajar",
       "Buscar llegar al suelo a costa de redondear la espalda"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-mancuernas",
@@ -620,7 +620,7 @@
       "Mirar al frente estirando el cuello durante todo el recorrido",
       "Bajar los hombros y redondear la parte alta de la espalda"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-barra-hexagonal",
@@ -678,7 +678,7 @@
       "Arrancar con la espalda redondeada y la cadera muy alta",
       "Dejar caer la barra al bajar en vez de acompañarla hasta el suelo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "buenos-dias-barra",
@@ -727,7 +727,7 @@
       "Flexionar mucho las rodillas y convertirlo en una sentadilla",
       "Usar cargas altas antes de dominar el movimiento con poco peso"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "swing-kettlebell",
@@ -779,7 +779,7 @@
       "Subir la kettlebell tirando con los hombros y los brazos",
       "Echar el tronco hacia atrás arriba, arqueando la zona lumbar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-kettlebell",
@@ -827,7 +827,7 @@
       "Flexionar los codos para acercar la carga",
       "Hiperextender la espalda al llegar arriba"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "pull-through-polea",
@@ -865,7 +865,7 @@
       "Tirar de la cuerda con los brazos en lugar de extender la cadera",
       "Flexionar mucho las rodillas y bajar en sentadilla"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-banda",
@@ -903,7 +903,7 @@
       "Tirar de la banda con los brazos en lugar de extender la cadera",
       "Doblar demasiado las rodillas al bajar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "hiperextension-banco",
@@ -951,7 +951,7 @@
       "Subir con impulso y pasar de la línea del cuerpo arqueando la espalda",
       "Bajar sin control dejando caer el tronco"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "hiperextension-suelo",
@@ -994,7 +994,7 @@
       "Subir lo más alto posible a base de arquear la zona lumbar",
       "Hacer rebotes rápidos sin pausa arriba"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-una-pierna",
@@ -1032,7 +1032,7 @@
       "Bloquear del todo la rodilla de apoyo",
       "Ir rápido para compensar la falta de equilibrio"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "peso-muerto-rumano-una-pierna-mancuerna",
@@ -1075,7 +1075,7 @@
       "Separar la mancuerna de la pierna de apoyo",
       "Apoyar el pie libre a cada repetición por falta de control"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "zancada-atras-peso-corporal",
@@ -1124,7 +1124,7 @@
       "Golpear el suelo con la rodilla de atrás",
       "Volver impulsándose con la pierna trasera en lugar de con la delantera"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "zancada-atras-mancuernas",
@@ -1172,7 +1172,7 @@
       "Golpear el suelo con la rodilla trasera",
       "Pisar en una misma línea y perder el equilibrio lateral"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "zancadas-caminando-mancuernas",
@@ -1228,7 +1228,7 @@
       "Inclinar el tronco hacia delante con el peso de las mancuernas",
       "Encadenar pasos con prisa sin estabilizarse en cada zancada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-bulgara-mancuernas",
@@ -1286,7 +1286,7 @@
       "Empujarse con la pierna trasera en lugar de con la delantera",
       "Dejar que la cadera se abra o gire hacia un lado"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-bulgara-peso-corporal",
@@ -1333,7 +1333,7 @@
       "Empujar con la pierna de atrás en lugar de con la de delante",
       "Dejar que la cadera rote o se incline hacia un lado al bajar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "subida-cajon-mancuernas",
@@ -1381,7 +1381,7 @@
       "Bajar dejándose caer en lugar de controlar el descenso",
       "Inclinar el tronco y balancear las mancuernas para subir"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "subida-banco-peso-corporal",
@@ -1424,7 +1424,7 @@
       "Dejar que la rodilla de la pierna que sube se vaya hacia dentro",
       "Bajar de golpe al suelo en vez de controlar la bajada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sentadilla-dividida-peso-corporal",
@@ -1467,7 +1467,7 @@
       "Inclinar el tronco hacia delante al bajar",
       "Apoyar todo el peso en la pierna trasera"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-banca-barra",
@@ -1517,7 +1517,7 @@
       "Despegar los glúteos del banco al empujar",
       "Abrir los codos a 90 grados del tronco"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-banca-mancuernas",
@@ -1566,7 +1566,7 @@
       "Que un brazo suba antes o más inclinado que el otro",
       "Dejar caer las mancuernas al final de la serie con los brazos estirados"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-suelo-mancuernas",
@@ -1609,7 +1609,7 @@
       "Pegar los codos al cuerpo o abrirlos en cruz",
       "Arquear mucho la espalda para empujar más peso"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-pecho-maquina",
@@ -1657,7 +1657,7 @@
       "Despegar la espalda del respaldo y adelantar los hombros al empujar",
       "Dejar que las placas choquen entre repeticiones"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-pecho-polea",
@@ -1705,7 +1705,7 @@
       "Dejar que los cables lleven los codos muy atrás en la vuelta",
       "Empujar cada brazo a una altura distinta"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-pecho-banda",
@@ -1748,7 +1748,7 @@
       "Soltar la banda de golpe al volver",
       "Colocarse tan cerca del anclaje que la banda apenas tensa"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-banca-multipower",
@@ -1797,7 +1797,7 @@
       "Rebotar la barra en el pecho",
       "No ajustar los seguros del carril a una altura útil"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-banca-agarre-cerrado",
@@ -1854,7 +1854,7 @@
       "Abrir los codos hacia los lados al bajar",
       "Bajar la barra demasiado alta, hacia el cuello"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-inclinado-mancuernas",
@@ -1903,7 +1903,7 @@
       "Bajar las mancuernas hacia la cintura en lugar de al pecho",
       "Separar la espalda del banco al empujar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-inclinado-barra",
@@ -1952,7 +1952,7 @@
       "Bajar la barra hacia el abdomen en lugar de a la parte alta del pecho",
       "Dejar que las muñecas se doblen hacia atrás bajo la barra"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones",
@@ -2001,7 +2001,7 @@
       "Adelantar la cabeza para tocar el suelo con la barbilla",
       "Hacer medias repeticiones sin bajar ni extender del todo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones-inclinadas",
@@ -2049,7 +2049,7 @@
       "Doblar la cadera y dejar el cuerpo en forma de V",
       "Bajar solo la cabeza en lugar de acercar el pecho al apoyo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones-declinadas",
@@ -2101,7 +2101,7 @@
       "Colocar las manos demasiado adelantadas respecto a los hombros",
       "Elevar tanto los pies que la flexión se convierte en un empuje vertical"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones-diamante",
@@ -2153,7 +2153,7 @@
       "Colocar las manos a la altura de la cara en lugar de bajo el pecho",
       "Recortar el recorrido para compensar la dificultad"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "fondos-paralelas",
@@ -2205,7 +2205,7 @@
       "Dejar que los hombros se encojan hacia las orejas",
       "Balancear las piernas para ayudarse a subir"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "fondos-anillas",
@@ -2257,7 +2257,7 @@
       "Intentarlos sin dominar antes el apoyo estático en anillas",
       "Bajar rápido y rebotar en la parte baja"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "aperturas-mancuernas",
@@ -2301,7 +2301,7 @@
       "Usar un peso que obliga a bajar los brazos sin control",
       "Bajar los brazos por debajo de la línea del banco"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "cruces-polea",
@@ -2344,7 +2344,7 @@
       "Dejar que los brazos se vayan muy atrás en la apertura",
       "Balancear el tronco para cerrar los brazos"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "contractor-pecho",
@@ -2387,7 +2387,7 @@
       "Despegar la espalda del respaldo al cerrar",
       "Soltar la vuelta de golpe y dejar que las placas choquen"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-militar-barra",
@@ -2444,7 +2444,7 @@
       "Llevar la barra en arco por delante de la cara en lugar de en línea recta",
       "Terminar con la barra por delante de la cabeza en vez de sobre ella"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-hombros-sentado-mancuernas",
@@ -2493,7 +2493,7 @@
       "Chocar las mancuernas arriba perdiendo el control",
       "Despegar la espalda del respaldo y arquear la zona lumbar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-hombros-pie-mancuernas",
@@ -2546,7 +2546,7 @@
       "Empujar las mancuernas hacia delante en lugar de por encima de la cabeza",
       "Bajar las mancuernas solo hasta la altura de las orejas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-hombros-kettlebell",
@@ -2599,7 +2599,7 @@
       "Doblar la muñeca hacia atrás por el peso de la bola",
       "Dejar que la kettlebell golpee el antebrazo al recibirla"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-hombros-maquina",
@@ -2647,7 +2647,7 @@
       "Separar la espalda del respaldo al empujar",
       "Dejar caer la carga en la bajada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-hombros-banda",
@@ -2695,7 +2695,7 @@
       "Dejar que la banda baje los brazos de golpe",
       "Arquear la zona lumbar para terminar el empuje"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-landmine",
@@ -2738,7 +2738,7 @@
       "Encoger el hombro hacia la oreja al extender",
       "Arquear la zona lumbar al final del empuje"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-tras-nuca",
@@ -2787,7 +2787,7 @@
       "Bajar la barra hasta la nuca aunque el hombro no llegue con comodidad",
       "Usar cargas altas o hacerlo con prisa"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones-pica",
@@ -2839,7 +2839,7 @@
       "Llevar la cabeza hacia las manos en vez de por delante de ellas",
       "Abrir los codos completamente hacia los lados"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "flexiones-pino-pared",
@@ -2891,7 +2891,7 @@
       "Apoyar la cabeza en el suelo con peso al llegar abajo",
       "Colocar las manos demasiado lejos de la pared"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-barra",
@@ -2949,7 +2949,7 @@
       "Tirar con los brazos sin llevar los codos atrás",
       "Redondear la espalda a medida que se acumula la fatiga"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-mancuerna-una-mano",
@@ -2998,7 +2998,7 @@
       "Llevar la mancuerna hacia el hombro en lugar de hacia la cadera",
       "Encoger el hombro hacia la oreja al tirar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-mancuernas-pecho-apoyado",
@@ -3047,7 +3047,7 @@
       "Recortar el recorrido sin estirar los brazos abajo",
       "Echar la cabeza hacia atrás al tirar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-kettlebell-una-mano",
@@ -3100,7 +3100,7 @@
       "Tirar con el codo hacia fuera en lugar de hacia la cadera",
       "Redondear la espalda al bajar la kettlebell"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-sentado-polea",
@@ -3148,7 +3148,7 @@
       "Encoger los hombros hacia las orejas al final del tirón",
       "Redondear la espalda al estirar los brazos en la vuelta"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-maquina",
@@ -3196,7 +3196,7 @@
       "Ajustar el asiento tan bajo o alto que los agarres no quedan a la altura del pecho",
       "Recortar el recorrido sin llevar los codos atrás del todo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-invertido-anillas",
@@ -3244,7 +3244,7 @@
       "Abrir las anillas hacia fuera en lugar de mantenerlas junto al tronco",
       "Bajar de golpe sin controlar el balanceo de las anillas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-trx",
@@ -3292,7 +3292,7 @@
       "Perder la tensión de las correas al bajar y caer de golpe",
       "Empezar el tirón doblando la cadera en lugar de con los brazos y la espalda"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-invertido-barra",
@@ -3341,7 +3341,7 @@
       "Hundir la cadera en cada repetición",
       "Quedarse a mitad de recorrido sin estirar los brazos abajo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-banda",
@@ -3389,7 +3389,7 @@
       "Dejar que la banda devuelva los brazos de golpe",
       "Subir los hombros hacia las orejas al tirar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dominadas-pronas",
@@ -3438,7 +3438,7 @@
       "Asomar solo la barbilla estirando el cuello hacia delante",
       "Empezar cada repetición con los hombros sueltos y encogidos"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dominadas-supinas",
@@ -3490,7 +3490,7 @@
       "Encoger los hombros y subir solo con los brazos",
       "Acortar el recorrido sin llegar a estirar los brazos"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dominadas-asistidas-banda",
@@ -3539,7 +3539,7 @@
       "Quedarse a medio recorrido sin estirar los brazos al bajar",
       "Encoger los hombros hacia las orejas al tirar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dominadas-negativas",
@@ -3587,7 +3587,7 @@
       "Saltar con tanta fuerza que no se controla el inicio arriba",
       "Hacer demasiadas repeticiones seguidas perdiendo el ritmo lento"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dominadas-asistidas-maquina",
@@ -3635,7 +3635,7 @@
       "Dejar que la plataforma suba de golpe al bajar",
       "Inclinar el tronco hacia atrás y convertirlo en un remo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "jalon-pecho-polea",
@@ -3683,7 +3683,7 @@
       "Llevar la barra por detrás de la nuca",
       "Soltar la barra de golpe en la subida"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "jalon-agarre-estrecho",
@@ -3731,7 +3731,7 @@
       "Balancear el tronco atrás y adelante en cada repetición",
       "Acortar el recorrido arriba sin estirar los brazos"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "jalon-banda",
@@ -3774,7 +3774,7 @@
       "Dejar que la banda tire de los brazos de golpe al volver",
       "Inclinarse hacia delante para tensar menos la banda"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "pullover-mancuerna",
@@ -3823,7 +3823,7 @@
       "Bajar más allá de donde el hombro está cómodo",
       "Arquear mucho la zona lumbar al bajar la mancuerna"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "pullover-polea-brazos-rectos",
@@ -3861,7 +3861,7 @@
       "Inclinar el tronco y usar el peso del cuerpo para bajar la barra",
       "Dejar que la barra suba sin control y pierda tensión"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-biceps-barra",
@@ -3904,7 +3904,7 @@
       "Usar la cadera para impulsar la barra",
       "Doblar las muñecas hacia atrás para aguantar el peso"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-barra-z",
@@ -3942,7 +3942,7 @@
       "Recortar la bajada y quedarse con los codos medio flexionados",
       "Echar los hombros hacia delante al subir"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-biceps-mancuernas",
@@ -3980,7 +3980,7 @@
       "Girar el tronco al alternar para ayudar al brazo que sube",
       "Bajar la mancuerna dejándola caer"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-martillo",
@@ -4018,7 +4018,7 @@
       "Balancear el tronco para subir las mancuernas",
       "Adelantar los codos al final del recorrido"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-inclinado-mancuernas",
@@ -4062,7 +4062,7 @@
       "Llevar los codos hacia delante y perder la posición de los brazos",
       "Usar más peso del que permite bajar estirando sin molestias en el hombro"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-polea",
@@ -4100,7 +4100,7 @@
       "Alejarse de la polea y separar los codos del cuerpo al subir",
       "Soltar el peso de golpe en la bajada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-banda",
@@ -4138,7 +4138,7 @@
       "Dejar que la banda estire los codos de golpe al bajar",
       "Inclinarse hacia atrás para estirar más la banda"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-triceps-polea",
@@ -4171,7 +4171,7 @@
       "Separar los codos del tronco al bajar",
       "Dejar que el cable suba los antebrazos por encima del pecho"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-triceps-polea-sobre-cabeza",
@@ -4213,7 +4213,7 @@
       "Arquear la zona lumbar para compensar la carga",
       "Mover los hombros y convertirlo en un press por encima de la cabeza"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-triceps-mancuerna-sobre-cabeza",
@@ -4255,7 +4255,7 @@
       "Arquear la zona lumbar para subir la mancuerna",
       "Bajar rápido y sin control detrás de la cabeza"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-frances-barra-z",
@@ -4294,7 +4294,7 @@
       "Abrir los codos hacia fuera durante la bajada",
       "Cargar más peso del que se controla cerca de la cara"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-frances-mancuernas",
@@ -4333,7 +4333,7 @@
       "Bajar los brazos hacia atrás desde el hombro en cada repetición",
       "Chocar las mancuernas arriba perdiendo la tensión"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-triceps-banda",
@@ -4366,7 +4366,7 @@
       "Dejar que la banda tire de los brazos hacia arriba sin control",
       "Separar los codos del cuerpo al empujar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "fondos-banco",
@@ -4418,7 +4418,7 @@
       "Separar la espalda del banco y alejar la cadera",
       "Girar los dedos hacia fuera y cargar las muñecas en mala posición"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevaciones-laterales-mancuernas",
@@ -4462,7 +4462,7 @@
       "Subir las manos por encima de los codos",
       "Balancear el cuerpo para lanzar las mancuernas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevaciones-laterales-polea",
@@ -4505,7 +4505,7 @@
       "Tirar con la mano y no con el codo, girando el brazo",
       "Hacer más repeticiones o peso con un lado que con el otro"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevaciones-laterales-banda",
@@ -4548,7 +4548,7 @@
       "Subir los brazos por encima de los hombros",
       "Dejar que la banda baje los brazos de golpe"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevaciones-laterales-maquina",
@@ -4591,7 +4591,7 @@
       "Empujar con las manos en lugar de con los codos",
       "Dejar caer los apoyos de golpe entre repeticiones"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "remo-menton-barra",
@@ -4643,7 +4643,7 @@
       "Subir la barra hasta la barbilla con los codos muy altos",
       "Doblar las muñecas hacia abajo al tirar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "pajaros-mancuernas",
@@ -4681,7 +4681,7 @@
       "Tirar con los brazos hacia atrás como en un remo",
       "Redondear la espalda al inclinarse"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "face-pull-polea",
@@ -4724,7 +4724,7 @@
       "Echarse hacia atrás para mover más peso",
       "Juntar las manos al final en lugar de separarlas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "aperturas-banda",
@@ -4762,7 +4762,7 @@
       "Bajar los brazos hacia la cintura durante la apertura",
       "Sacar las costillas y arquear la espalda al final"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "contractor-inverso",
@@ -4800,7 +4800,7 @@
       "Colocar el asiento de forma que las manos queden muy por encima o por debajo del hombro",
       "Llevar los brazos demasiado atrás perdiendo el control"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevaciones-y-t-w",
@@ -4843,7 +4843,7 @@
       "Subir los brazos a tirones sin pausa arriba",
       "Encoger los hombros hacia las orejas en la Y"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-cuadriceps-maquina",
@@ -4881,7 +4881,7 @@
       "Dejar caer el peso de golpe abajo",
       "Colocar el rodillo sobre la espinilla en lugar de sobre el tobillo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "extension-rodilla-banda",
@@ -4919,7 +4919,7 @@
       "Dar un golpe seco al final bloqueando la rodilla",
       "Dejar que la banda devuelva la pierna sin frenarla"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sissy-squat",
@@ -4957,7 +4957,7 @@
       "Bajar más de lo que se controla y caer sobre las rodillas",
       "Soltarse del apoyo antes de dominar el movimiento"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-femoral-tumbado-maquina",
@@ -4990,7 +4990,7 @@
       "Colocar el rodillo sobre los gemelos en lugar de en los tobillos",
       "Hacer recorridos cortos sin estirar del todo las piernas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-femoral-sentado-maquina",
@@ -5023,7 +5023,7 @@
       "Inclinar el tronco hacia delante para ayudarse",
       "Acortar el recorrido sin llegar a flexionar del todo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-nordico",
@@ -5062,7 +5062,7 @@
       "Dejarse caer en la primera mitad sin frenar",
       "Usar un anclaje de tobillos que se mueve o se levanta"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-femoral-deslizamiento",
@@ -5100,7 +5100,7 @@
       "Estirar las piernas demasiado rápido al volver",
       "Hacerlo sobre una superficie que no deja deslizar la toalla"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-femoral-mancuerna",
@@ -5134,7 +5134,7 @@
       "Despegar la cadera del banco al subir",
       "Subir más allá de la vertical, donde la mancuerna deja de pesar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "curl-femoral-banda",
@@ -5167,7 +5167,7 @@
       "Dejar que la banda estire la pierna de golpe",
       "Colocarse tan cerca del anclaje que la banda no tiene tensión"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "hip-thrust-barra",
@@ -5207,7 +5207,7 @@
       "Colocar los pies muy lejos y notar el trabajo sobre todo detrás del muslo",
       "Apoyar la barra sin protección sobre el hueso de la cadera"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "hip-thrust-mancuerna",
@@ -5246,7 +5246,7 @@
       "Subir rápido y no hacer pausa arriba",
       "Despegar la espalda del banco o deslizarse sobre él"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "puente-gluteos",
@@ -5284,7 +5284,7 @@
       "Abrir o cerrar las rodillas al subir",
       "Bajar la cadera dejándola caer al suelo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "puente-gluteos-una-pierna",
@@ -5322,7 +5322,7 @@
       "Arquear la zona lumbar en lugar de extender la cadera",
       "Empujar con la punta del pie y notar el esfuerzo en el muslo delantero"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "patada-gluteo-polea",
@@ -5355,7 +5355,7 @@
       "Balancear la pierna sin pausa ni control",
       "Girar la cadera hacia fuera al final del movimiento"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "patada-gluteo-banda",
@@ -5388,7 +5388,7 @@
       "Dejar que la banda recoja la pierna sin frenarla",
       "Desplazar el peso hacia el lado de apoyo y torcer el tronco"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "abduccion-cadera-maquina",
@@ -5426,7 +5426,7 @@
       "Despegar la espalda e inclinarse hacia delante para mover más peso",
       "Hacer recorridos muy cortos con demasiada carga"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "abduccion-cadera-tumbado",
@@ -5464,7 +5464,7 @@
       "Girar el pie con la punta hacia el techo",
       "Subir la pierna tan alto que se inclina el tronco"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "pasos-laterales-banda",
@@ -5502,7 +5502,7 @@
       "Erguirse y caminar con las piernas rectas",
       "Balancear el tronco de lado a lado en cada paso"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "aduccion-cadera-maquina",
@@ -5540,7 +5540,7 @@
       "Despegar la espalda del respaldo para mover más carga",
       "Dejar que las almohadillas se separen de golpe al volver"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "plancha-copenhague",
@@ -5587,7 +5587,7 @@
       "Girar el tronco hacia delante o hacia atrás",
       "Empezar con el pie en el banco sin dominar la versión corta"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-talones-maquina",
@@ -5620,7 +5620,7 @@
       "Rebotar abajo en lugar de controlar el estiramiento",
       "Cargar el peso sobre el borde exterior del pie"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-talones-sentado-maquina",
@@ -5653,7 +5653,7 @@
       "Empujar el apoyo con las manos para ayudarse",
       "Colocar solo los dedos en la plataforma y perder apoyo"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-talones-una-pierna",
@@ -5691,7 +5691,7 @@
       "Dejar que el tobillo se vaya hacia fuera al subir",
       "Hacer menos repeticiones con la pierna más débil sin igualar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-talones-mancuerna",
@@ -5729,7 +5729,7 @@
       "Doblar la rodilla para impulsarse",
       "Bajar el talón de golpe y rebotar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-talones-multipower",
@@ -5762,7 +5762,7 @@
       "Doblar las rodillas en cada repetición",
       "No poner los seguros de la barra a una altura adecuada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "dead-bug",
@@ -5795,7 +5795,7 @@
       "Mover brazo y pierna del mismo lado",
       "Contener la respiración durante toda la serie"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "rodamiento-barra",
@@ -5842,7 +5842,7 @@
       "Volver llevando la cadera hacia atrás en lugar de recoger con el abdomen",
       "Usar discos pequeños que dejan la barra demasiado baja"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "sierra-trx",
@@ -5880,7 +5880,7 @@
       "Desplazarse más atrás de lo que se puede sostener sin arquear la espalda",
       "Dejar que las correas se balanceen de lado a lado"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "rueda-abdominal-anillas",
@@ -5927,7 +5927,7 @@
       "Abrir las anillas hacia los lados durante la extensión",
       "Volver doblando la cadera en lugar de tirar con los brazos y el abdomen"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-pallof-polea",
@@ -5965,7 +5965,7 @@
       "Girar los hombros o la cadera hacia la polea al extender los brazos",
       "Bloquear las rodillas y arquear la zona lumbar para aguantar la carga"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "press-pallof-banda",
@@ -6003,7 +6003,7 @@
       "Dejar que la banda devuelva las manos de golpe en lugar de recogerlas despacio",
       "Separar las manos o torcer las muñecas en vez de empujar con ambas juntas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "bird-dog",
@@ -6046,7 +6046,7 @@
       "Inclinar la cadera hacia el lado de la pierna que se eleva",
       "Hacer el movimiento con prisa, balanceando el cuerpo de un lado a otro"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "plancha-toques-hombro",
@@ -6094,7 +6094,7 @@
       "Dejar caer la cadera hacia el suelo o subirla en pico",
       "Colocar las manos por delante de los hombros y cargar en exceso las muñecas"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "crunch",
@@ -6127,7 +6127,7 @@
       "Subir hasta sentarse impulsándose con la cadera",
       "Dejarse caer de golpe al suelo en la bajada"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "crunch-inverso",
@@ -6160,7 +6160,7 @@
       "Empujar el suelo con las manos para subir",
       "Dejar caer las piernas al bajar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "crunch-polea",
@@ -6193,7 +6193,7 @@
       "Tirar de la cuerda con los brazos en vez de llevarla con el tronco",
       "Elegir tanto peso que el cable levanta el cuerpo en la subida"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "elevacion-rodillas-colgado",
@@ -6236,7 +6236,7 @@
       "Bajar las piernas de golpe y empezar a balancearse",
       "Soltar los hombros y quedarse colgado de forma pasiva"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "paseo-granjero-mancuernas",
@@ -6284,7 +6284,7 @@
       "Dar zancadas largas que hacen balancear las mancuernas",
       "Golpear las piernas con las mancuernas al caminar"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "paseo-maleta-mancuerna",
@@ -6327,7 +6327,7 @@
       "Separar el brazo cargado del cuerpo",
       "Hacer solo un lado o recorrer distancias distintas con cada mano"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "paseo-granjero-kettlebell",
@@ -6370,7 +6370,7 @@
       "Inclinar el tronco hacia delante al cansarse",
       "Abrir los dedos y sujetar el asa solo con la punta"
     ],
-    "media": null
+    "media": []
   },
   {
     "slug": "paseo-granjero-barra-hexagonal",
@@ -6423,6 +6423,6 @@
       "Caminar rápido y dejar que la barra oscile hacia delante y atrás",
       "Soltar la barra de golpe en lugar de bajarla con control"
     ],
-    "media": null
+    "media": []
   }
 ]

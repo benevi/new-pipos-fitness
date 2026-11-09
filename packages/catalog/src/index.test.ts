@@ -122,7 +122,6 @@ describe('catálogo de ejercicios', () => {
       expect(e.nameEs).not.toEqual(e.nameEn);
       expect(e.cuesEs.length).toBeGreaterThanOrEqual(2);
       expect(e.cuesEs.length).toBeLessThanOrEqual(3);
-      expect(e.media).toBeNull();
     }
   });
 

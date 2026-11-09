@@ -84,7 +84,8 @@
           "muscle": "adductors",
           "role": "secondary"
         }
-      ]
+      ],
+      "hasVideo": false
     },
     {
       "planExerciseId": "00000000-0000-4000-8000-000000000032",
@@ -134,7 +135,8 @@
           "muscle": "triceps",
           "role": "secondary"
         }
-      ]
+      ],
+      "hasVideo": false
     }
   ],
   "scheduledToday": true,

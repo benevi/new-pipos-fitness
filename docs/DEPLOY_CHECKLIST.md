@@ -19,6 +19,9 @@
 - [ ] Revisión de la ficha de los 144 ejercicios (descripción y errores comunes,
       `packages/catalog/data/exercises.json`) por un entrenador titulado (ADR-0014); al terminar,
       `GUIDE_CONTENT_REVIEW.status = 'professionally_reviewed'` con la fecha en `packages/catalog`.
+- [ ] Vídeos de técnica (ADR-0014, Fase 4): cada vídeo del catálogo lo eligió una persona según los
+      criterios de ADR-0014 y entró por PR aprobado (procedimiento en `packages/catalog/README.md`).
+      Sin vídeos aprobados, la app no muestra ningún botón de vídeo (estado actual).
 
 ## 1. Pre-despliegue
 
@@ -28,6 +31,10 @@
 - [ ] PR revisado y mezclado en `main`; sin bugs críticos abiertos ([DEUDA_TECNICA.md](DEUDA_TECNICA.md)).
 - [ ] Imagen/artefacto construido desde ese commit con `pnpm install --frozen-lockfile`, `prisma generate`
       y `pnpm build`; arranque con `node apps/api/dist/main.js` (`start:prod`).
+- [ ] **Antes de cada release**: `pnpm --filter @pipos/catalog media:check` (necesita red; no corre en CI)
+      comprueba por oEmbed que cada vídeo del catálogo sigue disponible y en el mismo canal. Si alguno
+      falla, retirarlo del JSON o sustituirlo por PR antes de desplegar; si falla más de un 10 %,
+      reabrir ADR-0014. Con el catálogo sin vídeos dice «nada que comprobar».
 
 ### Variables de entorno (validadas al arrancar; la API no arranca si falta algo)
 
@@ -59,6 +66,8 @@
 - [ ] Seed del catálogo: `pnpm --filter @pipos/api prisma:seed` (idempotente; retira con `deletedAt`).
       Tras `20261113000000_ficha_ejercicio`, el seed rellena la ficha (`descriptionEs`, `mistakesEs`);
       hasta entonces el motor toma la ficha del catálogo empaquetado.
+      Tras `20261114000000_medios_ejercicio`, el seed escribe los vídeos e imágenes del catálogo como
+      aprobados (la revisión es el PR) y borra los que se retiraron del JSON.
 - [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo`, cambia una `formulaVersion` o
       cambia cómo se calcula la adherencia (p. ej. issue #14, versión del plan por semana):
       `pnpm --filter @pipos/api analytics:rebuild` tras migrar.

@@ -40,6 +40,9 @@ const map = {
   // Fase 2, sin descripción, errores ni medios: debe seguir siendo válida.
   exercise_detail: 'ExerciseDetailSchema',
   exercise_detail_legacy: 'ExerciseDetailSchema',
+  // Fase 4 (ADR-0014): ficha con medios. El vídeo y la imagen son FICTICIOS
+  // (solo para tests): el catálogo real no lleva medios hasta que se aprueben por PR.
+  exercise_detail_video: 'ExerciseDetailSchema',
   error_validation: 'ErrorResponseSchema',
   error_nutrition_incomplete: 'ErrorResponseSchema',
   export: 'AccountExportSchema',

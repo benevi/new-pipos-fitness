@@ -501,6 +501,7 @@ class TodayExercise {
     this.pinned = false,
     this.note,
     this.muscles = const [],
+    this.hasVideo = false,
   });
 
   final String planExerciseId;
@@ -535,6 +536,10 @@ class TodayExercise {
   /// primero.
   final List<ExerciseMuscleRef> muscles;
 
+  /// El ejercicio realmente hecho tiene un vídeo revisado (ADR-0014, Fase 4):
+  /// la tarjeta pinta «Ver vídeo». false en respuestas anteriores.
+  final bool hasVideo;
+
   TodayExercise copyWith({String? note, bool clearNote = false}) =>
       TodayExercise(
         planExerciseId: planExerciseId,
@@ -555,6 +560,7 @@ class TodayExercise {
         pinned: pinned,
         note: clearNote ? null : (note ?? this.note),
         muscles: muscles,
+        hasVideo: hasVideo,
       );
 
   /// Vista local de un cambio de ejercicio aún sin confirmar por la API
@@ -615,6 +621,7 @@ class TodayExercise {
     pinned: j.orDefault('pinned', false, j.boolean),
     note: j.orDefault('note', null, j.strOrNull),
     muscles: ExerciseMuscleRef.listFrom(j),
+    hasVideo: j.orDefault('hasVideo', false, j.boolean),
   );
 
   Json toJson() => {
@@ -636,6 +643,7 @@ class TodayExercise {
     'pinned': pinned,
     'note': note,
     'muscles': muscles.map((m) => m.toJson()).toList(),
+    'hasVideo': hasVideo,
   };
 }
 

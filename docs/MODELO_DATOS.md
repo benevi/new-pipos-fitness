@@ -27,6 +27,7 @@
 | **Deuda #11** · `PlanVersion.idempotencyKey VARCHAR(128)?`, `idempotencyHash CHAR(64)?`, `UNIQUE(userId, idempotencyKey)` — `20261112000100_idempotencia_generar_plan` | `Idempotency-Key` de `POST /plans/generate`: misma clave → misma versión. |
 | **Deuda #15** · `TrainingPlan.lastDeloadOn DATE?` — `20261112000200_ultima_descarga` | Última descarga real; ancla el ciclo de descarga programada. |
 | **ADR-0014** · `Exercise.mistakesEs TEXT[]` (default `{}`) — `20261113000000_ficha_ejercicio`; el seed rellena además `descriptionEs` (columna que ya existía) | Ficha del ejercicio (Fase 2 de la guía): descripción (≤ 400 caracteres, 1-3 frases) y 0-3 errores comunes (≤ 120) escritos por ejercicio en `packages/catalog` y revisados por PR. Contenido **pendiente de revisión por un entrenador titulado** antes del lanzamiento (`GUIDE_CONTENT_REVIEW` en el catálogo). `descriptionEn` sigue sin usar (deuda #29). |
+| **ADR-0014** · `ExerciseMedia.file VARCHAR(96)`, `credit VARCHAR(120)`, `licence VARCHAR(32)` y nuevo CHECK `media_source_chk` — `20261114000000_medios_ejercicio` | Vídeos e imágenes (Fase 4 de la guía). El seed escribe los medios de `packages/catalog` (`media`: 0-2 por ejercicio, uno principal) con `moderationStatus = approved` y sin `moderatedById` (la revisión es el PR, ADR-0005), conserva las filas que siguen en el JSON y **borra** las que salen de él. La API solo lee los aprobados: el detalle los devuelve en `media` (principal primero) y Hoy, `hasVideo`. Una imagen exige fichero, crédito y licencia (CHECK). El catálogo no tiene medios hasta que una persona los elija y apruebe por PR. |
 | **Deuda #17** · `AuditEvent` (enum `AuditEventType`, `userId?` CASCADE, `subjectRef?`, `createdAt`; trigger sin UPDATE) — `20261112000300_registro_auditoria` | Auditoría append-only sin datos personales ni de salud; retención 180 días. |
 > Fuentes leídas: `apps/api/prisma/schema.prisma` (366 líneas), las 6 migraciones en `apps/api/prisma/migrations/`, `packages/contracts/src/enums/index.ts`. Prisma instalado: `^5.9.0`.
 
@@ -404,7 +405,10 @@ model ExerciseMedia {
   exercise         Exercise         @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
   kind             MediaKind
   externalId       String?          @db.VarChar(64)    // youtube videoId
-  url              String?                             // image (CDN)
+  url              String?                             // image (CDN; sin uso: las imágenes son ficheros del catálogo)
+  file             String?          @db.VarChar(96)    // image: fichero de packages/catalog/media (ADR-0014, Fase 4)
+  credit           String?          @db.VarChar(120)   // image: crédito (obligatorio)
+  licence          String?          @db.VarChar(32)    // image: licencia (obligatoria)
   channelName      String?
   startSeconds     Int?
   endSeconds       Int?                                // CHECK end > start
@@ -821,6 +825,8 @@ Nota: los registros de carga/repeticiones no se consideran por sí solos datos d
    ALTER TABLE "ExerciseMedia"
      ADD CONSTRAINT media_range_chk  CHECK ("endSeconds" IS NULL OR "startSeconds" IS NULL OR "endSeconds" > "startSeconds"),
      ADD CONSTRAINT media_source_chk CHECK (("kind" = 'youtube' AND "externalId" IS NOT NULL) OR ("kind" = 'image' AND "url" IS NOT NULL));
+   -- 20261114000000_medios_ejercicio (ADR-0014, Fase 4) la sustituye: una imagen necesita
+   -- ("file" o "url"), "credit" y "licence"; un vídeo, su "externalId".
    CREATE UNIQUE INDEX media_one_primary ON "ExerciseMedia"("exerciseId")
      WHERE "isPrimary" AND "moderationStatus" = 'approved';
    CREATE INDEX exercise_active_level ON "Exercise"("minLevel", "movementPattern") WHERE "deletedAt" IS NULL;
