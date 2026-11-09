@@ -12,6 +12,7 @@ import { PlanVersionResponseSchema } from './plans.js';
 import { ProfileResponseSchema } from './profile.js';
 import { WorkoutResponseSchema } from './workouts.js';
 import { TEXT_LIMITS } from './limits.js';
+import { BodyMeasurementResponseSchema } from './body.js';
 import { TrainingBreakResponseSchema } from './breaks.js';
 import { ExerciseNoteResponseSchema } from './notes.js';
 
@@ -73,6 +74,8 @@ export const AccountExportSchema = z
     exerciseNotes: z.array(ExerciseNoteResponseSchema).default([]),
     /** Pausas planificadas. */
     trainingBreaks: z.array(TrainingBreakResponseSchema).default([]),
+    /** Medidas corporales (dato de salud, art. 9). */
+    bodyMeasurements: z.array(BodyMeasurementResponseSchema).default([]),
     analytics: z
       .object({
         e1rm: z.array(

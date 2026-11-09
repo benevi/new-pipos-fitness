@@ -5,12 +5,13 @@ import { PlansModule } from '../plans/plans.module';
 import { ConsentService } from './consent.service';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
+import { MeasurementsService } from './measurements.service';
 import { ScheduleService } from './schedule.service';
 
 @Module({
   imports: [AnalyticsModule, CatalogModule, PlansModule],
   controllers: [ProfileController],
-  providers: [ProfileService, ConsentService, ScheduleService],
-  exports: [ProfileService],
+  providers: [ProfileService, ConsentService, ScheduleService, MeasurementsService],
+  exports: [ProfileService, MeasurementsService],
 })
 export class ProfileModule {}

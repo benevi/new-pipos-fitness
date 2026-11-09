@@ -223,6 +223,20 @@
                   },
                   "currentVersion": {
                     "type": "string"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "weight",
+                        "height",
+                        "limitations",
+                        "body_measurements",
+                        "derived_estimates"
+                      ]
+                    },
+                    "default": []
                   }
                 },
                 "required": [
@@ -1070,6 +1084,60 @@
             },
             "default": []
           },
+          "bodyMeasurements": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "measuredOn": {},
+                "weightKg": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "waistCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "neckCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "hipCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "chestCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "armCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "thighCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "measuredOn",
+                "weightKg",
+                "waistCm",
+                "neckCm",
+                "hipCm",
+                "chestCm",
+                "armCm",
+                "thighCm",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "default": []
+          },
           "analytics": {
             "type": "object",
             "properties": {
@@ -1312,6 +1380,470 @@
           "refreshToken",
           "expiresIn",
           "user"
+        ],
+        "additionalProperties": false
+      },
+      "BodyMeasurementListResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "measuredOn": {},
+                "weightKg": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "waistCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "neckCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "hipCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "chestCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "armCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "thighCm": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "updatedAt": {
+                  "type": "string",
+                  "format": "date-time"
+                }
+              },
+              "required": [
+                "measuredOn",
+                "weightKg",
+                "waistCm",
+                "neckCm",
+                "hipCm",
+                "chestCm",
+                "armCm",
+                "thighCm",
+                "updatedAt"
+              ],
+              "additionalProperties": false
+            },
+            "maxItems": 400
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "BodyMeasurementResponse": {
+        "type": "object",
+        "properties": {
+          "measuredOn": {},
+          "weightKg": {
+            "type": "number",
+            "nullable": true
+          },
+          "waistCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "neckCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "hipCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "chestCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "armCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "thighCm": {
+            "type": "number",
+            "nullable": true
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "measuredOn",
+          "weightKg",
+          "waistCm",
+          "neckCm",
+          "hipCm",
+          "chestCm",
+          "armCm",
+          "thighCm",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "BodyProgressResponse": {
+        "type": "object",
+        "properties": {
+          "timezone": {
+            "type": "string"
+          },
+          "weight": {
+            "type": "object",
+            "properties": {
+              "latest": {
+                "type": "object",
+                "properties": {
+                  "date": {},
+                  "value": {
+                    "type": "number"
+                  }
+                },
+                "required": [
+                  "date",
+                  "value"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "trend": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "on_track",
+                      "too_fast",
+                      "too_slow",
+                      "no_target",
+                      "insufficient_data"
+                    ]
+                  },
+                  "weeklyRatePct": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "target": {
+                    "type": "object",
+                    "properties": {
+                      "direction": {
+                        "type": "string",
+                        "enum": [
+                          "loss",
+                          "gain"
+                        ]
+                      },
+                      "minPct": {
+                        "type": "number"
+                      },
+                      "maxPct": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "direction",
+                      "minPct",
+                      "maxPct"
+                    ],
+                    "additionalProperties": false,
+                    "nullable": true
+                  },
+                  "movingAverage": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "date": {
+                          "type": "string",
+                          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                        },
+                        "kg": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "date",
+                        "kg"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "spanDays": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "rationale": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "weeklyRatePct",
+                  "target",
+                  "movingAverage",
+                  "spanDays",
+                  "rationale"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "latest",
+              "trend"
+            ],
+            "additionalProperties": false
+          },
+          "bmi": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "insufficient_data",
+                  "consent_required",
+                  "invalid_input"
+                ]
+              },
+              "measuredOn": {
+                "nullable": true
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "invalid_input"
+                    ]
+                  },
+                  "value": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "category": {
+                    "type": "string",
+                    "enum": [
+                      "underweight",
+                      "normal",
+                      "pre_obese",
+                      "obese_class_1",
+                      "obese_class_2",
+                      "obese_class_3"
+                    ],
+                    "nullable": true
+                  },
+                  "categoryEs": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "caveats": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "value",
+                  "category",
+                  "categoryEs",
+                  "caveats"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "value"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "measuredOn",
+              "result",
+              "series"
+            ],
+            "additionalProperties": false
+          },
+          "bodyFat": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "insufficient_data",
+                  "consent_required",
+                  "not_applicable",
+                  "invalid_input"
+                ]
+              },
+              "measuredOn": {
+                "nullable": true
+              },
+              "result": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "ok",
+                      "not_applicable",
+                      "invalid_input"
+                    ]
+                  },
+                  "percent": {
+                    "type": "number",
+                    "nullable": true
+                  },
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "navy_hodgdon_beckett_1984"
+                    ]
+                  },
+                  "issues": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "caveats": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "status",
+                  "percent",
+                  "method",
+                  "issues",
+                  "caveats"
+                ],
+                "additionalProperties": false,
+                "nullable": true
+              },
+              "series": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "percent": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "percent"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "status",
+              "measuredOn",
+              "result",
+              "series"
+            ],
+            "additionalProperties": false
+          },
+          "circumferences": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "field": {
+                  "type": "string",
+                  "enum": [
+                    "waistCm",
+                    "neckCm",
+                    "hipCm",
+                    "chestCm",
+                    "armCm",
+                    "thighCm"
+                  ]
+                },
+                "latest": {
+                  "type": "object",
+                  "properties": {
+                    "date": {},
+                    "value": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "date",
+                    "value"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true
+                },
+                "change4w": {
+                  "type": "number",
+                  "nullable": true
+                },
+                "change12w": {
+                  "type": "number",
+                  "nullable": true
+                }
+              },
+              "required": [
+                "field",
+                "latest",
+                "change4w",
+                "change12w"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "disclaimer": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "timezone",
+          "weight",
+          "bmi",
+          "bodyFat",
+          "circumferences",
+          "disclaimer"
         ],
         "additionalProperties": false
       },
@@ -1984,6 +2516,20 @@
           },
           "currentVersion": {
             "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "weight",
+                "height",
+                "limitations",
+                "body_measurements",
+                "derived_estimates"
+              ]
+            },
+            "default": []
           }
         },
         "required": [
@@ -2977,6 +3523,20 @@
               },
               "currentVersion": {
                 "type": "string"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "weight",
+                    "height",
+                    "limitations",
+                    "body_measurements",
+                    "derived_estimates"
+                  ]
+                },
+                "default": []
               }
             },
             "required": [
@@ -3201,6 +3761,20 @@
                   },
                   "currentVersion": {
                     "type": "string"
+                  },
+                  "scopes": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "weight",
+                        "height",
+                        "limitations",
+                        "body_measurements",
+                        "derived_estimates"
+                      ]
+                    },
+                    "default": []
                   }
                 },
                 "required": [
@@ -4420,6 +4994,68 @@
         ],
         "additionalProperties": false
       },
+      "UpsertBodyMeasurementRequest": {
+        "type": "object",
+        "properties": {
+          "measuredOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "weightKg": {
+            "type": "number",
+            "minimum": 25,
+            "maximum": 400,
+            "nullable": true,
+            "default": null
+          },
+          "waistCm": {
+            "type": "number",
+            "minimum": 40,
+            "maximum": 250,
+            "nullable": true,
+            "default": null
+          },
+          "neckCm": {
+            "type": "number",
+            "minimum": 20,
+            "maximum": 70,
+            "nullable": true,
+            "default": null
+          },
+          "hipCm": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 250,
+            "nullable": true,
+            "default": null
+          },
+          "chestCm": {
+            "type": "number",
+            "minimum": 50,
+            "maximum": 220,
+            "nullable": true,
+            "default": null
+          },
+          "armCm": {
+            "type": "number",
+            "minimum": 15,
+            "maximum": 80,
+            "nullable": true,
+            "default": null
+          },
+          "thighCm": {
+            "type": "number",
+            "minimum": 25,
+            "maximum": 120,
+            "nullable": true,
+            "default": null
+          }
+        },
+        "required": [
+          "measuredOn"
+        ],
+        "additionalProperties": false
+      },
       "UpsertSetRequest": {
         "type": "object",
         "properties": {
@@ -4625,6 +5261,20 @@
               },
               "currentVersion": {
                 "type": "string"
+              },
+              "scopes": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "weight",
+                    "height",
+                    "limitations",
+                    "body_measurements",
+                    "derived_estimates"
+                  ]
+                },
+                "default": []
               }
             },
             "required": [
@@ -6542,6 +7192,279 @@
         }
       }
     },
+    "/me/measurements": {
+      "get": {
+        "operationId": "Profile_listMeasurements",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Medidas corporales en un rango de fechas (por defecto, el último año)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          },
+          {
+            "name": "to",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyMeasurementListResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "Profile_putMeasurement",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Guardar las medidas corporales de un día (sustituye las de ese día; idempotente)",
+        "description": "Dato de salud: el peso requiere el ámbito weight y los perímetros body_measurements del consentimiento (409 HEALTH_CONSENT_REQUIRED si no). El peso más reciente actualiza weightKg del perfil.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertBodyMeasurementRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyMeasurementResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/me/measurements/{date}": {
+      "delete": {
+        "operationId": "Profile_deleteMeasurement",
+        "tags": [
+          "profile"
+        ],
+        "summary": "Borrar las medidas de un día (idempotente)",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "date",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/me/nutrition-targets": {
       "get": {
         "operationId": "Nutrition_targets",
@@ -7482,6 +8405,84 @@
           },
           "401": {
             "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limited",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/progress/body": {
+      "get": {
+        "operationId": "Progress_body",
+        "tags": [
+          "progress"
+        ],
+        "summary": "Medidas corporales: tendencia de peso, IMC (OMS) y % de grasa estimado (Marina)",
+        "description": "Solo lectura: se calcula al leer. IMC y % de grasa requieren el ámbito derived_estimates del consentimiento de salud. Estimaciones orientativas, no un diagnóstico.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BodyProgressResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failed (VALIDATION_FAILED, con issues por campo)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Conflict (ver code)",
             "content": {
               "application/json": {
                 "schema": {

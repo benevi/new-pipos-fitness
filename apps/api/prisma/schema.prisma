@@ -246,6 +246,7 @@ model User {
   exerciseNotes       UserExerciseNote[]
   planOverrides       PlanExerciseOverride[]
   trainingBreaks      TrainingBreak[]
+  bodyMeasurements    BodyMeasurement[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -311,6 +312,35 @@ model UserExercisePreference {
 
   @@id([userId, exerciseId])
   @@index([exerciseId])
+}
+
+/// Medidas corporales de un día (idea 7, ADR-0013). DATO DE SALUD (art. 9): solo con un
+/// consentimiento que cubra su ámbito; se exporta, se borra con la cuenta y al retirar el
+/// consentimiento, y nunca va a logs. Una fila por día local del usuario (upsert por fecha).
+/// Al menos una medida no nula (CHECK en la migración).
+model BodyMeasurement {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Fecha local del usuario (su zona horaria).
+  measuredOn DateTime @db.Date
+  weightKg   Decimal? @db.Decimal(5, 2)
+  /// Hombres: abdomen a la altura del ombligo; mujeres: parte más estrecha (método de la Marina).
+  waistCm    Decimal? @db.Decimal(5, 1)
+  /// Justo por debajo de la laringe.
+  neckCm     Decimal? @db.Decimal(5, 1)
+  /// Parte más ancha de los glúteos.
+  hipCm      Decimal? @db.Decimal(5, 1)
+  /// A la altura de los pezones, al final de una espiración normal.
+  chestCm    Decimal? @db.Decimal(5, 1)
+  /// Brazo relajado, punto medio entre hombro (acromion) y codo (olécranon).
+  armCm      Decimal? @db.Decimal(5, 1)
+  /// Muslo, punto medio entre ingle y rótula.
+  thighCm    Decimal? @db.Decimal(5, 1)
+  createdAt  DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt  DateTime @updatedAt @db.Timestamptz(3)
+
+  @@unique([userId, measuredOn])
 }
 
 /// Pausa planificada (vacaciones…; idea 6, ADR-0013). Fechas locales del usuario, ambas

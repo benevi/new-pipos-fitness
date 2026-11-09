@@ -1,6 +1,7 @@
 import { Controller, Get, Query, UseGuards } from '@nestjs/common';
 import {
   AdherenceResponseSchema,
+  BodyProgressResponseSchema,
   E1rmQuerySchema,
   E1rmResponseSchema,
   VolumeResponseSchema,
@@ -12,12 +13,29 @@ import { Contract } from '../../common/contract';
 import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { MeasurementsService } from '../profile/measurements.service';
 import { ProgressService } from './progress.service';
 
 @Controller('progress')
 @UseGuards(JwtAuthGuard)
 export class ProgressController {
-  constructor(private readonly progress: ProgressService) {}
+  constructor(
+    private readonly progress: ProgressService,
+    private readonly measurements: MeasurementsService,
+  ) {}
+
+  @Get('body')
+  @Contract({
+    tag: 'progress',
+    summary: 'Medidas corporales: tendencia de peso, IMC (OMS) y % de grasa estimado (Marina)',
+    description:
+      'Solo lectura: se calcula al leer. IMC y % de grasa requieren el ámbito derived_estimates del consentimiento de salud. Estimaciones orientativas, no un diagnóstico.',
+    response: BodyProgressResponseSchema,
+    errors: [409],
+  })
+  body(@CurrentUser() user: AuthenticatedUser) {
+    return this.measurements.progress(user.id);
+  }
 
   @Get('e1rm')
   @Contract({ tag: 'progress', summary: 'e1RM por ejercicio y sesión', query: E1rmQuerySchema, response: E1rmResponseSchema })

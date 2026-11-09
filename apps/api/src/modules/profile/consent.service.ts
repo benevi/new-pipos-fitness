@@ -46,7 +46,8 @@ export class ConsentService {
       );
     }
     const current = healthConsentStatus(await latestHealthConsent(this.prisma, userId));
-    if (current.granted) return current; // idempotente: no duplica el evento
+    // Idempotente: no duplica el evento. Con una versión anterior, sí se registra la nueva.
+    if (current.granted && current.version === HEALTH_CONSENT_POLICY.version) return current;
     await this.prisma.consentEvent.create({
       data: {
         userId,
@@ -91,6 +92,8 @@ export class ConsentService {
         where: { userId },
         data: { limitations: [], weightKg: null, heightCm: null },
       });
+      // Registro de medidas corporales (idea 7, ADR-0013): todo es dato de salud.
+      await tx.bodyMeasurement.deleteMany({ where: { userId } });
       // Redacta los datos de salud copiados en las instantáneas de versiones anteriores.
       await tx.$executeRaw`
         UPDATE "PlanVersion"

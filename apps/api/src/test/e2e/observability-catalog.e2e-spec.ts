@@ -53,6 +53,11 @@ describe('Observabilidad, GET sin escrituras y catálogo (e2e, Postgres real)', 
       .set(bearer(u.accessToken))
       .send({ clientId: randomUUID(), startsOn: '2026-08-01', endsOn: '2026-08-15' })
       .expect(201);
+    await request(server())
+      .put('/me/measurements')
+      .set(bearer(u.accessToken))
+      .send({ measuredOn: '2026-08-01', weightKg: 80, waistCm: 85, neckCm: 38 })
+      .expect(200);
 
     const ids: Record<string, string> = {
       '/exercises/:id': today.exercises[0].exercise.id,

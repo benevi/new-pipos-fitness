@@ -1,6 +1,7 @@
 import { vi, type Mock } from 'vitest';
 import { loadCatalog } from '@pipos/catalog';
 import { loadImplement } from '@pipos/engine-rules';
+import { HEALTH_CONSENT_POLICY } from '@pipos/contracts';
 import type { TrainingProfile } from '@prisma/client';
 import { Clock } from '../../common/clock';
 import type { CatalogEntry, EngineCatalog } from '../../modules/catalog/catalog.service';
@@ -122,7 +123,7 @@ export function profileRow(overrides: Partial<TrainingProfile> = {}): TrainingPr
   } as TrainingProfile;
 }
 
-export function grantedEvent(version = 'health-2026-11') {
+export function grantedEvent(version: string = HEALTH_CONSENT_POLICY.version) {
   return {
     id: 'c1',
     userId: UID,

@@ -1,8 +1,13 @@
 import request from 'supertest';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
 import { isLoadStepMultiple } from '@pipos/engine-rules';
 import {
   AccountExportSchema,
+  BodyMeasurementListResponseSchema,
+  BodyProgressResponseSchema,
+  HEALTH_CONSENT_POLICIES,
+  HEALTH_CONSENT_POLICY,
+  HealthConsentStatusSchema,
   ExerciseNoteResponseSchema,
   PlanExerciseOverrideResponseSchema,
   PlanVersionResponseSchema,
@@ -17,6 +22,9 @@ import {
   BEGINNER_GYM,
   bearer,
   createTestApp,
+  grantHealthConsent,
+  putProfile,
+  registerUser,
   setBody,
   startToday,
   truncateAll,
@@ -516,5 +524,185 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
       expect(p.action).not.toBe('return_after_break');
       expect(p.loadKg).toBeGreaterThanOrEqual(40);
     });
+  });
+
+  describe('Idea 7: medidas corporales (dato de salud)', () => {
+    const FULL = { ...BEGINNER_GYM, goal: 'fat_loss' as const, birthYear: 1990, sex: 'male' as const, activityLevel: 'active' as const };
+
+    async function oldConsent(userId: string) {
+      // Consentimiento concedido con la versión anterior del texto (solo peso, altura y limitaciones).
+      const old = HEALTH_CONSENT_POLICIES[0];
+      await ctx.prisma.consentEvent.create({
+        data: {
+          userId,
+          purpose: 'health_data_processing',
+          action: 'granted',
+          policyVersion: old.version,
+          textHash: createHash('sha256').update(old.textEs).digest('hex'),
+          locale: 'es',
+        },
+      });
+    }
+
+    it('sin consentimiento → 409 y 0 filas; versión anterior: peso sí, perímetros no; la versión actual lo cubre todo', async () => {
+      const u = await registerUser(ctx.app);
+      const t = bearer(u.accessToken);
+      await putProfile(ctx.app, u.accessToken, FULL);
+      const put = (body: Record<string, unknown>) => request(server()).put('/me/measurements').set(t).send(body);
+
+      const none = await put({ measuredOn: '2026-11-01', weightKg: 80 }).expect(409);
+      expect(none.body.code).toBe('HEALTH_CONSENT_REQUIRED');
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(0);
+
+      await oldConsent(u.id);
+      const status = HealthConsentStatusSchema.parse((await request(server()).get('/me/consents/health').set(t).expect(200)).body);
+      expect(status).toMatchObject({ granted: true, version: 'health-2026-11', currentVersion: HEALTH_CONSENT_POLICY.version });
+      expect(status.scopes).toEqual(['weight', 'height', 'limitations']);
+      await put({ measuredOn: '2026-11-01', weightKg: 80 }).expect(200);
+      for (const field of ['waistCm', 'neckCm', 'hipCm', 'chestCm', 'armCm', 'thighCm']) {
+        const res = await put({ measuredOn: '2026-11-02', [field]: 60 }).expect(409);
+        expect(res.body.issues[0].path).toBe(`body.${field}`);
+      }
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(1);
+      // Las estimaciones derivadas también requieren la versión actual.
+      const body = BodyProgressResponseSchema.parse((await request(server()).get('/progress/body').set(t).expect(200)).body);
+      expect(body.bmi.status).toBe('consent_required');
+      expect(body.bodyFat.status).toBe('consent_required');
+
+      await grantHealthConsent(ctx.app, u.accessToken); // nueva versión: registra el evento
+      expect(await ctx.prisma.consentEvent.count({ where: { userId: u.id, action: 'granted' } })).toBe(2);
+      await put({ measuredOn: '2026-11-02', waistCm: 85, neckCm: 38, hipCm: 98, chestCm: 100, armCm: 35, thighCm: 58 }).expect(200);
+
+      // Validación: vacía, fuera de rango, fecha futura (en la zona del usuario) → 400.
+      await put({ measuredOn: '2026-11-03' }).expect(400);
+      await put({ measuredOn: '2026-11-03', waistCm: 10 }).expect(400);
+      await put({ measuredOn: '2026-11-03', armCm: 81 }).expect(400);
+      ctx.clock.set('2026-11-09T23:30:00.000Z'); // ya es 10 de noviembre en Madrid
+      await put({ measuredOn: '2026-11-10', weightKg: 79 }).expect(200);
+      await put({ measuredOn: '2026-11-11', weightKg: 79 }).expect(400);
+    });
+
+    it('registro, tendencia, IMC, % de grasa, perfil y objetivos nutricionales; GET sin escrituras', async () => {
+      const u = await registerUser(ctx.app);
+      const t = bearer(u.accessToken);
+      await grantHealthConsent(ctx.app, u.accessToken);
+      await putProfile(ctx.app, u.accessToken, { ...FULL, weightKg: 82, heightCm: 180 });
+      const before = (await request(server()).get('/me/nutrition-targets').set(t).expect(200)).body;
+
+      ctx.clock.set('2026-11-30T10:00:00.000Z');
+      // 4 semanas bajando ~0,7 %/semana, 2 registros por semana.
+      for (let i = 0; i <= 28; i += 3) {
+        const date = new Date(Date.UTC(2026, 10, 2) + i * DAY).toISOString().slice(0, 10);
+        const weightKg = Math.round(82 * (1 - (0.007 * i) / 7) * 10) / 10;
+        await request(server()).put('/me/measurements').set(t).send({ measuredOn: date, weightKg, waistCm: 90 - i * 0.1, neckCm: 38 }).expect(200);
+      }
+      // Reenvío del mismo día: sustituye, no duplica.
+      await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-11-29', weightKg: 79.9, waistCm: 87.2, neckCm: 38, armCm: 36 }).expect(200);
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(10);
+      // Un peso antiguo no cambia el del perfil; el más reciente sí.
+      await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-10-01', weightKg: 90, waistCm: 92 }).expect(200);
+      const profile = (await request(server()).get('/me/profile').set(t).expect(200)).body;
+      expect(profile.weightKg).toBe(79.9);
+      const after = (await request(server()).get('/me/nutrition-targets').set(t).expect(200)).body;
+      expect(after).not.toEqual(before);
+
+      const list = BodyMeasurementListResponseSchema.parse(
+        (await request(server()).get('/me/measurements?from=2026-11-01&to=2026-11-30').set(t).expect(200)).body,
+      );
+      expect(list.items).toHaveLength(10);
+      await request(server()).get('/me/measurements?from=2026-11-30&to=2026-11-01').set(t).expect(400);
+
+      const writes: WriteEvent[] = [];
+      const stop = ctx.prisma.onWrite((e) => writes.push(e));
+      let body;
+      try {
+        body = BodyProgressResponseSchema.parse((await request(server()).get('/progress/body').set(t).expect(200)).body);
+      } finally {
+        stop();
+      }
+      expect(writes).toEqual([]);
+      expect(body.weight.latest).toEqual({ date: '2026-11-29', value: 79.9 });
+      expect(body.weight.trend.status).toBe('on_track');
+      expect(body.weight.trend.weeklyRatePct!).toBeLessThan(0);
+      expect(body.bmi).toMatchObject({ status: 'ok', measuredOn: '2026-11-29' });
+      expect(body.bmi.result).toMatchObject({ value: 24.7, category: 'normal' });
+      expect(body.bmi.result!.caveats.join(' ')).toMatch(/no distingue músculo de grasa/);
+      expect(body.bodyFat.status).toBe('ok');
+      expect(body.bodyFat.result!.method).toBe('navy_hodgdon_beckett_1984');
+      expect(body.bodyFat.series.length).toBeGreaterThan(1);
+      const waist = body.circumferences.find((c) => c.field === 'waistCm')!;
+      expect(waist.latest).toEqual({ date: '2026-11-29', value: 87.2 });
+      expect(waist.change4w).toBe(-4.8);
+      expect(body.circumferences.find((c) => c.field === 'armCm')).toMatchObject({ latest: { value: 36 }, change4w: null });
+      expect(body.disclaimer).toMatch(/no un diagnóstico/);
+
+      // Sexo «other»: el % de grasa no aplica.
+      await putProfile(ctx.app, u.accessToken, { ...FULL, sex: 'other', weightKg: 79.9, heightCm: 180 });
+      const other = BodyProgressResponseSchema.parse((await request(server()).get('/progress/body').set(t).expect(200)).body);
+      expect(other.bodyFat.status).toBe('not_applicable');
+
+      // Borrar un día es idempotente.
+      await request(server()).delete('/me/measurements/2026-10-01').set(t).expect(200);
+      await request(server()).delete('/me/measurements/2026-10-01').set(t).expect(200);
+      await request(server()).delete('/me/measurements/2026-13-01').set(t).expect(400);
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(10);
+    });
+
+    it('retirar el consentimiento borra el registro de medidas; export y DELETE /me', async () => {
+      const u = await registerUser(ctx.app);
+      const t = bearer(u.accessToken);
+      await grantHealthConsent(ctx.app, u.accessToken);
+      await putProfile(ctx.app, u.accessToken, FULL);
+      const all = { weightKg: 80, waistCm: 85, neckCm: 38, hipCm: 98, chestCm: 100, armCm: 35, thighCm: 58 };
+      await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-11-01', ...all }).expect(200);
+      const exp = AccountExportSchema.parse((await request(server()).get('/me/export').set(t).expect(200)).body);
+      expect(exp.bodyMeasurements).toEqual([expect.objectContaining({ measuredOn: '2026-11-01', ...all })]);
+
+      await request(server()).delete('/me/consents/health').set(t).expect(200);
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(0);
+      expect((await request(server()).get('/me/profile').set(t).expect(200)).body.weightKg).toBeNull();
+      await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-11-02', weightKg: 80 }).expect(409);
+
+      await grantHealthConsent(ctx.app, u.accessToken);
+      await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-11-02', ...all }).expect(200);
+      await request(server()).delete('/me').set(t).send({ password: u.password }).expect(204);
+      expect(await ctx.prisma.bodyMeasurement.count({ where: { userId: u.id } })).toBe(0);
+    });
+  });
+
+  it('DELETE /me borra todo lo nuevo (notas, cambios fijados, pausas, medidas): 0 filas con userId', async () => {
+    const { user } = await userWithPlan(ctx.app);
+    const t = bearer(user.accessToken);
+    await grantHealthConsent(ctx.app, user.accessToken);
+    const plan = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+    const first = plan.sessions[0].exercises[0];
+    await request(server()).put(`/exercises/${first.exerciseId}/note`).set(t).send({ text: 'Agarre ancho', clientUpdatedAt: new Date().toISOString() }).expect(200);
+    for (const e of plan.sessions.flatMap((s) => s.exercises)) {
+      const subs = await request(server()).get(`/exercises/${e.exerciseId}/substitutes`).set(t).expect(200);
+      if (subs.body.substitutes.length === 0) continue;
+      await request(server()).put(`/plans/current/exercises/${e.id}/override`).set(t).send({ exerciseId: subs.body.substitutes[0].exerciseId }).expect(200);
+      break;
+    }
+    await request(server()).post('/me/breaks').set(t).send({ clientId: randomUUID(), startsOn: '2026-08-01', endsOn: '2026-08-10' }).expect(201);
+    await request(server()).put('/me/measurements').set(t).send({ measuredOn: '2026-11-01', weightKg: 70, waistCm: 80 }).expect(200);
+    const exp = AccountExportSchema.parse((await request(server()).get('/me/export').set(t).expect(200)).body);
+    expect(exp.exerciseNotes).toHaveLength(1);
+    expect(exp.trainingBreaks).toHaveLength(1);
+    expect(exp.bodyMeasurements).toHaveLength(1);
+    expect(exp.plans[0].versions[0].sessions.flatMap((s) => s.exercises).some((e) => e.pinned !== null)).toBe(true);
+
+    await request(server()).delete('/me').set(t).send({ password: user.password }).expect(204);
+    const tables = await ctx.prisma.$queryRaw<{ table_name: string }[]>`
+      SELECT table_name FROM information_schema.columns WHERE table_schema = 'public' AND column_name = 'userId'`;
+    for (const name of ['UserExerciseNote', 'PlanExerciseOverride', 'TrainingBreak', 'BodyMeasurement']) {
+      expect(tables.map((x) => x.table_name)).toContain(name);
+    }
+    for (const { table_name } of tables) {
+      const rows = await ctx.prisma.$queryRawUnsafe<{ n: bigint }[]>(
+        `SELECT count(*)::bigint AS n FROM "${table_name}" WHERE "userId" = $1::uuid`,
+        user.id,
+      );
+      expect({ table_name, n: Number(rows[0].n) }).toEqual({ table_name, n: 0 });
+    }
   });
 });

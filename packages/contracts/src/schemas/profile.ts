@@ -77,15 +77,52 @@ export const ProfileUpsertRequestSchema = z
 export type ProfileUpsertRequest = z.input<typeof ProfileUpsertRequestSchema>;
 export type ProfileUpsert = z.infer<typeof ProfileUpsertRequestSchema>;
 
-/** Texto versionado del consentimiento de salud. `textHash` se guarda como prueba (art. 7.1). */
-export const HEALTH_CONSENT_POLICY = {
-  version: 'health-2026-11',
-  textEs:
-    'Acepto que Pipos Fitness trate mis datos de salud (peso, altura y limitaciones o molestias por zona del cuerpo) ' +
-    'con el único fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales. Puedo retirar este ' +
-    'consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos y el plan se regenera sin ellos. ' +
-    'Pipos Fitness no da consejo médico.',
-} as const;
+/**
+ * Ámbitos de datos de salud que cubre cada versión del texto del consentimiento (ADR-0011,
+ * ADR-0013). Un consentimiento de una versión anterior sigue vigente para SUS ámbitos; para los
+ * nuevos hay que volver a consentir con la versión actual.
+ */
+export const HEALTH_DATA_SCOPES = ['weight', 'height', 'limitations', 'body_measurements', 'derived_estimates'] as const;
+export const HealthDataScopeSchema = z.enum(HEALTH_DATA_SCOPES);
+export type HealthDataScope = z.infer<typeof HealthDataScopeSchema>;
+
+export interface HealthConsentPolicy {
+  readonly version: string;
+  readonly textEs: string;
+  readonly scopes: readonly HealthDataScope[];
+}
+
+/** Versiones del texto, de la más antigua a la vigente. Nunca se edita una ya publicada. */
+export const HEALTH_CONSENT_POLICIES: readonly HealthConsentPolicy[] = [
+  {
+    version: 'health-2026-11',
+    textEs:
+      'Acepto que Pipos Fitness trate mis datos de salud (peso, altura y limitaciones o molestias por zona del cuerpo) ' +
+      'con el único fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales. Puedo retirar este ' +
+      'consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos y el plan se regenera sin ellos. ' +
+      'Pipos Fitness no da consejo médico.',
+    scopes: ['weight', 'height', 'limitations'],
+  },
+  {
+    version: 'health-2026-11-v2',
+    textEs:
+      'Acepto que Pipos Fitness trate mis datos de salud (peso, altura, limitaciones o molestias por zona del cuerpo y ' +
+      'medidas corporales: perímetros de cintura, cuello, cadera, pecho, brazo y muslo) con el fin de adaptar mi plan de ' +
+      'entrenamiento y mis objetivos nutricionales, y de mostrarme su evolución y estimaciones derivadas (índice de masa ' +
+      'corporal y porcentaje de grasa estimado). Puedo retirar este consentimiento en cualquier momento desde Ajustes; al ' +
+      'hacerlo se borran esos datos, incluido el registro de medidas, y el plan se regenera sin ellos. Las estimaciones ' +
+      'no son un diagnóstico y Pipos Fitness no da consejo médico.',
+    scopes: ['weight', 'height', 'limitations', 'body_measurements', 'derived_estimates'],
+  },
+];
+
+/** Texto versionado VIGENTE del consentimiento de salud. `textHash` se guarda como prueba (art. 7.1). */
+export const HEALTH_CONSENT_POLICY: HealthConsentPolicy = HEALTH_CONSENT_POLICIES[HEALTH_CONSENT_POLICIES.length - 1];
+
+/** Ámbitos que cubre una versión (vacío si la versión no existe). */
+export function healthConsentScopes(version: string | null | undefined): HealthDataScope[] {
+  return [...(HEALTH_CONSENT_POLICIES.find((p) => p.version === version)?.scopes ?? [])];
+}
 
 export const HealthConsentStatusSchema = z
   .object({
@@ -93,8 +130,14 @@ export const HealthConsentStatusSchema = z
     /** Versión aceptada (null si nunca se concedió o se retiró). */
     version: z.string().nullable(),
     grantedAt: DateTimeSchema.nullable(),
-    /** Versión vigente del texto; si difiere de `version`, hay que volver a pedirlo. */
+    /** Versión vigente del texto; si difiere de `version`, hay que volver a pedirlo para los ámbitos nuevos. */
     currentVersion: z.string(),
+    /**
+     * Ámbitos cubiertos por el consentimiento vigente (ADR-0013). Una versión anterior sigue
+     * cubriendo sus ámbitos (peso, altura, limitaciones); las medidas corporales y las
+     * estimaciones derivadas requieren la versión actual. Siempre presente en el servidor.
+     */
+    scopes: z.array(HealthDataScopeSchema).default([]),
   })
   .strict();
 export type HealthConsentStatus = z.infer<typeof HealthConsentStatusSchema>;
