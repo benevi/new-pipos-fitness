@@ -32,6 +32,10 @@ carga sesión a sesión.
 - **Ficha del ejercicio** — qué es, qué músculos trabaja, claves técnicas, errores comunes, material y
   nivel de cada uno de los 144 ejercicios, también sin red para el plan vigente
   ([ADR-0014](docs/adr/0014-guia-de-ejercicios.md); contenido pendiente de revisión profesional).
+- **Vídeo de técnica** — botón «Ver vídeo (YouTube)» en la ficha y en Hoy que abre un vídeo concreto y
+  revisado **fuera** de la app, con aviso de salida (ADR-0014, Fase 4). El código está listo, pero el
+  catálogo aún **no tiene vídeos**: cada uno lo elige y aprueba una persona por PR
+  ([procedimiento](packages/catalog/README.md)); hasta entonces no aparece ningún botón.
 - **Progreso** — e1RM por ejercicio, series efectivas semanales por músculo/grupo frente al rango
   objetivo y adherencia, calculados **al escribir** ([ADR-0008](docs/adr/0008-analytics-al-escribir.md)).
 - **Nutrición mínima** — objetivos diarios de kcal y macros (Mifflin-St Jeor + PAL), sin menús
