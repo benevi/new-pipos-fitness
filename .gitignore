@@ -49,3 +49,6 @@ _tmp_*
 # Worktrees de agentes de Claude Code
 .claude/worktrees/
 .vercel/
+
+# Binarios de compilación entregados a mano
+*.apk
