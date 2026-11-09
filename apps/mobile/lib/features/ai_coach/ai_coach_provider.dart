@@ -1,13 +1,13 @@
-import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
-import '../../core/api/dio_error_mapper.dart';
+import '../../core/api/api_failure.dart';
 import '../../models/ai_response.dart';
 import 'ai_chat_message.dart';
 import 'ai_coach_state.dart';
 
-final aiCoachProvider =
-    NotifierProvider<AICoachNotifier, AIConversationState>(AICoachNotifier.new);
+final aiCoachProvider = NotifierProvider<AICoachNotifier, AIConversationState>(
+  AICoachNotifier.new,
+);
 
 class AICoachNotifier extends Notifier<AIConversationState> {
   @override
@@ -68,17 +68,12 @@ class AICoachNotifier extends Notifier<AIConversationState> {
         error: null,
         lastFailedQuestion: null,
       );
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      // Incluye errores no-Dio (p. ej. cast/parseo del JSON).
+      final failure = ApiFailure.from(e);
       state = state.copyWith(
         sending: false,
         error: failure.message,
-        lastFailedQuestion: question,
-      );
-    } on Exception catch (_) {
-      state = state.copyWith(
-        sending: false,
-        error: 'Something went wrong. Please try again.',
         lastFailedQuestion: question,
       );
     }
@@ -124,17 +119,12 @@ class AICoachNotifier extends Notifier<AIConversationState> {
         sending: false,
         error: null,
       );
-    } on DioException catch (e) {
-      final failure = mapDioException(e);
+    } catch (e) {
+      // Incluye errores no-Dio (p. ej. cast/parseo del JSON).
+      final failure = ApiFailure.from(e);
       state = state.copyWith(
         sending: false,
         error: failure.message,
-        lastFailedQuestion: question,
-      );
-    } on Exception catch (_) {
-      state = state.copyWith(
-        sending: false,
-        error: 'Something went wrong. Please try again.',
         lastFailedQuestion: question,
       );
     }
