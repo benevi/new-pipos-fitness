@@ -1,6 +1,6 @@
 # Despliegue de la API en Vercel + Neon
 
-La API corre como una función de Vercel en Fráncfort (`fra1`) contra Postgres 16 en Neon (`aws-eu-central-1`). Los datos se quedan en la UE.
+La API corre como una función de Vercel en Fráncfort (`fra1`), en `https://pipos-fitness-api.vercel.app`, contra Postgres 16 en Neon (`aws-eu-central-1`). Los datos se quedan en la UE.
 
 ## Cómo está montado
 - **Proyecto de Vercel** con *Root Directory* `apps/api`, sin framework. `vercel.json` reescribe todas las rutas a `api/index.js`.
@@ -11,6 +11,7 @@ La API corre como una función de Vercel en Fráncfort (`fra1`) contra Postgres 
   3. Aplica las migraciones (`prisma migrate deploy`).
   4. Siembra el catálogo, que es idempotente.
   5. Ejecuta `nest build`.
+  6. Empaqueta con esbuild (`scripts/bundle-serverless.mjs`) un único CommonJS. El cargador de funciones de Vercel no admite `require()` de ESM, y NestJS 12 y `@nestjs/swagger` lo son. Para reproducirlo en local: `node --no-experimental-require-module`.
 
   Las migraciones van por `DATABASE_URL_DIRECT` (conexión directa) porque el *pooler* de Neon no admite los bloqueos de `migrate`.
 
@@ -31,3 +32,10 @@ Las previews están desactivadas: cada build migra la base de datos de producci�
 ```bash
 curl -s https://<dominio>/health/ready
 ```
+
+## Desplegar una versión nueva
+El proyecto de Vercel no está conectado a GitHub: falta instalar la app de Vercel en el repositorio. Hasta entonces se despliega con la CLI desde un `git archive` de `main` (sin `apps/mobile`):
+```bash
+npx vercel@latest deploy --prod --archive=tgz
+```
+Con la app de GitHub instalada, cada push a `main` desplegaría solo.
