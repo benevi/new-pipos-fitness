@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "lint": "eslint src scripts --ext .ts --max-warnings 0",
+    "lint": "eslint src scripts --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "test": "vitest run --coverage",
     "test:ci": "vitest run --coverage --reporter=verbose",
@@ -22,15 +22,15 @@
     "@pipos/contracts": "workspace:*"
   },
   "devDependencies": {
+    "@eslint/js": "^10",
     "@pipos/catalog": "workspace:*",
     "@types/node": "^22.20.5",
-    "@typescript-eslint/eslint-plugin": "^6.19.0",
-    "@typescript-eslint/parser": "^6.19.0",
     "@vitest/coverage-v8": "5.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^10.14.0",
     "fast-check": "^3.23.2",
     "tsx": "^4.19.0",
     "typescript": "^5.3.3",
+    "typescript-eslint": "^8.72.1",
     "vitest": "^5.1.0"
   }
 }
