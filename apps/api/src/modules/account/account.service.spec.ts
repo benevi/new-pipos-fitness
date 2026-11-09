@@ -102,8 +102,14 @@ describe('AccountService', () => {
     prisma.weeklyAdherence.findMany.mockResolvedValue([
       { weekStart: NOW, plannedSessions: 3, completedSessions: 1, plannedSets: 9, completedSets: 3 },
     ]);
+    prisma.userExerciseNote.findMany.mockResolvedValue([
+      { exerciseId: 'e1', text: 'Asiento en el 4', clientUpdatedAt: NOW, updatedAt: NOW, exercise: { slug: 's' } },
+    ]);
     const data = await service.export(UID);
     expect(data).toMatchObject({ formatVersion: 1, user: { email: 'a@b.com' }, profile: null });
+    expect(data.exerciseNotes).toEqual([
+      { exerciseId: 'e1', slug: 's', text: 'Asiento en el 4', clientUpdatedAt: NOW.toISOString(), updatedAt: NOW.toISOString() },
+    ]);
     expect(data.plans[0].versions[0].inputSnapshot).toEqual({});
     expect(data.analytics.e1rm[0]).toMatchObject({ slug: 's', e1rmKg: 50, performedOn: '2026-11-09' });
     expect(data.workouts).toHaveLength(1);

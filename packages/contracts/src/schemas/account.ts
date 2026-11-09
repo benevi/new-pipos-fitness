@@ -12,6 +12,7 @@ import { PlanVersionResponseSchema } from './plans.js';
 import { ProfileResponseSchema } from './profile.js';
 import { WorkoutResponseSchema } from './workouts.js';
 import { TEXT_LIMITS } from './limits.js';
+import { ExerciseNoteResponseSchema } from './notes.js';
 
 export const MeResponseSchema = z
   .object({
@@ -65,6 +66,10 @@ export const AccountExportSchema = z
         .strict(),
     ),
     workouts: z.array(WorkoutResponseSchema),
+    // ── Datos añadidos en ADR-0013. El servidor siempre los envía; el `default` solo mantiene
+    //    válidas las exportaciones y fixtures anteriores.
+    /** Notas fijas por ejercicio (texto libre del usuario). */
+    exerciseNotes: z.array(ExerciseNoteResponseSchema).default([]),
     analytics: z
       .object({
         e1rm: z.array(

@@ -5,6 +5,7 @@ import { catalogServiceMock, FixedClock, prismaMock, profileRow, rejectsWithCode
 import type { AnalyticsService } from '../analytics/analytics.service';
 import type { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
+import { NotesService } from './notes.service';
 import { currentLoad, SessionsService, weeksSinceDeload } from './sessions.service';
 import { WorkoutsService } from './workouts.service';
 
@@ -34,7 +35,9 @@ function setup() {
     engineInput,
     clock,
   );
-  const sessions = new SessionsService(prisma as unknown as PrismaService, catalog as unknown as CatalogService, engineInput, clock);
+  const notes = new NotesService(prisma as unknown as PrismaService);
+  const sessions = new SessionsService(prisma as unknown as PrismaService, catalog as unknown as CatalogService, engineInput, clock, notes);
+  prisma.userExerciseNote.findMany.mockResolvedValue([]);
   prisma.userExercisePreference.findMany.mockResolvedValue([]);
   prisma.consentEvent.findFirst.mockResolvedValue(null);
   prisma.setLog.findMany.mockResolvedValue([]);

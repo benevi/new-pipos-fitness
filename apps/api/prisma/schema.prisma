@@ -243,6 +243,7 @@ model User {
   weeklyMuscleVolume  WeeklyMuscleVolume[]
   weeklyGroupVolume   WeeklyGroupVolume[]
   weeklyAdherence     WeeklyAdherence[]
+  exerciseNotes       UserExerciseNote[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -307,6 +308,24 @@ model UserExercisePreference {
   @@index([exerciseId])
 }
 
+/// Nota fija del usuario para un ejercicio (ajustes de máquina, agarre…; idea 2, ADR-0013).
+/// Texto libre: puede contener datos de salud si el usuario los escribe. Va en la exportación,
+/// se borra con la cuenta y nunca se registra en logs (docs/SECURITY.md).
+model UserExerciseNote {
+  userId          String   @db.Uuid
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exerciseId      String   @db.Uuid
+  exercise        Exercise @relation(fields: [exerciseId], references: [id], onDelete: Restrict)
+  text            String   @db.VarChar(280)
+  /// Reloj del cliente: última escritura gana (ADR-0007).
+  clientUpdatedAt DateTime @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+  updatedAt       DateTime @updatedAt @db.Timestamptz(3)
+
+  @@id([userId, exerciseId])
+  @@index([exerciseId])
+}
+
 /// Registro append-only. Estado vigente = último evento por (userId, purpose).
 /// Sin IP ni user-agent (minimización, RGPD art. 5.1.c): la prueba del consentimiento es
 /// el evento autenticado con la versión y el hash del texto mostrado.
@@ -364,6 +383,7 @@ model Exercise {
   substitutions WorkoutSubstitution[]
   e1rmHistory   ExerciseE1rm[]
   preferences   UserExercisePreference[]
+  userNotes     UserExerciseNote[]
 
   @@index([movementPattern])
   @@index([substitutionGroupId])

@@ -1,6 +1,12 @@
 import request from 'supertest';
 import { isLoadStepMultiple } from '@pipos/engine-rules';
-import { PlanVersionResponseSchema, TodaySessionResponseSchema, type TodayExercise } from '@pipos/contracts';
+import {
+  AccountExportSchema,
+  ExerciseNoteResponseSchema,
+  PlanVersionResponseSchema,
+  TodaySessionResponseSchema,
+  type TodayExercise,
+} from '@pipos/contracts';
 import { bearer, createTestApp, setBody, startToday, truncateAll, userWithPlan, type TestContext } from './helpers';
 
 const DAY = 86_400_000;
@@ -100,6 +106,56 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
           expect(p.barKg + 2 * p.perSide.reduce((a, b) => a + b, 0) + p.remainderKg).toBeCloseTo(e.prescription.loadKg!, 6);
         }
       }
+    });
+  });
+
+  describe('Idea 2: nota fija por ejercicio', () => {
+    it('crear, no pisar con un reloj antiguo, verla en today, export, borrar y borrar la cuenta', async () => {
+      const { user } = await userWithPlan(ctx.app);
+      const t = bearer(user.accessToken);
+      const today = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      const ex = today.exercises[0];
+      expect(ex.note).toBeNull();
+      const url = `/exercises/${ex.exercise.id}/note`;
+
+      const created = await request(server())
+        .put(url)
+        .set(t)
+        .send({ text: '  Asiento en el 4, agarre ancho  ', clientUpdatedAt: '2026-11-09T10:00:00.000Z' })
+        .expect(200);
+      expect(ExerciseNoteResponseSchema.parse(created.body)).toMatchObject({ text: 'Asiento en el 4, agarre ancho', slug: ex.exercise.slug });
+      // Edición offline más antigua: no pisa, devuelve la vigente.
+      const stale = await request(server())
+        .put(url)
+        .set(t)
+        .send({ text: 'antigua', clientUpdatedAt: '2026-11-09T09:00:00.000Z' })
+        .expect(200);
+      expect(stale.body.text).toBe('Asiento en el 4, agarre ancho');
+      await request(server()).put(url).set(t).send({ text: 'Asiento en el 5', clientUpdatedAt: '2026-11-09T11:00:00.000Z' }).expect(200);
+      // Validación: vacía o > 280 → 400.
+      await request(server()).put(url).set(t).send({ text: '   ', clientUpdatedAt: '2026-11-09T12:00:00.000Z' }).expect(400);
+      await request(server()).put(url).set(t).send({ text: 'x'.repeat(281), clientUpdatedAt: '2026-11-09T12:00:00.000Z' }).expect(400);
+      await request(server()).put('/exercises/00000000-0000-4000-8000-000000000000/note').set(t).send({ text: 'a', clientUpdatedAt: '2026-11-09T12:00:00.000Z' }).expect(404);
+
+      const again = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(again.exercises[0].note).toBe('Asiento en el 5');
+      const list = await request(server()).get('/me/exercise-notes').set(t).expect(200);
+      expect(list.body.items).toHaveLength(1);
+      const exp = AccountExportSchema.parse((await request(server()).get('/me/export').set(t).expect(200)).body);
+      expect(exp.exerciseNotes.map((n) => n.text)).toEqual(['Asiento en el 5']);
+
+      // Otro usuario no ve la nota.
+      const other = await userWithPlan(ctx.app);
+      const otherList = await request(server()).get('/me/exercise-notes').set(bearer(other.user.accessToken)).expect(200);
+      expect(otherList.body.items).toEqual([]);
+
+      await request(server()).delete(url).set(t).expect(200);
+      await request(server()).delete(url).set(t).expect(200); // idempotente
+      expect(await ctx.prisma.userExerciseNote.count({ where: { userId: user.id } })).toBe(0);
+
+      await request(server()).put(url).set(t).send({ text: 'otra', clientUpdatedAt: '2026-11-10T11:00:00.000Z' }).expect(200);
+      await request(server()).delete('/me').set(t).send({ password: user.password }).expect(204);
+      expect(await ctx.prisma.userExerciseNote.count({ where: { userId: user.id } })).toBe(0);
     });
   });
 });

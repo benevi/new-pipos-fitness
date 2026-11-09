@@ -173,6 +173,8 @@ export const TodayExerciseSchema = z
     loadStepKg: z.number().positive().nullable().default(null),
     /** Discos por lado para la carga sugerida (solo barras con peso conocido y carga ≥ barra). */
     plates: PlateBreakdownSchema.nullable().default(null),
+    /** Nota fija del usuario para el ejercicio realmente hecho (idea 2); null si no hay. */
+    note: z.string().nullable().default(null),
   })
   .strict();
 export type TodayExercise = z.infer<typeof TodayExerciseSchema>;

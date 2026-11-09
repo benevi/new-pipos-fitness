@@ -40,6 +40,12 @@ describe('Observabilidad, GET sin escrituras y catálogo (e2e, Postgres real)', 
     const plan = await request(server()).post('/plans/generate').set(bearer(u.accessToken)).expect(201);
     const { today, workout } = await startToday(ctx.app, u.accessToken);
     await request(server()).post(`/workouts/${workout.id}/sets`).set(bearer(u.accessToken)).send(setBody(today.exercises[0])).expect(201);
+    // Datos de ADR-0013 para que sus GET lean filas reales.
+    await request(server())
+      .put(`/exercises/${today.exercises[0].exercise.id}/note`)
+      .set(bearer(u.accessToken))
+      .send({ text: 'Asiento en el 4', clientUpdatedAt: new Date().toISOString() })
+      .expect(200);
 
     const ids: Record<string, string> = {
       '/exercises/:id': today.exercises[0].exercise.id,

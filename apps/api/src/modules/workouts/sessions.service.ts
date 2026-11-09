@@ -17,6 +17,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import { warmupsFor } from '../plans/plan-mapper';
+import { NotesService } from './notes.service';
 import { toSetResponse } from './workout-mapper';
 
 /**
@@ -61,6 +62,7 @@ export class SessionsService {
     private readonly catalog: CatalogService,
     private readonly engineInput: EngineInputService,
     private readonly clock: Clock,
+    private readonly notes: NotesService,
   ) {}
 
   async today(userId: string): Promise<TodaySessionResponse> {
@@ -111,7 +113,7 @@ export class SessionsService {
     const catalog = await this.catalog.engineCatalog();
     const swaps = new Map(workout?.substitutions.map((s) => [s.planExerciseId, s.exerciseId]) ?? []);
     const performedIds = session.exercises.map((e) => swaps.get(e.id) ?? e.exerciseId);
-    const refs = await this.catalog.refs(performedIds);
+    const [refs, notes] = await Promise.all([this.catalog.refs(performedIds), this.notes.byExercise(userId, performedIds)]);
     const history = await this.engineInput.history(userId, tz, {
       exerciseIds: performedIds,
       ...(workout ? { excludeWorkoutId: workout.id } : {}),
@@ -175,6 +177,7 @@ export class SessionsService {
         loadImplement: implement,
         loadStepKg: implement ? loadStepKg(implement) : null,
         plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
+        note: notes.get(performedId) ?? null,
       };
     });
 
