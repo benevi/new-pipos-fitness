@@ -1177,4 +1177,76 @@ class AppLocalizationsEs extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String loadImplementLabel(String implement) {
+    String _temp0 = intl.Intl.selectLogic(implement, {
+      'barbell': 'Barra',
+      'trap_bar': 'Barra hexagonal',
+      'ez_bar': 'Barra EZ',
+      'smith_machine': 'Multipower',
+      'dumbbell': 'Mancuernas',
+      'kettlebell': 'Kettlebell',
+      'machine': 'Máquina',
+      'cable': 'Polea',
+      'weight_plate': 'Disco',
+      'other': '$implement',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String todayLoadStep(String implement, String step) {
+    return '$implement · de $step en $step';
+  }
+
+  @override
+  String get platesButton => 'Discos';
+
+  @override
+  String platesButtonFor(String kg) {
+    return 'Ver discos para $kg';
+  }
+
+  @override
+  String platesTitle(String kg) {
+    return 'Discos para $kg';
+  }
+
+  @override
+  String platesBar(String kg) {
+    return 'Barra: $kg';
+  }
+
+  @override
+  String platesPerSide(String plates) {
+    return 'Por lado: $plates';
+  }
+
+  @override
+  String get platesOnlyBar => 'Solo la barra, sin discos.';
+
+  @override
+  String platesRemainder(String kg) {
+    return 'Faltan $kg que no se pueden formar con discos estándar: usa el peso más cercano.';
+  }
+
+  @override
+  String platesBelowBar(String kg) {
+    return 'La carga es menor que la barra vacía ($kg).';
+  }
+
+  @override
+  String get platesHelp =>
+      'Discos estándar de 25 a 1,25 kg. Pon los mismos a cada lado.';
+
+  @override
+  String loadDecrease(String step) {
+    return 'Bajar $step';
+  }
+
+  @override
+  String loadIncrease(String step) {
+    return 'Subir $step';
+  }
 }

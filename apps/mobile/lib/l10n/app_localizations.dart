@@ -1609,6 +1609,84 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{count, plural, =1{1 cambio no se pudo enviar} other{{count} cambios no se pudieron enviar}}'**
   String failedChangesCount(int count);
+
+  /// No description provided for @loadImplementLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{implement, select, barbell{Barra} trap_bar{Barra hexagonal} ez_bar{Barra EZ} smith_machine{Multipower} dumbbell{Mancuernas} kettlebell{Kettlebell} machine{Máquina} cable{Polea} weight_plate{Disco} other{{implement}}}'**
+  String loadImplementLabel(String implement);
+
+  /// Material y paso real de carga del ejercicio
+  ///
+  /// In es, this message translates to:
+  /// **'{implement} · de {step} en {step}'**
+  String todayLoadStep(String implement, String step);
+
+  /// No description provided for @platesButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos'**
+  String get platesButton;
+
+  /// No description provided for @platesButtonFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver discos para {kg}'**
+  String platesButtonFor(String kg);
+
+  /// No description provided for @platesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos para {kg}'**
+  String platesTitle(String kg);
+
+  /// No description provided for @platesBar.
+  ///
+  /// In es, this message translates to:
+  /// **'Barra: {kg}'**
+  String platesBar(String kg);
+
+  /// No description provided for @platesPerSide.
+  ///
+  /// In es, this message translates to:
+  /// **'Por lado: {plates}'**
+  String platesPerSide(String plates);
+
+  /// No description provided for @platesOnlyBar.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo la barra, sin discos.'**
+  String get platesOnlyBar;
+
+  /// No description provided for @platesRemainder.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan {kg} que no se pueden formar con discos estándar: usa el peso más cercano.'**
+  String platesRemainder(String kg);
+
+  /// No description provided for @platesBelowBar.
+  ///
+  /// In es, this message translates to:
+  /// **'La carga es menor que la barra vacía ({kg}).'**
+  String platesBelowBar(String kg);
+
+  /// No description provided for @platesHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos estándar de 25 a 1,25 kg. Pon los mismos a cada lado.'**
+  String get platesHelp;
+
+  /// No description provided for @loadDecrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Bajar {step}'**
+  String loadDecrease(String step);
+
+  /// No description provided for @loadIncrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir {step}'**
+  String loadIncrease(String step);
 }
 
 class _AppLocalizationsDelegate

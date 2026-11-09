@@ -272,5 +272,19 @@
   "settingsHealthUpdate": "Read and accept the new version",
 
   "pendingChangesCount": "{count, plural, =1{1 change waiting to sync} other{{count} changes waiting to sync}}",
-  "failedChangesCount": "{count, plural, =1{1 change couldn't be sent} other{{count} changes couldn't be sent}}"
+  "failedChangesCount": "{count, plural, =1{1 change couldn't be sent} other{{count} changes couldn't be sent}}",
+
+  "loadImplementLabel": "{implement, select, barbell{Barbell} trap_bar{Trap bar} ez_bar{EZ bar} smith_machine{Smith machine} dumbbell{Dumbbells} kettlebell{Kettlebell} machine{Machine} cable{Cable} weight_plate{Plate} other{{implement}}}",
+  "todayLoadStep": "{implement} · in {step} steps",
+  "platesButton": "Plates",
+  "platesButtonFor": "Show plates for {kg}",
+  "platesTitle": "Plates for {kg}",
+  "platesBar": "Bar: {kg}",
+  "platesPerSide": "Per side: {plates}",
+  "platesOnlyBar": "Just the bar, no plates.",
+  "platesRemainder": "{kg} can't be made with standard plates: use the nearest weight.",
+  "platesBelowBar": "The load is lighter than the empty bar ({kg}).",
+  "platesHelp": "Standard plates from 25 to 1.25 kg. Load the same on each side.",
+  "loadDecrease": "Decrease by {step}",
+  "loadIncrease": "Increase by {step}"
 }

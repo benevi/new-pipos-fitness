@@ -67,6 +67,14 @@ extension L10nFormat on AppLocalizations {
 
   String kg(num value) => loadKgValue(number(value));
 
+  /// Con hasta 2 decimales (discos de 1,25 kg, cargas de 62,25 kg).
+  String kgPrecise(num value) {
+    final f = NumberFormat.decimalPattern(localeName)
+      ..minimumFractionDigits = 0
+      ..maximumFractionDigits = 2;
+    return loadKgValue(f.format(value));
+  }
+
   String shortDate(DateTime d) =>
       DateFormat.yMMMd(localeName).format(d.toLocal());
 

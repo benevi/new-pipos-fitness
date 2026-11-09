@@ -1174,4 +1174,76 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String loadImplementLabel(String implement) {
+    String _temp0 = intl.Intl.selectLogic(implement, {
+      'barbell': 'Barbell',
+      'trap_bar': 'Trap bar',
+      'ez_bar': 'EZ bar',
+      'smith_machine': 'Smith machine',
+      'dumbbell': 'Dumbbells',
+      'kettlebell': 'Kettlebell',
+      'machine': 'Machine',
+      'cable': 'Cable',
+      'weight_plate': 'Plate',
+      'other': '$implement',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String todayLoadStep(String implement, String step) {
+    return '$implement · in $step steps';
+  }
+
+  @override
+  String get platesButton => 'Plates';
+
+  @override
+  String platesButtonFor(String kg) {
+    return 'Show plates for $kg';
+  }
+
+  @override
+  String platesTitle(String kg) {
+    return 'Plates for $kg';
+  }
+
+  @override
+  String platesBar(String kg) {
+    return 'Bar: $kg';
+  }
+
+  @override
+  String platesPerSide(String plates) {
+    return 'Per side: $plates';
+  }
+
+  @override
+  String get platesOnlyBar => 'Just the bar, no plates.';
+
+  @override
+  String platesRemainder(String kg) {
+    return '$kg can\'t be made with standard plates: use the nearest weight.';
+  }
+
+  @override
+  String platesBelowBar(String kg) {
+    return 'The load is lighter than the empty bar ($kg).';
+  }
+
+  @override
+  String get platesHelp =>
+      'Standard plates from 25 to 1.25 kg. Load the same on each side.';
+
+  @override
+  String loadDecrease(String step) {
+    return 'Decrease by $step';
+  }
+
+  @override
+  String loadIncrease(String step) {
+    return 'Increase by $step';
+  }
 }

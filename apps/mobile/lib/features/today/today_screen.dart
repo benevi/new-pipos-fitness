@@ -21,6 +21,7 @@ import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
+import 'plates.dart';
 import 'rest_timer_bar.dart';
 import 'swap_sheet.dart';
 import 'today_providers.dart';
@@ -425,6 +426,9 @@ class ExerciseCard extends StatelessWidget {
     final noLoad = weighted && p.loadKg == null;
     final total = p.sets > logged.length ? p.sets : logged.length;
     final done = logged.length >= p.sets;
+    final implement = exercise.loadImplement;
+    final step = exercise.loadStepKg;
+    final barKg = exercise.plates?.barKg ?? barKgFor(implement);
 
     return Card(
       margin: const EdgeInsets.only(top: AppSpacing.md),
@@ -479,7 +483,7 @@ class ExerciseCard extends StatelessWidget {
                   Text(l10n.loadBodyweight, style: theme.textTheme.bodyMedium)
                 else if (p.loadKg != null)
                   Text(
-                    l10n.todaySuggestedLoad(l10n.kg(p.loadKg!)),
+                    l10n.todaySuggestedLoad(l10n.kgPrecise(p.loadKg!)),
                     style: theme.textTheme.bodyMedium,
                   )
                 else
@@ -487,6 +491,35 @@ class ExerciseCard extends StatelessWidget {
                     key: Key('estimate-${exercise.planExerciseId}'),
                     avatar: const Icon(Icons.tune),
                     label: Text(l10n.todayInitialEstimate),
+                  ),
+                if (weighted && implement != null && step != null)
+                  Text(
+                    l10n.todayLoadStep(
+                      l10n.loadImplementLabel(implement.wire),
+                      l10n.kgPrecise(step),
+                    ),
+                    key: Key('load-step-${exercise.planExerciseId}'),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                if (weighted && barKg != null && p.loadKg != null)
+                  TextButton.icon(
+                    key: Key('plates-${exercise.planExerciseId}'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                    ),
+                    onPressed: () => showPlatesSheet(
+                      context,
+                      totalKg: p.loadKg!,
+                      barKg: barKg,
+                      breakdown: exercise.plates,
+                    ),
+                    icon: const Icon(Icons.fitness_center),
+                    label: Text(
+                      l10n.platesButton,
+                      semanticsLabel: l10n.platesButtonFor(
+                        l10n.kgPrecise(p.loadKg!),
+                      ),
+                    ),
                   ),
                 if (p.isDeload) Chip(label: Text(l10n.todayDeload)),
                 Text(
@@ -523,6 +556,8 @@ class ExerciseCard extends StatelessWidget {
                   planExerciseId: exercise.planExerciseId,
                   index: i,
                   weighted: weighted,
+                  loadStepKg: step,
+                  barKg: barKg,
                   initialReps: logged.isNotEmpty ? logged.last.reps : p.repMin,
                   initialLoad: logged.isNotEmpty
                       ? logged.last.loadKg
@@ -689,11 +724,19 @@ class ActiveSetRow extends StatefulWidget {
     required this.initialLoad,
     required this.initialRir,
     required this.onConfirm,
+    this.loadStepKg,
+    this.barKg,
   });
 
   final String planExerciseId;
   final int index;
   final bool weighted;
+
+  /// Paso real del material (kg totales): lo que mueven − y +.
+  final double? loadStepKg;
+
+  /// Barra vacía si se puede desglosar en discos.
+  final double? barKg;
   final int initialReps;
   final double? initialLoad;
   final int initialRir;
@@ -744,6 +787,21 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  double? get _currentLoad =>
+      double.tryParse(_load.text.trim().replaceAll(',', '.'));
+
+  /// − / +: mueve la carga un paso real del material (nunca por debajo de 0).
+  void _stepLoad(int direction) {
+    final step = widget.loadStepKg;
+    if (step == null) return;
+    final current = _currentLoad ?? 0;
+    final next = (current + direction * step).clamp(0, 1000).toDouble();
+    setState(() {
+      _load.text = _fmt((next * 100).round() / 100);
+      _loadError = null;
+    });
   }
 
   Future<void> _pickRir() async {
@@ -834,6 +892,50 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
               ),
             ],
           ),
+          if (widget.weighted &&
+              (widget.loadStepKg != null || widget.barKg != null))
+            Wrap(
+              spacing: AppSpacing.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (widget.loadStepKg != null) ...[
+                  IconButton.outlined(
+                    key: Key('load-minus-$id'),
+                    tooltip: l10n.loadDecrease(
+                      l10n.kgPrecise(widget.loadStepKg!),
+                    ),
+                    onPressed: () => _stepLoad(-1),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  IconButton.outlined(
+                    key: Key('load-plus-$id'),
+                    tooltip: l10n.loadIncrease(
+                      l10n.kgPrecise(widget.loadStepKg!),
+                    ),
+                    onPressed: () => _stepLoad(1),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+                if (widget.barKg != null)
+                  TextButton.icon(
+                    key: Key('row-plates-$id'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                    ),
+                    onPressed: () {
+                      final load = _currentLoad;
+                      if (load == null) return;
+                      showPlatesSheet(
+                        context,
+                        totalKg: load,
+                        barKg: widget.barKg!,
+                      );
+                    },
+                    icon: const Icon(Icons.fitness_center),
+                    label: Text(l10n.platesButton),
+                  ),
+              ],
+            ),
         ],
       ),
     );
