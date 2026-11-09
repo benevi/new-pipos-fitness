@@ -550,6 +550,20 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinishConfirm => 'Finish';
 
   @override
+  String todayFinishUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets haven\'t been sent.',
+      one: '1 set hasn\'t been sent.',
+    );
+    return '$_temp0 They\'ll be retried before closing the workout; until they\'re sent, closing stays on hold.';
+  }
+
+  @override
+  String get todayFinishRetryNow => 'Retry sending';
+
+  @override
   String get todayStartHint =>
       'The workout starts when you confirm the first set.';
 

@@ -11,7 +11,8 @@
 ///       por `clientId`: 201 la primera vez, 200 al reenviar).
 ///    b. `POST /workouts/:id/sets` de las series `pending` (orden
 ///       `completedAt`, `setIndex`; idempotente por `clientId`).
-///    c. `POST /workouts/:id/finish` de los terminados sin series pendientes.
+///    c. `POST /workouts/:id/finish` de los terminados sin series por
+///       confirmar (ni pendientes ni `failed`), con el mismo backoff.
 ///    - 2xx → `synced`.
 ///    - Error transitorio (sin red, timeout, 5xx, 401, 408, 429) → sigue
 ///      `pending`, `attempts++`, `nextAttemptAt` con backoff exponencial; se
@@ -252,13 +253,40 @@ class SyncService {
   }
 
   /// Marca el entrenamiento como terminado; el `finish` se envía cuando
-  /// todas sus series estén sincronizadas.
+  /// TODAS sus series estén sincronizadas. Las `failed` se vuelven a poner
+  /// en cola antes (la API rechaza series nuevas con `409 WORKOUT_FINISHED`
+  /// una vez terminado: enviar el finish antes las perdería para siempre).
   Future<void> finishWorkout(String workoutClientId) async {
-    await (_db.update(_workouts)..where(
-          (t) => t.clientId.equals(workoutClientId) & t.userId.equals(_uid),
-        ))
-        .write(LocalWorkoutsCompanion(finishedAt: Value(_clock())));
+    final userId = _uid;
+    await _db.transaction(() async {
+      await (_db.update(_workouts)..where(
+            (t) => t.clientId.equals(workoutClientId) & t.userId.equals(userId),
+          ))
+          .write(
+            LocalWorkoutsCompanion(
+              finishedAt: Value(_clock()),
+              attempts: const Value(0),
+              nextAttemptAt: const Value(null),
+              lastError: const Value(null),
+            ),
+          );
+      await _requeueFailedSets(userId, workoutClientId: workoutClientId);
+    });
     unawaited(syncNow());
+  }
+
+  /// Series sin confirmar por la API (pendientes, en envío o fallidas) de
+  /// un entrenamiento.
+  Future<int> unsyncedCount(String workoutClientId) async {
+    final rows =
+        await (_db.select(_sets)..where(
+              (t) =>
+                  t.userId.equals(_uid) &
+                  t.workoutClientId.equals(workoutClientId) &
+                  t.status.equalsValue(SetSyncStatus.synced).not(),
+            ))
+            .get();
+    return rows.length;
   }
 
   /// Series del entrenamiento (cualquier estado), en orden de registro.
@@ -367,18 +395,7 @@ class SyncService {
   Future<void> retryFailed() async {
     final userId = _userId;
     if (userId == null) return;
-    await (_db.update(_sets)..where(
-          (t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SetSyncStatus.failed),
-        ))
-        .write(
-          const LocalSetLogsCompanion(
-            status: Value(SetSyncStatus.pending),
-            attempts: Value(0),
-            nextAttemptAt: Value(null),
-          ),
-        );
+    await _requeueFailedSets(userId);
     await (_db.update(_workouts)..where((t) => t.userId.equals(userId))).write(
       const LocalWorkoutsCompanion(
         attempts: Value(0),
@@ -387,6 +404,28 @@ class SyncService {
       ),
     );
     unawaited(syncNow());
+  }
+
+  Future<void> _requeueFailedSets(
+    String userId, {
+    String? workoutClientId,
+  }) async {
+    await (_db.update(_sets)..where((t) {
+          var cond =
+              t.userId.equals(userId) &
+              t.status.equalsValue(SetSyncStatus.failed);
+          if (workoutClientId != null) {
+            cond = cond & t.workoutClientId.equals(workoutClientId);
+          }
+          return cond;
+        }))
+        .write(
+          const LocalSetLogsCompanion(
+            status: Value(SetSyncStatus.pending),
+            attempts: Value(0),
+            nextAttemptAt: Value(null),
+          ),
+        );
   }
 
   /// Garantiza que el entrenamiento existe en la API (lo necesita la
@@ -535,14 +574,17 @@ class SyncService {
       }
     }
 
-    // c. Finales de entrenamiento.
+    // c. Finales de entrenamiento. Solo cuando no queda NINGUNA serie sin
+    // confirmar (tampoco `failed`): tras el finish la API rechaza series
+    // nuevas con 409 WORKOUT_FINISHED.
     final finished =
         await (_db.select(_workouts)..where(
               (t) =>
                   t.userId.equals(userId) &
                   t.finishedAt.isNotNull() &
                   t.finishSynced.equals(false) &
-                  t.serverId.isNotNull(),
+                  t.serverId.isNotNull() &
+                  t.attempts.isSmallerThanValue(backoff.maxAttempts),
             ))
             .get();
     for (final w in finished) {
@@ -551,13 +593,11 @@ class SyncService {
           await (_db.select(_sets)..where(
                 (t) =>
                     t.workoutClientId.equals(w.clientId) &
-                    t.status.isInValues([
-                      SetSyncStatus.pending,
-                      SetSyncStatus.syncing,
-                    ]),
+                    t.status.equalsValue(SetSyncStatus.synced).not(),
               ))
               .get();
       if (open.isNotEmpty) continue;
+      if (_deferIfNotDue(w.nextAttemptAt)) continue;
       try {
         await _api.finishWorkout(w.serverId!, w.finishedAt!);
         await _markFinishSynced(w.clientId);
@@ -568,13 +608,21 @@ class SyncService {
           await _markFinishSynced(w.clientId);
           continue;
         }
-        if (_isTransient(f)) {
-          _scheduleRetry(backoff.delayFor(1));
+        if (_isTransient(f) && w.attempts + 1 < backoff.maxAttempts) {
+          await _deferWorkout(w, f);
           return SyncReport(sent: sent, failed: failed, deferred: 1);
         }
-        await (_db.update(_workouts)
-              ..where((t) => t.clientId.equals(w.clientId)))
-            .write(LocalWorkoutsCompanion(lastError: Value(_reason(f))));
+        // Permanente o reintentos agotados: no se reintenta solo
+        // (retryFailed lo vuelve a poner en cola).
+        await (_db.update(
+          _workouts,
+        )..where((t) => t.clientId.equals(w.clientId))).write(
+          LocalWorkoutsCompanion(
+            attempts: Value(backoff.maxAttempts),
+            lastError: Value(_reason(f)),
+            nextAttemptAt: const Value(null),
+          ),
+        );
         failed++;
       }
     }
@@ -611,6 +659,8 @@ class SyncService {
       (_db.update(_workouts)..where((t) => t.clientId.equals(clientId))).write(
         LocalWorkoutsCompanion(
           serverId: Value(serverId),
+          // `attempts` pasa a contar los intentos del finish.
+          attempts: const Value(0),
           lastError: const Value(null),
           nextAttemptAt: const Value(null),
         ),

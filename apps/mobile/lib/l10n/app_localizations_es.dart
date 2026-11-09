@@ -551,6 +551,20 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinishConfirm => 'Terminar';
 
   @override
+  String todayFinishUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count series sin enviar.',
+      one: 'Hay 1 serie sin enviar.',
+    );
+    return '$_temp0 Se reintentará antes de cerrar el entrenamiento; mientras no se envíe, el cierre queda en espera.';
+  }
+
+  @override
+  String get todayFinishRetryNow => 'Reintentar envío';
+
+  @override
   String get todayStartHint =>
       'El entrenamiento empieza al confirmar la primera serie.';
 

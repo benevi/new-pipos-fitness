@@ -148,16 +148,42 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
       }
     }
     final remaining = planned - done;
+    final unsynced = local
+        .where((s) => s.status != SetSyncStatus.synced)
+        .length;
+    final hasFailed = local.any((s) => s.status == SetSyncStatus.failed);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.todayFinishConfirmTitle),
-        content: Text(l10n.todayFinishConfirmBody(remaining)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.todayFinishConfirmBody(remaining)),
+            if (unsynced > 0) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.todayFinishUnsynced(unsynced),
+                key: const Key('finish-unsynced'),
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(l10n.actionCancel),
           ),
+          if (hasFailed)
+            TextButton(
+              key: const Key('finish-retry'),
+              onPressed: () {
+                ref.read(syncServiceProvider).retryFailed();
+                Navigator.of(ctx).pop(false);
+              },
+              child: Text(l10n.todayFinishRetryNow),
+            ),
           FilledButton(
             key: const Key('finish-confirm'),
             onPressed: () => Navigator.of(ctx).pop(true),

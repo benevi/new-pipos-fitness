@@ -184,6 +184,127 @@ void main() {
   });
 
   test(
+    'una serie failed bloquea el finish (no se pierde) y se reintenta antes',
+    () async {
+      connectivity.online = true;
+      var reject = true;
+      backend.setFailure = (r) => reject
+          ? const ApiFailure(
+              type: ApiFailureType.badRequest,
+              message: 'bad',
+              statusCode: 422,
+              code: ApiErrorCode.validationFailed,
+            )
+          : null;
+      final first = await logOne();
+      await service.syncNow();
+      expect(
+        (await service.setsOf(first.workoutClientId)).single.status,
+        SetSyncStatus.failed,
+      );
+      reject = false;
+      await logOne(index: 1);
+      await service.syncNow();
+      expect(await service.unsyncedCount(first.workoutClientId), 1);
+
+      // Mientras la serie siga fallando, el finish NO se envía.
+      reject = true;
+      await service.finishWorkout(first.workoutClientId);
+      await service.syncNow();
+      expect(backend.finishCalls, 0);
+      expect(
+        (await service.workoutByClientId(first.workoutClientId))!.finishSynced,
+        isFalse,
+      );
+
+      // Al terminar de nuevo se reintenta la fallida ANTES del finish.
+      reject = false;
+      await service.finishWorkout(first.workoutClientId);
+      await service.syncNow();
+      expect(backend.sets.keys, contains(first.clientId));
+      expect(backend.sets, hasLength(2));
+      expect(backend.finishes, 1);
+      expect(await service.unsyncedCount(first.workoutClientId), 0);
+    },
+  );
+
+  test('finish con error transitorio: backoff con attempts, no cada 2 s '
+      'sin límite', () async {
+    connectivity.online = true;
+    final set = await logOne();
+    await service.syncNow();
+    backend.finishFailures.addAll([
+      const ApiFailure(
+        type: ApiFailureType.server,
+        message: '503',
+        statusCode: 503,
+      ),
+      const ApiFailure(
+        type: ApiFailureType.server,
+        message: '503',
+        statusCode: 503,
+      ),
+    ]);
+    await service.finishWorkout(set.workoutClientId);
+    await service.syncNow();
+    expect(backend.finishCalls, 1);
+    var w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.attempts, 1);
+    expect(w.nextAttemptAt!.toUtc(), now.add(service.backoff.delayFor(1)));
+
+    // Antes de su hora no se reintenta.
+    await service.syncNow();
+    expect(backend.finishCalls, 1);
+
+    now = now.add(const Duration(seconds: 3));
+    await service.syncNow();
+    expect(backend.finishCalls, 2);
+    w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.attempts, 2);
+    expect(w.nextAttemptAt!.toUtc(), now.add(service.backoff.delayFor(2)));
+
+    now = now.add(const Duration(minutes: 1));
+    await service.syncNow();
+    expect(backend.finishes, 1);
+    expect(
+      (await service.workoutByClientId(set.workoutClientId))!.finishSynced,
+      isTrue,
+    );
+  });
+
+  test('finish agotando reintentos queda parado hasta retryFailed', () async {
+    await service.dispose();
+    service = SyncService(
+      database: db,
+      api: backend,
+      connectivity: connectivity,
+      userId: 'user-1',
+      clock: () => now,
+      backoff: const BackoffPolicy(maxAttempts: 2),
+    );
+    connectivity.online = true;
+    final set = await logOne();
+    await service.syncNow();
+    for (var i = 0; i < 3; i++) {
+      backend.finishFailures.add(
+        const ApiFailure(type: ApiFailureType.network, message: 'off'),
+      );
+    }
+    await service.finishWorkout(set.workoutClientId);
+    await service.syncNow();
+    now = now.add(const Duration(minutes: 10));
+    await service.syncNow();
+    expect(backend.finishCalls, 2);
+    now = now.add(const Duration(minutes: 10));
+    await service.syncNow();
+    expect(backend.finishCalls, 2, reason: 'agotado: no se reintenta solo');
+    backend.finishFailures.clear();
+    await service.retryFailed();
+    await service.syncNow();
+    expect(backend.finishes, 1);
+  });
+
+  test(
     'adoptar el entrenamiento en curso de la API reutiliza su clientId',
     () async {
       final adopted = await service.startWorkout(

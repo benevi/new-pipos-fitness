@@ -968,6 +968,18 @@ abstract class AppLocalizations {
   /// **'Terminar'**
   String get todayFinishConfirm;
 
+  /// No description provided for @todayFinishUnsynced.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Hay 1 serie sin enviar.} other{Hay {count} series sin enviar.}} Se reintentará antes de cerrar el entrenamiento; mientras no se envíe, el cierre queda en espera.'**
+  String todayFinishUnsynced(int count);
+
+  /// No description provided for @todayFinishRetryNow.
+  ///
+  /// In es, this message translates to:
+  /// **'Reintentar envío'**
+  String get todayFinishRetryNow;
+
   /// No description provided for @todayStartHint.
   ///
   /// In es, this message translates to:

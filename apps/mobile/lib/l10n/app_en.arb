@@ -159,6 +159,8 @@
   "todayFinishConfirmTitle": "Finish the workout?",
   "todayFinishConfirmBody": "{count, plural, =0{You've completed every set.} =1{1 set is still unlogged.} other{{count} sets are still unlogged.}} Everything you logged is kept.",
   "todayFinishConfirm": "Finish",
+  "todayFinishUnsynced": "{count, plural, =1{1 set hasn't been sent.} other{{count} sets haven't been sent.}} They'll be retried before closing the workout; until they're sent, closing stays on hold.",
+  "todayFinishRetryNow": "Retry sending",
   "todayStartHint": "The workout starts when you confirm the first set.",
   "restTimerLabel": "Rest",
   "restTimerRemaining": "Rest: {time} left",
