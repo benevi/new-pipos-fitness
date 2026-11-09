@@ -19,6 +19,8 @@ describe('parseEnv', () => {
       CORS_ORIGINS: [],
       LOG_LEVEL: 'info',
       THROTTLE_ENABLED: true,
+      TRUST_PROXY_HOPS: 0,
+      THROTTLE_STORE: 'memory',
     });
     expect(env.SENTRY_DSN).toBeUndefined();
   });
@@ -76,5 +78,21 @@ describe('parseEnv', () => {
     expect(() =>
       parseEnv({ ...base, NODE_ENV: 'production', THROTTLE_ENABLED: 'false' }),
     ).toThrow(/THROTTLE_ENABLED/);
+  });
+
+  it('TRUST_PROXY_HOPS: entero 0-10 (por defecto 0: se ignora X-Forwarded-For)', () => {
+    expect(parseEnv({ ...base, TRUST_PROXY_HOPS: '1' }).TRUST_PROXY_HOPS).toBe(1);
+    expect(() => parseEnv({ ...base, TRUST_PROXY_HOPS: '-1' })).toThrow(/TRUST_PROXY_HOPS/);
+    expect(() => parseEnv({ ...base, TRUST_PROXY_HOPS: '1.5' })).toThrow(/TRUST_PROXY_HOPS/);
+    expect(() => parseEnv({ ...base, TRUST_PROXY_HOPS: 'true' })).toThrow(/TRUST_PROXY_HOPS/);
+    expect(() => parseEnv({ ...base, TRUST_PROXY_HOPS: '11' })).toThrow(/TRUST_PROXY_HOPS/);
+  });
+
+  it('THROTTLE_STORE: postgres por defecto en producción, memory fuera; explícito gana', () => {
+    expect(parseEnv({ ...base, NODE_ENV: 'production' }).THROTTLE_STORE).toBe('postgres');
+    expect(parseEnv({ ...base, NODE_ENV: 'test' }).THROTTLE_STORE).toBe('memory');
+    expect(parseEnv({ ...base, NODE_ENV: 'production', THROTTLE_STORE: 'memory' }).THROTTLE_STORE).toBe('memory');
+    expect(parseEnv({ ...base, THROTTLE_STORE: 'postgres' }).THROTTLE_STORE).toBe('postgres');
+    expect(() => parseEnv({ ...base, THROTTLE_STORE: 'redis' })).toThrow(/THROTTLE_STORE/);
   });
 });

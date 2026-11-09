@@ -41,6 +41,8 @@
 | `LOG_LEVEL` | `info` |
 | `SENTRY_DSN` | DSN del proyecto (región UE) o vacío |
 | `THROTTLE_ENABLED` | Sin definir (true) |
+| `TRUST_PROXY_HOPS` | Número de proxies de confianza delante de la API (normalmente `1`: el balanceador del hosting). `0` (por defecto) ignora `X-Forwarded-For`. **Nunca** más saltos de los reales: un cliente podría falsificar su IP y saltarse el rate limiting |
+| `THROTTLE_STORE` | `postgres` (por defecto con `NODE_ENV=production`): contadores del rate limiting compartidos entre réplicas en la tabla `ThrottlerRecord`. `memory` solo con una única instancia |
 
 - [ ] Secretos en el gestor de secretos del hosting; rotación de `JWT_ACCESS_SECRET` documentada
       (rotarlo invalida todos los access tokens; los refresh siguen valiendo).
@@ -59,10 +61,13 @@
 
 - [ ] **[BLOQUEA]** HTTPS con TLS 1.2+ terminado en el hosting/proxy; HTTP redirige o se cierra.
       La API ya envía HSTS.
-- [ ] **[BLOQUEA]** `trust proxy` configurado según el proxy del hosting (hoy no se configura: el
-      rate limiting vería la IP del proxy y limitaría a todos a la vez). Ver DEUDA_TECNICA.
-- [ ] Una sola instancia de la API (el throttler es en memoria). Con varias réplicas hace falta un
-      almacén compartido antes de escalar.
+- [ ] **[BLOQUEA]** `TRUST_PROXY_HOPS` igual al número de proxies del hosting delante de la API
+      (sin él el rate limiting vería la IP del proxy y limitaría a todos a la vez). Comprobar en
+      staging: dos clientes con IP distinta no comparten el límite de login (5/min), y una cabecera
+      `X-Forwarded-For` inventada por el cliente no cambia su IP.
+- [ ] `THROTTLE_STORE=postgres` (por defecto en producción): las réplicas comparten los contadores,
+      así que se puede escalar a varias instancias. La tabla `ThrottlerRecord` se limpia sola (filas
+      caducadas, como mucho una vez por minuto y réplica); no guarda IPs en claro (clave = hash).
 - [ ] Límites vigentes revisados: global 100/min, login/registro 5/min, refresh 10/min, generar
       plan 10/min, exportar/borrar 5/min, health 60/min (`apps/api/src/config/throttle.ts`).
 - [ ] CORS: solo los orígenes de `CORS_ORIGINS`.

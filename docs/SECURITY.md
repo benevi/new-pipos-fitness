@@ -83,7 +83,8 @@ Fronteras de confianza:
 | `GET /health`, `GET /health/ready` | No | 60 req/min; `ready` comprueba Postgres (503 si falla) |
 | `GET /docs` (Swagger desde los contratos) | No | **Solo** si `NODE_ENV !== 'production'` |
 
-Límite global por defecto: 100 req/min por IP (`apps/api/src/config/throttle.ts`).
+Límite global por defecto: 100 req/min por IP (`apps/api/src/config/throttle.ts`); IP real tras
+`TRUST_PROXY_HOPS` proxies y contadores compartidos en Postgres (`THROTTLE_STORE`).
 
 ## 6. STRIDE
 
@@ -126,7 +127,7 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | T | Series registradas en un hueco con un ejercicio ajeno (contamina e1RM/volumen) | Solo el ejercicio del hueco o su sustitución registrada | ✅ e2e (Fase 5) |
 | T | Datos de salud guardados sin consentimiento por carrera con la retirada | Candado por usuario (`pg_advisory_xact_lock`) y relectura del consentimiento dentro de la transacción | ✅ e2e (Fase 5) |
 | D | Generación de planes en bucle | 10/min por IP | ✅ e2e |
-| D | Throttler en memoria por instancia; tras un proxy todas las IPs son la del proxy | Una sola instancia en v1; falta `trust proxy` y almacén compartido | ⏳ despliegue |
+| D | Throttler en memoria por instancia; tras un proxy todas las IPs son la del proxy | `TRUST_PROXY_HOPS` (`trust proxy` de Express) y contadores compartidos en Postgres (`THROTTLE_STORE=postgres`, upsert atómico con caducidad) | ✅ e2e (`throttle-proxy.e2e-spec.ts`; issue #9) |
 | R | Sin trazabilidad de escrituras sensibles (salvo `ConsentEvent`, append-only) | — | ⏳ deuda |
 
 ### 6.3 Superficie HTTP, configuración y logs
@@ -202,8 +203,9 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 
 ## 9. Riesgos residuales
 
-- **Rate limiting por instancia y por IP**: insuficiente con varias réplicas o tras un proxy
-  sin `trust proxy`. Aceptado con una sola instancia; se resuelve al desplegar.
+- **Rate limiting por IP**: con `TRUST_PROXY_HOPS` mal configurado (más saltos de los reales)
+  un cliente podría falsificar su IP con `X-Forwarded-For`; con menos, todos compartirían la IP
+  del proxy. Los contadores se comparten entre réplicas en Postgres (issue #9).
 - **Respuesta de refresh perdida** → el usuario debe volver a iniciar sesión (§6.1).
 - **Access token válido hasta caducar** (15 min) tras logout/revocación; el rol y la
   existencia del usuario sí se comprueban en BD en cada petición.

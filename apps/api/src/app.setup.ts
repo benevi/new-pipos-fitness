@@ -16,6 +16,13 @@ export const API_VERSION = '1.0.0';
 export function configureApp(app: INestApplication, env: Env): void {
   const isProduction = env.NODE_ENV === 'production';
 
+  // Detrás del proxy del hosting: la IP del cliente sale de X-Forwarded-For contando solo
+  // TRUST_PROXY_HOPS saltos de confianza (0 = se ignora la cabecera). La usa el rate limiting.
+  (app.getHttpAdapter().getInstance() as { set(setting: string, value: unknown): void }).set(
+    'trust proxy',
+    env.TRUST_PROXY_HOPS,
+  );
+
   // Id de petición + log de acceso estructurado (antes que cualquier otro middleware).
   app.use(requestContextMiddleware);
   app.use(accessLogMiddleware);

@@ -737,3 +737,19 @@ model WeeklyAdherence {
 
   @@id([userId, weekStart])
 }
+
+// ─────────────────────────────────────────────────────────────
+// INFRAESTRUCTURA
+// ─────────────────────────────────────────────────────────────
+
+/// Contadores del rate limiting compartidos entre réplicas (THROTTLE_STORE=postgres; issue #9).
+/// Ventana fija por clave: la clave la genera @nestjs/throttler (hash de ruta + throttler + IP),
+/// así que no guarda la IP en claro. Filas efímeras: se borran al caducar (limpieza periódica).
+model ThrottlerRecord {
+  key          String    @id @db.VarChar(128)
+  hits         Int
+  expiresAt    DateTime  @db.Timestamptz(3)
+  blockedUntil DateTime? @db.Timestamptz(3)
+
+  @@index([expiresAt])
+}

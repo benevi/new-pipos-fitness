@@ -11,5 +11,8 @@ process.env.JWT_ACCESS_EXPIRES_IN = '900';
 process.env.REFRESH_TOKEN_TTL_DAYS = '30';
 process.env.CORS_ORIGINS = 'https://app.pipos.test';
 process.env.THROTTLE_ENABLED = 'false';
+// Contadores en memoria y sin proxy delante, salvo en las suites que prueban otra cosa.
+process.env.THROTTLE_STORE = 'memory';
+process.env.TRUST_PROXY_HOPS = '0';
 process.env.LOG_LEVEL = 'error';
 delete process.env.SENTRY_DSN;

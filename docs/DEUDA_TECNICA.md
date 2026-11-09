@@ -9,13 +9,15 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 ## API y backend
 
-### [API] Configurar `trust proxy` y un almacén compartido para el rate limiting
-- **Severidad:** Alta (bloquea producción)
-- **Impacto:** detrás del proxy del hosting todas las peticiones llegan con la IP del proxy: el
-  throttler (por IP, en memoria) limitaría a todos los usuarios a la vez (p. ej. 5 logins/min en
-  total). Con varias réplicas, cada una cuenta por separado.
-- **Propuesta:** `app.set('trust proxy', <n saltos>)` configurable por entorno (`TRUST_PROXY_HOPS`)
-  con test e2e de `X-Forwarded-For`; almacén compartido (Postgres o Redis) antes de escalar a >1 réplica.
+### ~~[API] Configurar `trust proxy` y un almacén compartido para el rate limiting~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #9.
+- **Qué se hizo:** `TRUST_PROXY_HOPS` (entero 0-10, por defecto 0, validado en `env.ts`) →
+  `app.set('trust proxy', n)`; contadores del throttler en Postgres (`ThrottlerRecord`, un
+  `INSERT … ON CONFLICT DO UPDATE` atómico con caducidad y bloqueo; limpieza de filas caducadas
+  como mucho una vez por minuto y réplica) con `THROTTLE_STORE=memory|postgres` (por defecto
+  `postgres` en producción, `memory` fuera). e2e: límites por cliente con `X-Forwarded-For` y
+  1 salto, cabecera ignorada con 0, dos réplicas compartiendo el contador, upsert concurrente sin
+  pérdidas. Ya no hace falta una sola instancia (DEPLOY_CHECKLIST actualizado).
 
 ### [API] Rechazar entrenamientos sobre sesiones de una versión de plan antigua
 - **Severidad:** Baja
