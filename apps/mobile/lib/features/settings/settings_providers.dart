@@ -38,7 +38,7 @@ class ShareSheetExportSaver implements ExportSaver {
   final Future<void> Function(XFile file) _share;
 
   static Future<void> _shareSheet(XFile file) async {
-    await Share.shareXFiles([file]);
+    await SharePlus.instance.share(ShareParams(files: [file]));
   }
 
   @override
