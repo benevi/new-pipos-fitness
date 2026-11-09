@@ -34,6 +34,15 @@ void main() {
     );
     await scrollToTop(tester);
     expect(find.byKey(const Key('pinned-$squatSlot')), findsOneWidget);
+    // La chincheta es solo del cambio fijado (la nota usa otro icono).
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('pinned-$squatSlot')),
+        matching: find.byIcon(Icons.push_pin),
+      ),
+      findsOneWidget,
+    );
+    expect(find.byIcon(Icons.push_pin_outlined), findsNothing);
     expect(
       find.text('Cambio fijado: en lugar de Sentadilla trasera'),
       findsOneWidget,

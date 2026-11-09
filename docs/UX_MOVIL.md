@@ -79,7 +79,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 
 - Todo el texto de la UI está en `lib/l10n/app_es.arb` (plantilla) y `app_en.arb` (inglés completo, mismas claves; lo comprueba `flutter gen-l10n`).
 - Los enums (objetivo, material, zonas, músculos, grupos, reparto, acciones de progresión…) se traducen con mensajes ICU `select` por su valor de cable.
-- Números y fechas con `intl` según el idioma (`62,5 kg` / `62.5 kg`).
+- Números y fechas con `intl` según el idioma (`62,5 kg` / `62.5 kg`), también dentro de los campos (kg en Hoy, medidas); al escribir se acepta coma o punto (`lib/shared/decimal_input.dart`).
 - **Limitación:** los nombres de ejercicio de la sesión y las explicaciones del motor solo existen en castellano en la API v1 (`nameEs`, `rationale`); en inglés se muestran en castellano. El buscador de ejercicios sí usa `nameEn`.
 
 ## 6. Accesibilidad: checklist y resultado

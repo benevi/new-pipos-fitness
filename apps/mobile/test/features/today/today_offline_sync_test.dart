@@ -122,7 +122,7 @@ void main() {
 
       const squat = '00000000-0000-4000-8000-000000000030';
       // Valores precargados (8 reps, 62,5 kg, RIR 2): confirmar = 1 toque.
-      expect(find.text('62.5'), findsOneWidget);
+      expect(find.text('62,5'), findsOneWidget);
       await tapKey(tester, 'confirm-$squat', settle: false);
       await pumpFrames(tester);
       await scrollToTop(tester);

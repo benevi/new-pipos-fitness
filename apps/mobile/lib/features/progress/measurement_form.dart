@@ -19,6 +19,7 @@ import '../../l10n/failure_messages.dart';
 import '../../models/body.dart';
 import '../../models/enums.dart';
 import '../../models/notes_breaks.dart';
+import '../../shared/decimal_input.dart';
 import '../../shared/widgets.dart';
 import '../settings/settings_providers.dart';
 import 'body_providers.dart';
@@ -87,8 +88,8 @@ class _MeasurementFormScreenState extends ConsumerState<MeasurementFormScreen> {
     });
   }
 
-  static String _fmt(double v) =>
-      v == v.roundToDouble() ? '${v.toInt()}' : '$v';
+  String _fmt(double v) =>
+      formatDecimalInput(v, AppLocalizations.of(context).localeName);
 
   Future<void> _pickDate() async {
     final now = ref.read(clockProvider)();
@@ -108,9 +109,9 @@ class _MeasurementFormScreenState extends ConsumerState<MeasurementFormScreen> {
     final values = <BodyField, double>{};
     final errors = <BodyField, String>{};
     for (final f in BodyField.values) {
-      final raw = _controllers[f]!.text.trim().replaceAll(',', '.');
+      final raw = _controllers[f]!.text.trim();
       if (raw.isEmpty || !allowed.contains(f)) continue;
-      final v = double.tryParse(raw);
+      final v = parseDecimalInput(raw);
       if (v == null || v < f.min || v > f.max) {
         errors[f] = l10n.validationRange(
           l10n.number(f.min),

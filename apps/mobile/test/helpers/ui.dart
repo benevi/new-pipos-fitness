@@ -62,7 +62,15 @@ Future<void> pumpFrames(WidgetTester tester, {int frames = 10}) async {
 
 /// Vuelve al principio de la lista de Hoy.
 Future<void> scrollToTop(WidgetTester tester) async {
-  await tester.drag(find.byKey(const Key('today-list')), const Offset(0, 3000));
+  // Salto directo al principio: un arrastre desde el centro puede caer en un
+  // campo o botón y depende de la maquetación.
+  final scrollable = find
+      .descendant(
+        of: find.byKey(const Key('today-list')),
+        matching: find.byType(Scrollable),
+      )
+      .first;
+  tester.state<ScrollableState>(scrollable).position.jumpTo(0);
   await pumpFrames(tester, frames: 5);
 }
 

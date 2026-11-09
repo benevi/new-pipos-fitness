@@ -21,6 +21,7 @@ import '../../models/notes_breaks.dart' show parseCalendarDate;
 
 import '../../models/plan.dart';
 import '../../models/workout.dart';
+import '../../shared/decimal_input.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
 import 'adjust_sheet.dart';
@@ -328,16 +329,21 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
                   session.adjustment!.source == 'query',
             )
           else if (!hasLogged && session.workout == null)
-            Align(
-              alignment: Alignment.centerLeft,
-              child: OutlinedButton.icon(
-                key: const Key('adjust-open'),
-                style: OutlinedButton.styleFrom(
-                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+            // Hueco bajo el botón antes del siguiente aviso.
+            Padding(
+              key: const Key('adjust-gap'),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  key: const Key('adjust-open'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                  ),
+                  onPressed: () => showAdjustSheet(context),
+                  icon: const Icon(Icons.timer_outlined),
+                  label: Text(l10n.adjustOpen),
                 ),
-                onPressed: () => showAdjustSheet(context),
-                icon: const Icon(Icons.timer_outlined),
-                label: Text(l10n.adjustOpen),
               ),
             ),
 
@@ -739,9 +745,11 @@ class _NoteBox extends StatelessWidget {
       ),
       child: Row(
         children: [
+          // Icono de nota; la chincheta es solo del cambio fijado.
           ExcludeSemantics(
             child: Icon(
-              Icons.push_pin_outlined,
+              Icons.sticky_note_2_outlined,
+              key: Key('note-icon-$planExerciseId'),
               color: theme.colorScheme.onSurfaceVariant,
             ),
           ),
@@ -931,16 +939,28 @@ class ActiveSetRow extends StatefulWidget {
 
 class _ActiveSetRowState extends State<ActiveSetRow> {
   late final _reps = TextEditingController(text: '${widget.initialReps}');
-  late final _load = TextEditingController(
-    text: widget.initialLoad == null ? '' : _fmt(widget.initialLoad!),
-  );
+  final _load = TextEditingController();
+  bool _loadPrefilled = false;
   late int _rir = widget.initialRir;
   String? _repsError;
   String? _loadError;
   bool _busy = false;
 
-  static String _fmt(double v) =>
-      v == v.roundToDouble() ? '${v.toInt()}' : '$v';
+  /// `62,5` en castellano (separador decimal del idioma, hasta 2 decimales).
+  String _fmt(double v) =>
+      formatDecimalInput(v, AppLocalizations.of(context).localeName);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // La carga precargada necesita el idioma (contexto), así que se escribe
+    // aquí y una sola vez; luego el campo es de la persona.
+    if (!_loadPrefilled) {
+      _loadPrefilled = true;
+      final initial = widget.initialLoad;
+      if (initial != null) _load.text = _fmt(initial);
+    }
+  }
 
   @override
   void dispose() {
@@ -952,9 +972,7 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
   Future<void> _confirm() async {
     final l10n = AppLocalizations.of(context);
     final reps = int.tryParse(_reps.text.trim());
-    final load = widget.weighted
-        ? double.tryParse(_load.text.trim().replaceAll(',', '.'))
-        : 0.0;
+    final load = widget.weighted ? parseDecimalInput(_load.text) : 0.0;
     setState(() {
       _repsError = reps == null || reps < 0 || reps > 100
           ? l10n.validationRange('0', '100')
@@ -972,8 +990,7 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
     }
   }
 
-  double? get _currentLoad =>
-      double.tryParse(_load.text.trim().replaceAll(',', '.'));
+  double? get _currentLoad => parseDecimalInput(_load.text);
 
   /// − / +: mueve la carga un paso real del material (nunca por debajo de 0).
   void _stepLoad(int direction) {
@@ -1003,7 +1020,9 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(setLabel, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: AppSpacing.xs),
+          // Hueco para la etiqueta flotante (Reps / Kg) del campo, que se
+          // dibuja por encima del borde.
+          const SizedBox(height: AppSpacing.ms),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

@@ -58,8 +58,9 @@ void main() {
             expect(family, isNotNull);
             final styles = <String, TextStyle?>{
               'filled': theme.filledButtonTheme.style!.textStyle!.resolve({}),
-              'outlined': theme.outlinedButtonTheme.style!.textStyle!
-                  .resolve({}),
+              'outlined': theme.outlinedButtonTheme.style!.textStyle!.resolve(
+                {},
+              ),
               'text': theme.textButtonTheme.style!.textStyle!.resolve({}),
               'appBar': theme.appBarTheme.titleTextStyle,
               'tab': theme.tabBarTheme.labelStyle,

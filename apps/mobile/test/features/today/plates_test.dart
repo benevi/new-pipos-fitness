@@ -66,7 +66,7 @@ void main() {
     Navigator.of(tester.element(find.byKey(const Key('plates-sheet')))).pop();
     await tester.pumpAndSettle();
 
-    expect(_loadText(tester), '62.5');
+    expect(_loadText(tester), '62,5');
     await tapKey(tester, 'load-plus-$squat');
     expect(_loadText(tester), '65');
     await tapKey(tester, 'row-plates-$squat');
