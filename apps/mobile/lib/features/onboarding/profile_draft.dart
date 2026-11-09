@@ -63,6 +63,19 @@ class PickedExercise {
   final String name;
 }
 
+/// Cambio de preferencias preparado desde la ficha del ejercicio («Añadir a
+/// favoritos» o «No quiero hacerlo», ADR-0014, Fase 3): abre la edición del
+/// perfil con el ejercicio ya en su lista; el usuario revisa y guarda (el
+/// mismo camino de escritura, que regenera el plan).
+class ProfilePick {
+  const ProfilePick({required this.exercise, required this.favourite});
+
+  final PickedExercise exercise;
+
+  /// `true`: a favoritos; `false`: a vetados.
+  final bool favourite;
+}
+
 /// Opciones de minutos por sesión que ofrece la UI (la API acepta 30–90).
 const minuteChoices = [30, 45, 60, 75, 90];
 

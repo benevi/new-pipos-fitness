@@ -195,6 +195,7 @@ export class CatalogService {
     const where: Prisma.ExerciseWhereInput = {
       deletedAt: null,
       ...(query.movementPattern ? { movementPattern: query.movementPattern } : {}),
+      ...(query.muscle ? { muscles: { some: { muscle: query.muscle, role: query.role } } } : {}),
       ...(query.level ? { minLevel: { in: LEVELS.slice(0, LEVELS.indexOf(query.level) + 1) } } : {}),
       ...(query.q
         ? {
@@ -219,7 +220,9 @@ export class CatalogService {
       this.prisma.exercise.findMany({
         where,
         include: exerciseInclude,
-        orderBy: { slug: 'asc' },
+        // Por músculo se ordena por nivel (enum de Postgres: principiante → avanzado), como pide la
+        // biblioteca (ADR-0014, Fase 3); el resto de listas, por slug.
+        orderBy: query.muscle ? [{ minLevel: 'asc' }, { nameEs: 'asc' }, { slug: 'asc' }] : { slug: 'asc' },
         skip: (query.page - 1) * query.pageSize,
         take: query.pageSize,
       }),

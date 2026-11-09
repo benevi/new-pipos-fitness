@@ -120,6 +120,13 @@ describe('queries', () => {
     expect(ExerciseListQuerySchema.safeParse({ equipment: 'laser' }).success).toBe(false);
   });
 
+  it('filtro por músculo y rol (ADR-0014, Fase 3): rol principal por defecto', () => {
+    expect(ExerciseListQuerySchema.parse({ muscle: 'glutes' })).toMatchObject({ muscle: 'glutes', role: 'primary' });
+    expect(ExerciseListQuerySchema.parse({ muscle: 'glutes', role: 'secondary' }).role).toBe('secondary');
+    expect(ExerciseListQuerySchema.safeParse({ muscle: 'pecho' }).success).toBe(false);
+    expect(ExerciseListQuerySchema.safeParse({ muscle: 'chest', role: 'main' }).success).toBe(false);
+  });
+
   it('semanas y fechas', () => {
     expect(WeeksQuerySchema.parse({}).weeks).toBe(8);
     expect(WeeksQuerySchema.safeParse({ weeks: '53' }).success).toBe(false);

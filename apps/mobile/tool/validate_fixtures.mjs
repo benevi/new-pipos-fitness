@@ -34,6 +34,8 @@ const map = {
   adherence: 'AdherenceResponseSchema',
   nutrition_targets: 'NutritionTargetsResponseSchema',
   exercise_list: 'ExerciseListResponseSchema',
+  // Biblioteca por músculo (ADR-0014, Fase 3): `GET /exercises?muscle=glutes`.
+  exercise_list_by_muscle: 'ExerciseListResponseSchema',
   // Ficha del ejercicio (ADR-0014). La «legacy» es la respuesta anterior a la
   // Fase 2, sin descripción, errores ni medios: debe seguir siendo válida.
   exercise_detail: 'ExerciseDetailSchema',
@@ -83,6 +85,15 @@ function unorderedMuscles(node, path = []) {
   return [...own, ...Object.entries(node).flatMap(([k, v]) => unorderedMuscles(v, [...path, k]))];
 }
 
+/** Con `muscle`, la API ordena por nivel mínimo (principiante → avanzado). */
+const LEVELS = ['beginner', 'intermediate', 'advanced'];
+const byLevel = new Set(['exercise_list_by_muscle']);
+function unorderedLevels(file, json) {
+  if (!byLevel.has(file)) return false;
+  const ranks = json.items.map((e) => LEVELS.indexOf(e.minLevel));
+  return ranks.some((r, i) => i > 0 && r < ranks[i - 1]);
+}
+
 let failed = 0;
 for (const [file, schemaName] of Object.entries(map)) {
   const schema = contracts[schemaName];
@@ -94,7 +105,10 @@ for (const [file, schemaName] of Object.entries(map)) {
   const json = JSON.parse(readFileSync(join(fixtures, `${file}.json`), 'utf8'));
   const result = schema.safeParse(json);
   const unordered = unorderedMuscles(json);
-  if (result.success && unordered.length > 0) {
+  if (result.success && unorderedLevels(file, json)) {
+    failed++;
+    console.error(`✗ ${file}: ejercicios fuera de orden por nivel`);
+  } else if (result.success && unordered.length > 0) {
     failed++;
     console.error(`✗ ${file}: músculos fuera de orden (principales primero, orden del enum)`);
     for (const p of unordered) console.error(`   ${p}`);

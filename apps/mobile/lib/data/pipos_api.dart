@@ -145,6 +145,15 @@ abstract class CatalogApi {
     int page = 1,
   });
 
+  /// Biblioteca por músculo (`GET /exercises?muscle=…`, ADR-0014, Fase 3):
+  /// ejercicios que trabajan [muscle] con [role], ordenados por nivel. Con
+  /// [equipment], solo los realizables con ese material.
+  Future<Paginated<ExerciseSummary>> exercisesByMuscle(
+    Muscle muscle, {
+    MuscleRole role = MuscleRole.primary,
+    List<Equipment>? equipment,
+  });
+
   /// Ficha del ejercicio por id o por slug (`GET /exercises/:id`, ADR-0014).
   Future<ExerciseDetail> getExercise(String idOrSlug);
 }
@@ -570,6 +579,29 @@ class DioPiposApi
             'page': page,
             'pageSize': 20,
             if (query != null && query.trim().isNotEmpty) 'q': query.trim(),
+          },
+        ),
+      ),
+      ExerciseSummary.fromJson,
+    ),
+  );
+
+  @override
+  Future<Paginated<ExerciseSummary>> exercisesByMuscle(
+    Muscle muscle, {
+    MuscleRole role = MuscleRole.primary,
+    List<Equipment>? equipment,
+  }) => _call(
+    () async => Paginated.fromJson(
+      _json(
+        await _client.get(
+          '/exercises',
+          queryParameters: {
+            'muscle': muscle.wire,
+            'role': role.wire,
+            // Ningún músculo tiene más de 100 ejercicios en el catálogo.
+            'pageSize': 100,
+            if (equipment != null) 'equipment': wires(equipment).join(','),
           },
         ),
       ),

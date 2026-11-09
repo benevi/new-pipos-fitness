@@ -54,7 +54,7 @@ mobile ── HTTP/JSON ──▶ api   (los fixtures de la app se validan contr
 | `analytics` | Proyecciones calculadas **al escribir** en la misma transacción (ADR-0008): `ExerciseE1rm`, `WeeklyMuscleVolume`, `WeeklyGroupVolume`, `WeeklyAdherence`. Reconstruibles con `pnpm --filter @pipos/api analytics:rebuild`. |
 | `progress` | `GET /progress/*`: solo leen las proyecciones. |
 | `nutrition` | `GET /me/nutrition-targets`: cálculo puro, no se persiste. |
-| `catalog` | `GET /exercises` y `GET /exercises/:id` (ficha por id o slug, ADR-0014) y caché en memoria del catálogo para el motor. |
+| `catalog` | `GET /exercises` (con filtro por músculo y rol para la biblioteca por músculo, ordenado por nivel; ADR-0014, Fase 3) y `GET /exercises/:id` (ficha por id o slug, ADR-0014) y caché en memoria del catálogo para el motor. |
 | `common`, `config`, `logging`, `monitoring`, `health`, `openapi` | Errores tipados, interceptor de contratos (valida entrada y salida con Zod), reloj inyectable, entorno validado, logs JSON redactados, sondas, generación de OpenAPI. |
 
 ### Flujo de datos principal

@@ -60,6 +60,12 @@ void main() {
       );
 
       // Volumen semanal frente al objetivo (el significado también en texto).
+      // Va debajo del mapa de calor de la semana (ADR-0014, Fase 3b).
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('volume-legend-below')),
+        200,
+        scrollable: verticalScrollable(),
+      );
       expect(find.byType(VolumeRangeBar), findsNWidgets(3));
       // Unidades en todas las filas, también sin objetivo («0 series»).
       expect(find.text('6 series · objetivo 8–12'), findsOneWidget);
@@ -69,7 +75,14 @@ void main() {
       expect(find.byKey(const Key('volume-legend-below')), findsOneWidget);
       expect(find.byKey(const Key('volume-legend-within')), findsOneWidget);
       expect(find.byKey(const Key('volume-legend-above')), findsOneWidget);
-      expect(find.text('Dentro del rango'), findsOneWidget);
+      // (También está en la leyenda del mapa de calor.)
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('volume-legend-within')),
+          matching: find.text('Dentro del rango'),
+        ),
+        findsOneWidget,
+      );
       expect(
         find.descendant(
           of: find.byKey(const Key('volume-quads')),

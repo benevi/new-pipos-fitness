@@ -1,5 +1,6 @@
-/// Progreso (CUJ-7): e1RM por ejercicio con tendencia, series semanales por
-/// grupo frente al rango objetivo y adherencia. Cada bloque tiene su estado
+/// Progreso (CUJ-7): e1RM por ejercicio con tendencia, mapa de calor de la
+/// semana (ADR-0014, Fase 3b), series semanales por grupo frente al rango
+/// objetivo y adherencia. Cada bloque tiene su estado
 /// vacío; si todo está vacío se muestra un único estado vacío general.
 library;
 
@@ -16,6 +17,7 @@ import '../../models/enums.dart';
 import '../../models/notes_breaks.dart' show parseCalendarDate;
 import '../../models/progress.dart';
 import '../../shared/widgets.dart';
+import '../exercises/weekly_heatmap.dart';
 import 'body_view.dart';
 import 'charts.dart';
 
@@ -117,6 +119,8 @@ class ProgressScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 children: [
                   _E1rmSection(series: d.e1rm.series),
+                  // Mapa de calor junto a las barras, que no sustituye.
+                  WeeklyHeatmap(week: d.currentWeek),
                   _VolumeSection(week: d.currentWeek),
                   _AdherenceSection(adherence: d.adherence),
                 ],

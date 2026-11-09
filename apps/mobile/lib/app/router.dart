@@ -15,7 +15,8 @@
 /// StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 /// ├── /today ─────────────── Hoy
 /// ├── /plan ──────────────── Plan
-/// │   └── history ─ :id ──── Historial → versión
+/// │   ├── history ─ :id ──── Historial → versión
+/// │   └── exercises ─ :muscle  Ejercicios por músculo → lista del músculo
 /// ├── /progress ──────────── Progreso
 /// └── /settings ──────────── Ajustes
 ///     └── profile ────────── Editar perfil
@@ -37,7 +38,9 @@ import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
 import '../features/exercise/exercise_detail_screen.dart';
+import '../features/exercises/exercises_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
+import '../features/onboarding/profile_draft.dart' show ProfilePick;
 import '../features/plan/plan_screen.dart';
 import '../features/progress/progress_screen.dart';
 import '../features/settings/schedule_screen.dart';
@@ -172,6 +175,27 @@ final routerProvider = Provider<GoRouter>((ref) {
                 builder: (_, __) => const PlanScreen(),
                 routes: [
                   GoRoute(
+                    path: 'exercises',
+                    builder: (_, __) => const ExercisesScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':muscle',
+                        redirect: (_, state) =>
+                            MuscleExercisesScreen.parse(
+                                  state.pathParameters['muscle'],
+                                ) ==
+                                null
+                            ? exercisesLocation
+                            : null,
+                        builder: (_, state) => MuscleExercisesScreen(
+                          muscle: MuscleExercisesScreen.parse(
+                            state.pathParameters['muscle'],
+                          )!,
+                        ),
+                      ),
+                    ],
+                  ),
+                  GoRoute(
                     path: 'history',
                     builder: (_, __) => const PlanHistoryScreen(),
                     routes: [
@@ -203,7 +227,11 @@ final routerProvider = Provider<GoRouter>((ref) {
                 routes: [
                   GoRoute(
                     path: 'profile',
-                    builder: (_, __) => const ProfileEditScreen(),
+                    builder: (_, state) => ProfileEditScreen(
+                      pick: state.extra is ProfilePick
+                          ? state.extra! as ProfilePick
+                          : null,
+                    ),
                   ),
                   GoRoute(
                     path: 'schedule',

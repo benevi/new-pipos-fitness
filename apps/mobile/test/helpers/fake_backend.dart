@@ -753,6 +753,40 @@ class FakeBackend
     );
   }
 
+  /// Biblioteca por músculo: llamadas recibidas (músculo, rol y material).
+  final List<({Muscle muscle, MuscleRole role, List<Equipment>? equipment})>
+  muscleQueries = [];
+
+  /// Respuesta por músculo; si falta, el fixture `exercise_list_by_muscle`.
+  /// Con material, se filtra como la API (todo su material está en la lista).
+  final Map<Muscle, Json> exercisesByMuscleJson = {};
+
+  @override
+  Future<Paginated<ExerciseSummary>> exercisesByMuscle(
+    Muscle muscle, {
+    MuscleRole role = MuscleRole.primary,
+    List<Equipment>? equipment,
+  }) async {
+    _guard('GET /exercises?muscle=${muscle.wire}');
+    muscleQueries.add((muscle: muscle, role: role, equipment: equipment));
+    final page = Paginated.fromJson(
+      exercisesByMuscleJson[muscle] ?? fixture('exercise_list_by_muscle'),
+      ExerciseSummary.fromJson,
+    );
+    if (equipment == null) return page;
+    final allowed = {...equipment, Equipment.bodyweight};
+    final items = [
+      for (final e in page.items)
+        if (e.equipment.every(allowed.contains)) e,
+    ];
+    return Paginated(
+      items: items,
+      page: page.page,
+      pageSize: page.pageSize,
+      total: items.length,
+    );
+  }
+
   /// Fichas por id o slug; si falta, se devuelve el fixture `exercise_detail`
   /// con ese id. Los de [missingExercises] dan 404 (retirados).
   final Map<String, Json> exerciseDetails = {};
