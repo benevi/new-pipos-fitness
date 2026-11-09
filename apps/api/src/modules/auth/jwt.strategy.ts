@@ -1,15 +1,14 @@
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import type { UserRole } from '@prisma/client';
+import type { Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { APP_ENV, type Env } from '../../config/env';
 import type { AuthenticatedUser } from './authenticated-user';
 
 export type JwtPayload = {
   userId: string;
-  email: string;
-  role: UserRole;
+  role: Role;
   iat?: number;
   exp?: number;
 };

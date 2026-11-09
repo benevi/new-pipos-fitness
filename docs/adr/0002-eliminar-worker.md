@@ -1,6 +1,6 @@
 # ADR-0002: Eliminar el worker BullMQ/Redis de v1
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fase 3: apps/worker, BullMQ e ioredis eliminados) · **Fecha**: 2026-11-09
 
 ## Contexto
 `apps/worker` es una cola `pipos:placeholder` con un `console.log` y un test `expect(true)`. La API no le envía ningún trabajo. ADR-005 (histórico) lo describía como real. Generar un plan tarda (objetivo) menos de 200 ms en proceso, así que no necesita cola. v1 no tiene subida de vídeo de usuarios (ADR-0005), que sería el único trabajo asíncrono candidato.

@@ -1,6 +1,6 @@
 # ADR-0008: Analytics de progreso calculados al escribir
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fase 3; e2e comprueba que ningún GET escribe) · **Fecha**: 2026-11-09
 
 ## Contexto
 `GET /analytics/progress` hace un upsert por ejercicio en cada lectura. Un GET no debe escribir.

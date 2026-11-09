@@ -1,214 +1,138 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '../../prisma/prisma.service';
-import {
-  getBestE1RMPerExercise,
-  computeVolumePerExercise,
-  computeAdherence,
-  fatigueScorePerExercise,
-  volumeTrend,
-} from '@pipos/engine-rules';
-import type { ProgressResponse, VolumeResponse } from '@pipos/contracts';
+import { dateColumn, localDate, weekRange, weekStartOf } from '../../common/time';
+import type { TransactionClient } from '../../prisma/prisma.service';
+import { bestE1rm, E1RM_FORMULA_VERSION, muscleVolume, VOLUME_FORMULA_VERSION } from './analytics-calc';
+
+export interface WorkoutForAnalytics {
+  id: string;
+  userId: string;
+  startedAt: Date;
+}
 
 /**
- * ExerciseProgress is a derived analytics projection. Source of truth remains
- * WorkoutSession, WorkoutExercise, and WorkoutSet. This service recomputes and
- * upserts progress from that source data; it is not authoritative for history.
+ * Analítica calculada AL ESCRIBIR (ADR-0008): se llama dentro de la misma transacción que
+ * guarda la serie o cierra el entrenamiento. Cada recálculo es idempotente (recalcula la
+ * proyección completa de esa sesión/semana a partir de SetLog), así que repetirlo no deriva.
+ * Las lecturas (/progress/*) solo leen estas tablas.
  */
 @Injectable()
 export class AnalyticsService {
-  constructor(private readonly prisma: PrismaService) {}
-
-  async getProgress(userId: string): Promise<ProgressResponse> {
-    const { setsByExerciseLastWeek, setsByExercisePrevWeek, completedSetsLastWeek, plannedSets } =
-      await this.loadSetData(userId, 7);
-
-    const bestE1RM = getBestE1RMPerExercise(setsByExerciseLastWeek);
-    const volumeLastWeek = computeVolumePerExercise(setsByExerciseLastWeek);
-    const volumePrevWeek = computeVolumePerExercise(setsByExercisePrevWeek);
-    const fatigue = fatigueScorePerExercise(setsByExerciseLastWeek);
-
-    const adherenceScore = computeAdherence(completedSetsLastWeek, plannedSets);
-    const fatigueDetected = [...fatigue.values()].some((s) => s > 0);
-
-    const exercises: ProgressResponse['exercises'] = [];
-    const exerciseIds = new Set([
-      ...bestE1RM.keys(),
-      ...volumeLastWeek.keys(),
-      ...volumePrevWeek.keys(),
-      ...fatigue.keys(),
-    ]);
-    for (const exerciseId of exerciseIds) {
-      const volL = volumeLastWeek.get(exerciseId) ?? 0;
-      const volP = volumePrevWeek.get(exerciseId) ?? 0;
-      const trend = volumeTrend(volL, volP);
-      const progressRow = await this.prisma.exerciseProgress.upsert({
-        where: {
-          userId_exerciseId: { userId, exerciseId },
-        },
-        create: {
-          userId,
-          exerciseId,
-          estimated1RM: bestE1RM.get(exerciseId) ?? null,
-          volumeLastWeek: volL > 0 ? volL : null,
-          volumeTrend: trend,
-          fatigueScore: fatigue.get(exerciseId) ?? null,
-        },
-        update: {
-          estimated1RM: bestE1RM.get(exerciseId) ?? undefined,
-          volumeLastWeek: volL > 0 ? volL : undefined,
-          volumeTrend: trend,
-          fatigueScore: fatigue.get(exerciseId) ?? undefined,
-        },
-      });
-      exercises.push({
-        exerciseId,
-        estimated1RM: progressRow.estimated1RM,
-        volumeLastWeek: progressRow.volumeLastWeek,
-        volumeTrend: progressRow.volumeTrend as 'up' | 'down' | 'stable' | null,
-        fatigueScore: progressRow.fatigueScore,
-        lastUpdated: progressRow.lastUpdated.toISOString(),
-      });
-    }
-
-    return {
-      exercises: exercises.sort((a, b) => a.exerciseId.localeCompare(b.exerciseId)),
-      adherenceScore: adherenceScore ?? null,
-      fatigueDetected,
-    };
+  /** Serializa las escrituras de un usuario: evita perder un recálculo en escrituras concurrentes. */
+  async lockUser(tx: TransactionClient, userId: string): Promise<void> {
+    await tx.$queryRaw`SELECT 1 AS locked FROM pg_advisory_xact_lock(hashtextextended(${userId}, 0))`;
   }
 
-  async getVolume(userId: string): Promise<VolumeResponse> {
-    const { setsByExerciseLastWeek } = await this.loadSetData(userId, 7);
-    const byExercise = computeVolumePerExercise(setsByExerciseLastWeek);
-
-    const exerciseIds = [...byExercise.keys()];
-    if (exerciseIds.length === 0) {
-      return { byExercise: [], byMuscle: [], weekStart: undefined, weekEnd: undefined };
-    }
-
-    const muscleRows = await this.prisma.exerciseMuscle.findMany({
-      where: { exerciseId: { in: exerciseIds } },
-    });
-
-    const byMuscle = new Map<string, number>();
-    for (const row of muscleRows) {
-      const vol = byExercise.get(row.exerciseId) ?? 0;
-      const weight = row.role === 'primary' ? 1 : row.role === 'secondary' ? 0.5 : 0.25;
-      byMuscle.set(row.muscleId, (byMuscle.get(row.muscleId) ?? 0) + vol * weight);
-    }
-
-    const now = new Date();
-    const weekEnd = new Date(now);
-    weekEnd.setHours(0, 0, 0, 0);
-    const weekStart = new Date(weekEnd);
-    weekStart.setDate(weekStart.getDate() - 7);
-
-    return {
-      byExercise: [...byExercise.entries()].map(([exerciseId, volume]) => ({ exerciseId, volume })),
-      byMuscle: [...byMuscle.entries()].map(([muscleId, volume]) => ({ muscleId, volume })),
-      weekStart: weekStart.toISOString(),
-      weekEnd: weekEnd.toISOString(),
-    };
+  async timezoneOf(tx: TransactionClient, userId: string): Promise<string> {
+    const profile = await tx.trainingProfile.findUnique({ where: { userId }, select: { timezone: true } });
+    return profile?.timezone ?? 'UTC';
   }
 
-  private async loadSetData(
-    userId: string,
-    lastDays: number,
-  ): Promise<{
-    setsByExerciseLastWeek: Map<string, Array<{ weightKg: number | null; reps: number | null; rir: number | null; completed?: boolean }>>;
-    setsByExercisePrevWeek: Map<string, Array<{ weightKg: number | null; reps: number | null }>>;
-    completedSetsLastWeek: number;
-    plannedSets: number;
-  }> {
-    const now = new Date();
-    const weekAgo = new Date(now);
-    weekAgo.setDate(weekAgo.getDate() - lastDays);
-    const twoWeeksAgo = new Date(now);
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - lastDays * 2);
+  /** Tras guardar/editar/borrar una serie: e1RM de ese ejercicio en esa sesión + semana. */
+  async onSetChanged(tx: TransactionClient, workout: WorkoutForAnalytics, exerciseId: string): Promise<void> {
+    const tz = await this.timezoneOf(tx, workout.userId);
+    await this.recomputeE1rm(tx, workout, exerciseId, tz);
+    await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
+  }
 
-    const sessions = await this.prisma.workoutSession.findMany({
-      where: {
-        userId,
-        completedAt: { not: null },
-        startedAt: { gte: twoWeeksAgo },
-      },
-      include: {
-        exercises: { include: { sets: { orderBy: { setIndex: 'asc' } } } },
-      },
-      orderBy: { startedAt: 'asc' },
+  /** Tras cerrar un entrenamiento: la adherencia de su semana. */
+  async onWorkoutFinished(tx: TransactionClient, workout: WorkoutForAnalytics): Promise<void> {
+    const tz = await this.timezoneOf(tx, workout.userId);
+    await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
+  }
+
+  async recomputeE1rm(tx: TransactionClient, workout: WorkoutForAnalytics, exerciseId: string, tz: string): Promise<void> {
+    const sets = await tx.setLog.findMany({
+      where: { workoutSessionId: workout.id, exerciseId, deletedAt: null, isWarmup: false },
+      select: { id: true, reps: true, loadKg: true, rir: true, isWarmup: true },
     });
-
-    const setsByExerciseLastWeek = new Map<
-      string,
-      Array<{ weightKg: number | null; reps: number | null; rir: number | null; completed?: boolean }>
-    >();
-    const setsByExercisePrevWeek = new Map<
-      string,
-      Array<{ weightKg: number | null; reps: number | null }>
-    >();
-    let completedSetsLastWeek = 0;
-
-    for (const sess of sessions) {
-      const startedAt = sess.startedAt.getTime();
-      const inLastWeek = startedAt >= weekAgo.getTime();
-      const inPrevWeek = startedAt >= twoWeeksAgo.getTime() && startedAt < weekAgo.getTime();
-
-      for (const ex of sess.exercises) {
-        const arrL = setsByExerciseLastWeek.get(ex.exerciseId) ?? [];
-        const arrP = setsByExercisePrevWeek.get(ex.exerciseId) ?? [];
-        for (const s of ex.sets) {
-          const rec = {
-            weightKg: s.weightKg,
-            reps: s.reps,
-            rir: s.rir,
-            completed: s.completed,
-          };
-          if (inLastWeek) {
-            arrL.push(rec);
-            if (s.completed) completedSetsLastWeek += 1;
-          }
-          if (inPrevWeek) arrP.push({ weightKg: s.weightKg, reps: s.reps });
-        }
-        if (arrL.length) setsByExerciseLastWeek.set(ex.exerciseId, arrL);
-        if (arrP.length) setsByExercisePrevWeek.set(ex.exerciseId, arrP);
-      }
+    const best = bestE1rm(sets.map((s) => ({ ...s, loadKg: Number(s.loadKg) })));
+    const key = { userId: workout.userId, exerciseId, workoutSessionId: workout.id };
+    if (!best) {
+      await tx.exerciseE1rm.deleteMany({ where: key });
+      return;
     }
+    const data = {
+      performedOn: dateColumn(localDate(workout.startedAt, tz)),
+      e1rmKg: best.e1rmKg,
+      sourceSetLogId: best.setId,
+      formulaVersion: E1RM_FORMULA_VERSION,
+    };
+    await tx.exerciseE1rm.upsert({
+      where: { userId_exerciseId_workoutSessionId: key },
+      create: { ...key, ...data },
+      update: { ...data, computedAt: new Date() },
+    });
+  }
 
-    // Adherence: session-based. Only workouts in last 7 days with planSessionId.
-    const lastWeekSessionsForAdherence = sessions.filter(
-      (s) =>
-        s.startedAt.getTime() >= weekAgo.getTime() &&
-        s.planSessionId != null,
+  /** Volumen por músculo y adherencia de la semana ISO (zona del usuario) que empieza en `weekStart`. */
+  async recomputeWeek(tx: TransactionClient, userId: string, weekStart: string, tz: string): Promise<void> {
+    const { from, to } = weekRange(weekStart, tz);
+    const inWeek = { userId, status: { not: 'abandoned' as const }, startedAt: { gte: from, lt: to } };
+    const sets = await tx.setLog.findMany({
+      where: { userId, deletedAt: null, isWarmup: false, workoutSession: inWeek },
+      select: { reps: true, loadKg: true, exercise: { select: { muscles: { select: { muscle: true, fraction: true } } } } },
+    });
+    const volume = muscleVolume(
+      sets.map((s) => ({
+        reps: s.reps,
+        loadKg: Number(s.loadKg),
+        muscles: s.exercise.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
+      })),
     );
-    let plannedSets = 0;
-    let completedSetsForAdherence = 0;
-    const sessionPlannedCache = new Map<string, number>();
-    for (const sess of lastWeekSessionsForAdherence) {
-      const planSessionId = sess.planSessionId!;
-      let sessionPlanned = sessionPlannedCache.get(planSessionId);
-      if (sessionPlanned === undefined) {
-        // Ownership defensivo: sólo sesiones planificadas de planes del propio usuario.
-        const trainingSession = await this.prisma.trainingSession.findFirst({
-          where: { id: planSessionId, planVersion: { plan: { userId } } },
-          include: { exercises: true },
-        });
-        sessionPlanned = trainingSession
-          ? trainingSession.exercises.reduce((sum, e) => sum + e.sets, 0)
-          : 0;
-        sessionPlannedCache.set(planSessionId, sessionPlanned);
-      }
-      plannedSets += sessionPlanned;
-      for (const ex of sess.exercises) {
-        for (const s of ex.sets) if (s.completed) completedSetsForAdherence += 1;
-      }
+    const week = dateColumn(weekStart);
+    await tx.weeklyMuscleVolume.deleteMany({ where: { userId, weekStart: week } });
+    if (volume.size > 0) {
+      await tx.weeklyMuscleVolume.createMany({
+        data: [...volume].map(([muscle, v]) => ({
+          userId,
+          weekStart: week,
+          muscle,
+          effectiveSets: v.effectiveSets,
+          tonnageKg: v.tonnageKg,
+          formulaVersion: VOLUME_FORMULA_VERSION,
+        })),
+      });
     }
-    completedSetsLastWeek = completedSetsForAdherence;
 
-    return {
-      setsByExerciseLastWeek,
-      setsByExercisePrevWeek,
-      completedSetsLastWeek,
-      plannedSets,
+    const [completedSessions, version] = await Promise.all([
+      tx.workoutSession.count({ where: { ...inWeek, status: 'completed' } }),
+      tx.planVersion.findFirst({
+        where: { userId, plan: { status: 'active' } },
+        orderBy: { version: 'desc' },
+        select: { id: true, sessions: { select: { exercises: { select: { sets: true } } } } },
+      }),
+    ]);
+    const adherence = {
+      plannedSessions: version?.sessions.length ?? 0,
+      completedSessions,
+      plannedSets: version?.sessions.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets, 0), 0) ?? 0,
+      completedSets: sets.length,
+      planVersionId: version?.id ?? null,
+      computedAt: new Date(),
     };
+    await tx.weeklyAdherence.upsert({
+      where: { userId_weekStart: { userId, weekStart: week } },
+      create: { userId, weekStart: week, ...adherence },
+      update: adherence,
+    });
+  }
+
+  /** Reconstruye todas las proyecciones de un usuario desde SetLog (script analytics:rebuild). */
+  async rebuildUser(tx: TransactionClient, userId: string): Promise<{ workouts: number; weeks: number }> {
+    const tz = await this.timezoneOf(tx, userId);
+    await tx.exerciseE1rm.deleteMany({ where: { userId } });
+    await tx.weeklyMuscleVolume.deleteMany({ where: { userId } });
+    await tx.weeklyAdherence.deleteMany({ where: { userId } });
+    const workouts = await tx.workoutSession.findMany({
+      where: { userId, status: { not: 'abandoned' } },
+      select: { id: true, userId: true, startedAt: true, setLogs: { where: { deletedAt: null }, select: { exerciseId: true }, distinct: ['exerciseId'] } },
+    });
+    const weeks = new Set<string>();
+    for (const w of workouts) {
+      for (const s of w.setLogs) await this.recomputeE1rm(tx, w, s.exerciseId, tz);
+      weeks.add(weekStartOf(w.startedAt, tz));
+    }
+    for (const week of weeks) await this.recomputeWeek(tx, userId, week, tz);
+    return { workouts: workouts.length, weeks: weeks.size };
   }
 }

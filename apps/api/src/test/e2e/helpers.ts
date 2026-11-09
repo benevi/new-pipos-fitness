@@ -2,8 +2,10 @@ import { Test } from '@nestjs/testing';
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { randomUUID } from 'crypto';
+import { HEALTH_CONSENT_POLICY, type ProfileUpsertRequest } from '@pipos/contracts';
 import { AppModule } from '../../app.module';
 import { configureApp } from '../../app.setup';
+import { Clock } from '../../common/clock';
 import { parseEnv } from '../../config/env';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -11,10 +13,23 @@ import { PrismaService } from '../../prisma/prisma.service';
  * Utilidades e2e: app Nest completa (AppModule real + configureApp de producción)
  * contra un Postgres real. PROHIBIDO sobrescribir PrismaService con mocks
  * (lo comprueba src/test/e2e/no-prisma-mocks.spec.ts y una regla de ESLint).
+ * Sí se puede fijar el reloj (Clock) para simular fechas.
  */
 export interface TestContext {
   app: INestApplication;
   prisma: PrismaService;
+  clock: FakeClock;
+}
+
+/** Reloj controlable: por defecto la hora real; `set()` la fija. */
+export class FakeClock extends Clock {
+  private fixed: Date | null = null;
+  now(): Date {
+    return this.fixed ? new Date(this.fixed) : new Date();
+  }
+  set(date: Date | string | null): void {
+    this.fixed = date === null ? null : new Date(date);
+  }
 }
 
 export async function createTestApp(envOverrides: Record<string, string> = {}): Promise<TestContext> {
@@ -24,11 +39,15 @@ export async function createTestApp(envOverrides: Record<string, string> = {}): 
     process.env[key] = value;
   }
   try {
-    const moduleRef = await Test.createTestingModule({ imports: [AppModule] }).compile();
-    const app = moduleRef.createNestApplication();
+    const clock = new FakeClock();
+    const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
+      .overrideProvider(Clock)
+      .useValue(clock)
+      .compile();
+    const app = moduleRef.createNestApplication({ logger: false });
     configureApp(app, parseEnv(process.env));
     await app.init();
-    return { app, prisma: app.get(PrismaService) };
+    return { app, prisma: app.get(PrismaService), clock };
   } finally {
     for (const [key, value] of Object.entries(previous)) {
       if (value === undefined) delete process.env[key];
@@ -37,15 +56,18 @@ export async function createTestApp(envOverrides: Record<string, string> = {}): 
   }
 }
 
-/** Vacía todas las tablas de la aplicación (no toca _prisma_migrations). */
+/** Tablas del catálogo: las siembra global-setup una vez y no se vacían entre tests. */
+const CATALOG_TABLES = new Set(['Exercise', 'ExerciseMuscle', 'ExerciseRiskTag', 'ExerciseMedia', 'SubstitutionGroup']);
+
+/** Vacía todas las tablas de datos de usuario (no toca el catálogo ni _prisma_migrations). */
 export async function truncateAll(prisma: PrismaService): Promise<void> {
   const rows = await prisma.$queryRaw<Array<{ tablename: string }>>`
     SELECT tablename FROM pg_tables
     WHERE schemaname = 'public' AND tablename <> '_prisma_migrations'
   `;
-  if (rows.length === 0) return;
-  const tables = rows.map((r) => `"public"."${r.tablename}"`).join(', ');
-  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} RESTART IDENTITY CASCADE`);
+  const tables = rows.filter((r) => !CATALOG_TABLES.has(r.tablename)).map((r) => `"public"."${r.tablename}"`);
+  if (tables.length === 0) return;
+  await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables.join(', ')} RESTART IDENTITY CASCADE`);
 }
 
 export interface RegisteredUser {
@@ -61,10 +83,7 @@ export async function registerUser(
   email = `user-${randomUUID()}@example.com`,
   password = 'password123',
 ): Promise<RegisteredUser> {
-  const res = await request(app.getHttpServer())
-    .post('/auth/register')
-    .send({ email, password })
-    .expect(201);
+  const res = await request(app.getHttpServer()).post('/auth/register').send({ email, password }).expect(201);
   return {
     id: res.body.user.id,
     email,
@@ -78,59 +97,74 @@ export function bearer(token: string): { Authorization: string } {
   return { Authorization: `Bearer ${token}` };
 }
 
-/** Crea un ejercicio de catálogo con un músculo primario. */
-export async function createExercise(
-  prisma: PrismaService,
-  overrides: Partial<{ slug: string; name: string; movementPattern: string; place: 'home' | 'gym' | 'calisthenics' }> = {},
-) {
-  const slug = overrides.slug ?? `exercise-${randomUUID()}`;
-  const muscle = await prisma.muscle.upsert({
-    where: { id: 'muscle-chest' },
-    create: { id: 'muscle-chest', name: 'Chest', region: 'upper' },
-    update: {},
-  });
-  return prisma.exercise.create({
-    data: {
-      slug,
-      name: overrides.name ?? slug,
-      difficulty: 2,
-      movementPattern: overrides.movementPattern ?? 'push',
-      place: overrides.place ?? 'gym',
-      muscles: { create: [{ muscleId: muscle.id, role: 'primary' }] },
-    },
-  });
+/** Perfil de Laura (SPEC_V1): principiante, 3 días, 45 min, gimnasio de barrio. */
+export const BEGINNER_GYM: ProfileUpsertRequest = {
+  goal: 'hypertrophy',
+  level: 'beginner',
+  daysPerWeek: 3,
+  minutesPerSession: 45,
+  equipment: ['barbell', 'dumbbell', 'bench', 'squat_rack', 'cable', 'machine', 'pull_up_bar'],
+  timezone: 'Europe/Madrid',
+};
+
+/** Perfil de Andrés: intermedio en casa, mancuernas, banco y barra; 4 días, 40 min. */
+export const HOME_INTERMEDIATE: ProfileUpsertRequest = {
+  goal: 'hypertrophy',
+  level: 'intermediate',
+  daysPerWeek: 4,
+  minutesPerSession: 40,
+  equipment: ['dumbbell', 'bench', 'pull_up_bar'],
+  timezone: 'Europe/Madrid',
+};
+
+export async function grantHealthConsent(app: INestApplication, token: string): Promise<void> {
+  await request(app.getHttpServer())
+    .post('/me/consents/health')
+    .set(bearer(token))
+    .send({ version: HEALTH_CONSENT_POLICY.version })
+    .expect(200);
 }
 
-/**
- * Crea directamente en BD un plan de entrenamiento del usuario con una versión y una
- * sesión planificada (con un ejercicio de `sets` series). Devuelve ids útiles.
- */
-export async function createPlanSession(
-  prisma: PrismaService,
-  userId: string,
-  exerciseId: string,
-  sets = 3,
+export async function putProfile(app: INestApplication, token: string, profile: ProfileUpsertRequest = BEGINNER_GYM) {
+  return request(app.getHttpServer()).put('/me/profile').set(bearer(token)).send(profile).expect(200);
+}
+
+export async function generatePlan(app: INestApplication, token: string) {
+  return request(app.getHttpServer()).post('/plans/generate').set(bearer(token)).expect(201);
+}
+
+/** Usuario con perfil y plan generado, listo para entrenar. */
+export async function userWithPlan(app: INestApplication, profile: ProfileUpsertRequest = BEGINNER_GYM) {
+  const user = await registerUser(app);
+  await putProfile(app, user.accessToken, profile);
+  const plan = await generatePlan(app, user.accessToken);
+  return { user, plan: plan.body };
+}
+
+/** Empieza el entrenamiento de hoy y devuelve la sesión de hoy y el entrenamiento. */
+export async function startToday(app: INestApplication, token: string, startedAt = new Date().toISOString()) {
+  const today = await request(app.getHttpServer()).get('/sessions/today').set(bearer(token)).expect(200);
+  const workout = await request(app.getHttpServer())
+    .post('/workouts')
+    .set(bearer(token))
+    .send({ clientId: randomUUID(), planSessionId: today.body.planSessionId, startedAt })
+    .expect(201);
+  return { today: today.body, workout: workout.body };
+}
+
+export function setBody(
+  exercise: { planExerciseId: string; exercise: { id: string } },
+  overrides: Partial<{ clientId: string; setIndex: number; reps: number; loadKg: number; rir: number | null; completedAt: string }> = {},
 ) {
-  const plan = await prisma.trainingPlan.create({ data: { userId } });
-  const version = await prisma.trainingPlanVersion.create({
-    data: { planId: plan.id, version: 1, engineVersion: 'test', objectiveScore: 0 },
-  });
-  await prisma.trainingPlan.update({
-    where: { id: plan.id },
-    data: { currentVersionId: version.id },
-  });
-  const session = await prisma.trainingSession.create({
-    data: {
-      planVersionId: version.id,
-      sessionIndex: 0,
-      name: 'Day 1',
-      targetDurationMinutes: 45,
-      exercises: {
-        create: [
-          { exerciseId, sets, repRangeMin: 8, repRangeMax: 12, restSeconds: 90, rirTarget: 2 },
-        ],
-      },
-    },
-  });
-  return { planId: plan.id, planVersionId: version.id, planSessionId: session.id };
+  return {
+    clientId: randomUUID(),
+    planExerciseId: exercise.planExerciseId,
+    exerciseId: exercise.exercise.id,
+    setIndex: 0,
+    reps: 10,
+    loadKg: 40,
+    rir: 2,
+    completedAt: new Date().toISOString(),
+    ...overrides,
+  };
 }

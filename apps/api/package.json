@@ -4,19 +4,24 @@
   "private": true,
   "scripts": {
     "build": "nest build -p tsconfig.build.json",
-    "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --max-warnings 0",
-    "typecheck": "tsc --noEmit",
+    "lint": "eslint \"{src,prisma,scripts}/**/*.ts\" --max-warnings 0",
+    "typecheck": "tsc --noEmit -p tsconfig.check.json",
     "start": "nest start",
     "start:dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main.js",
-    "test": "vitest run",
-    "test:ci": "vitest run --reporter=verbose",
+    "test": "vitest run --coverage",
+    "test:ci": "vitest run --coverage --reporter=verbose",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "test:e2e": "vitest run -c vitest.e2e.config.mts",
-    "prisma:migrate:deploy": "prisma migrate deploy"
+    "prisma:migrate:deploy": "prisma migrate deploy",
+    "prisma:seed": "prisma db seed",
+    "prisma:diff": "prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url \"$DATABASE_URL_SHADOW\" --exit-code",
+    "analytics:rebuild": "tsx scripts/analytics-rebuild.ts",
+    "openapi:generate": "tsx scripts/openapi.ts write",
+    "openapi:check": "tsx scripts/openapi.ts check"
   },
   "dependencies": {
     "@nestjs/common": "^10.3.0",
@@ -26,6 +31,7 @@
     "@nestjs/platform-express": "^10.3.0",
     "@nestjs/swagger": "^7.2.0",
     "@nestjs/throttler": "^6.4.0",
+    "@pipos/catalog": "workspace:*",
     "@pipos/contracts": "workspace:*",
     "@pipos/engine-rules": "workspace:*",
     "@prisma/client": "^5.9.0",
@@ -35,10 +41,11 @@
     "passport-jwt": "^4.0.1",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "zod-to-json-schema": "3.23.5"
   },
   "prisma": {
-    "seed": "ts-node --compiler-options {\"module\":\"CommonJS\"} prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts"
   },
   "devDependencies": {
     "@nestjs/cli": "^10.3.0",
@@ -51,10 +58,12 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
+    "@vitest/coverage-v8": "2.1.9",
     "eslint": "^8.56.0",
     "prisma": "^5.9.0",
     "supertest": "^6.3.4",
     "ts-node": "^10.9.2",
+    "tsx": "^4.19.0",
     "typescript": "^5.3.3",
     "unplugin-swc": "^1.5.1",
     "vitest": "^2.1.0"

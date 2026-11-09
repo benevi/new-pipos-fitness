@@ -1,76 +1,127 @@
 # Pipos Fitness
 
-AI-powered fitness and nutrition mobile application. Personalized training and nutrition plans, workout and body metrics tracking, analytics, and AI assistant.
+App móvil de entrenamiento de fuerza para adultos sanos que entrenan sin entrenador. A partir de un
+cuestionario corto genera un **plan determinista y explicado** que encaja con tu material, tus días,
+tus minutos y tus molestias, te dice qué toca hoy, registra tus series (también sin red) y ajusta la
+carga sesión a sesión.
 
-## Tech Stack
+> Estado (noviembre 2026): reconstrucción en curso ([PLAN](docs/PLAN_RECONSTRUCCION.md)). Fases 0–3
+> (decisiones, seguridad + CI, motor v2 y API v1) hechas; la app móvil consume la API en la Fase 4b.
 
-- **Mobile**: Flutter (iOS + Android)
-- **Backend**: Node.js, TypeScript, NestJS
-- **Database**: PostgreSQL, Prisma
-- **Queues**: Redis, BullMQ
-- **Contracts**: Zod (shared in `packages/contracts`)
-- **Business logic**: Pure functions in `packages/engine-rules`
+## Qué hace v1
 
-## Repository Structure
+- **Perfil y consentimiento** — objetivo, nivel, días (2–6), minutos (30–90), material (lista cerrada),
+  músculos prioritarios, ejercicios vetados/favoritos, zona horaria. Peso, altura y limitaciones son
+  datos de salud: solo se aceptan con un consentimiento explícito y versionado, que se puede retirar
+  (borra esos datos y regenera el plan) — [ADR-0011](docs/adr/0011-datos-salud-gdpr.md).
+- **Plan versionado** — el motor por reglas (`packages/engine-rules`, constantes citadas en
+  [PROGRAMACION.md](docs/engine/PROGRAMACION.md)) genera split, sesiones, ejercicios, series, reps, RIR,
+  descanso y carga inicial, con explicación (`rationale`) por plan, sesión y ejercicio. Cambiar el perfil
+  crea una versión nueva; las anteriores siguen consultables.
+- **Sesión de hoy** — siguiente sesión pendiente (faltar no salta sesiones), calentamiento y prescripción
+  de hoy calculada con tu historial: doble progresión, autorregulación por RIR, descarga programada y
+  reactiva, y bajada de carga tras 14+ días sin entrenar.
+- **Registro offline-first** — cada entrenamiento y cada serie llevan un UUID del cliente: reenviar es
+  idempotente (nunca duplica), las ediciones aplican «última escritura gana» y el borrado es lógico
+  ([ADR-0007](docs/adr/0007-offline-first-idempotencia.md)).
+- **Cambiar un ejercicio** — 3 alternativas que respetan patrón, músculos, material y limitaciones.
+- **Progreso** — e1RM por ejercicio, series efectivas semanales por músculo/grupo frente al rango
+  objetivo y adherencia, calculados **al escribir** ([ADR-0008](docs/adr/0008-analytics-al-escribir.md)).
+- **Nutrición mínima** — objetivos diarios de kcal y macros (Mifflin-St Jeor + PAL), sin menús
+  ([ADR-0004](docs/adr/0004-nutricion-objetivos-diarios.md)).
+- **Tus datos** — exportar todo en JSON y borrar la cuenta con borrado real en cascada.
+
+## Qué NO hay (y por qué)
+
+| No hay | Por qué |
+|---|---|
+| Coach de IA / chat | Retirado: el motor explica sus decisiones sin LLM. Queda solo la interfaz `AiProvider` (sin implementación) — [ADR-0003](docs/adr/0003-retirar-coach-ia.md) |
+| Menús, alimentos, plantillas de comidas | Fuera de v1; solo objetivos diarios — [ADR-0004](docs/adr/0004-nutricion-objetivos-diarios.md) |
+| Worker, colas, Redis | No hay trabajo asíncrono real; un proceso + Postgres — [ADR-0002](docs/adr/0002-eliminar-worker.md) |
+| Panel de administración | El catálogo es un seed revisado por PR (`packages/catalog`) — [ADR-0005](docs/adr/0005-catalogo-seed-sin-panel-admin.md) |
+| iOS publicado | La plataforma se genera, pero la QA y la tienda se posponen — [ADR-0012](docs/adr/0012-flutter-version-fijada.md) |
+| Consejo médico, menores, embarazo, rehabilitación | La app asume un adulto sano y deriva a un profesional ante dolor ([SPEC_V1](docs/SPEC_V1.md)) |
+
+Pendiente antes del lanzamiento público: DPIA y revisión legal del texto de consentimiento, y revisión
+del catálogo y de los planes de ejemplo por un entrenador titulado.
+
+## Estructura
 
 ```
 apps/
-  api       # NestJS API
-  worker    # BullMQ worker
-  mobile    # Flutter app (Phase 13)
+  api/            NestJS + Prisma (PostgreSQL). openapi.json generado desde los contratos
+  mobile/         Flutter (Android primero)
 packages/
-  contracts # Zod schemas
-  engine-rules # Business logic (pure functions)
-docs/
-scripts/
+  contracts/      Esquemas Zod de entrada y salida de cada endpoint + enums (compartidos con la BD)
+  engine-rules/   Motor puro y determinista: generatePlan, nextPrescription, substitutes, dailyTargets…
+  catalog/        Catálogo de ejercicios versionado (JSON validado con Zod)
+docs/             Plan, spec, CUJ, ADR, modelo de datos, seguridad, programación del motor
 ```
 
-## Prerequisites
+## Ejecutar en local
 
-- Node.js >= 20
-- pnpm 9+
-- PostgreSQL
-- Redis
-
-## Commands
+Requisitos: Node ≥ 20, pnpm 9 (`corepack enable`), Docker (o un Postgres 16 propio).
 
 ```bash
+docker compose up -d                       # Postgres 16 con pipos_dev, pipos_e2e y pipos_shadow
+cp .env.example apps/api/.env              # y rellena JWT_ACCESS_SECRET (openssl rand -base64 48)
 pnpm install
-pnpm build
-pnpm lint
-pnpm typecheck
-pnpm test
+pnpm build                                 # contracts, catalog y engine-rules antes que la API
+pnpm --filter @pipos/api prisma:generate
+pnpm --filter @pipos/api prisma:migrate:deploy
+pnpm --filter @pipos/api prisma:seed       # catálogo de @pipos/catalog (idempotente)
+pnpm --filter @pipos/api start:dev         # http://localhost:3000, Swagger en /docs (no en producción)
 ```
 
-## Bootstrap GitHub Repository
+### Variables de entorno (`apps/api/.env`)
 
-1. Set environment variables:
-   - `REPO_NAME` (required): e.g. `pipos-fitness`
-   - `GITHUB_OWNER` (optional): GitHub org or user
+Validadas con Zod al arrancar (`apps/api/src/config/env.ts`); sin secretos por defecto.
 
-2. Run from repo root (Git Bash or WSL on Windows):
+| Variable | Obligatoria | Por defecto | Para qué |
+|---|---|---|---|
+| `DATABASE_URL` | Sí | — | Postgres |
+| `JWT_ACCESS_SECRET` | Sí (≥ 32 caracteres) | — | Firma HS256 del access token |
+| `JWT_ACCESS_EXPIRES_IN` | No | `900` | Vida del access token (s) |
+| `REFRESH_TOKEN_TTL_DAYS` | No | `30` | Vida del refresh token |
+| `REFRESH_REUSE_GRACE_SECONDS` | No | `10` | Reenviar un refresh recién rotado → `AUTH_REFRESH_RACE` sin revocar |
+| `CORS_ORIGINS` | No | vacío | Orígenes de navegador permitidos |
+| `LOG_LEVEL` | No | `info` | Logs JSON con `requestId`, sin PII ni datos de salud |
+| `THROTTLE_ENABLED` | No | `true` | No se puede desactivar en producción |
+| `PORT`, `NODE_ENV`, `SENTRY_DSN` | No | `3000`, `development`, — | |
+| `DATABASE_URL_SHADOW` | Solo `prisma:diff` | — | Base sombra para comprobar la deriva |
+
+### Comandos
 
 ```bash
-bash scripts/bootstrap_github_repo.sh
+pnpm build | pnpm lint | pnpm typecheck      # todo el monorepo, 0 avisos
+pnpm test                                    # unitarios (+ cobertura: API ≥ 80 % en servicios, motor ≥ 90 %)
+DATABASE_URL=postgresql://pipos:pipos@localhost:5432/pipos_e2e pnpm test:e2e   # e2e contra Postgres real
+pnpm --filter @pipos/api prisma:diff         # schema.prisma y migraciones sin deriva
+pnpm --filter @pipos/api openapi:generate    # regenera apps/api/openapi.json (openapi:check en CI)
+pnpm --filter @pipos/api analytics:rebuild   # recalcula e1RM/volumen/adherencia desde las series
+pnpm --filter @pipos/engine-rules examples   # 10 planes de ejemplo del motor
 ```
 
-Requires: `git`, `gh` (GitHub CLI), and `gh auth login` completed.
+Los e2e usan la app Nest completa contra un Postgres real (sin mocks de Prisma —
+[ADR-0010](docs/adr/0010-e2e-postgres-real.md)); la base debe llamarse `*test*` o `*e2e*` porque se vacía.
 
-## Project Phases
+## CI
 
-Phases and scope are defined in [docs/PHASES.md](docs/PHASES.md). Only one phase is implemented at a time; each phase ends with a git tag.
+`.github/workflows/ci.yml` (en cada push/PR a `main` y `develop`):
 
-## Documentation
+- **Backend**: install `--frozen-lockfile` → prisma generate → base sombra + `prisma migrate diff
+  --exit-code` → build → lint → typecheck → `openapi:check` → unitarios con umbrales de cobertura →
+  `migrate deploy` → e2e (CUJ-1..8, concurrencia, idempotencia, propiedad) contra Postgres 16.
+- **Mobile**: versión de Flutter fijada, `analyze`, `test` y APK de debug.
 
-- [Architecture](docs/ARCHITECTURE.md)
-- [Coding Rules](docs/CODING_RULES.md)
-- [Engine Rules](docs/ENGINE_RULES.md)
-- [Phases](docs/PHASES.md)
-- [Decisions](docs/DECISIONS.md)
+## API
 
-## Git Workflow
+Contratos en `packages/contracts`; documento OpenAPI 3 en [`apps/api/openapi.json`](apps/api/openapi.json)
+(generado, no editar). Errores: `{ statusCode, code, message, issues?, requestId }` con `code` estable.
 
-- `main` → production
-- `develop` → staging
-- Feature branches → development
-- Phases tagged (e.g. `phase-1-foundations`)
+## Documentación
+
+- [Plan de reconstrucción](docs/PLAN_RECONSTRUCCION.md) · [Spec v1](docs/SPEC_V1.md) · [CUJ](docs/CUJS.md)
+- [Programación del motor](docs/engine/PROGRAMACION.md) · [Invariantes](docs/engine/INVARIANTES.md)
+- [Modelo de datos](docs/MODELO_DATOS.md) · [Seguridad](docs/SECURITY.md) · [ADR](docs/adr/README.md)
+- Histórico (anterior a la reconstrucción): `docs/DECISIONS.md`, `docs/PHASE_*.md`

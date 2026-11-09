@@ -1,6 +1,6 @@
 # ADR-0004: Nutrición reducida a objetivos diarios
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fase 3: GET /me/nutrition-targets; alimentos y plantillas de comidas eliminados) · **Fecha**: 2026-11-09
 
 ## Contexto
 La nutrición actual genera comidas que cuadran calorías pero no macros, asume 70 kg si falta el peso y devuelve un plan falso de 2000 kcal ante datos inválidos. Mantiene un catálogo `Food` y plantillas de comidas con cascadas que destruyen versiones antiguas.

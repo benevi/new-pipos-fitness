@@ -1,6 +1,6 @@
 # ADR-0009: Regenerar las migraciones en una única migración inicial
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fase 3: una migración `init`; CI comprueba la deriva) · **Fecha**: 2026-11-09
 
 ## Contexto
 Las migraciones mezclan fechas de 2024 y 2026, una de ellas recoge de golpe todas las tablas de planes, entrenamientos y nutrición (señal de `db push` previo), borra un índice necesario, y `migration_lock.toml` está ignorado. El modelo de datos cambia mucho (ver `docs/MODELO_DATOS.md`).

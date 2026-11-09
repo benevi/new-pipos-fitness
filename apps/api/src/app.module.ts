@@ -1,25 +1,42 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { CommonModule } from './common/common.module';
+import { ContractInterceptor } from './common/contract.interceptor';
+import { HttpExceptionFilter } from './common/http-exception.filter';
 import { AppConfigModule } from './config/config.module';
 import { APP_ENV, type Env } from './config/env';
 import { THROTTLE_LIMITS } from './config/throttle';
+import { HealthModule } from './health/health.module';
+import { AccountModule } from './modules/account/account.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CatalogModule } from './modules/catalog/catalog.module';
-import { UsersModule } from './modules/users/users.module';
-import { TrainingPlansModule } from './modules/training-plans/training-plans.module';
+import { NutritionModule } from './modules/nutrition/nutrition.module';
+import { PlansModule } from './modules/plans/plans.module';
+import { ProfileModule } from './modules/profile/profile.module';
+import { ProgressModule } from './modules/progress/progress.module';
 import { WorkoutsModule } from './modules/workouts/workouts.module';
-import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { NutritionPlansModule } from './modules/nutrition-plans/nutrition-plans.module';
-import { AICoachModule } from './modules/ai-coach/ai-coach.module';
-import { HealthModule } from './health/health.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { ZodValidationInterceptor } from './zod/zod-validation.interceptor';
-import { ZodExceptionFilter } from './zod/zod-exception.filter';
+
+/** Módulos con controladores HTTP (los recorre el generador de OpenAPI). */
+export const FEATURE_MODULES = [
+  HealthModule,
+  AuthModule,
+  AccountModule,
+  ProfileModule,
+  CatalogModule,
+  PlansModule,
+  WorkoutsModule,
+  ProgressModule,
+  NutritionModule,
+] as const;
 
 @Module({
   imports: [
     AppConfigModule,
+    CommonModule,
+    PrismaModule,
     ThrottlerModule.forRootAsync({
       inject: [APP_ENV],
       useFactory: (env: Env) => ({
@@ -27,21 +44,13 @@ import { ZodExceptionFilter } from './zod/zod-exception.filter';
         skipIf: () => !env.THROTTLE_ENABLED,
       }),
     }),
-    HealthModule,
-    PrismaModule,
-    AuthModule,
-    UsersModule,
-    CatalogModule,
-    TrainingPlansModule,
-    WorkoutsModule,
     AnalyticsModule,
-    NutritionPlansModule,
-    AICoachModule,
+    ...FEATURE_MODULES,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },
-    { provide: APP_FILTER, useClass: ZodExceptionFilter },
-    { provide: APP_INTERCEPTOR, useClass: ZodValidationInterceptor },
+    { provide: APP_FILTER, useClass: HttpExceptionFilter },
+    { provide: APP_INTERCEPTOR, useClass: ContractInterceptor },
   ],
 })
 export class AppModule {}

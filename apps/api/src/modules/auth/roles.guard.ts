@@ -6,7 +6,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { UserRole } from '@prisma/client';
+import type { Role } from '@prisma/client';
 import { ROLES_KEY } from './roles.decorator';
 import type { AuthenticatedUser } from './authenticated-user';
 
@@ -19,7 +19,7 @@ export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   canActivate(context: ExecutionContext): boolean {
-    const required = this.reflector.getAllAndOverride<UserRole[] | undefined>(ROLES_KEY, [
+    const required = this.reflector.getAllAndOverride<Role[] | undefined>(ROLES_KEY, [
       context.getHandler(),
       context.getClass(),
     ]);

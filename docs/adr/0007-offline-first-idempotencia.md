@@ -1,6 +1,6 @@
 # ADR-0007: Registro de entrenamientos offline-first con idempotencia por UUID de cliente
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado; parte servidor implementada en la Fase 3 (idempotencia por clientId, última escritura gana); cola móvil en la Fase 4b · **Fecha**: 2026-11-09
 
 ## Contexto
 En el gimnasio la cobertura falla. Hoy, si se mata la app o no hay red, se pierden series. El riesgo de producto más dañino es perder o duplicar series al sincronizar.

@@ -1,12 +1,13 @@
-import { ConflictException, Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { PrismaService } from '../../prisma/prisma.service';
-import type { AuthResponse, LoginRequest, RegisterRequest } from '@pipos/contracts';
-import { AuthResponseSchema } from '@pipos/contracts';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, randomUUID } from 'crypto';
 import type { User } from '@prisma/client';
+import type { AuthResponse, LoginRequest, RegisterRequest } from '@pipos/contracts';
+import { ApiError } from '../../common/api-error';
+import { Clock } from '../../common/clock';
 import { APP_ENV, type Env } from '../../config/env';
+import { PrismaService } from '../../prisma/prisma.service';
 import type { JwtPayload } from './jwt.strategy';
 
 export const BCRYPT_COST = 12;
@@ -18,11 +19,26 @@ export const BCRYPT_COST = 12;
 export const DUMMY_PASSWORD_HASH = '$2b$12$59YIJW2E1c5ENsg2flI7TeXt/p1IKLv1Q9pvLZ9GuldJFzqTAONRS';
 
 export const AUTH_REFRESH_REUSED = 'AUTH_REFRESH_REUSED';
+export const AUTH_REFRESH_RACE = 'AUTH_REFRESH_RACE';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function normalizeEmail(email: string): string {
+export function normalizeEmail(email: string): string {
   return email.trim().toLowerCase();
+}
+
+export function hashRefreshToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
+
+interface StoredToken {
+  id: string;
+  userId: string;
+  familyId: string;
+  expiresAt: Date;
+  rotatedAt: Date | null;
+  revokedAt: Date | null;
+  revokedReason: string | null;
 }
 
 /** Señal interna: la rotación perdió la carrera (el token ya estaba revocado). */
@@ -33,122 +49,128 @@ export class AuthService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
+    private readonly clock: Clock,
     @Inject(APP_ENV) private readonly env: Env,
   ) {}
 
   async register(input: RegisterRequest): Promise<AuthResponse> {
     const emailNormalized = normalizeEmail(input.email);
-    const existing = await this.prisma.user.findUnique({
-      where: { emailNormalized },
-    });
+    const existing = await this.prisma.user.findUnique({ where: { emailNormalized }, select: { id: true } });
     if (existing) {
-      throw new ConflictException('Email already registered');
+      throw new ApiError(HttpStatus.CONFLICT, 'AUTH_EMAIL_TAKEN', 'Email already registered');
     }
     const passwordHash = await bcrypt.hash(input.password, BCRYPT_COST);
     const user = await this.prisma.user.create({
-      data: {
-        email: input.email.trim(),
-        emailNormalized,
-        passwordHash,
-      },
+      data: { email: input.email.trim(), emailNormalized, passwordHash },
     });
     return this.issueTokens(user);
   }
 
   async login(input: LoginRequest): Promise<AuthResponse> {
-    const emailNormalized = normalizeEmail(input.email);
-    const user = await this.prisma.user.findUnique({
-      where: { emailNormalized },
-    });
+    const user = await this.prisma.user.findUnique({ where: { emailNormalized: normalizeEmail(input.email) } });
     // Siempre se ejecuta un bcrypt.compare para igualar tiempos exista o no el usuario.
     const valid = await bcrypt.compare(input.password, user?.passwordHash ?? DUMMY_PASSWORD_HASH);
     if (!user || !valid) {
-      throw new UnauthorizedException('Invalid email or password');
+      throw new ApiError(HttpStatus.UNAUTHORIZED, 'AUTH_INVALID_CREDENTIALS', 'Invalid email or password');
     }
     return this.issueTokens(user);
   }
 
+  /** Comprueba la contraseña de un usuario autenticado (reautenticación antes de borrar la cuenta). */
+  async verifyPassword(userId: string, password: string): Promise<boolean> {
+    const user = await this.prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
+    return bcrypt.compare(password, user?.passwordHash ?? DUMMY_PASSWORD_HASH).then((ok) => ok && !!user);
+  }
+
   /**
-   * Rotación de refresh token atómica con detección de reutilización.
-   * - Token desconocido o caducado → 401.
-   * - Token ya revocado (reutilización, o carrera perdida contra otra rotación concurrente)
-   *   → se revocan TODAS las sesiones activas del usuario y 401 AUTH_REFRESH_REUSED.
+   * Rotación de refresh token atómica con detección de reutilización:
+   * - Desconocido o caducado → 401 AUTH_REFRESH_INVALID.
+   * - Rotado hace menos de REFRESH_REUSE_GRACE_SECONDS (respuesta perdida o dos peticiones
+   *   simultáneas) → 401 AUTH_REFRESH_RACE, sin revocar nada: el cliente usa el token nuevo.
+   * - Cualquier otra reutilización → se revocan TODAS las sesiones del usuario y
+   *   401 AUTH_REFRESH_REUSED.
    */
   async refresh(refreshToken: string): Promise<AuthResponse> {
-    const tokenHash = this.hashRefreshToken(refreshToken);
     const stored = await this.prisma.refreshToken.findUnique({
-      where: { tokenHash },
+      where: { tokenHash: hashRefreshToken(refreshToken) },
       include: { user: true },
     });
-    if (!stored) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-    if (stored.revokedAt) {
-      await this.revokeAllSessionsAndThrowReuse(stored.userId);
-    }
-    if (stored.expiresAt < new Date()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
+    if (!stored) throw this.invalidRefresh();
+    if (stored.revokedAt) await this.rejectReused(stored);
+    if (stored.expiresAt < this.clock.now()) throw this.invalidRefresh();
 
     const newTokenPlain = randomBytes(32).toString('hex');
     try {
       await this.prisma.$transaction(async (tx) => {
-        const now = new Date();
+        const now = this.clock.now();
         const revoked = await tx.refreshToken.updateMany({
           where: { id: stored.id, revokedAt: null },
-          data: { revokedAt: now },
+          data: { revokedAt: now, rotatedAt: now, revokedReason: 'rotated' },
         });
-        if (revoked.count !== 1) {
-          throw new RefreshRotationLost();
-        }
+        if (revoked.count !== 1) throw new RefreshRotationLost();
         const created = await tx.refreshToken.create({
           data: {
             userId: stored.userId,
-            tokenHash: this.hashRefreshToken(newTokenPlain),
+            familyId: stored.familyId,
+            tokenHash: hashRefreshToken(newTokenPlain),
             expiresAt: this.refreshExpiresAt(),
           },
           select: { id: true },
         });
-        await tx.refreshToken.update({
-          where: { id: stored.id },
-          data: { replacedByTokenId: created.id },
-        });
+        await tx.refreshToken.update({ where: { id: stored.id }, data: { replacedById: created.id } });
       });
     } catch (error) {
       if (error instanceof RefreshRotationLost) {
-        await this.revokeAllSessionsAndThrowReuse(stored.userId);
+        const current = await this.prisma.refreshToken.findUnique({ where: { id: stored.id } });
+        await this.rejectReused(current ?? { ...stored, revokedAt: this.clock.now(), rotatedAt: null });
       }
       throw error;
     }
-
     return this.buildResponse(stored.user, newTokenPlain);
   }
 
   async logout(refreshToken: string): Promise<void> {
-    const tokenHash = this.hashRefreshToken(refreshToken);
     await this.prisma.refreshToken.updateMany({
-      where: { tokenHash, revokedAt: null },
-      data: { revokedAt: new Date() },
+      where: { tokenHash: hashRefreshToken(refreshToken), revokedAt: null },
+      data: { revokedAt: this.clock.now(), revokedReason: 'logout' },
     });
   }
 
-  private async revokeAllSessionsAndThrowReuse(userId: string): Promise<never> {
+  /** ¿Es una carrera benigna (rotado hace menos de la ventana de gracia)? */
+  isWithinGrace(token: Pick<StoredToken, 'rotatedAt' | 'revokedReason'>, now: Date): boolean {
+    if (token.revokedReason !== 'rotated' || !token.rotatedAt) return false;
+    return now.getTime() - token.rotatedAt.getTime() < this.env.REFRESH_REUSE_GRACE_SECONDS * 1000;
+  }
+
+  private async rejectReused(token: StoredToken): Promise<never> {
+    const now = this.clock.now();
+    if (this.isWithinGrace(token, now)) {
+      throw new ApiError(
+        HttpStatus.UNAUTHORIZED,
+        AUTH_REFRESH_RACE,
+        'Refresh token was just rotated; use the newest token',
+      );
+    }
     await this.prisma.refreshToken.updateMany({
-      where: { userId, revokedAt: null },
-      data: { revokedAt: new Date() },
+      where: { userId: token.userId, revokedAt: null },
+      data: { revokedAt: now, revokedReason: 'reuse_detected' },
     });
-    throw new UnauthorizedException({
-      message: 'Refresh token was already used',
-      code: AUTH_REFRESH_REUSED,
-    });
+    throw new ApiError(HttpStatus.UNAUTHORIZED, AUTH_REFRESH_REUSED, 'Refresh token was already used');
+  }
+
+  private invalidRefresh(): ApiError {
+    return new ApiError(HttpStatus.UNAUTHORIZED, 'AUTH_REFRESH_INVALID', 'Invalid or expired refresh token');
   }
 
   private async issueTokens(user: User): Promise<AuthResponse> {
     const refreshToken = randomBytes(32).toString('hex');
+    const id = randomUUID();
     await this.prisma.refreshToken.create({
       data: {
+        id,
+        familyId: id,
         userId: user.id,
-        tokenHash: this.hashRefreshToken(refreshToken),
+        tokenHash: hashRefreshToken(refreshToken),
         expiresAt: this.refreshExpiresAt(),
       },
     });
@@ -156,22 +178,16 @@ export class AuthService {
   }
 
   private buildResponse(user: User, refreshToken: string): AuthResponse {
-    const payload: JwtPayload = { userId: user.id, email: user.email, role: user.role };
-    const accessToken = this.jwtService.sign(payload);
-    const response: AuthResponse = {
-      accessToken,
+    const payload: JwtPayload = { userId: user.id, role: user.role };
+    return {
+      accessToken: this.jwtService.sign(payload),
       refreshToken,
       expiresIn: this.env.JWT_ACCESS_EXPIRES_IN,
       user: { id: user.id, email: user.email },
     };
-    return AuthResponseSchema.parse(response);
   }
 
   private refreshExpiresAt(): Date {
-    return new Date(Date.now() + this.env.REFRESH_TOKEN_TTL_DAYS * DAY_MS);
-  }
-
-  private hashRefreshToken(token: string): string {
-    return createHash('sha256').update(token).digest('hex');
+    return new Date(this.clock.now().getTime() + this.env.REFRESH_TOKEN_TTL_DAYS * DAY_MS);
   }
 }

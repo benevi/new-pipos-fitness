@@ -1,21 +1,11 @@
-import { z } from 'zod';
-
-/**
- * Placeholder schemas. Expand in later phases.
- */
-export const HealthResponseSchema = z.object({
-  status: z.literal('ok'),
-  timestamp: z.string(),
-});
-
-export type HealthResponse = z.infer<typeof HealthResponseSchema>;
-
 export * from './limits.js';
+export * from './common.js';
 export * from './auth.js';
-export * from './user.js';
-export * from './catalog.js';
-export * from './training-engine.js';
+export * from './health.js';
+export * from './plans.js';
+export * from './profile.js';
 export * from './workouts.js';
-export * from './analytics.js';
-export * from './nutrition-engine.js';
-export * from './ai-coach.js';
+export * from './progress.js';
+export * from './nutrition.js';
+export * from './catalog.js';
+export * from './account.js';

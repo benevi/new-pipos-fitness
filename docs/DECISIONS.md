@@ -46,6 +46,8 @@ ADR-style log of significant architecture and design decisions.
 
 ## ADR-005: BullMQ and Redis for jobs
 
+> **Sustituido por [ADR-0002](adr/0002-eliminar-worker.md)** (noviembre 2026): el worker se eliminó en la Fase 3; v1 no tiene trabajos asíncronos.
+
 **Context**: Async work (e.g. plan generation, notifications) must not block API.
 
 **Decision**: Redis + BullMQ for job queue. Worker process in `apps/worker`.

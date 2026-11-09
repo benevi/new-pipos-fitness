@@ -1,81 +1,174 @@
+import { Body, Controller, Delete, Get, Param, Patch, Post, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
+import { z } from 'zod';
 import {
-  Body,
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
-import { ZodBody } from '../../zod/zod-body.decorator';
-import { UuidParam } from '../../zod/zod-param';
-import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { CurrentUser } from '../users/current-user.decorator';
-import { WorkoutsService } from './workouts.service';
-import {
-  StartWorkoutRequestSchema,
-  AddExerciseToWorkoutRequestSchema,
-  LogSetRequestSchema,
   FinishWorkoutRequestSchema,
+  IdSchema,
+  PatchSetRequestSchema,
+  SetLogResponseSchema,
+  StartWorkoutRequestSchema,
+  SubstituteExerciseRequestSchema,
+  SubstitutesResponseSchema,
+  SubstitutionResponseSchema,
+  TodaySessionResponseSchema,
+  UpsertSetRequestSchema,
+  WorkoutResponseSchema,
+  type FinishWorkoutRequest,
+  type PatchSetRequest,
+  type StartWorkoutRequest,
+  type SubstituteExerciseRequest,
+  type UpsertSet,
 } from '@pipos/contracts';
+import { Contract } from '../../common/contract';
+import type { AuthenticatedUser } from '../auth/authenticated-user';
+import { CurrentUser } from '../auth/current-user.decorator';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
+import { IdParamsSchema } from '../catalog/catalog.controller';
+import { SessionsService } from './sessions.service';
+import { WorkoutsService, type Upserted } from './workouts.service';
 
-@ApiTags('workouts')
-@ApiBearerAuth()
+const SetParamsSchema = z.object({ id: IdSchema, clientId: IdSchema }).strict();
+const SlotParamsSchema = z.object({ id: IdSchema, planExerciseId: IdSchema }).strict();
+
+/** 201 si se creó; 200 si era un reenvío idempotente del mismo clientId. */
+function created<T>(res: Response, result: Upserted<T>): T {
+  res.status(result.created ? 201 : 200);
+  return result.value;
+}
+
+@Controller()
 @UseGuards(JwtAuthGuard)
-@Controller('workouts')
 export class WorkoutsController {
-  constructor(private readonly workoutsService: WorkoutsService) {}
+  constructor(
+    private readonly workouts: WorkoutsService,
+    private readonly sessions: SessionsService,
+  ) {}
 
-  @Get('history')
-  @ApiOperation({ summary: 'Get recent workout sessions' })
-  getHistory(@CurrentUser() user: { id: string }) {
-    return this.workoutsService.getHistory(user.id);
+  @Get('sessions/today')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Sesión de hoy: calentamiento y prescripción con carga sugerida',
+    response: TodaySessionResponseSchema,
+    errors: [404, 409],
+  })
+  today(@CurrentUser() user: AuthenticatedUser) {
+    return this.sessions.today(user.id);
   }
 
-  @Get(':id')
-  @ApiOperation({ summary: 'Get a single workout session with exercises and sets' })
-  getById(@CurrentUser() user: { id: string }, @UuidParam('id') id: string) {
-    return this.workoutsService.getById(user.id, id);
-  }
-
-  @Post('start')
-  @ZodBody(StartWorkoutRequestSchema)
-  @ApiOperation({ summary: 'Start a workout session' })
-  start(@CurrentUser() user: { id: string }, @Body() body: { planSessionId?: string }) {
-    return this.workoutsService.startSession(user.id, body.planSessionId);
-  }
-
-  @Post(':id/exercises')
-  @ZodBody(AddExerciseToWorkoutRequestSchema)
-  @ApiOperation({ summary: 'Add exercise to workout' })
-  addExercise(
-    @CurrentUser() user: { id: string },
-    @UuidParam('id') id: string,
-    @Body() body: { exerciseId: string },
+  @Post('workouts')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Empezar un entrenamiento (idempotente por clientId)',
+    body: StartWorkoutRequestSchema,
+    response: WorkoutResponseSchema,
+    status: 201,
+    alternateStatuses: [200],
+    errors: [404, 409],
+  })
+  start(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: StartWorkoutRequest,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.workoutsService.addExercise(user.id, id, body.exerciseId);
+    return this.workouts.start(user.id, body).then((r) => created(res, r));
   }
 
-  @Post(':id/exercises/:workoutExerciseId/sets')
-  @ZodBody(LogSetRequestSchema)
-  @ApiOperation({ summary: 'Log a set' })
-  logSet(
-    @CurrentUser() user: { id: string },
-    @UuidParam('id') id: string,
-    @UuidParam('workoutExerciseId') workoutExerciseId: string,
-    @Body()
-    body: { weightKg?: number; reps?: number; rir?: number; completed?: boolean },
-  ) {
-    return this.workoutsService.logSet(user.id, id, workoutExerciseId, body);
+  @Get('workouts/:id')
+  @Contract({ tag: 'workouts', summary: 'Un entrenamiento con sus series', params: IdParamsSchema, response: WorkoutResponseSchema, errors: [404] })
+  get(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.workouts.get(user.id, id);
   }
 
-  @Post(':id/finish')
-  @ZodBody(FinishWorkoutRequestSchema)
-  @ApiOperation({ summary: 'Finish workout session' })
-  finish(
-    @CurrentUser() user: { id: string },
-    @UuidParam('id') id: string,
-    @Body() body: { durationMinutes?: number; notes?: string },
+  @Post('workouts/:id/sets')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Registrar una serie (idempotente por clientId: reenviar devuelve la existente con 200)',
+    params: IdParamsSchema,
+    body: UpsertSetRequestSchema,
+    response: SetLogResponseSchema,
+    status: 201,
+    alternateStatuses: [200],
+    errors: [404, 409],
+  })
+  addSet(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() body: UpsertSet,
+    @Res({ passthrough: true }) res: Response,
   ) {
-    return this.workoutsService.finishSession(user.id, id, body);
+    return this.workouts.upsertSet(user.id, id, body).then((r) => created(res, r));
+  }
+
+  @Patch('workouts/:id/sets/:clientId')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Editar una serie (gana la última escritura por clientUpdatedAt)',
+    params: SetParamsSchema,
+    body: PatchSetRequestSchema,
+    response: SetLogResponseSchema,
+    errors: [404],
+  })
+  patchSet(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Param('clientId') clientId: string,
+    @Body() body: PatchSetRequest,
+  ) {
+    return this.workouts.patchSet(user.id, id, clientId, body);
+  }
+
+  @Delete('workouts/:id/sets/:clientId')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Borrar una serie (borrado lógico, idempotente)',
+    params: SetParamsSchema,
+    response: SetLogResponseSchema,
+    errors: [404],
+  })
+  deleteSet(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Param('clientId') clientId: string) {
+    return this.workouts.deleteSet(user.id, id, clientId);
+  }
+
+  @Post('workouts/:id/finish')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Terminar el entrenamiento (409 si ya estaba terminado)',
+    params: IdParamsSchema,
+    body: FinishWorkoutRequestSchema,
+    response: WorkoutResponseSchema,
+    errors: [404, 409],
+  })
+  finish(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string, @Body() body: FinishWorkoutRequest) {
+    return this.workouts.finish(user.id, id, body);
+  }
+
+  @Post('workouts/:id/exercises/:planExerciseId/substitute')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Cambiar el ejercicio de un hueco del plan en este entrenamiento',
+    params: SlotParamsSchema,
+    body: SubstituteExerciseRequestSchema,
+    response: SubstitutionResponseSchema,
+    errors: [404, 409],
+  })
+  substitute(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Param('planExerciseId') planExerciseId: string,
+    @Body() body: SubstituteExerciseRequest,
+  ) {
+    return this.workouts.substitute(user.id, id, planExerciseId, body.exerciseId);
+  }
+
+  @Get('exercises/:id/substitutes')
+  @Contract({
+    tag: 'workouts',
+    summary: 'Tres alternativas para un ejercicio según tu perfil',
+    params: IdParamsSchema,
+    response: SubstitutesResponseSchema,
+    errors: [404, 409],
+  })
+  substitutes(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    return this.workouts.substitutesFor(user.id, id);
   }
 }

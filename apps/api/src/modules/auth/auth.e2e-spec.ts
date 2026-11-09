@@ -1,7 +1,7 @@
 import request from 'supertest';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { AUTH_REFRESH_REUSED, BCRYPT_COST } from './auth.service';
+import { AUTH_REFRESH_RACE, AUTH_REFRESH_REUSED, BCRYPT_COST } from './auth.service';
 import { createTestApp, registerUser, truncateAll, bearer, type TestContext } from '../../test/e2e/helpers';
 
 describe('Auth (e2e, Postgres real)', () => {
@@ -21,7 +21,7 @@ describe('Auth (e2e, Postgres real)', () => {
   });
 
   describe('POST /auth/register', () => {
-    it('201: crea usuario con rol USER, hash bcrypt coste 12 y devuelve tokens', async () => {
+    it('201: crea usuario con rol user, hash bcrypt coste 12 y devuelve tokens', async () => {
       const res = await request(server())
         .post('/auth/register')
         .send({ email: 'New@Example.com', password: 'password123' })
@@ -33,24 +33,26 @@ describe('Auth (e2e, Postgres real)', () => {
 
       const user = await ctx.prisma.user.findUniqueOrThrow({ where: { id: res.body.user.id } });
       expect(user.emailNormalized).toBe('new@example.com');
-      expect(user.role).toBe('USER');
+      expect(user.role).toBe('user');
       expect(bcrypt.getRounds(user.passwordHash)).toBe(BCRYPT_COST);
       expect(await bcrypt.compare('password123', user.passwordHash)).toBe(true);
     });
 
-    it('el access token lleva userId, email y role', async () => {
+    it('el access token lleva userId y role, sin email (minimización)', async () => {
       const { accessToken, id } = await registerUser(ctx.app, 'claims@example.com');
       const payload = new JwtService({}).decode(accessToken) as Record<string, unknown>;
-      expect(payload).toMatchObject({ userId: id, email: 'claims@example.com', role: 'USER' });
+      expect(payload).toMatchObject({ userId: id, role: 'user' });
+      expect(payload.email).toBeUndefined();
       expect((payload.exp as number) - (payload.iat as number)).toBe(900);
     });
 
-    it('409 si el email ya existe (aunque cambie mayúsculas)', async () => {
+    it('409 AUTH_EMAIL_TAKEN si el email ya existe (aunque cambie mayúsculas)', async () => {
       await registerUser(ctx.app, 'user@example.com');
-      await request(server())
+      const res = await request(server())
         .post('/auth/register')
         .send({ email: 'USER@Example.COM', password: 'password123' })
         .expect(409);
+      expect(res.body.code).toBe('AUTH_EMAIL_TAKEN');
     });
 
     it('400 si la contraseña supera 72 bytes', async () => {
@@ -113,7 +115,9 @@ describe('Auth (e2e, Postgres real)', () => {
       expect(tokens).toHaveLength(2);
       const old = tokens.find((t) => t.revokedAt !== null);
       const fresh = tokens.find((t) => t.revokedAt === null);
-      expect(old?.replacedByTokenId).toBe(fresh?.id);
+      expect(old?.replacedById).toBe(fresh?.id);
+      expect(old?.revokedReason).toBe('rotated');
+      expect(fresh?.familyId).toBe(old?.familyId);
     });
 
     it('401 con token desconocido', async () => {
@@ -141,7 +145,11 @@ describe('Auth (e2e, Postgres real)', () => {
         .post('/auth/refresh')
         .send({ refreshToken: u.refreshToken })
         .expect(200);
-      // Un atacante reutiliza el token ya rotado.
+      // Fuera de la ventana de gracia (rotado hace 60 s), un atacante reutiliza el token rotado.
+      await ctx.prisma.refreshToken.updateMany({
+        where: { userId: u.id, revokedReason: 'rotated' },
+        data: { rotatedAt: new Date(Date.now() - 60_000) },
+      });
       const reuse = await request(server())
         .post('/auth/refresh')
         .send({ refreshToken: u.refreshToken })
@@ -164,28 +172,63 @@ describe('Auth (e2e, Postgres real)', () => {
       const a = await registerUser(ctx.app);
       const b = await registerUser(ctx.app);
       await request(server()).post('/auth/refresh').send({ refreshToken: a.refreshToken }).expect(200);
+      await ctx.prisma.refreshToken.updateMany({ where: { userId: a.id }, data: { rotatedAt: new Date(Date.now() - 60_000) } });
       await request(server()).post('/auth/refresh').send({ refreshToken: a.refreshToken }).expect(401);
       await request(server()).post('/auth/refresh').send({ refreshToken: b.refreshToken }).expect(200);
     });
 
-    it('carrera: dos refresh concurrentes con el mismo token → exactamente uno tiene éxito', async () => {
+    it('ventana de gracia: reenviar un token recién rotado → 401 AUTH_REFRESH_RACE sin revocar la familia', async () => {
+      const u = await registerUser(ctx.app);
+      const rotated = await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(200);
+      // Respuesta perdida: el cliente reintenta con el token viejo.
+      const retry = await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(401);
+      expect(retry.body.code).toBe(AUTH_REFRESH_RACE);
+      // Nada revocado: el token nuevo sigue funcionando.
+      expect(await ctx.prisma.refreshToken.count({ where: { userId: u.id, revokedReason: 'reuse_detected' } })).toBe(0);
+      await request(server()).post('/auth/refresh').send({ refreshToken: rotated.body.refreshToken }).expect(200);
+    });
+
+    it('fuera de la ventana (REFRESH_REUSE_GRACE_SECONDS=0) la reutilización revoca todo', async () => {
+      const strict = await createTestApp({ REFRESH_REUSE_GRACE_SECONDS: '0' });
+      try {
+        const u = await registerUser(strict.app);
+        const rotated = await request(strict.app.getHttpServer())
+          .post('/auth/refresh')
+          .send({ refreshToken: u.refreshToken })
+          .expect(200);
+        const reuse = await request(strict.app.getHttpServer())
+          .post('/auth/refresh')
+          .send({ refreshToken: u.refreshToken })
+          .expect(401);
+        expect(reuse.body.code).toBe(AUTH_REFRESH_REUSED);
+        await request(strict.app.getHttpServer())
+          .post('/auth/refresh')
+          .send({ refreshToken: rotated.body.refreshToken })
+          .expect(401);
+      } finally {
+        await strict.app.close();
+      }
+    });
+
+    it('carrera: refresh concurrentes con el mismo token → uno gana, el resto AUTH_REFRESH_RACE y la sesión sigue viva', async () => {
       const u = await registerUser(ctx.app);
       const results = await Promise.all(
         Array.from({ length: 5 }, () =>
           request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }),
         ),
       );
-      const statuses = results.map((r) => r.status).sort();
-      expect(statuses.filter((s) => s === 200)).toHaveLength(1);
-      expect(statuses.filter((s) => s === 401)).toHaveLength(4);
-      for (const r of results.filter((x) => x.status === 401)) {
-        expect(r.body.code).toBe(AUTH_REFRESH_REUSED);
+      const winners = results.filter((r) => r.status === 200);
+      expect(winners).toHaveLength(1);
+      for (const r of results.filter((x) => x.status !== 200)) {
+        expect(r.status).toBe(401);
+        expect(r.body.code).toBe(AUTH_REFRESH_RACE);
       }
-      // Nunca quedan dos tokens hijos del mismo padre.
+      // Nunca quedan dos tokens hijos del mismo padre y no se revocó la familia.
       const original = await ctx.prisma.refreshToken.findMany({
-        where: { userId: u.id, replacedByTokenId: { not: null } },
+        where: { userId: u.id, replacedById: { not: null } },
       });
       expect(original).toHaveLength(1);
+      await request(server()).post('/auth/refresh').send({ refreshToken: winners[0].body.refreshToken }).expect(200);
     });
   });
 
@@ -206,8 +249,7 @@ describe('Auth (e2e, Postgres real)', () => {
       const u = await registerUser(ctx.app);
       const forged = new JwtService({ secret: 'another-secret-another-secret-another' }).sign({
         userId: u.id,
-        email: u.email,
-        role: 'ADMIN',
+        role: 'admin',
       });
       await request(server()).get('/me').set(bearer(forged)).expect(401);
     });

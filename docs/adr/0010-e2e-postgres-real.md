@@ -1,6 +1,6 @@
 # ADR-0010: Tests e2e contra Postgres real, sin mocks de Prisma
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fases 1 y 3) · **Fecha**: 2026-11-09
 
 ## Contexto
 Los 6 ficheros `*.e2e-spec.ts` nunca se ejecutan en CI, fallan por el import de supertest y sustituyen Prisma por mocks, así que no prueban restricciones, cascadas ni migraciones.

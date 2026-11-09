@@ -1,6 +1,6 @@
 # ADR-0003: Retirar el coach de IA de v1 y sustituirlo por explicabilidad del motor
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado, implementado (Fase 3: módulo ai-coach y AiInteraction eliminados; interfaz `AiProvider` en packages/contracts) · **Fecha**: 2026-11-09
 
 ## Contexto
 `ai-coach.service.ts` busca palabras clave (`swap`, `cambiar`, `why`) y devuelve frases fijas en español; `AI_PROVIDER_KEY` no se usa. Se anuncia como «AI-powered». Lo que el usuario necesita de verdad es entender **por qué** su plan es así, y eso el motor determinista puede explicarlo sin LLM.
