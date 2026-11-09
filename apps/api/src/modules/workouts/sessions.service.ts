@@ -263,6 +263,8 @@ export class SessionsService {
           plates: platesFor(implement, loadType === 'weighted' ? next.loadKg : null),
           pinned: !swaps.has(slot.id) && slot.override !== null && performedId !== slot.exerciseId,
           note: notes.get(performedId) ?? null,
+          // Del ejercicio realmente hecho (sustituto o fijado), desde la caché del catálogo.
+          muscles: c.entry?.muscleRefs ?? [],
         },
       ];
     });

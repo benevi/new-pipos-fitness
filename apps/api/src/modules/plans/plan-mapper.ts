@@ -2,6 +2,7 @@ import type { Prisma } from '@prisma/client';
 import { loadImplement, roundLoad as roundToStep } from '@pipos/engine-rules';
 import type {
   engineV2,
+  ExerciseMuscleRef,
   PlanExerciseResponse,
   PlanSessionResponse,
   PlanVersionResponse,
@@ -160,7 +161,15 @@ export function toSummary(row: SummaryRow): PlanVersionSummary {
   };
 }
 
-export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exercises'][number]): PlanExerciseResponse {
+/**
+ * Catálogo activo por id (la caché de CatalogService) para rellenar los músculos sin consultas
+ * por ejercicio. null = sin músculos (p. ej. la exportación RGPD, que no los necesita).
+ */
+export type CatalogById = ReadonlyMap<string, { muscleRefs: ExerciseMuscleRef[] }> | null;
+
+type PlanExerciseRow = PlanVersionRow['sessions'][number]['exercises'][number];
+
+export function toExerciseResponse(e: PlanExerciseRow, catalog: CatalogById): PlanExerciseResponse {
   const initial = e.initialLoadKg === null ? null : Number(e.initialLoadKg);
   const implement = loadImplement(e.exercise);
   return {
@@ -184,10 +193,12 @@ export function toExerciseResponse(e: PlanVersionRow['sessions'][number]['exerci
     warmupSets: warmupsFor(e.warmupSets, initial, implement),
     estimatedMinutes: e.estimatedMinutes,
     rationale: readExerciseRationale(e.rationale),
+    // El ejercicio que se hace en el hueco: el fijado si lo hay (ADR-0014, Fase 1).
+    muscles: catalog?.get(e.override?.exercise.id ?? e.exerciseId)?.muscleRefs ?? [],
   };
 }
 
-export function toSessionResponse(s: PlanVersionRow['sessions'][number]): PlanSessionResponse {
+export function toSessionResponse(s: PlanVersionRow['sessions'][number], catalog: CatalogById): PlanSessionResponse {
   return {
     id: s.id,
     order: s.order,
@@ -197,11 +208,11 @@ export function toSessionResponse(s: PlanVersionRow['sessions'][number]): PlanSe
     targetMinutes: s.targetMinutes,
     estimatedMinutes: s.estimatedMinutes,
     rationale: asStrings(s.rationale),
-    exercises: s.exercises.map(toExerciseResponse),
+    exercises: s.exercises.map((e) => toExerciseResponse(e, catalog)),
   };
 }
 
-export function toVersionResponse(row: PlanVersionRow): PlanVersionResponse {
+export function toVersionResponse(row: PlanVersionRow, catalog: CatalogById): PlanVersionResponse {
   const r = readRationale(row.rationale);
   return {
     ...toSummary(row),
@@ -209,6 +220,6 @@ export function toVersionResponse(row: PlanVersionRow): PlanVersionResponse {
     rationale: [...r.rationale, ...(r.healthNotes ?? [])],
     warnings: r.warnings,
     weeklyVolume: r.weeklyVolume,
-    sessions: row.sessions.map(toSessionResponse),
+    sessions: row.sessions.map((s) => toSessionResponse(s, catalog)),
   };
 }

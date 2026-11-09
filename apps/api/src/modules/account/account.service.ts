@@ -83,7 +83,8 @@ export class AccountService {
         status: p.status,
         createdAt: p.createdAt.toISOString(),
         versions: p.versions.map((v) => ({
-          ...toVersionResponse(v),
+          // Sin músculos: son datos del catálogo, no del usuario (`muscles` queda vacío).
+          ...toVersionResponse(v, null),
           inputSnapshot: (v.inputSnapshot ?? {}) as Record<string, unknown>,
         })),
       })),
