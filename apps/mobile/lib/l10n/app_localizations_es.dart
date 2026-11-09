@@ -690,6 +690,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get restTimerDone => 'Descanso terminado';
 
   @override
+  String get restNotificationTitle => 'Descanso terminado';
+
+  @override
+  String get restNotificationBody => 'Toca para seguir con la siguiente serie.';
+
+  @override
   String swapTitle(String name) {
     return 'Alternativas a $name';
   }

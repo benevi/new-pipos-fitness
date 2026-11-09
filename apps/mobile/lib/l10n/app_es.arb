@@ -235,6 +235,8 @@
   "restTimerSkip": "Saltar descanso",
   "restTimerAdd": "Añadir 15 segundos",
   "restTimerDone": "Descanso terminado",
+  "restNotificationTitle": "Descanso terminado",
+  "restNotificationBody": "Toca para seguir con la siguiente serie.",
   "swapTitle": "Alternativas a {name}",
   "@swapTitle": { "placeholders": { "name": { "type": "String" } } },
   "swapHint": "Ordenadas por parecido: mismo patrón, músculos y tu material.",

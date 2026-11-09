@@ -21,10 +21,20 @@ class RestTimerBar extends ConsumerStatefulWidget {
 }
 
 class _RestTimerBarState extends ConsumerState<RestTimerBar> {
-  // Al volver a primer plano se recalcula al instante (sin esperar al
+  // En segundo plano, aviso local al terminar el descanso (#24); al volver
+  // a primer plano se cancela y se recalcula al instante (sin esperar al
   // siguiente tick).
   late final AppLifecycleListener _lifecycle = AppLifecycleListener(
-    onResume: () => ref.read(restTimerProvider.notifier).refresh(),
+    onHide: () {
+      final l10n = AppLocalizations.of(context);
+      ref
+          .read(restTimerProvider.notifier)
+          .onBackground(
+            title: l10n.restNotificationTitle,
+            body: l10n.restNotificationBody,
+          );
+    },
+    onResume: () => ref.read(restTimerProvider.notifier).onForeground(),
   );
 
   @override

@@ -687,6 +687,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restTimerDone => 'Rest finished';
 
   @override
+  String get restNotificationTitle => 'Rest finished';
+
+  @override
+  String get restNotificationBody => 'Tap to carry on with your next set.';
+
+  @override
   String swapTitle(String name) {
     return 'Alternatives to $name';
   }

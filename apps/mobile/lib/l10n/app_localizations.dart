@@ -1148,6 +1148,18 @@ abstract class AppLocalizations {
   /// **'Descanso terminado'**
   String get restTimerDone;
 
+  /// No description provided for @restNotificationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Descanso terminado'**
+  String get restNotificationTitle;
+
+  /// No description provided for @restNotificationBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca para seguir con la siguiente serie.'**
+  String get restNotificationBody;
+
   /// No description provided for @swapTitle.
   ///
   /// In es, this message translates to:

@@ -51,7 +51,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 
 - **Registro en 1 toque.** Cada serie llega precargada (reps = mínimo del rango o lo de la serie anterior; carga = sugerida o la anterior; RIR = objetivo). Confirmar es un botón de 56 dp. Cambiar reps o kg abre el teclado numérico; el RIR se elige en una hoja con 6 botones grandes. Con «estimación inicial» se escribe el peso una vez y las siguientes series lo heredan.
 - **El entrenamiento empieza al confirmar la primera serie**, sin pantalla intermedia («El entrenamiento empieza al confirmar la primera serie»).
-- **Descanso automático** al confirmar: barra inferior con cuenta atrás, «+15 s» y «Saltar». Vibración al terminar. Solo se anuncia por lector de pantalla al terminar, no cada segundo.
+- **Descanso automático** al confirmar: barra inferior con cuenta atrás, «+15 s» y «Saltar». Vibración al terminar. Solo se anuncia por lector de pantalla al terminar, no cada segundo. Si la app pasa a segundo plano, una notificación local «Descanso terminado» avisa al acabar (solo con el permiso de notificaciones ya concedido; no se pide aquí) y se cancela al volver o al saltar el descanso (#24).
 - **Movimiento reducido:** con `disableAnimations` la cuenta atrás es solo texto (sin barra de progreso). No hay animaciones decorativas; las transiciones son las de Material.
 - **Cambio de ejercicio:** hoja con las 3 alternativas ordenadas y su porqué; un botón «Usar …» por opción. Necesita red (el servidor valida material y limitaciones).
 - **Terminar** pide confirmación y dice cuántas series faltan; lo registrado se guarda siempre.
@@ -114,7 +114,7 @@ ADR-0013 (móvil): no se cargaron skills adicionales (`vectorlab-ux-skills:forms
 
 - Tras terminar sin red, Hoy vuelve a mostrar la sesión en caché hasta que haya conexión y la API dé la siguiente.
 - El cambio de ejercicio requiere red.
-- Sin notificaciones del descanso con la app en segundo plano.
+- La notificación del descanso en segundo plano es inexacta (Android puede retrasarla en reposo) y no se ha probado en un dispositivo real.
 - Días de entreno, pausas y cambio fijado necesitan red (la API valida); solo la nota y las medidas van por la cola offline.
 - El recordatorio programa avisos para 14 días: si la app no se abre en ese tiempo, deja de avisar hasta la próxima apertura. No se ha probado en un dispositivo real (sin SDK de Android en este entorno).
 - La hora del recordatorio y su interruptor se guardan solo en el dispositivo (no se sincronizan).

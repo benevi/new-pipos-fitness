@@ -7,12 +7,14 @@ library;
 
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/api/api_failure.dart';
 import '../../core/offline/app_database.dart';
 import '../../core/offline/offline_providers.dart';
+import '../../core/reminders/reminders.dart';
 import '../../data/pipos_api.dart';
 import '../../models/workout.dart';
 
@@ -169,15 +171,76 @@ class RestTimerState {
 /// si la app se suspende (pantalla apagada, otra app), los ticks no llegan,
 /// pero al volver el tiempo restante es el real. [refresh] lo recalcula al
 /// instante (lo llama la barra al volver a primer plano).
+///
+/// Con la app en segundo plano el fin del descanso avisa con una
+/// notificación local programada para `endsAt` ([onBackground], #24), solo
+/// si ya hay permiso (no se pide aquí). Se cancela al volver a primer plano
+/// ([onForeground]), al saltar el descanso o al empezar otro.
 class RestTimerController extends StateNotifier<RestTimerState?> {
-  RestTimerController({DateTime Function()? clock})
-    : _clock = clock ?? DateTime.now,
-      super(null);
+  RestTimerController({
+    DateTime Function()? clock,
+    NotificationScheduler? notifications,
+  }) : _clock = clock ?? DateTime.now,
+       _notifications = notifications,
+       super(null);
 
   final DateTime Function() _clock;
+  final NotificationScheduler? _notifications;
   Timer? _ticker;
 
+  /// Id del aviso de fin de descanso (los recordatorios usan 0..13).
+  static const notificationId = 1000;
+
+  bool _backgrounded = false;
+  bool _notificationScheduled = false;
+
+  /// La app pasa a segundo plano: si hay un descanso en marcha, programa el
+  /// aviso de su fin.
+  Future<void> onBackground({
+    required String title,
+    required String body,
+  }) async {
+    _backgrounded = true;
+    final s = state;
+    final n = _notifications;
+    if (s == null || s.done || n == null) return;
+    try {
+      if (!await n.hasPermission()) return;
+      if (!_backgrounded || state?.endsAt != s.endsAt) return;
+      await n.schedule(
+        id: notificationId,
+        when: s.endsAt.toLocal(),
+        title: title,
+        body: body,
+        channel: NotificationChannel.restTimer,
+      );
+      _notificationScheduled = true;
+      // Volvió a primer plano mientras se programaba.
+      if (!_backgrounded) await _cancelNotification();
+    } catch (e) {
+      debugPrint('RestTimer: no se pudo programar el aviso: $e');
+    }
+  }
+
+  /// La app vuelve a primer plano: cancela el aviso y recalcula.
+  Future<void> onForeground() async {
+    _backgrounded = false;
+    await _cancelNotification();
+    refresh();
+  }
+
+  Future<void> _cancelNotification() async {
+    if (!_notificationScheduled) return;
+    _notificationScheduled = false;
+    try {
+      await _notifications?.cancel(notificationId);
+    } catch (e) {
+      debugPrint('RestTimer: no se pudo cancelar el aviso: $e');
+    }
+  }
+
   void start(int seconds) {
+    unawaited(_cancelNotification());
     _ticker?.cancel();
     if (seconds <= 0) {
       state = null;
@@ -222,6 +285,7 @@ class RestTimerController extends StateNotifier<RestTimerState?> {
   }
 
   void skip() {
+    unawaited(_cancelNotification());
     _ticker?.cancel();
     state = null;
   }
@@ -235,7 +299,10 @@ class RestTimerController extends StateNotifier<RestTimerState?> {
 
 final restTimerProvider =
     StateNotifierProvider.autoDispose<RestTimerController, RestTimerState?>(
-      (ref) => RestTimerController(clock: ref.watch(clockProvider)),
+      (ref) => RestTimerController(
+        clock: ref.watch(clockProvider),
+        notifications: ref.watch(notificationSchedulerProvider),
+      ),
     );
 
 /// Resumen que recibe la pantalla de fin de entrenamiento.

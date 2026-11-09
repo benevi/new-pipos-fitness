@@ -163,10 +163,14 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
 - **Propuesta:** encolar la sustitución en drift (alternativas cacheadas con el plan) y enviarla en
   orden antes de las series del hueco.
 
-### [Móvil] Notificación del temporizador de descanso en segundo plano
-- **Severidad:** Baja
-- **Impacto:** si la app pasa a segundo plano, el fin del descanso no avisa.
-- **Propuesta:** notificación local programada al iniciar el descanso.
+### ~~[Móvil] Notificación del temporizador de descanso en segundo plano~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #24.
+- **Qué se hizo:** al pasar la app a segundo plano con un descanso en marcha, `RestTimerController`
+  programa una notificación local (`flutter_local_notifications`, canal propio `rest_timer`) para
+  `endsAt`, solo si ya hay permiso (no lo pide); se cancela al volver, al saltar el descanso o al
+  empezar otro. Tests con planificador inyectado: `test/features/today/rest_notification_test.dart`.
+- **Pendiente:** el aviso es inexacto (`inexactAllowWhileIdle`, sin el permiso de alarmas exactas):
+  Android puede retrasarlo algunos minutos en reposo. Probarlo en un dispositivo real.
 
 ### ~~[Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409~~ — RESUELTO (PR pendiente)
 - **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #25.
