@@ -1,0 +1,14 @@
+{
+  "workoutId": "00000000-0000-4000-8000-000000000050",
+  "planExerciseId": "00000000-0000-4000-8000-000000000030",
+  "exercise": {
+    "id": "00000000-0000-4000-8000-000000000044",
+    "slug": "leg-press",
+    "nameEs": "Prensa de piernas"
+  },
+  "substitutedFrom": {
+    "id": "00000000-0000-4000-8000-000000000040",
+    "slug": "squat",
+    "nameEs": "Sentadilla trasera"
+  }
+}

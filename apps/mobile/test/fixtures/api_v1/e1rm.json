@@ -1,0 +1,28 @@
+{
+  "formulaVersion": "epley-v1",
+  "series": [
+    {
+      "exerciseId": "00000000-0000-4000-8000-000000000040",
+      "slug": "back-squat",
+      "nameEs": "Sentadilla trasera",
+      "latestE1rmKg": 82.5,
+      "points": [
+        {
+          "date": "2026-10-26",
+          "e1rmKg": 78,
+          "workoutId": "00000000-0000-4000-8000-000000000050"
+        },
+        {
+          "date": "2026-11-02",
+          "e1rmKg": 80,
+          "workoutId": "00000000-0000-4000-8000-000000000050"
+        },
+        {
+          "date": "2026-11-09",
+          "e1rmKg": 82.5,
+          "workoutId": "00000000-0000-4000-8000-000000000050"
+        }
+      ]
+    }
+  ]
+}

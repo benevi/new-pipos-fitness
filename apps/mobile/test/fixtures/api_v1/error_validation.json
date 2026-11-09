@@ -1,0 +1,16 @@
+{
+  "statusCode": 422,
+  "code": "VALIDATION_FAILED",
+  "message": "Validation failed",
+  "issues": [
+    {
+      "path": "daysPerWeek",
+      "message": "Number must be less than or equal to 6"
+    },
+    {
+      "path": "equipment.0",
+      "message": "Invalid enum value"
+    }
+  ],
+  "requestId": "req-1"
+}

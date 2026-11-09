@@ -1,0 +1,18 @@
+{
+  "timezone": "Europe/Madrid",
+  "weeks": [
+    {
+      "weekStart": "2026-11-09",
+      "plannedSessions": 3,
+      "completedSessions": 2,
+      "plannedSets": 45,
+      "completedSets": 30,
+      "sessionRatio": 0.6667
+    }
+  ],
+  "totals": {
+    "plannedSessions": 3,
+    "completedSessions": 2,
+    "sessionRatio": 0.6667
+  }
+}

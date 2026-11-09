@@ -9,21 +9,69 @@ import 'package:pipos_fitness/core/auth/token_storage.dart';
 import 'package:pipos_fitness/core/offline/app_database.dart';
 import 'package:pipos_fitness/core/offline/connectivity.dart';
 
+import 'package:pipos_fitness/core/offline/offline_providers.dart';
+import 'package:pipos_fitness/features/onboarding/onboarding_controller.dart';
+import 'package:pipos_fitness/features/settings/settings_providers.dart';
+import 'package:pipos_fitness/models/user.dart';
+
+import 'fake_backend.dart';
 import 'fake_http_adapter.dart';
+
+export 'fake_backend.dart';
+
+/// Guarda la exportación en memoria (en vez de la hoja de compartir).
+class RecordingExportSaver implements ExportSaver {
+  final List<String> saved = [];
+
+  @override
+  Future<void> save(String fileName, Map<String, dynamic> json) async {
+    saved.add(fileName);
+  }
+}
 
 /// Dependencias falsas para montar [PiposRoot] en tests: sin secure storage,
 /// sin red real, sin plugins y con base de datos en memoria.
 class AppHarness {
-  AppHarness({InMemoryTokenStorage? storage, bool online = true})
-    : storage = storage ?? InMemoryTokenStorage(),
-      adapter = FakeHttpAdapter(),
-      connectivity = ManualConnectivitySource(online: online),
-      database = AppDatabase(NativeDatabase.memory());
+  AppHarness({
+    InMemoryTokenStorage? storage,
+    bool online = true,
+    FakeBackend? backend,
+    this.clock,
+  }) : storage = storage ?? InMemoryTokenStorage(),
+       adapter = FakeHttpAdapter(),
+       backend = backend ?? FakeBackend(),
+       connectivity = ManualConnectivitySource(online: online),
+       database = AppDatabase(NativeDatabase.memory());
+
+  /// Usuario autenticado con sesión válida (GET /me responde 200).
+  factory AppHarness.signedIn({FakeBackend? backend, bool online = true}) {
+    final h = AppHarness(
+      storage: InMemoryTokenStorage(
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        cachedUser: const AuthUser(id: 'user-1', email: 'ana@pipos.app'),
+      ),
+      backend: backend,
+      online: online,
+    );
+    h.adapter.reply('GET', '/me', 200, meJson());
+    return h;
+  }
 
   final InMemoryTokenStorage storage;
   final FakeHttpAdapter adapter;
+
+  /// Capa de datos de la API v1 en memoria (auth sigue yendo por [adapter]).
+  final FakeBackend backend;
   final ManualConnectivitySource connectivity;
   final AppDatabase database;
+  final DateTime Function()? clock;
+
+  /// Simula modo avión: sin conectividad y sin respuesta de la API.
+  void setOnline(bool value) {
+    backend.online = value;
+    connectivity.online = value;
+  }
 
   Widget build({List<Override> overrides = const []}) => PiposRoot(
     config: const AppConfig(apiBaseUrl: 'http://api.test'),
@@ -32,9 +80,15 @@ class AppHarness {
     connectivity: connectivity,
     overrides: [
       httpClientAdapterProvider.overrideWithValue(adapter),
+      ...backend.overrides,
+      deviceTimezoneProvider.overrideWith((_) async => 'Europe/Madrid'),
+      exportSaverProvider.overrideWithValue(exportSaver),
+      if (clock != null) clockProvider.overrideWithValue(clock!),
       ...overrides,
     ],
   );
+
+  final RecordingExportSaver exportSaver = RecordingExportSaver();
 
   /// Monta la app en español y registra la limpieza.
   Future<void> pump(

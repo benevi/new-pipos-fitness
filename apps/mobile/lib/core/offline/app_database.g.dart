@@ -3,12 +3,12 @@
 part of 'app_database.dart';
 
 // ignore_for_file: type=lint
-class $PendingSetLogsTable extends PendingSetLogs
-    with TableInfo<$PendingSetLogsTable, PendingSetLog> {
+class $LocalWorkoutsTable extends LocalWorkouts
+    with TableInfo<$LocalWorkoutsTable, LocalWorkout> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $PendingSetLogsTable(this.attachedDatabase, [this._alias]);
+  $LocalWorkoutsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _clientIdMeta = const VerificationMeta(
     'clientId',
   );
@@ -29,110 +29,65 @@ class $PendingSetLogsTable extends PendingSetLogs
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _workoutSessionIdMeta = const VerificationMeta(
-    'workoutSessionId',
+  static const VerificationMeta _planSessionIdMeta = const VerificationMeta(
+    'planSessionId',
   );
   @override
-  late final GeneratedColumn<String> workoutSessionId = GeneratedColumn<String>(
-    'workout_session_id',
+  late final GeneratedColumn<String> planSessionId = GeneratedColumn<String>(
+    'plan_session_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _workoutExerciseIdMeta = const VerificationMeta(
-    'workoutExerciseId',
+  static const VerificationMeta _serverIdMeta = const VerificationMeta(
+    'serverId',
   );
   @override
-  late final GeneratedColumn<String> workoutExerciseId =
-      GeneratedColumn<String>(
-        'workout_exercise_id',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      );
-  static const VerificationMeta _exerciseIdMeta = const VerificationMeta(
-    'exerciseId',
-  );
-  @override
-  late final GeneratedColumn<String> exerciseId = GeneratedColumn<String>(
-    'exercise_id',
+  late final GeneratedColumn<String> serverId = GeneratedColumn<String>(
+    'server_id',
     aliasedName,
     true,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
-  static const VerificationMeta _setIndexMeta = const VerificationMeta(
-    'setIndex',
+  static const VerificationMeta _startedAtMeta = const VerificationMeta(
+    'startedAt',
   );
   @override
-  late final GeneratedColumn<int> setIndex = GeneratedColumn<int>(
-    'set_index',
-    aliasedName,
-    false,
-    type: DriftSqlType.int,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _repsMeta = const VerificationMeta('reps');
-  @override
-  late final GeneratedColumn<int> reps = GeneratedColumn<int>(
-    'reps',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _loadKgMeta = const VerificationMeta('loadKg');
-  @override
-  late final GeneratedColumn<double> loadKg = GeneratedColumn<double>(
-    'load_kg',
-    aliasedName,
-    true,
-    type: DriftSqlType.double,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _rirMeta = const VerificationMeta('rir');
-  @override
-  late final GeneratedColumn<int> rir = GeneratedColumn<int>(
-    'rir',
-    aliasedName,
-    true,
-    type: DriftSqlType.int,
-    requiredDuringInsert: false,
-  );
-  static const VerificationMeta _completedAtMeta = const VerificationMeta(
-    'completedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
-    'completed_at',
+  late final GeneratedColumn<DateTime> startedAt = GeneratedColumn<DateTime>(
+    'started_at',
     aliasedName,
     false,
     type: DriftSqlType.dateTime,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
+  static const VerificationMeta _finishedAtMeta = const VerificationMeta(
+    'finishedAt',
   );
   @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
+  late final GeneratedColumn<DateTime> finishedAt = GeneratedColumn<DateTime>(
+    'finished_at',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.dateTime,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _finishSyncedMeta = const VerificationMeta(
+    'finishSynced',
   );
   @override
-  late final GeneratedColumnWithTypeConverter<PendingSetLogStatus, String>
-  status = GeneratedColumn<String>(
-    'status',
+  late final GeneratedColumn<bool> finishSynced = GeneratedColumn<bool>(
+    'finish_synced',
     aliasedName,
     false,
-    type: DriftSqlType.string,
+    type: DriftSqlType.bool,
     requiredDuringInsert: false,
-    defaultValue: Constant(PendingSetLogStatus.pending.name),
-  ).withConverter<PendingSetLogStatus>($PendingSetLogsTable.$converterstatus);
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("finish_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _attemptsMeta = const VerificationMeta(
     'attempts',
   );
@@ -172,16 +127,11 @@ class $PendingSetLogsTable extends PendingSetLogs
   List<GeneratedColumn> get $columns => [
     clientId,
     userId,
-    workoutSessionId,
-    workoutExerciseId,
-    exerciseId,
-    setIndex,
-    reps,
-    loadKg,
-    rir,
-    completedAt,
-    updatedAt,
-    status,
+    planSessionId,
+    serverId,
+    startedAt,
+    finishedAt,
+    finishSynced,
     attempts,
     lastError,
     nextAttemptAt,
@@ -190,10 +140,10 @@ class $PendingSetLogsTable extends PendingSetLogs
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'pending_set_logs';
+  static const String $name = 'local_workouts';
   @override
   VerificationContext validateIntegrity(
-    Insertable<PendingSetLog> instance, {
+    Insertable<LocalWorkout> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -214,33 +164,737 @@ class $PendingSetLogsTable extends PendingSetLogs
     } else if (isInserting) {
       context.missing(_userIdMeta);
     }
-    if (data.containsKey('workout_session_id')) {
+    if (data.containsKey('plan_session_id')) {
       context.handle(
-        _workoutSessionIdMeta,
-        workoutSessionId.isAcceptableOrUnknown(
-          data['workout_session_id']!,
-          _workoutSessionIdMeta,
+        _planSessionIdMeta,
+        planSessionId.isAcceptableOrUnknown(
+          data['plan_session_id']!,
+          _planSessionIdMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_workoutSessionIdMeta);
+      context.missing(_planSessionIdMeta);
     }
-    if (data.containsKey('workout_exercise_id')) {
+    if (data.containsKey('server_id')) {
       context.handle(
-        _workoutExerciseIdMeta,
-        workoutExerciseId.isAcceptableOrUnknown(
-          data['workout_exercise_id']!,
-          _workoutExerciseIdMeta,
+        _serverIdMeta,
+        serverId.isAcceptableOrUnknown(data['server_id']!, _serverIdMeta),
+      );
+    }
+    if (data.containsKey('started_at')) {
+      context.handle(
+        _startedAtMeta,
+        startedAt.isAcceptableOrUnknown(data['started_at']!, _startedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_startedAtMeta);
+    }
+    if (data.containsKey('finished_at')) {
+      context.handle(
+        _finishedAtMeta,
+        finishedAt.isAcceptableOrUnknown(data['finished_at']!, _finishedAtMeta),
+      );
+    }
+    if (data.containsKey('finish_synced')) {
+      context.handle(
+        _finishSyncedMeta,
+        finishSynced.isAcceptableOrUnknown(
+          data['finish_synced']!,
+          _finishSyncedMeta,
+        ),
+      );
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+        _nextAttemptAtMeta,
+        nextAttemptAt.isAcceptableOrUnknown(
+          data['next_attempt_at']!,
+          _nextAttemptAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {clientId};
+  @override
+  LocalWorkout map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return LocalWorkout(
+      clientId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}client_id'],
+      )!,
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      planSessionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plan_session_id'],
+      )!,
+      serverId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}server_id'],
+      ),
+      startedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}started_at'],
+      )!,
+      finishedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}finished_at'],
+      ),
+      finishSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}finish_synced'],
+      )!,
+      attempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempts'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_attempt_at'],
+      ),
+    );
+  }
+
+  @override
+  $LocalWorkoutsTable createAlias(String alias) {
+    return $LocalWorkoutsTable(attachedDatabase, alias);
+  }
+}
+
+class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
+  /// UUID v4 del dispositivo: clave de idempotencia de `POST /workouts`.
+  final String clientId;
+  final String userId;
+  final String planSessionId;
+
+  /// Id de la API; null hasta que el inicio se sincroniza.
+  final String? serverId;
+  final DateTime startedAt;
+
+  /// Momento en que el usuario terminó (reloj del cliente).
+  final DateTime? finishedAt;
+  final bool finishSynced;
+  final int attempts;
+  final String? lastError;
+  final DateTime? nextAttemptAt;
+  const LocalWorkout({
+    required this.clientId,
+    required this.userId,
+    required this.planSessionId,
+    this.serverId,
+    required this.startedAt,
+    this.finishedAt,
+    required this.finishSynced,
+    required this.attempts,
+    this.lastError,
+    this.nextAttemptAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['client_id'] = Variable<String>(clientId);
+    map['user_id'] = Variable<String>(userId);
+    map['plan_session_id'] = Variable<String>(planSessionId);
+    if (!nullToAbsent || serverId != null) {
+      map['server_id'] = Variable<String>(serverId);
+    }
+    map['started_at'] = Variable<DateTime>(startedAt);
+    if (!nullToAbsent || finishedAt != null) {
+      map['finished_at'] = Variable<DateTime>(finishedAt);
+    }
+    map['finish_synced'] = Variable<bool>(finishSynced);
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    return map;
+  }
+
+  LocalWorkoutsCompanion toCompanion(bool nullToAbsent) {
+    return LocalWorkoutsCompanion(
+      clientId: Value(clientId),
+      userId: Value(userId),
+      planSessionId: Value(planSessionId),
+      serverId: serverId == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverId),
+      startedAt: Value(startedAt),
+      finishedAt: finishedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(finishedAt),
+      finishSynced: Value(finishSynced),
+      attempts: Value(attempts),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+    );
+  }
+
+  factory LocalWorkout.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return LocalWorkout(
+      clientId: serializer.fromJson<String>(json['clientId']),
+      userId: serializer.fromJson<String>(json['userId']),
+      planSessionId: serializer.fromJson<String>(json['planSessionId']),
+      serverId: serializer.fromJson<String?>(json['serverId']),
+      startedAt: serializer.fromJson<DateTime>(json['startedAt']),
+      finishedAt: serializer.fromJson<DateTime?>(json['finishedAt']),
+      finishSynced: serializer.fromJson<bool>(json['finishSynced']),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'clientId': serializer.toJson<String>(clientId),
+      'userId': serializer.toJson<String>(userId),
+      'planSessionId': serializer.toJson<String>(planSessionId),
+      'serverId': serializer.toJson<String?>(serverId),
+      'startedAt': serializer.toJson<DateTime>(startedAt),
+      'finishedAt': serializer.toJson<DateTime?>(finishedAt),
+      'finishSynced': serializer.toJson<bool>(finishSynced),
+      'attempts': serializer.toJson<int>(attempts),
+      'lastError': serializer.toJson<String?>(lastError),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+    };
+  }
+
+  LocalWorkout copyWith({
+    String? clientId,
+    String? userId,
+    String? planSessionId,
+    Value<String?> serverId = const Value.absent(),
+    DateTime? startedAt,
+    Value<DateTime?> finishedAt = const Value.absent(),
+    bool? finishSynced,
+    int? attempts,
+    Value<String?> lastError = const Value.absent(),
+    Value<DateTime?> nextAttemptAt = const Value.absent(),
+  }) => LocalWorkout(
+    clientId: clientId ?? this.clientId,
+    userId: userId ?? this.userId,
+    planSessionId: planSessionId ?? this.planSessionId,
+    serverId: serverId.present ? serverId.value : this.serverId,
+    startedAt: startedAt ?? this.startedAt,
+    finishedAt: finishedAt.present ? finishedAt.value : this.finishedAt,
+    finishSynced: finishSynced ?? this.finishSynced,
+    attempts: attempts ?? this.attempts,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    nextAttemptAt: nextAttemptAt.present
+        ? nextAttemptAt.value
+        : this.nextAttemptAt,
+  );
+  LocalWorkout copyWithCompanion(LocalWorkoutsCompanion data) {
+    return LocalWorkout(
+      clientId: data.clientId.present ? data.clientId.value : this.clientId,
+      userId: data.userId.present ? data.userId.value : this.userId,
+      planSessionId: data.planSessionId.present
+          ? data.planSessionId.value
+          : this.planSessionId,
+      serverId: data.serverId.present ? data.serverId.value : this.serverId,
+      startedAt: data.startedAt.present ? data.startedAt.value : this.startedAt,
+      finishedAt: data.finishedAt.present
+          ? data.finishedAt.value
+          : this.finishedAt,
+      finishSynced: data.finishSynced.present
+          ? data.finishSynced.value
+          : this.finishSynced,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalWorkout(')
+          ..write('clientId: $clientId, ')
+          ..write('userId: $userId, ')
+          ..write('planSessionId: $planSessionId, ')
+          ..write('serverId: $serverId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('finishSynced: $finishSynced, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError, ')
+          ..write('nextAttemptAt: $nextAttemptAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    clientId,
+    userId,
+    planSessionId,
+    serverId,
+    startedAt,
+    finishedAt,
+    finishSynced,
+    attempts,
+    lastError,
+    nextAttemptAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is LocalWorkout &&
+          other.clientId == this.clientId &&
+          other.userId == this.userId &&
+          other.planSessionId == this.planSessionId &&
+          other.serverId == this.serverId &&
+          other.startedAt == this.startedAt &&
+          other.finishedAt == this.finishedAt &&
+          other.finishSynced == this.finishSynced &&
+          other.attempts == this.attempts &&
+          other.lastError == this.lastError &&
+          other.nextAttemptAt == this.nextAttemptAt);
+}
+
+class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
+  final Value<String> clientId;
+  final Value<String> userId;
+  final Value<String> planSessionId;
+  final Value<String?> serverId;
+  final Value<DateTime> startedAt;
+  final Value<DateTime?> finishedAt;
+  final Value<bool> finishSynced;
+  final Value<int> attempts;
+  final Value<String?> lastError;
+  final Value<DateTime?> nextAttemptAt;
+  final Value<int> rowid;
+  const LocalWorkoutsCompanion({
+    this.clientId = const Value.absent(),
+    this.userId = const Value.absent(),
+    this.planSessionId = const Value.absent(),
+    this.serverId = const Value.absent(),
+    this.startedAt = const Value.absent(),
+    this.finishedAt = const Value.absent(),
+    this.finishSynced = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  LocalWorkoutsCompanion.insert({
+    required String clientId,
+    required String userId,
+    required String planSessionId,
+    this.serverId = const Value.absent(),
+    required DateTime startedAt,
+    this.finishedAt = const Value.absent(),
+    this.finishSynced = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : clientId = Value(clientId),
+       userId = Value(userId),
+       planSessionId = Value(planSessionId),
+       startedAt = Value(startedAt);
+  static Insertable<LocalWorkout> custom({
+    Expression<String>? clientId,
+    Expression<String>? userId,
+    Expression<String>? planSessionId,
+    Expression<String>? serverId,
+    Expression<DateTime>? startedAt,
+    Expression<DateTime>? finishedAt,
+    Expression<bool>? finishSynced,
+    Expression<int>? attempts,
+    Expression<String>? lastError,
+    Expression<DateTime>? nextAttemptAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (clientId != null) 'client_id': clientId,
+      if (userId != null) 'user_id': userId,
+      if (planSessionId != null) 'plan_session_id': planSessionId,
+      if (serverId != null) 'server_id': serverId,
+      if (startedAt != null) 'started_at': startedAt,
+      if (finishedAt != null) 'finished_at': finishedAt,
+      if (finishSynced != null) 'finish_synced': finishSynced,
+      if (attempts != null) 'attempts': attempts,
+      if (lastError != null) 'last_error': lastError,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  LocalWorkoutsCompanion copyWith({
+    Value<String>? clientId,
+    Value<String>? userId,
+    Value<String>? planSessionId,
+    Value<String?>? serverId,
+    Value<DateTime>? startedAt,
+    Value<DateTime?>? finishedAt,
+    Value<bool>? finishSynced,
+    Value<int>? attempts,
+    Value<String?>? lastError,
+    Value<DateTime?>? nextAttemptAt,
+    Value<int>? rowid,
+  }) {
+    return LocalWorkoutsCompanion(
+      clientId: clientId ?? this.clientId,
+      userId: userId ?? this.userId,
+      planSessionId: planSessionId ?? this.planSessionId,
+      serverId: serverId ?? this.serverId,
+      startedAt: startedAt ?? this.startedAt,
+      finishedAt: finishedAt ?? this.finishedAt,
+      finishSynced: finishSynced ?? this.finishSynced,
+      attempts: attempts ?? this.attempts,
+      lastError: lastError ?? this.lastError,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (clientId.present) {
+      map['client_id'] = Variable<String>(clientId.value);
+    }
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (planSessionId.present) {
+      map['plan_session_id'] = Variable<String>(planSessionId.value);
+    }
+    if (serverId.present) {
+      map['server_id'] = Variable<String>(serverId.value);
+    }
+    if (startedAt.present) {
+      map['started_at'] = Variable<DateTime>(startedAt.value);
+    }
+    if (finishedAt.present) {
+      map['finished_at'] = Variable<DateTime>(finishedAt.value);
+    }
+    if (finishSynced.present) {
+      map['finish_synced'] = Variable<bool>(finishSynced.value);
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('LocalWorkoutsCompanion(')
+          ..write('clientId: $clientId, ')
+          ..write('userId: $userId, ')
+          ..write('planSessionId: $planSessionId, ')
+          ..write('serverId: $serverId, ')
+          ..write('startedAt: $startedAt, ')
+          ..write('finishedAt: $finishedAt, ')
+          ..write('finishSynced: $finishSynced, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $LocalSetLogsTable extends LocalSetLogs
+    with TableInfo<$LocalSetLogsTable, LocalSetLog> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $LocalSetLogsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _clientIdMeta = const VerificationMeta(
+    'clientId',
+  );
+  @override
+  late final GeneratedColumn<String> clientId = GeneratedColumn<String>(
+    'client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _workoutClientIdMeta = const VerificationMeta(
+    'workoutClientId',
+  );
+  @override
+  late final GeneratedColumn<String> workoutClientId = GeneratedColumn<String>(
+    'workout_client_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _planExerciseIdMeta = const VerificationMeta(
+    'planExerciseId',
+  );
+  @override
+  late final GeneratedColumn<String> planExerciseId = GeneratedColumn<String>(
+    'plan_exercise_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _exerciseIdMeta = const VerificationMeta(
+    'exerciseId',
+  );
+  @override
+  late final GeneratedColumn<String> exerciseId = GeneratedColumn<String>(
+    'exercise_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _setIndexMeta = const VerificationMeta(
+    'setIndex',
+  );
+  @override
+  late final GeneratedColumn<int> setIndex = GeneratedColumn<int>(
+    'set_index',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _repsMeta = const VerificationMeta('reps');
+  @override
+  late final GeneratedColumn<int> reps = GeneratedColumn<int>(
+    'reps',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _loadKgMeta = const VerificationMeta('loadKg');
+  @override
+  late final GeneratedColumn<double> loadKg = GeneratedColumn<double>(
+    'load_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _rirMeta = const VerificationMeta('rir');
+  @override
+  late final GeneratedColumn<int> rir = GeneratedColumn<int>(
+    'rir',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _isWarmupMeta = const VerificationMeta(
+    'isWarmup',
+  );
+  @override
+  late final GeneratedColumn<bool> isWarmup = GeneratedColumn<bool>(
+    'is_warmup',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_warmup" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _completedAtMeta = const VerificationMeta(
+    'completedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> completedAt = GeneratedColumn<DateTime>(
+    'completed_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SetSyncStatus, String> status =
+      GeneratedColumn<String>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SetSyncStatus.pending.name),
+      ).withConverter<SetSyncStatus>($LocalSetLogsTable.$converterstatus);
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nextAttemptAtMeta = const VerificationMeta(
+    'nextAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>(
+        'next_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    clientId,
+    userId,
+    workoutClientId,
+    planExerciseId,
+    exerciseId,
+    setIndex,
+    reps,
+    loadKg,
+    rir,
+    isWarmup,
+    completedAt,
+    updatedAt,
+    status,
+    attempts,
+    lastError,
+    nextAttemptAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'local_set_logs';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<LocalSetLog> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('client_id')) {
+      context.handle(
+        _clientIdMeta,
+        clientId.isAcceptableOrUnknown(data['client_id']!, _clientIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_clientIdMeta);
+    }
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('workout_client_id')) {
+      context.handle(
+        _workoutClientIdMeta,
+        workoutClientId.isAcceptableOrUnknown(
+          data['workout_client_id']!,
+          _workoutClientIdMeta,
         ),
       );
     } else if (isInserting) {
-      context.missing(_workoutExerciseIdMeta);
+      context.missing(_workoutClientIdMeta);
+    }
+    if (data.containsKey('plan_exercise_id')) {
+      context.handle(
+        _planExerciseIdMeta,
+        planExerciseId.isAcceptableOrUnknown(
+          data['plan_exercise_id']!,
+          _planExerciseIdMeta,
+        ),
+      );
     }
     if (data.containsKey('exercise_id')) {
       context.handle(
         _exerciseIdMeta,
         exerciseId.isAcceptableOrUnknown(data['exercise_id']!, _exerciseIdMeta),
       );
+    } else if (isInserting) {
+      context.missing(_exerciseIdMeta);
     }
     if (data.containsKey('set_index')) {
       context.handle(
@@ -255,17 +909,27 @@ class $PendingSetLogsTable extends PendingSetLogs
         _repsMeta,
         reps.isAcceptableOrUnknown(data['reps']!, _repsMeta),
       );
+    } else if (isInserting) {
+      context.missing(_repsMeta);
     }
     if (data.containsKey('load_kg')) {
       context.handle(
         _loadKgMeta,
         loadKg.isAcceptableOrUnknown(data['load_kg']!, _loadKgMeta),
       );
+    } else if (isInserting) {
+      context.missing(_loadKgMeta);
     }
     if (data.containsKey('rir')) {
       context.handle(
         _rirMeta,
         rir.isAcceptableOrUnknown(data['rir']!, _rirMeta),
+      );
+    }
+    if (data.containsKey('is_warmup')) {
+      context.handle(
+        _isWarmupMeta,
+        isWarmup.isAcceptableOrUnknown(data['is_warmup']!, _isWarmupMeta),
       );
     }
     if (data.containsKey('completed_at')) {
@@ -314,9 +978,9 @@ class $PendingSetLogsTable extends PendingSetLogs
   @override
   Set<GeneratedColumn> get $primaryKey => {clientId};
   @override
-  PendingSetLog map(Map<String, dynamic> data, {String? tablePrefix}) {
+  LocalSetLog map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return PendingSetLog(
+    return LocalSetLog(
       clientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}client_id'],
@@ -325,18 +989,18 @@ class $PendingSetLogsTable extends PendingSetLogs
         DriftSqlType.string,
         data['${effectivePrefix}user_id'],
       )!,
-      workoutSessionId: attachedDatabase.typeMapping.read(
+      workoutClientId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}workout_session_id'],
+        data['${effectivePrefix}workout_client_id'],
       )!,
-      workoutExerciseId: attachedDatabase.typeMapping.read(
+      planExerciseId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
-        data['${effectivePrefix}workout_exercise_id'],
-      )!,
+        data['${effectivePrefix}plan_exercise_id'],
+      ),
       exerciseId: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}exercise_id'],
-      ),
+      )!,
       setIndex: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}set_index'],
@@ -344,15 +1008,19 @@ class $PendingSetLogsTable extends PendingSetLogs
       reps: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}reps'],
-      ),
+      )!,
       loadKg: attachedDatabase.typeMapping.read(
         DriftSqlType.double,
         data['${effectivePrefix}load_kg'],
-      ),
+      )!,
       rir: attachedDatabase.typeMapping.read(
         DriftSqlType.int,
         data['${effectivePrefix}rir'],
       ),
+      isWarmup: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_warmup'],
+      )!,
       completedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}completed_at'],
@@ -361,7 +1029,7 @@ class $PendingSetLogsTable extends PendingSetLogs
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       )!,
-      status: $PendingSetLogsTable.$converterstatus.fromSql(
+      status: $LocalSetLogsTable.$converterstatus.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}status'],
@@ -383,52 +1051,47 @@ class $PendingSetLogsTable extends PendingSetLogs
   }
 
   @override
-  $PendingSetLogsTable createAlias(String alias) {
-    return $PendingSetLogsTable(attachedDatabase, alias);
+  $LocalSetLogsTable createAlias(String alias) {
+    return $LocalSetLogsTable(attachedDatabase, alias);
   }
 
-  static JsonTypeConverter2<PendingSetLogStatus, String, String>
-  $converterstatus = const EnumNameConverter<PendingSetLogStatus>(
-    PendingSetLogStatus.values,
-  );
+  static JsonTypeConverter2<SetSyncStatus, String, String> $converterstatus =
+      const EnumNameConverter<SetSyncStatus>(SetSyncStatus.values);
 }
 
-class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
-  /// UUID v4 generado en el dispositivo. La API lo usará como clave de
-  /// idempotencia (Fase 3): reenviar la misma serie no la duplica.
+class LocalSetLog extends DataClass implements Insertable<LocalSetLog> {
+  /// UUID v4 del dispositivo: clave de idempotencia de la serie.
   final String clientId;
-
-  /// Dueño de la serie: solo se sincroniza con la sesión de ese usuario.
   final String userId;
-  final String workoutSessionId;
+  final String workoutClientId;
+  final String? planExerciseId;
 
-  /// `WorkoutExercise.id` de la sesión (segmento de la ruta del endpoint).
-  final String workoutExerciseId;
-
-  /// Id del ejercicio de catálogo (informativo).
-  final String? exerciseId;
+  /// Ejercicio realmente hecho (puede ser un sustituto).
+  final String exerciseId;
   final int setIndex;
-  final int? reps;
-  final double? loadKg;
+  final int reps;
+  final double loadKg;
   final int? rir;
+  final bool isWarmup;
   final DateTime completedAt;
   final DateTime updatedAt;
-  final PendingSetLogStatus status;
+  final SetSyncStatus status;
   final int attempts;
   final String? lastError;
 
   /// Momento a partir del cual se puede reintentar (backoff exponencial).
   final DateTime? nextAttemptAt;
-  const PendingSetLog({
+  const LocalSetLog({
     required this.clientId,
     required this.userId,
-    required this.workoutSessionId,
-    required this.workoutExerciseId,
-    this.exerciseId,
+    required this.workoutClientId,
+    this.planExerciseId,
+    required this.exerciseId,
     required this.setIndex,
-    this.reps,
-    this.loadKg,
+    required this.reps,
+    required this.loadKg,
     this.rir,
+    required this.isWarmup,
     required this.completedAt,
     required this.updatedAt,
     required this.status,
@@ -441,26 +1104,23 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
     final map = <String, Expression>{};
     map['client_id'] = Variable<String>(clientId);
     map['user_id'] = Variable<String>(userId);
-    map['workout_session_id'] = Variable<String>(workoutSessionId);
-    map['workout_exercise_id'] = Variable<String>(workoutExerciseId);
-    if (!nullToAbsent || exerciseId != null) {
-      map['exercise_id'] = Variable<String>(exerciseId);
+    map['workout_client_id'] = Variable<String>(workoutClientId);
+    if (!nullToAbsent || planExerciseId != null) {
+      map['plan_exercise_id'] = Variable<String>(planExerciseId);
     }
+    map['exercise_id'] = Variable<String>(exerciseId);
     map['set_index'] = Variable<int>(setIndex);
-    if (!nullToAbsent || reps != null) {
-      map['reps'] = Variable<int>(reps);
-    }
-    if (!nullToAbsent || loadKg != null) {
-      map['load_kg'] = Variable<double>(loadKg);
-    }
+    map['reps'] = Variable<int>(reps);
+    map['load_kg'] = Variable<double>(loadKg);
     if (!nullToAbsent || rir != null) {
       map['rir'] = Variable<int>(rir);
     }
+    map['is_warmup'] = Variable<bool>(isWarmup);
     map['completed_at'] = Variable<DateTime>(completedAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     {
       map['status'] = Variable<String>(
-        $PendingSetLogsTable.$converterstatus.toSql(status),
+        $LocalSetLogsTable.$converterstatus.toSql(status),
       );
     }
     map['attempts'] = Variable<int>(attempts);
@@ -473,21 +1133,20 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
     return map;
   }
 
-  PendingSetLogsCompanion toCompanion(bool nullToAbsent) {
-    return PendingSetLogsCompanion(
+  LocalSetLogsCompanion toCompanion(bool nullToAbsent) {
+    return LocalSetLogsCompanion(
       clientId: Value(clientId),
       userId: Value(userId),
-      workoutSessionId: Value(workoutSessionId),
-      workoutExerciseId: Value(workoutExerciseId),
-      exerciseId: exerciseId == null && nullToAbsent
+      workoutClientId: Value(workoutClientId),
+      planExerciseId: planExerciseId == null && nullToAbsent
           ? const Value.absent()
-          : Value(exerciseId),
+          : Value(planExerciseId),
+      exerciseId: Value(exerciseId),
       setIndex: Value(setIndex),
-      reps: reps == null && nullToAbsent ? const Value.absent() : Value(reps),
-      loadKg: loadKg == null && nullToAbsent
-          ? const Value.absent()
-          : Value(loadKg),
+      reps: Value(reps),
+      loadKg: Value(loadKg),
       rir: rir == null && nullToAbsent ? const Value.absent() : Value(rir),
+      isWarmup: Value(isWarmup),
       completedAt: Value(completedAt),
       updatedAt: Value(updatedAt),
       status: Value(status),
@@ -501,24 +1160,25 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
     );
   }
 
-  factory PendingSetLog.fromJson(
+  factory LocalSetLog.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return PendingSetLog(
+    return LocalSetLog(
       clientId: serializer.fromJson<String>(json['clientId']),
       userId: serializer.fromJson<String>(json['userId']),
-      workoutSessionId: serializer.fromJson<String>(json['workoutSessionId']),
-      workoutExerciseId: serializer.fromJson<String>(json['workoutExerciseId']),
-      exerciseId: serializer.fromJson<String?>(json['exerciseId']),
+      workoutClientId: serializer.fromJson<String>(json['workoutClientId']),
+      planExerciseId: serializer.fromJson<String?>(json['planExerciseId']),
+      exerciseId: serializer.fromJson<String>(json['exerciseId']),
       setIndex: serializer.fromJson<int>(json['setIndex']),
-      reps: serializer.fromJson<int?>(json['reps']),
-      loadKg: serializer.fromJson<double?>(json['loadKg']),
+      reps: serializer.fromJson<int>(json['reps']),
+      loadKg: serializer.fromJson<double>(json['loadKg']),
       rir: serializer.fromJson<int?>(json['rir']),
+      isWarmup: serializer.fromJson<bool>(json['isWarmup']),
       completedAt: serializer.fromJson<DateTime>(json['completedAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
-      status: $PendingSetLogsTable.$converterstatus.fromJson(
+      status: $LocalSetLogsTable.$converterstatus.fromJson(
         serializer.fromJson<String>(json['status']),
       ),
       attempts: serializer.fromJson<int>(json['attempts']),
@@ -532,17 +1192,18 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
     return <String, dynamic>{
       'clientId': serializer.toJson<String>(clientId),
       'userId': serializer.toJson<String>(userId),
-      'workoutSessionId': serializer.toJson<String>(workoutSessionId),
-      'workoutExerciseId': serializer.toJson<String>(workoutExerciseId),
-      'exerciseId': serializer.toJson<String?>(exerciseId),
+      'workoutClientId': serializer.toJson<String>(workoutClientId),
+      'planExerciseId': serializer.toJson<String?>(planExerciseId),
+      'exerciseId': serializer.toJson<String>(exerciseId),
       'setIndex': serializer.toJson<int>(setIndex),
-      'reps': serializer.toJson<int?>(reps),
-      'loadKg': serializer.toJson<double?>(loadKg),
+      'reps': serializer.toJson<int>(reps),
+      'loadKg': serializer.toJson<double>(loadKg),
       'rir': serializer.toJson<int?>(rir),
+      'isWarmup': serializer.toJson<bool>(isWarmup),
       'completedAt': serializer.toJson<DateTime>(completedAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'status': serializer.toJson<String>(
-        $PendingSetLogsTable.$converterstatus.toJson(status),
+        $LocalSetLogsTable.$converterstatus.toJson(status),
       ),
       'attempts': serializer.toJson<int>(attempts),
       'lastError': serializer.toJson<String?>(lastError),
@@ -550,32 +1211,36 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
     };
   }
 
-  PendingSetLog copyWith({
+  LocalSetLog copyWith({
     String? clientId,
     String? userId,
-    String? workoutSessionId,
-    String? workoutExerciseId,
-    Value<String?> exerciseId = const Value.absent(),
+    String? workoutClientId,
+    Value<String?> planExerciseId = const Value.absent(),
+    String? exerciseId,
     int? setIndex,
-    Value<int?> reps = const Value.absent(),
-    Value<double?> loadKg = const Value.absent(),
+    int? reps,
+    double? loadKg,
     Value<int?> rir = const Value.absent(),
+    bool? isWarmup,
     DateTime? completedAt,
     DateTime? updatedAt,
-    PendingSetLogStatus? status,
+    SetSyncStatus? status,
     int? attempts,
     Value<String?> lastError = const Value.absent(),
     Value<DateTime?> nextAttemptAt = const Value.absent(),
-  }) => PendingSetLog(
+  }) => LocalSetLog(
     clientId: clientId ?? this.clientId,
     userId: userId ?? this.userId,
-    workoutSessionId: workoutSessionId ?? this.workoutSessionId,
-    workoutExerciseId: workoutExerciseId ?? this.workoutExerciseId,
-    exerciseId: exerciseId.present ? exerciseId.value : this.exerciseId,
+    workoutClientId: workoutClientId ?? this.workoutClientId,
+    planExerciseId: planExerciseId.present
+        ? planExerciseId.value
+        : this.planExerciseId,
+    exerciseId: exerciseId ?? this.exerciseId,
     setIndex: setIndex ?? this.setIndex,
-    reps: reps.present ? reps.value : this.reps,
-    loadKg: loadKg.present ? loadKg.value : this.loadKg,
+    reps: reps ?? this.reps,
+    loadKg: loadKg ?? this.loadKg,
     rir: rir.present ? rir.value : this.rir,
+    isWarmup: isWarmup ?? this.isWarmup,
     completedAt: completedAt ?? this.completedAt,
     updatedAt: updatedAt ?? this.updatedAt,
     status: status ?? this.status,
@@ -585,16 +1250,16 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
         ? nextAttemptAt.value
         : this.nextAttemptAt,
   );
-  PendingSetLog copyWithCompanion(PendingSetLogsCompanion data) {
-    return PendingSetLog(
+  LocalSetLog copyWithCompanion(LocalSetLogsCompanion data) {
+    return LocalSetLog(
       clientId: data.clientId.present ? data.clientId.value : this.clientId,
       userId: data.userId.present ? data.userId.value : this.userId,
-      workoutSessionId: data.workoutSessionId.present
-          ? data.workoutSessionId.value
-          : this.workoutSessionId,
-      workoutExerciseId: data.workoutExerciseId.present
-          ? data.workoutExerciseId.value
-          : this.workoutExerciseId,
+      workoutClientId: data.workoutClientId.present
+          ? data.workoutClientId.value
+          : this.workoutClientId,
+      planExerciseId: data.planExerciseId.present
+          ? data.planExerciseId.value
+          : this.planExerciseId,
       exerciseId: data.exerciseId.present
           ? data.exerciseId.value
           : this.exerciseId,
@@ -602,6 +1267,7 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
       reps: data.reps.present ? data.reps.value : this.reps,
       loadKg: data.loadKg.present ? data.loadKg.value : this.loadKg,
       rir: data.rir.present ? data.rir.value : this.rir,
+      isWarmup: data.isWarmup.present ? data.isWarmup.value : this.isWarmup,
       completedAt: data.completedAt.present
           ? data.completedAt.value
           : this.completedAt,
@@ -617,16 +1283,17 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
 
   @override
   String toString() {
-    return (StringBuffer('PendingSetLog(')
+    return (StringBuffer('LocalSetLog(')
           ..write('clientId: $clientId, ')
           ..write('userId: $userId, ')
-          ..write('workoutSessionId: $workoutSessionId, ')
-          ..write('workoutExerciseId: $workoutExerciseId, ')
+          ..write('workoutClientId: $workoutClientId, ')
+          ..write('planExerciseId: $planExerciseId, ')
           ..write('exerciseId: $exerciseId, ')
           ..write('setIndex: $setIndex, ')
           ..write('reps: $reps, ')
           ..write('loadKg: $loadKg, ')
           ..write('rir: $rir, ')
+          ..write('isWarmup: $isWarmup, ')
           ..write('completedAt: $completedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('status: $status, ')
@@ -641,13 +1308,14 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
   int get hashCode => Object.hash(
     clientId,
     userId,
-    workoutSessionId,
-    workoutExerciseId,
+    workoutClientId,
+    planExerciseId,
     exerciseId,
     setIndex,
     reps,
     loadKg,
     rir,
+    isWarmup,
     completedAt,
     updatedAt,
     status,
@@ -658,16 +1326,17 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is PendingSetLog &&
+      (other is LocalSetLog &&
           other.clientId == this.clientId &&
           other.userId == this.userId &&
-          other.workoutSessionId == this.workoutSessionId &&
-          other.workoutExerciseId == this.workoutExerciseId &&
+          other.workoutClientId == this.workoutClientId &&
+          other.planExerciseId == this.planExerciseId &&
           other.exerciseId == this.exerciseId &&
           other.setIndex == this.setIndex &&
           other.reps == this.reps &&
           other.loadKg == this.loadKg &&
           other.rir == this.rir &&
+          other.isWarmup == this.isWarmup &&
           other.completedAt == this.completedAt &&
           other.updatedAt == this.updatedAt &&
           other.status == this.status &&
@@ -676,33 +1345,35 @@ class PendingSetLog extends DataClass implements Insertable<PendingSetLog> {
           other.nextAttemptAt == this.nextAttemptAt);
 }
 
-class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
+class LocalSetLogsCompanion extends UpdateCompanion<LocalSetLog> {
   final Value<String> clientId;
   final Value<String> userId;
-  final Value<String> workoutSessionId;
-  final Value<String> workoutExerciseId;
-  final Value<String?> exerciseId;
+  final Value<String> workoutClientId;
+  final Value<String?> planExerciseId;
+  final Value<String> exerciseId;
   final Value<int> setIndex;
-  final Value<int?> reps;
-  final Value<double?> loadKg;
+  final Value<int> reps;
+  final Value<double> loadKg;
   final Value<int?> rir;
+  final Value<bool> isWarmup;
   final Value<DateTime> completedAt;
   final Value<DateTime> updatedAt;
-  final Value<PendingSetLogStatus> status;
+  final Value<SetSyncStatus> status;
   final Value<int> attempts;
   final Value<String?> lastError;
   final Value<DateTime?> nextAttemptAt;
   final Value<int> rowid;
-  const PendingSetLogsCompanion({
+  const LocalSetLogsCompanion({
     this.clientId = const Value.absent(),
     this.userId = const Value.absent(),
-    this.workoutSessionId = const Value.absent(),
-    this.workoutExerciseId = const Value.absent(),
+    this.workoutClientId = const Value.absent(),
+    this.planExerciseId = const Value.absent(),
     this.exerciseId = const Value.absent(),
     this.setIndex = const Value.absent(),
     this.reps = const Value.absent(),
     this.loadKg = const Value.absent(),
     this.rir = const Value.absent(),
+    this.isWarmup = const Value.absent(),
     this.completedAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.status = const Value.absent(),
@@ -711,16 +1382,17 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     this.nextAttemptAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  PendingSetLogsCompanion.insert({
+  LocalSetLogsCompanion.insert({
     required String clientId,
     required String userId,
-    required String workoutSessionId,
-    required String workoutExerciseId,
-    this.exerciseId = const Value.absent(),
+    required String workoutClientId,
+    this.planExerciseId = const Value.absent(),
+    required String exerciseId,
     required int setIndex,
-    this.reps = const Value.absent(),
-    this.loadKg = const Value.absent(),
+    required int reps,
+    required double loadKg,
     this.rir = const Value.absent(),
+    this.isWarmup = const Value.absent(),
     required DateTime completedAt,
     required DateTime updatedAt,
     this.status = const Value.absent(),
@@ -730,21 +1402,24 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        userId = Value(userId),
-       workoutSessionId = Value(workoutSessionId),
-       workoutExerciseId = Value(workoutExerciseId),
+       workoutClientId = Value(workoutClientId),
+       exerciseId = Value(exerciseId),
        setIndex = Value(setIndex),
+       reps = Value(reps),
+       loadKg = Value(loadKg),
        completedAt = Value(completedAt),
        updatedAt = Value(updatedAt);
-  static Insertable<PendingSetLog> custom({
+  static Insertable<LocalSetLog> custom({
     Expression<String>? clientId,
     Expression<String>? userId,
-    Expression<String>? workoutSessionId,
-    Expression<String>? workoutExerciseId,
+    Expression<String>? workoutClientId,
+    Expression<String>? planExerciseId,
     Expression<String>? exerciseId,
     Expression<int>? setIndex,
     Expression<int>? reps,
     Expression<double>? loadKg,
     Expression<int>? rir,
+    Expression<bool>? isWarmup,
     Expression<DateTime>? completedAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? status,
@@ -756,13 +1431,14 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     return RawValuesInsertable({
       if (clientId != null) 'client_id': clientId,
       if (userId != null) 'user_id': userId,
-      if (workoutSessionId != null) 'workout_session_id': workoutSessionId,
-      if (workoutExerciseId != null) 'workout_exercise_id': workoutExerciseId,
+      if (workoutClientId != null) 'workout_client_id': workoutClientId,
+      if (planExerciseId != null) 'plan_exercise_id': planExerciseId,
       if (exerciseId != null) 'exercise_id': exerciseId,
       if (setIndex != null) 'set_index': setIndex,
       if (reps != null) 'reps': reps,
       if (loadKg != null) 'load_kg': loadKg,
       if (rir != null) 'rir': rir,
+      if (isWarmup != null) 'is_warmup': isWarmup,
       if (completedAt != null) 'completed_at': completedAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (status != null) 'status': status,
@@ -773,34 +1449,36 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     });
   }
 
-  PendingSetLogsCompanion copyWith({
+  LocalSetLogsCompanion copyWith({
     Value<String>? clientId,
     Value<String>? userId,
-    Value<String>? workoutSessionId,
-    Value<String>? workoutExerciseId,
-    Value<String?>? exerciseId,
+    Value<String>? workoutClientId,
+    Value<String?>? planExerciseId,
+    Value<String>? exerciseId,
     Value<int>? setIndex,
-    Value<int?>? reps,
-    Value<double?>? loadKg,
+    Value<int>? reps,
+    Value<double>? loadKg,
     Value<int?>? rir,
+    Value<bool>? isWarmup,
     Value<DateTime>? completedAt,
     Value<DateTime>? updatedAt,
-    Value<PendingSetLogStatus>? status,
+    Value<SetSyncStatus>? status,
     Value<int>? attempts,
     Value<String?>? lastError,
     Value<DateTime?>? nextAttemptAt,
     Value<int>? rowid,
   }) {
-    return PendingSetLogsCompanion(
+    return LocalSetLogsCompanion(
       clientId: clientId ?? this.clientId,
       userId: userId ?? this.userId,
-      workoutSessionId: workoutSessionId ?? this.workoutSessionId,
-      workoutExerciseId: workoutExerciseId ?? this.workoutExerciseId,
+      workoutClientId: workoutClientId ?? this.workoutClientId,
+      planExerciseId: planExerciseId ?? this.planExerciseId,
       exerciseId: exerciseId ?? this.exerciseId,
       setIndex: setIndex ?? this.setIndex,
       reps: reps ?? this.reps,
       loadKg: loadKg ?? this.loadKg,
       rir: rir ?? this.rir,
+      isWarmup: isWarmup ?? this.isWarmup,
       completedAt: completedAt ?? this.completedAt,
       updatedAt: updatedAt ?? this.updatedAt,
       status: status ?? this.status,
@@ -820,11 +1498,11 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     if (userId.present) {
       map['user_id'] = Variable<String>(userId.value);
     }
-    if (workoutSessionId.present) {
-      map['workout_session_id'] = Variable<String>(workoutSessionId.value);
+    if (workoutClientId.present) {
+      map['workout_client_id'] = Variable<String>(workoutClientId.value);
     }
-    if (workoutExerciseId.present) {
-      map['workout_exercise_id'] = Variable<String>(workoutExerciseId.value);
+    if (planExerciseId.present) {
+      map['plan_exercise_id'] = Variable<String>(planExerciseId.value);
     }
     if (exerciseId.present) {
       map['exercise_id'] = Variable<String>(exerciseId.value);
@@ -841,6 +1519,9 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     if (rir.present) {
       map['rir'] = Variable<int>(rir.value);
     }
+    if (isWarmup.present) {
+      map['is_warmup'] = Variable<bool>(isWarmup.value);
+    }
     if (completedAt.present) {
       map['completed_at'] = Variable<DateTime>(completedAt.value);
     }
@@ -849,7 +1530,7 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
     }
     if (status.present) {
       map['status'] = Variable<String>(
-        $PendingSetLogsTable.$converterstatus.toSql(status.value),
+        $LocalSetLogsTable.$converterstatus.toSql(status.value),
       );
     }
     if (attempts.present) {
@@ -869,16 +1550,17 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
 
   @override
   String toString() {
-    return (StringBuffer('PendingSetLogsCompanion(')
+    return (StringBuffer('LocalSetLogsCompanion(')
           ..write('clientId: $clientId, ')
           ..write('userId: $userId, ')
-          ..write('workoutSessionId: $workoutSessionId, ')
-          ..write('workoutExerciseId: $workoutExerciseId, ')
+          ..write('workoutClientId: $workoutClientId, ')
+          ..write('planExerciseId: $planExerciseId, ')
           ..write('exerciseId: $exerciseId, ')
           ..write('setIndex: $setIndex, ')
           ..write('reps: $reps, ')
           ..write('loadKg: $loadKg, ')
           ..write('rir: $rir, ')
+          ..write('isWarmup: $isWarmup, ')
           ..write('completedAt: $completedAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('status: $status, ')
@@ -891,59 +1573,368 @@ class PendingSetLogsCompanion extends UpdateCompanion<PendingSetLog> {
   }
 }
 
+class $CachedPayloadsTable extends CachedPayloads
+    with TableInfo<$CachedPayloadsTable, CachedPayload> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedPayloadsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cacheKeyMeta = const VerificationMeta(
+    'cacheKey',
+  );
+  @override
+  late final GeneratedColumn<String> cacheKey = GeneratedColumn<String>(
+    'cache_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _jsonMeta = const VerificationMeta('json');
+  @override
+  late final GeneratedColumn<String> json = GeneratedColumn<String>(
+    'json',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _savedAtMeta = const VerificationMeta(
+    'savedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> savedAt = GeneratedColumn<DateTime>(
+    'saved_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [userId, cacheKey, json, savedAt];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_payloads';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedPayload> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('cache_key')) {
+      context.handle(
+        _cacheKeyMeta,
+        cacheKey.isAcceptableOrUnknown(data['cache_key']!, _cacheKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cacheKeyMeta);
+    }
+    if (data.containsKey('json')) {
+      context.handle(
+        _jsonMeta,
+        json.isAcceptableOrUnknown(data['json']!, _jsonMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_jsonMeta);
+    }
+    if (data.containsKey('saved_at')) {
+      context.handle(
+        _savedAtMeta,
+        savedAt.isAcceptableOrUnknown(data['saved_at']!, _savedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_savedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId, cacheKey};
+  @override
+  CachedPayload map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedPayload(
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      cacheKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}cache_key'],
+      )!,
+      json: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}json'],
+      )!,
+      savedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}saved_at'],
+      )!,
+    );
+  }
+
+  @override
+  $CachedPayloadsTable createAlias(String alias) {
+    return $CachedPayloadsTable(attachedDatabase, alias);
+  }
+}
+
+class CachedPayload extends DataClass implements Insertable<CachedPayload> {
+  final String userId;
+
+  /// Clave lógica (`CacheKeys`).
+  final String cacheKey;
+  final String json;
+  final DateTime savedAt;
+  const CachedPayload({
+    required this.userId,
+    required this.cacheKey,
+    required this.json,
+    required this.savedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<String>(userId);
+    map['cache_key'] = Variable<String>(cacheKey);
+    map['json'] = Variable<String>(json);
+    map['saved_at'] = Variable<DateTime>(savedAt);
+    return map;
+  }
+
+  CachedPayloadsCompanion toCompanion(bool nullToAbsent) {
+    return CachedPayloadsCompanion(
+      userId: Value(userId),
+      cacheKey: Value(cacheKey),
+      json: Value(json),
+      savedAt: Value(savedAt),
+    );
+  }
+
+  factory CachedPayload.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedPayload(
+      userId: serializer.fromJson<String>(json['userId']),
+      cacheKey: serializer.fromJson<String>(json['cacheKey']),
+      json: serializer.fromJson<String>(json['json']),
+      savedAt: serializer.fromJson<DateTime>(json['savedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<String>(userId),
+      'cacheKey': serializer.toJson<String>(cacheKey),
+      'json': serializer.toJson<String>(json),
+      'savedAt': serializer.toJson<DateTime>(savedAt),
+    };
+  }
+
+  CachedPayload copyWith({
+    String? userId,
+    String? cacheKey,
+    String? json,
+    DateTime? savedAt,
+  }) => CachedPayload(
+    userId: userId ?? this.userId,
+    cacheKey: cacheKey ?? this.cacheKey,
+    json: json ?? this.json,
+    savedAt: savedAt ?? this.savedAt,
+  );
+  CachedPayload copyWithCompanion(CachedPayloadsCompanion data) {
+    return CachedPayload(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      cacheKey: data.cacheKey.present ? data.cacheKey.value : this.cacheKey,
+      json: data.json.present ? data.json.value : this.json,
+      savedAt: data.savedAt.present ? data.savedAt.value : this.savedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedPayload(')
+          ..write('userId: $userId, ')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('json: $json, ')
+          ..write('savedAt: $savedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(userId, cacheKey, json, savedAt);
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedPayload &&
+          other.userId == this.userId &&
+          other.cacheKey == this.cacheKey &&
+          other.json == this.json &&
+          other.savedAt == this.savedAt);
+}
+
+class CachedPayloadsCompanion extends UpdateCompanion<CachedPayload> {
+  final Value<String> userId;
+  final Value<String> cacheKey;
+  final Value<String> json;
+  final Value<DateTime> savedAt;
+  final Value<int> rowid;
+  const CachedPayloadsCompanion({
+    this.userId = const Value.absent(),
+    this.cacheKey = const Value.absent(),
+    this.json = const Value.absent(),
+    this.savedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedPayloadsCompanion.insert({
+    required String userId,
+    required String cacheKey,
+    required String json,
+    required DateTime savedAt,
+    this.rowid = const Value.absent(),
+  }) : userId = Value(userId),
+       cacheKey = Value(cacheKey),
+       json = Value(json),
+       savedAt = Value(savedAt);
+  static Insertable<CachedPayload> custom({
+    Expression<String>? userId,
+    Expression<String>? cacheKey,
+    Expression<String>? json,
+    Expression<DateTime>? savedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (cacheKey != null) 'cache_key': cacheKey,
+      if (json != null) 'json': json,
+      if (savedAt != null) 'saved_at': savedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedPayloadsCompanion copyWith({
+    Value<String>? userId,
+    Value<String>? cacheKey,
+    Value<String>? json,
+    Value<DateTime>? savedAt,
+    Value<int>? rowid,
+  }) {
+    return CachedPayloadsCompanion(
+      userId: userId ?? this.userId,
+      cacheKey: cacheKey ?? this.cacheKey,
+      json: json ?? this.json,
+      savedAt: savedAt ?? this.savedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (cacheKey.present) {
+      map['cache_key'] = Variable<String>(cacheKey.value);
+    }
+    if (json.present) {
+      map['json'] = Variable<String>(json.value);
+    }
+    if (savedAt.present) {
+      map['saved_at'] = Variable<DateTime>(savedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedPayloadsCompanion(')
+          ..write('userId: $userId, ')
+          ..write('cacheKey: $cacheKey, ')
+          ..write('json: $json, ')
+          ..write('savedAt: $savedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
-  late final $PendingSetLogsTable pendingSetLogs = $PendingSetLogsTable(this);
+  late final $LocalWorkoutsTable localWorkouts = $LocalWorkoutsTable(this);
+  late final $LocalSetLogsTable localSetLogs = $LocalSetLogsTable(this);
+  late final $CachedPayloadsTable cachedPayloads = $CachedPayloadsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
   @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => [pendingSetLogs];
+  List<DatabaseSchemaEntity> get allSchemaEntities => [
+    localWorkouts,
+    localSetLogs,
+    cachedPayloads,
+  ];
 }
 
-typedef $$PendingSetLogsTableCreateCompanionBuilder =
-    PendingSetLogsCompanion Function({
+typedef $$LocalWorkoutsTableCreateCompanionBuilder =
+    LocalWorkoutsCompanion Function({
       required String clientId,
       required String userId,
-      required String workoutSessionId,
-      required String workoutExerciseId,
-      Value<String?> exerciseId,
-      required int setIndex,
-      Value<int?> reps,
-      Value<double?> loadKg,
-      Value<int?> rir,
-      required DateTime completedAt,
-      required DateTime updatedAt,
-      Value<PendingSetLogStatus> status,
+      required String planSessionId,
+      Value<String?> serverId,
+      required DateTime startedAt,
+      Value<DateTime?> finishedAt,
+      Value<bool> finishSynced,
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<int> rowid,
     });
-typedef $$PendingSetLogsTableUpdateCompanionBuilder =
-    PendingSetLogsCompanion Function({
+typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
+    LocalWorkoutsCompanion Function({
       Value<String> clientId,
       Value<String> userId,
-      Value<String> workoutSessionId,
-      Value<String> workoutExerciseId,
-      Value<String?> exerciseId,
-      Value<int> setIndex,
-      Value<int?> reps,
-      Value<double?> loadKg,
-      Value<int?> rir,
-      Value<DateTime> completedAt,
-      Value<DateTime> updatedAt,
-      Value<PendingSetLogStatus> status,
+      Value<String> planSessionId,
+      Value<String?> serverId,
+      Value<DateTime> startedAt,
+      Value<DateTime?> finishedAt,
+      Value<bool> finishSynced,
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<int> rowid,
     });
 
-class $$PendingSetLogsTableFilterComposer
-    extends Composer<_$AppDatabase, $PendingSetLogsTable> {
-  $$PendingSetLogsTableFilterComposer({
+class $$LocalWorkoutsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalWorkoutsTable> {
+  $$LocalWorkoutsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -960,13 +1951,328 @@ class $$PendingSetLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get workoutSessionId => $composableBuilder(
-    column: $table.workoutSessionId,
+  ColumnFilters<String> get planSessionId => $composableBuilder(
+    column: $table.planSessionId,
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get workoutExerciseId => $composableBuilder(
-    column: $table.workoutExerciseId,
+  ColumnFilters<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get finishSynced => $composableBuilder(
+    column: $table.finishSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$LocalWorkoutsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalWorkoutsTable> {
+  $$LocalWorkoutsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get planSessionId => $composableBuilder(
+    column: $table.planSessionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get serverId => $composableBuilder(
+    column: $table.serverId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get startedAt => $composableBuilder(
+    column: $table.startedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get finishSynced => $composableBuilder(
+    column: $table.finishSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$LocalWorkoutsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalWorkoutsTable> {
+  $$LocalWorkoutsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get clientId =>
+      $composableBuilder(column: $table.clientId, builder: (column) => column);
+
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get planSessionId => $composableBuilder(
+    column: $table.planSessionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get serverId =>
+      $composableBuilder(column: $table.serverId, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get startedAt =>
+      $composableBuilder(column: $table.startedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get finishedAt => $composableBuilder(
+    column: $table.finishedAt,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get finishSynced => $composableBuilder(
+    column: $table.finishSynced,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => column,
+  );
+}
+
+class $$LocalWorkoutsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $LocalWorkoutsTable,
+          LocalWorkout,
+          $$LocalWorkoutsTableFilterComposer,
+          $$LocalWorkoutsTableOrderingComposer,
+          $$LocalWorkoutsTableAnnotationComposer,
+          $$LocalWorkoutsTableCreateCompanionBuilder,
+          $$LocalWorkoutsTableUpdateCompanionBuilder,
+          (
+            LocalWorkout,
+            BaseReferences<_$AppDatabase, $LocalWorkoutsTable, LocalWorkout>,
+          ),
+          LocalWorkout,
+          PrefetchHooks Function()
+        > {
+  $$LocalWorkoutsTableTableManager(_$AppDatabase db, $LocalWorkoutsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$LocalWorkoutsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$LocalWorkoutsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$LocalWorkoutsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> clientId = const Value.absent(),
+                Value<String> userId = const Value.absent(),
+                Value<String> planSessionId = const Value.absent(),
+                Value<String?> serverId = const Value.absent(),
+                Value<DateTime> startedAt = const Value.absent(),
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> finishSynced = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalWorkoutsCompanion(
+                clientId: clientId,
+                userId: userId,
+                planSessionId: planSessionId,
+                serverId: serverId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                finishSynced: finishSynced,
+                attempts: attempts,
+                lastError: lastError,
+                nextAttemptAt: nextAttemptAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String clientId,
+                required String userId,
+                required String planSessionId,
+                Value<String?> serverId = const Value.absent(),
+                required DateTime startedAt,
+                Value<DateTime?> finishedAt = const Value.absent(),
+                Value<bool> finishSynced = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => LocalWorkoutsCompanion.insert(
+                clientId: clientId,
+                userId: userId,
+                planSessionId: planSessionId,
+                serverId: serverId,
+                startedAt: startedAt,
+                finishedAt: finishedAt,
+                finishSynced: finishSynced,
+                attempts: attempts,
+                lastError: lastError,
+                nextAttemptAt: nextAttemptAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$LocalWorkoutsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $LocalWorkoutsTable,
+      LocalWorkout,
+      $$LocalWorkoutsTableFilterComposer,
+      $$LocalWorkoutsTableOrderingComposer,
+      $$LocalWorkoutsTableAnnotationComposer,
+      $$LocalWorkoutsTableCreateCompanionBuilder,
+      $$LocalWorkoutsTableUpdateCompanionBuilder,
+      (
+        LocalWorkout,
+        BaseReferences<_$AppDatabase, $LocalWorkoutsTable, LocalWorkout>,
+      ),
+      LocalWorkout,
+      PrefetchHooks Function()
+    >;
+typedef $$LocalSetLogsTableCreateCompanionBuilder =
+    LocalSetLogsCompanion Function({
+      required String clientId,
+      required String userId,
+      required String workoutClientId,
+      Value<String?> planExerciseId,
+      required String exerciseId,
+      required int setIndex,
+      required int reps,
+      required double loadKg,
+      Value<int?> rir,
+      Value<bool> isWarmup,
+      required DateTime completedAt,
+      required DateTime updatedAt,
+      Value<SetSyncStatus> status,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<DateTime?> nextAttemptAt,
+      Value<int> rowid,
+    });
+typedef $$LocalSetLogsTableUpdateCompanionBuilder =
+    LocalSetLogsCompanion Function({
+      Value<String> clientId,
+      Value<String> userId,
+      Value<String> workoutClientId,
+      Value<String?> planExerciseId,
+      Value<String> exerciseId,
+      Value<int> setIndex,
+      Value<int> reps,
+      Value<double> loadKg,
+      Value<int?> rir,
+      Value<bool> isWarmup,
+      Value<DateTime> completedAt,
+      Value<DateTime> updatedAt,
+      Value<SetSyncStatus> status,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<DateTime?> nextAttemptAt,
+      Value<int> rowid,
+    });
+
+class $$LocalSetLogsTableFilterComposer
+    extends Composer<_$AppDatabase, $LocalSetLogsTable> {
+  $$LocalSetLogsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get clientId => $composableBuilder(
+    column: $table.clientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get workoutClientId => $composableBuilder(
+    column: $table.workoutClientId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get planExerciseId => $composableBuilder(
+    column: $table.planExerciseId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -995,6 +2301,11 @@ class $$PendingSetLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
+  ColumnFilters<bool> get isWarmup => $composableBuilder(
+    column: $table.isWarmup,
+    builder: (column) => ColumnFilters(column),
+  );
+
   ColumnFilters<DateTime> get completedAt => $composableBuilder(
     column: $table.completedAt,
     builder: (column) => ColumnFilters(column),
@@ -1005,11 +2316,7 @@ class $$PendingSetLogsTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnWithTypeConverterFilters<
-    PendingSetLogStatus,
-    PendingSetLogStatus,
-    String
-  >
+  ColumnWithTypeConverterFilters<SetSyncStatus, SetSyncStatus, String>
   get status => $composableBuilder(
     column: $table.status,
     builder: (column) => ColumnWithTypeConverterFilters(column),
@@ -1031,9 +2338,9 @@ class $$PendingSetLogsTableFilterComposer
   );
 }
 
-class $$PendingSetLogsTableOrderingComposer
-    extends Composer<_$AppDatabase, $PendingSetLogsTable> {
-  $$PendingSetLogsTableOrderingComposer({
+class $$LocalSetLogsTableOrderingComposer
+    extends Composer<_$AppDatabase, $LocalSetLogsTable> {
+  $$LocalSetLogsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1050,13 +2357,13 @@ class $$PendingSetLogsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get workoutSessionId => $composableBuilder(
-    column: $table.workoutSessionId,
+  ColumnOrderings<String> get workoutClientId => $composableBuilder(
+    column: $table.workoutClientId,
     builder: (column) => ColumnOrderings(column),
   );
 
-  ColumnOrderings<String> get workoutExerciseId => $composableBuilder(
-    column: $table.workoutExerciseId,
+  ColumnOrderings<String> get planExerciseId => $composableBuilder(
+    column: $table.planExerciseId,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1082,6 +2389,11 @@ class $$PendingSetLogsTableOrderingComposer
 
   ColumnOrderings<int> get rir => $composableBuilder(
     column: $table.rir,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isWarmup => $composableBuilder(
+    column: $table.isWarmup,
     builder: (column) => ColumnOrderings(column),
   );
 
@@ -1116,9 +2428,9 @@ class $$PendingSetLogsTableOrderingComposer
   );
 }
 
-class $$PendingSetLogsTableAnnotationComposer
-    extends Composer<_$AppDatabase, $PendingSetLogsTable> {
-  $$PendingSetLogsTableAnnotationComposer({
+class $$LocalSetLogsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $LocalSetLogsTable> {
+  $$LocalSetLogsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -1131,13 +2443,13 @@ class $$PendingSetLogsTableAnnotationComposer
   GeneratedColumn<String> get userId =>
       $composableBuilder(column: $table.userId, builder: (column) => column);
 
-  GeneratedColumn<String> get workoutSessionId => $composableBuilder(
-    column: $table.workoutSessionId,
+  GeneratedColumn<String> get workoutClientId => $composableBuilder(
+    column: $table.workoutClientId,
     builder: (column) => column,
   );
 
-  GeneratedColumn<String> get workoutExerciseId => $composableBuilder(
-    column: $table.workoutExerciseId,
+  GeneratedColumn<String> get planExerciseId => $composableBuilder(
+    column: $table.planExerciseId,
     builder: (column) => column,
   );
 
@@ -1158,6 +2470,9 @@ class $$PendingSetLogsTableAnnotationComposer
   GeneratedColumn<int> get rir =>
       $composableBuilder(column: $table.rir, builder: (column) => column);
 
+  GeneratedColumn<bool> get isWarmup =>
+      $composableBuilder(column: $table.isWarmup, builder: (column) => column);
+
   GeneratedColumn<DateTime> get completedAt => $composableBuilder(
     column: $table.completedAt,
     builder: (column) => column,
@@ -1166,7 +2481,7 @@ class $$PendingSetLogsTableAnnotationComposer
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 
-  GeneratedColumnWithTypeConverter<PendingSetLogStatus, String> get status =>
+  GeneratedColumnWithTypeConverter<SetSyncStatus, String> get status =>
       $composableBuilder(column: $table.status, builder: (column) => column);
 
   GeneratedColumn<int> get attempts =>
@@ -1181,65 +2496,65 @@ class $$PendingSetLogsTableAnnotationComposer
   );
 }
 
-class $$PendingSetLogsTableTableManager
+class $$LocalSetLogsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $PendingSetLogsTable,
-          PendingSetLog,
-          $$PendingSetLogsTableFilterComposer,
-          $$PendingSetLogsTableOrderingComposer,
-          $$PendingSetLogsTableAnnotationComposer,
-          $$PendingSetLogsTableCreateCompanionBuilder,
-          $$PendingSetLogsTableUpdateCompanionBuilder,
+          $LocalSetLogsTable,
+          LocalSetLog,
+          $$LocalSetLogsTableFilterComposer,
+          $$LocalSetLogsTableOrderingComposer,
+          $$LocalSetLogsTableAnnotationComposer,
+          $$LocalSetLogsTableCreateCompanionBuilder,
+          $$LocalSetLogsTableUpdateCompanionBuilder,
           (
-            PendingSetLog,
-            BaseReferences<_$AppDatabase, $PendingSetLogsTable, PendingSetLog>,
+            LocalSetLog,
+            BaseReferences<_$AppDatabase, $LocalSetLogsTable, LocalSetLog>,
           ),
-          PendingSetLog,
+          LocalSetLog,
           PrefetchHooks Function()
         > {
-  $$PendingSetLogsTableTableManager(
-    _$AppDatabase db,
-    $PendingSetLogsTable table,
-  ) : super(
+  $$LocalSetLogsTableTableManager(_$AppDatabase db, $LocalSetLogsTable table)
+    : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$PendingSetLogsTableFilterComposer($db: db, $table: table),
+              $$LocalSetLogsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$PendingSetLogsTableOrderingComposer($db: db, $table: table),
+              $$LocalSetLogsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$PendingSetLogsTableAnnotationComposer($db: db, $table: table),
+              $$LocalSetLogsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> clientId = const Value.absent(),
                 Value<String> userId = const Value.absent(),
-                Value<String> workoutSessionId = const Value.absent(),
-                Value<String> workoutExerciseId = const Value.absent(),
-                Value<String?> exerciseId = const Value.absent(),
+                Value<String> workoutClientId = const Value.absent(),
+                Value<String?> planExerciseId = const Value.absent(),
+                Value<String> exerciseId = const Value.absent(),
                 Value<int> setIndex = const Value.absent(),
-                Value<int?> reps = const Value.absent(),
-                Value<double?> loadKg = const Value.absent(),
+                Value<int> reps = const Value.absent(),
+                Value<double> loadKg = const Value.absent(),
                 Value<int?> rir = const Value.absent(),
+                Value<bool> isWarmup = const Value.absent(),
                 Value<DateTime> completedAt = const Value.absent(),
                 Value<DateTime> updatedAt = const Value.absent(),
-                Value<PendingSetLogStatus> status = const Value.absent(),
+                Value<SetSyncStatus> status = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => PendingSetLogsCompanion(
+              }) => LocalSetLogsCompanion(
                 clientId: clientId,
                 userId: userId,
-                workoutSessionId: workoutSessionId,
-                workoutExerciseId: workoutExerciseId,
+                workoutClientId: workoutClientId,
+                planExerciseId: planExerciseId,
                 exerciseId: exerciseId,
                 setIndex: setIndex,
                 reps: reps,
                 loadKg: loadKg,
                 rir: rir,
+                isWarmup: isWarmup,
                 completedAt: completedAt,
                 updatedAt: updatedAt,
                 status: status,
@@ -1252,30 +2567,32 @@ class $$PendingSetLogsTableTableManager
               ({
                 required String clientId,
                 required String userId,
-                required String workoutSessionId,
-                required String workoutExerciseId,
-                Value<String?> exerciseId = const Value.absent(),
+                required String workoutClientId,
+                Value<String?> planExerciseId = const Value.absent(),
+                required String exerciseId,
                 required int setIndex,
-                Value<int?> reps = const Value.absent(),
-                Value<double?> loadKg = const Value.absent(),
+                required int reps,
+                required double loadKg,
                 Value<int?> rir = const Value.absent(),
+                Value<bool> isWarmup = const Value.absent(),
                 required DateTime completedAt,
                 required DateTime updatedAt,
-                Value<PendingSetLogStatus> status = const Value.absent(),
+                Value<SetSyncStatus> status = const Value.absent(),
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => PendingSetLogsCompanion.insert(
+              }) => LocalSetLogsCompanion.insert(
                 clientId: clientId,
                 userId: userId,
-                workoutSessionId: workoutSessionId,
-                workoutExerciseId: workoutExerciseId,
+                workoutClientId: workoutClientId,
+                planExerciseId: planExerciseId,
                 exerciseId: exerciseId,
                 setIndex: setIndex,
                 reps: reps,
                 loadKg: loadKg,
                 rir: rir,
+                isWarmup: isWarmup,
                 completedAt: completedAt,
                 updatedAt: updatedAt,
                 status: status,
@@ -1292,27 +2609,214 @@ class $$PendingSetLogsTableTableManager
       );
 }
 
-typedef $$PendingSetLogsTableProcessedTableManager =
+typedef $$LocalSetLogsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $PendingSetLogsTable,
-      PendingSetLog,
-      $$PendingSetLogsTableFilterComposer,
-      $$PendingSetLogsTableOrderingComposer,
-      $$PendingSetLogsTableAnnotationComposer,
-      $$PendingSetLogsTableCreateCompanionBuilder,
-      $$PendingSetLogsTableUpdateCompanionBuilder,
+      $LocalSetLogsTable,
+      LocalSetLog,
+      $$LocalSetLogsTableFilterComposer,
+      $$LocalSetLogsTableOrderingComposer,
+      $$LocalSetLogsTableAnnotationComposer,
+      $$LocalSetLogsTableCreateCompanionBuilder,
+      $$LocalSetLogsTableUpdateCompanionBuilder,
       (
-        PendingSetLog,
-        BaseReferences<_$AppDatabase, $PendingSetLogsTable, PendingSetLog>,
+        LocalSetLog,
+        BaseReferences<_$AppDatabase, $LocalSetLogsTable, LocalSetLog>,
       ),
-      PendingSetLog,
+      LocalSetLog,
+      PrefetchHooks Function()
+    >;
+typedef $$CachedPayloadsTableCreateCompanionBuilder =
+    CachedPayloadsCompanion Function({
+      required String userId,
+      required String cacheKey,
+      required String json,
+      required DateTime savedAt,
+      Value<int> rowid,
+    });
+typedef $$CachedPayloadsTableUpdateCompanionBuilder =
+    CachedPayloadsCompanion Function({
+      Value<String> userId,
+      Value<String> cacheKey,
+      Value<String> json,
+      Value<DateTime> savedAt,
+      Value<int> rowid,
+    });
+
+class $$CachedPayloadsTableFilterComposer
+    extends Composer<_$AppDatabase, $CachedPayloadsTable> {
+  $$CachedPayloadsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get json => $composableBuilder(
+    column: $table.json,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get savedAt => $composableBuilder(
+    column: $table.savedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedPayloadsTableOrderingComposer
+    extends Composer<_$AppDatabase, $CachedPayloadsTable> {
+  $$CachedPayloadsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cacheKey => $composableBuilder(
+    column: $table.cacheKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get json => $composableBuilder(
+    column: $table.json,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get savedAt => $composableBuilder(
+    column: $table.savedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedPayloadsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CachedPayloadsTable> {
+  $$CachedPayloadsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get cacheKey =>
+      $composableBuilder(column: $table.cacheKey, builder: (column) => column);
+
+  GeneratedColumn<String> get json =>
+      $composableBuilder(column: $table.json, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get savedAt =>
+      $composableBuilder(column: $table.savedAt, builder: (column) => column);
+}
+
+class $$CachedPayloadsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CachedPayloadsTable,
+          CachedPayload,
+          $$CachedPayloadsTableFilterComposer,
+          $$CachedPayloadsTableOrderingComposer,
+          $$CachedPayloadsTableAnnotationComposer,
+          $$CachedPayloadsTableCreateCompanionBuilder,
+          $$CachedPayloadsTableUpdateCompanionBuilder,
+          (
+            CachedPayload,
+            BaseReferences<_$AppDatabase, $CachedPayloadsTable, CachedPayload>,
+          ),
+          CachedPayload,
+          PrefetchHooks Function()
+        > {
+  $$CachedPayloadsTableTableManager(
+    _$AppDatabase db,
+    $CachedPayloadsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CachedPayloadsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CachedPayloadsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CachedPayloadsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> userId = const Value.absent(),
+                Value<String> cacheKey = const Value.absent(),
+                Value<String> json = const Value.absent(),
+                Value<DateTime> savedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedPayloadsCompanion(
+                userId: userId,
+                cacheKey: cacheKey,
+                json: json,
+                savedAt: savedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String userId,
+                required String cacheKey,
+                required String json,
+                required DateTime savedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => CachedPayloadsCompanion.insert(
+                userId: userId,
+                cacheKey: cacheKey,
+                json: json,
+                savedAt: savedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedPayloadsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CachedPayloadsTable,
+      CachedPayload,
+      $$CachedPayloadsTableFilterComposer,
+      $$CachedPayloadsTableOrderingComposer,
+      $$CachedPayloadsTableAnnotationComposer,
+      $$CachedPayloadsTableCreateCompanionBuilder,
+      $$CachedPayloadsTableUpdateCompanionBuilder,
+      (
+        CachedPayload,
+        BaseReferences<_$AppDatabase, $CachedPayloadsTable, CachedPayload>,
+      ),
+      CachedPayload,
       PrefetchHooks Function()
     >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
   $AppDatabaseManager(this._db);
-  $$PendingSetLogsTableTableManager get pendingSetLogs =>
-      $$PendingSetLogsTableTableManager(_db, _db.pendingSetLogs);
+  $$LocalWorkoutsTableTableManager get localWorkouts =>
+      $$LocalWorkoutsTableTableManager(_db, _db.localWorkouts);
+  $$LocalSetLogsTableTableManager get localSetLogs =>
+      $$LocalSetLogsTableTableManager(_db, _db.localSetLogs);
+  $$CachedPayloadsTableTableManager get cachedPayloads =>
+      $$CachedPayloadsTableTableManager(_db, _db.cachedPayloads);
 }

@@ -1,37 +1,47 @@
 /// Routing Responsibility
 ///
 /// GoRouter es la única fuente de verdad de la navegación y se crea UNA sola
-/// vez por `ProviderScope` (por sesión): los cambios de auth no lo recrean,
-/// sino que notifican a [AuthRouterListenable] (`refreshListenable`) y
-/// GoRouter vuelve a evaluar [authRedirect]:
-/// - `unknown`: /splash mientras se valida la sesión.
+/// vez por `ProviderScope` (por sesión): los cambios de auth o de la puerta
+/// de onboarding no lo recrean, sino que notifican a [RouterRefresh]
+/// (`refreshListenable`) y GoRouter vuelve a evaluar [appRedirect]:
+/// - auth `unknown`: /splash mientras se valida la sesión.
 /// - no autenticado: /login (o /register).
-/// - autenticado: fuera de las rutas de auth → /dashboard.
+/// - autenticado y comprobando si hay plan: /splash.
+/// - autenticado sin plan: /onboarding (cuestionario, CUJ-1).
+/// - autenticado con plan: fuera de auth/splash/onboarding → /today.
+///
+/// Mapa (docs/UX_MOVIL.md):
+/// ```
+/// StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
+/// ├── /today ─────────────── Hoy
+/// ├── /plan ──────────────── Plan
+/// │   └── history ─ :id ──── Historial → versión
+/// ├── /progress ──────────── Progreso
+/// └── /settings ──────────── Ajustes
+///     └── profile ────────── Editar perfil
+/// /onboarding, /workout-complete: pantalla completa, sin barra.
+/// ```
 ///
 /// Al cerrar sesión no hace falta navegar: `PiposRoot` recrea el scope y con
 /// él un router nuevo que arranca en /splash.
-///
-/// Protected routes live inside a ShellRoute that provides bottom navigation.
-/// Full-screen flows (workout player, workout complete) are top-level routes
-/// outside the ShellRoute so they don't show the bottom nav bar.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+
+import '../core/offline/offline_providers.dart';
 import '../features/auth/auth_provider.dart';
 import '../features/auth/login_screen.dart';
 import '../features/auth/register_screen.dart';
-import '../features/dashboard/dashboard_screen.dart';
-import '../features/workouts/workouts_screen.dart';
-import '../features/workouts/workout_player_screen.dart';
-import '../features/workouts/workout_complete_screen.dart';
-import '../features/nutrition/nutrition_screen.dart';
-import '../features/ai_coach/ai_coach_screen.dart';
-import '../features/profile/profile_screen.dart';
-import '../features/exercises/exercises_screen.dart';
-import '../features/exercises/exercise_detail_screen.dart';
-import '../core/offline/offline_providers.dart';
+import '../features/onboarding/onboarding_screen.dart';
+import '../features/plan/plan_screen.dart';
+import '../features/progress/progress_screen.dart';
+import '../features/settings/settings_screen.dart';
+import '../features/setup/setup_provider.dart';
+import '../features/today/today_providers.dart';
+import '../features/today/today_screen.dart';
+import '../features/today/workout_complete_screen.dart';
 import '../l10n/app_localizations.dart';
 import 'splash_screen.dart';
 import 'tokens.dart';
@@ -42,102 +52,150 @@ class AppRoutes {
   static const splash = '/splash';
   static const login = '/login';
   static const register = '/register';
-  static const home = '/dashboard';
+  static const onboarding = '/onboarding';
+  static const home = '/today';
+  static const plan = '/plan';
+  static const progress = '/progress';
+  static const settings = '/settings';
+  static const workoutComplete = '/workout-complete';
 }
 
-/// Decide la redirección a partir del estado de auth. Función pura (testable).
-String? authRedirect(AuthState auth, String location) {
+/// Redirección por estado de auth (compatibilidad con tests de 4a).
+String? authRedirect(AuthState auth, String location) =>
+    appRedirect(auth, SetupStatus.ready, location);
+
+/// Decide la redirección a partir de auth y de la puerta de onboarding.
+/// Función pura (testable).
+String? appRedirect(AuthState auth, SetupStatus setup, String location) {
   final isAuthRoute =
       location == AppRoutes.login || location == AppRoutes.register;
   final isSplash = location == AppRoutes.splash;
+  final isOnboarding = location == AppRoutes.onboarding;
 
   if (!auth.isResolved) return isSplash ? null : AppRoutes.splash;
-  if (auth.isAuthenticated) {
-    return (isAuthRoute || isSplash) ? AppRoutes.home : null;
+  if (!auth.isAuthenticated) return isAuthRoute ? null : AppRoutes.login;
+
+  switch (setup) {
+    case SetupStatus.checking:
+      return isSplash ? null : AppRoutes.splash;
+    case SetupStatus.needsOnboarding:
+      return isOnboarding ? null : AppRoutes.onboarding;
+    case SetupStatus.ready:
+      return (isAuthRoute || isSplash) ? AppRoutes.home : null;
   }
-  return isAuthRoute ? null : AppRoutes.login;
 }
 
-/// Puente entre el estado de Riverpod y `GoRouter.refreshListenable`.
-///
-/// Solo notifica cuando cambia algo relevante para la navegación
-/// (resuelto / autenticado), no en cada `loading` del formulario.
-class AuthRouterListenable extends ChangeNotifier {
-  AuthRouterListenable(this._state);
+/// Puente entre Riverpod y `GoRouter.refreshListenable`. Solo notifica
+/// cuando cambia algo relevante para la navegación.
+class RouterRefresh extends ChangeNotifier {
+  RouterRefresh(this._auth, this._setup);
 
-  AuthState _state;
-  AuthState get state => _state;
+  AuthState _auth;
+  SetupStatus _setup;
+  AuthState get auth => _auth;
+  SetupStatus get setup => _setup;
 
-  set state(AuthState next) {
+  set auth(AuthState next) {
     final changed =
-        next.isResolved != _state.isResolved ||
-        next.isAuthenticated != _state.isAuthenticated;
-    _state = next;
+        next.isResolved != _auth.isResolved ||
+        next.isAuthenticated != _auth.isAuthenticated;
+    _auth = next;
     if (changed) notifyListeners();
+  }
+
+  set setup(SetupStatus next) {
+    if (next == _setup) return;
+    _setup = next;
+    notifyListeners();
   }
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final listenable = AuthRouterListenable(ref.read(authProvider));
-  ref.listen<AuthState>(authProvider, (_, next) => listenable.state = next);
+  final refresh = RouterRefresh(
+    ref.read(authProvider),
+    ref.read(setupStatusProvider),
+  );
+  ref.listen<AuthState>(authProvider, (_, next) => refresh.auth = next);
+  ref.listen<SetupStatus>(
+    setupStatusProvider,
+    (_, next) => refresh.setup = next,
+  );
 
   final router = GoRouter(
     initialLocation: AppRoutes.splash,
-    refreshListenable: listenable,
+    refreshListenable: refresh,
     redirect: (context, state) =>
-        authRedirect(listenable.state, state.matchedLocation),
+        appRedirect(refresh.auth, refresh.setup, state.matchedLocation),
     routes: [
       GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
-      GoRoute(path: '/login', builder: (_, __) => const LoginScreen()),
-      GoRoute(path: '/register', builder: (_, __) => const RegisterScreen()),
-      // Full-screen workout flows (no bottom nav)
+      GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
       GoRoute(
-        path: '/workout-player',
-        builder: (_, __) => const WorkoutPlayerScreen(),
+        path: AppRoutes.register,
+        builder: (_, __) => const RegisterScreen(),
       ),
       GoRoute(
-        path: '/workout-complete',
-        builder: (_, __) => const WorkoutCompleteScreen(),
+        path: AppRoutes.onboarding,
+        builder: (_, __) => const OnboardingScreen(),
       ),
-      ShellRoute(
-        builder: (_, __, child) => _ScaffoldWithNav(child: child),
-        routes: [
-          GoRoute(
-            path: '/dashboard',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: DashboardScreen()),
+      GoRoute(
+        path: AppRoutes.workoutComplete,
+        builder: (_, state) =>
+            WorkoutCompleteScreen(summary: state.extra as WorkoutSummary?),
+      ),
+      StatefulShellRoute.indexedStack(
+        builder: (_, __, shell) => ScaffoldWithNav(shell: shell),
+        branches: [
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.home,
+                builder: (_, __) => const TodayScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/workouts',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: WorkoutsScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.plan,
+                builder: (_, __) => const PlanScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'history',
+                    builder: (_, __) => const PlanHistoryScreen(),
+                    routes: [
+                      GoRoute(
+                        path: ':id',
+                        builder: (_, state) => PlanVersionScreen(
+                          versionId: state.pathParameters['id'] ?? '',
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/nutrition',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: NutritionScreen()),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.progress,
+                builder: (_, __) => const ProgressScreen(),
+              ),
+            ],
           ),
-          GoRoute(
-            path: '/ai-coach',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: AiCoachScreen()),
-          ),
-          GoRoute(
-            path: '/profile',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: ProfileScreen()),
-          ),
-          GoRoute(
-            path: '/exercises',
-            pageBuilder: (_, __) =>
-                const NoTransitionPage(child: ExercisesScreen()),
-          ),
-          GoRoute(
-            path: '/exercises/:id',
-            builder: (_, state) {
-              final id = state.pathParameters['id'] ?? '';
-              return ExerciseDetailScreen(exerciseId: id);
-            },
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.settings,
+                builder: (_, __) => const SettingsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'profile',
+                    builder: (_, __) => const ProfileEditScreen(),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),
@@ -146,114 +204,127 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   ref.onDispose(() {
     router.dispose();
-    listenable.dispose();
+    refresh.dispose();
   });
   return router;
 });
 
-class _ScaffoldWithNav extends ConsumerWidget {
-  final Widget child;
-  const _ScaffoldWithNav({required this.child});
+class ScaffoldWithNav extends ConsumerWidget {
+  const ScaffoldWithNav({super.key, required this.shell});
 
-  static const _tabs = [
-    '/dashboard',
-    '/workouts',
-    '/nutrition',
-    '/ai-coach',
-    '/profile',
-  ];
-
-  int _currentIndex(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final idx = _tabs.indexOf(location);
-    return idx >= 0 ? idx : 0;
-  }
+  final StatefulNavigationShell shell;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
     final isOffline = ref.watch(authProvider.select((s) => s.isOffline));
-    final pending = ref.watch(pendingSetLogsProvider).valueOrNull?.length ?? 0;
+    final sync = ref.watch(syncSummaryProvider).valueOrNull;
+    final showBar = isOffline || (sync != null && !sync.isClean);
     return Scaffold(
-      body: child,
+      body: shell,
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (isOffline || pending > 0)
-            _SyncStatusBar(
-              message: pending > 0
-                  ? l10n.pendingSyncCount(pending)
-                  : l10n.offlineBanner,
+          if (showBar)
+            SyncStatusBar(
               offline: isOffline,
+              pending: sync?.pending ?? 0,
+              failed: sync?.failed ?? 0,
+              onRetry: () => ref.read(syncServiceProvider).retryFailed(),
             ),
-          _buildNavigationBar(context, l10n),
+          NavigationBar(
+            selectedIndex: shell.currentIndex,
+            onDestinationSelected: (i) {
+              if (i == 0) ref.invalidate(todaySessionProvider);
+              shell.goBranch(i, initialLocation: i == shell.currentIndex);
+            },
+            destinations: [
+              NavigationDestination(
+                key: const Key('nav-today'),
+                icon: const Icon(Icons.today_outlined),
+                selectedIcon: const Icon(Icons.today),
+                label: l10n.navToday,
+              ),
+              NavigationDestination(
+                key: const Key('nav-plan'),
+                icon: const Icon(Icons.event_note_outlined),
+                selectedIcon: const Icon(Icons.event_note),
+                label: l10n.navPlan,
+              ),
+              NavigationDestination(
+                key: const Key('nav-progress'),
+                icon: const Icon(Icons.insights_outlined),
+                selectedIcon: const Icon(Icons.insights),
+                label: l10n.navProgress,
+              ),
+              NavigationDestination(
+                key: const Key('nav-settings'),
+                icon: const Icon(Icons.settings_outlined),
+                selectedIcon: const Icon(Icons.settings),
+                label: l10n.navSettings,
+              ),
+            ],
+          ),
         ],
       ),
     );
   }
-
-  Widget _buildNavigationBar(BuildContext context, AppLocalizations l10n) {
-    return NavigationBar(
-      selectedIndex: _currentIndex(context),
-      onDestinationSelected: (i) => context.go(_tabs[i]),
-      destinations: [
-        NavigationDestination(
-          icon: const Icon(Icons.home_outlined),
-          selectedIcon: const Icon(Icons.home),
-          label: l10n.navHome,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.fitness_center_outlined),
-          selectedIcon: const Icon(Icons.fitness_center),
-          label: l10n.navWorkouts,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.restaurant_outlined),
-          selectedIcon: const Icon(Icons.restaurant),
-          label: l10n.navNutrition,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.smart_toy_outlined),
-          selectedIcon: const Icon(Icons.smart_toy),
-          label: l10n.navCoach,
-        ),
-        NavigationDestination(
-          icon: const Icon(Icons.person_outline),
-          selectedIcon: const Icon(Icons.person),
-          label: l10n.navProfile,
-        ),
-      ],
-    );
-  }
 }
 
-class _SyncStatusBar extends StatelessWidget {
-  const _SyncStatusBar({required this.message, required this.offline});
+/// Estado de la cola offline: pendientes, fallidas (con reintento) o sin red.
+class SyncStatusBar extends StatelessWidget {
+  const SyncStatusBar({
+    super.key,
+    required this.offline,
+    required this.pending,
+    required this.failed,
+    required this.onRetry,
+  });
 
-  final String message;
   final bool offline;
+  final int pending;
+  final int failed;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final message = failed > 0
+        ? l10n.failedSyncCount(failed)
+        : pending > 0
+        ? l10n.pendingSyncCount(pending)
+        : l10n.offlineBanner;
     return Semantics(
       liveRegion: true,
       child: Container(
+        key: const Key('sync-status-bar'),
         width: double.infinity,
         color: theme.colorScheme.surfaceContainerHighest,
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md,
-          vertical: AppSpacing.sm,
+          vertical: AppSpacing.xs,
         ),
         child: Row(
           children: [
             Icon(
-              offline ? Icons.cloud_off_outlined : Icons.cloud_upload_outlined,
-              size: AppSpacing.md,
-              color: theme.colorScheme.onSurfaceVariant,
+              failed > 0
+                  ? Icons.error_outline
+                  : offline
+                  ? Icons.cloud_off_outlined
+                  : Icons.cloud_upload_outlined,
+              color: failed > 0
+                  ? theme.colorScheme.error
+                  : theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: AppSpacing.sm),
-            Expanded(child: Text(message, style: theme.textTheme.bodySmall)),
+            Expanded(child: Text(message, style: theme.textTheme.bodyMedium)),
+            if (failed > 0)
+              TextButton(
+                key: const Key('sync-retry'),
+                onPressed: onRetry,
+                child: Text(l10n.syncRetry),
+              ),
           ],
         ),
       ),

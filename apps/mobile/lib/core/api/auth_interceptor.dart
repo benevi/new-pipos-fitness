@@ -14,7 +14,9 @@
 ///    d. En otro caso se refresca vía [RefreshLock] (los 401 concurrentes
 ///       comparten el mismo refresh) y se reintenta una vez.
 /// 3. Refresh rechazado por el servidor (400/401/403) → se borran tokens y se
-///    notifica sesión expirada. Un fallo de red durante el refresh NO cierra
+///    notifica sesión expirada. Excepción: `401 AUTH_REFRESH_RACE` (otro
+///    refresh concurrente ganó) NO cierra sesión: se reintenta con el token
+///    guardado si cambió; si no, se propaga el error original. Un fallo de red durante el refresh NO cierra
 ///    la sesión (modo offline): se propaga el error original.
 library;
 
@@ -22,6 +24,7 @@ import 'package:dio/dio.dart';
 
 import '../auth/auth_session_coordinator.dart';
 import '../auth/token_storage.dart';
+import 'api_failure.dart';
 import 'refresh_lock.dart';
 
 /// Claves de `RequestOptions.extra` que entiende el interceptor.
@@ -37,6 +40,13 @@ class AuthExtra {
 /// El servidor rechazó el refresh token: la sesión no se puede recuperar.
 class RefreshRejectedException implements Exception {
   const RefreshRejectedException();
+}
+
+/// El servidor respondió `401 AUTH_REFRESH_RACE`: otro refresh concurrente
+/// rotó el token. NO es motivo para cerrar sesión: se reintenta con el token
+/// guardado si cambió, y si no, se propaga el error original.
+class RefreshRaceException implements Exception {
+  const RefreshRaceException();
 }
 
 /// Obtiene un access token nuevo a partir del refresh token.
@@ -69,6 +79,14 @@ class DioTokenRefresher implements TokenRefresher {
       );
     } on DioException catch (e) {
       final status = e.response?.statusCode;
+      final body = e.response?.data;
+      if (status == 401 &&
+          body is Map &&
+          body['code'] == ApiErrorCode.authRefreshRace) {
+        // Otro refresh concurrente con el mismo token ganó: la sesión sigue
+        // siendo válida y el token nuevo lo guardó quien ganó.
+        throw const RefreshRaceException();
+      }
       if (status == 400 || status == 401 || status == 403) {
         throw const RefreshRejectedException();
       }
@@ -157,6 +175,10 @@ class AuthInterceptor extends Interceptor {
       } on RefreshRejectedException {
         await _expireSession();
         return handler.next(err);
+      } on RefreshRaceException {
+        final stored = await _storage.readAccessToken();
+        if (stored == null || stored == sentToken) return handler.next(err);
+        tokenForRetry = stored;
       } catch (_) {
         // Fallo transitorio (red/timeout/5xx): no cerramos la sesión.
         return handler.next(err);

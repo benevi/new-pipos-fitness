@@ -1,0 +1,226 @@
+{
+  "formatVersion": 1,
+  "exportedAt": "2026-11-09T08:00:00.000Z",
+  "user": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "email": "ana@pipos.app",
+    "role": "user",
+    "locale": "es",
+    "createdAt": "2026-11-09T08:00:00.000Z"
+  },
+  "profile": {
+    "goal": "hypertrophy",
+    "level": "beginner",
+    "daysPerWeek": 3,
+    "minutesPerSession": 45,
+    "equipment": [
+      "bodyweight",
+      "barbell",
+      "dumbbell",
+      "bench",
+      "squat_rack"
+    ],
+    "priorityMuscles": [
+      "glutes"
+    ],
+    "timezone": "Europe/Madrid",
+    "activityLevel": "active",
+    "birthYear": 1996,
+    "sex": "female",
+    "bannedExerciseSlugs": [],
+    "favouriteExerciseSlugs": [
+      "back-squat"
+    ],
+    "limitations": [
+      "shoulder"
+    ],
+    "weightKg": 62.5,
+    "heightCm": 168,
+    "healthConsent": {
+      "granted": true,
+      "version": "health-2026-11",
+      "grantedAt": "2026-11-09T08:00:00.000Z",
+      "currentVersion": "health-2026-11"
+    },
+    "updatedAt": "2026-11-09T08:00:00.000Z"
+  },
+  "consentEvents": [
+    {
+      "purpose": "health_data_processing",
+      "action": "granted",
+      "policyVersion": "health-2026-11",
+      "textHash": "abc",
+      "locale": "es",
+      "occurredAt": "2026-11-09T08:00:00.000Z"
+    }
+  ],
+  "plans": [
+    {
+      "id": "00000000-0000-4000-8000-000000000010",
+      "status": "active",
+      "createdAt": "2026-11-09T08:00:00.000Z",
+      "versions": [
+        {
+          "id": "00000000-0000-4000-8000-000000000012",
+          "planId": "00000000-0000-4000-8000-000000000010",
+          "version": 2,
+          "engineVersion": "2.0.0",
+          "splitType": "full_body",
+          "mesocycleWeeks": 5,
+          "objectiveScore": 0.87,
+          "sessionCount": 2,
+          "createdAt": "2026-11-09T08:00:00.000Z",
+          "split": {
+            "type": "full_body",
+            "rationale": [
+              "Entrenas 3 días: cuerpo completo permite trabajar cada grupo 2 veces por semana."
+            ]
+          },
+          "rationale": [
+            "Plan de hipertrofia para principiante con 45 minutos por sesión."
+          ],
+          "warnings": [
+            {
+              "code": "PATTERN_UNCOVERED",
+              "message": "Tu material no cubre el patrón de acarreo.",
+              "data": {
+                "pattern": "carry"
+              }
+            }
+          ],
+          "weeklyVolume": [
+            {
+              "group": "quads",
+              "effectiveSets": 9,
+              "min": 8,
+              "max": 12,
+              "sessions": 2,
+              "isPriority": false,
+              "status": "within"
+            },
+            {
+              "group": "glutes",
+              "effectiveSets": 10.5,
+              "min": 10,
+              "max": 14,
+              "sessions": 2,
+              "isPriority": true,
+              "status": "within"
+            }
+          ],
+          "sessions": [
+            {
+              "id": "00000000-0000-4000-8000-000000000020",
+              "order": 0,
+              "dayIndex": 0,
+              "kind": "full_body",
+              "name": "Cuerpo completo A",
+              "targetMinutes": 45,
+              "estimatedMinutes": 42.5,
+              "rationale": [
+                "Empieza con sentadilla porque glúteo es tu prioridad."
+              ],
+              "exercises": [
+                {
+                  "id": "00000000-0000-4000-8000-000000000030",
+                  "order": 0,
+                  "exerciseId": "00000000-0000-4000-8000-000000000040",
+                  "slug": "back-squat",
+                  "nameEs": "Sentadilla trasera",
+                  "movementPattern": "squat",
+                  "loadType": "weighted",
+                  "role": "main",
+                  "sets": 3,
+                  "repMin": 8,
+                  "repMax": 10,
+                  "targetRir": 2,
+                  "restSeconds": 90,
+                  "initialLoadKg": 40,
+                  "initialLoadIsEstimate": true,
+                  "warmupSets": [
+                    {
+                      "reps": 8,
+                      "loadPct": 50,
+                      "loadKg": 20
+                    }
+                  ],
+                  "estimatedMinutes": 9.5,
+                  "rationale": [
+                    "Sentadilla trasera: multiarticular de squat para tu objetivo."
+                  ]
+                },
+                {
+                  "id": "00000000-0000-4000-8000-000000000031",
+                  "order": 1,
+                  "exerciseId": "00000000-0000-4000-8000-000000000042",
+                  "slug": "pushup",
+                  "nameEs": "Flexiones",
+                  "movementPattern": "horizontal_push",
+                  "loadType": "unweighted",
+                  "role": "secondary",
+                  "sets": 3,
+                  "repMin": 8,
+                  "repMax": 10,
+                  "targetRir": 2,
+                  "restSeconds": 90,
+                  "initialLoadKg": null,
+                  "initialLoadIsEstimate": false,
+                  "warmupSets": [],
+                  "estimatedMinutes": 9.5,
+                  "rationale": [
+                    "Flexiones: multiarticular de horizontal_push para tu objetivo."
+                  ]
+                }
+              ]
+            },
+            {
+              "id": "00000000-0000-4000-8000-000000000021",
+              "order": 1,
+              "dayIndex": 3,
+              "kind": "full_body",
+              "name": "Cuerpo completo B",
+              "targetMinutes": 45,
+              "estimatedMinutes": 40,
+              "rationale": [
+                "Repite los patrones con variantes."
+              ],
+              "exercises": [
+                {
+                  "id": "00000000-0000-4000-8000-000000000032",
+                  "order": 2,
+                  "exerciseId": "00000000-0000-4000-8000-000000000043",
+                  "slug": "row",
+                  "nameEs": "Remo con mancuerna",
+                  "movementPattern": "horizontal_pull",
+                  "loadType": "weighted",
+                  "role": "secondary",
+                  "sets": 3,
+                  "repMin": 8,
+                  "repMax": 10,
+                  "targetRir": 2,
+                  "restSeconds": 90,
+                  "initialLoadKg": null,
+                  "initialLoadIsEstimate": true,
+                  "warmupSets": [],
+                  "estimatedMinutes": 9.5,
+                  "rationale": [
+                    "Remo con mancuerna: multiarticular de horizontal_pull para tu objetivo."
+                  ]
+                }
+              ]
+            }
+          ],
+          "inputSnapshot": {
+            "daysPerWeek": 3
+          }
+        }
+      ]
+    }
+  ],
+  "workouts": [],
+  "analytics": {
+    "e1rm": [],
+    "weeklyMuscleVolume": [],
+    "weeklyAdherence": []
+  }
+}

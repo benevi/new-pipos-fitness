@@ -1,0 +1,36 @@
+{
+  "exercise": {
+    "id": "00000000-0000-4000-8000-000000000040",
+    "slug": "squat",
+    "nameEs": "Sentadilla trasera"
+  },
+  "substitutes": [
+    {
+      "exerciseId": "00000000-0000-4000-8000-000000000044",
+      "slug": "leg-press",
+      "nameEs": "Prensa de piernas",
+      "score": 0.91,
+      "rationale": [
+        "Mismo patrón (sentadilla) y mismos músculos principales."
+      ]
+    },
+    {
+      "exerciseId": "00000000-0000-4000-8000-000000000041",
+      "slug": "goblet",
+      "nameEs": "Sentadilla goblet",
+      "score": 0.88,
+      "rationale": [
+        "Solo necesita una mancuerna."
+      ]
+    },
+    {
+      "exerciseId": "00000000-0000-4000-8000-000000000045",
+      "slug": "split-squat",
+      "nameEs": "Sentadilla búlgara",
+      "score": 0.8,
+      "rationale": [
+        "Unilateral: trabaja cuádriceps y glúteo."
+      ]
+    }
+  ]
+}

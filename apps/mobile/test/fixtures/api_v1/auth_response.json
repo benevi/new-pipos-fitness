@@ -1,0 +1,9 @@
+{
+  "accessToken": "access-1",
+  "refreshToken": "refresh-1",
+  "expiresIn": 900,
+  "user": {
+    "id": "00000000-0000-4000-8000-000000000001",
+    "email": "ana@pipos.app"
+  }
+}

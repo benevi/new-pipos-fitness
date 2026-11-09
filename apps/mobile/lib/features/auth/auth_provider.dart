@@ -222,6 +222,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     };
   }
 
+  /// La cuenta se borró en el servidor (`DELETE /me`): sus tokens ya no
+  /// sirven. Se borra la sesión local y se resetea el estado sin llamar a
+  /// `/auth/logout`.
+  Future<void> onAccountDeleted() async {
+    await _storage.clear();
+    _coordinator.onLoggedOut();
+  }
+
   /// Logout del usuario: revoca el refresh token (best effort, sin esperar a
   /// la red), borra la sesión local y resetea TODO el estado de la app.
   Future<void> logout() async {

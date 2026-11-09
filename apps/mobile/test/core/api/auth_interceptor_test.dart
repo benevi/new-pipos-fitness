@@ -217,4 +217,54 @@ void main() {
       isEmpty,
     );
   });
+
+  group('401 AUTH_REFRESH_RACE (otro refresh concurrente ganó)', () {
+    test(
+      'NO cierra sesión y reintenta con el token que guardó el ganador',
+      () async {
+        adapter.on('POST', '/auth/refresh', (_) async {
+          // Mientras tanto, el refresh ganador guardó tokens nuevos.
+          storage.accessToken = 'winner';
+          storage.refreshToken = 'r-winner';
+          return const FakeResponse(401, {
+            'statusCode': 401,
+            'code': 'AUTH_REFRESH_RACE',
+            'message': 'Refresh in progress',
+          });
+        });
+        adapter.on('GET', '/me', (o) async {
+          return o.headers['Authorization'] == 'Bearer winner'
+              ? FakeResponse(200, meJson())
+              : const FakeResponse(401);
+        });
+
+        final res = await dio().get<dynamic>('/me');
+
+        expect(res.statusCode, 200);
+        expect(ended, isEmpty);
+        expect(storage.accessToken, 'winner');
+        expect(storage.refreshToken, 'r-winner');
+      },
+    );
+
+    test(
+      'sin token nuevo guardado: propaga el 401 pero mantiene la sesión',
+      () async {
+        adapter.reply('POST', '/auth/refresh', 401, {
+          'statusCode': 401,
+          'code': 'AUTH_REFRESH_RACE',
+          'message': 'Refresh in progress',
+        });
+        adapter.reply('GET', '/me', 401);
+
+        await expectLater(
+          dio().get<dynamic>('/me'),
+          throwsA(isA<DioException>()),
+        );
+        expect(ended, isEmpty);
+        expect(storage.accessToken, 'old');
+        expect(storage.refreshToken, 'r1');
+      },
+    );
+  });
 }

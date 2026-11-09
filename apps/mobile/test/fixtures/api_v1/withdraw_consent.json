@@ -1,0 +1,19 @@
+{
+  "healthConsent": {
+    "granted": false,
+    "version": null,
+    "grantedAt": null,
+    "currentVersion": "health-2026-11"
+  },
+  "planVersion": {
+    "id": "00000000-0000-4000-8000-000000000012",
+    "planId": "00000000-0000-4000-8000-000000000010",
+    "version": 2,
+    "engineVersion": "2.0.0",
+    "splitType": "full_body",
+    "mesocycleWeeks": 5,
+    "objectiveScore": 0.87,
+    "sessionCount": 2,
+    "createdAt": "2026-11-09T08:00:00.000Z"
+  }
+}

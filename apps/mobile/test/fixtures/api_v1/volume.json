@@ -1,0 +1,38 @@
+{
+  "timezone": "Europe/Madrid",
+  "weeks": [
+    {
+      "weekStart": "2026-11-09",
+      "muscles": [
+        {
+          "muscle": "quads",
+          "effectiveSets": 6,
+          "tonnageKg": 2400
+        }
+      ],
+      "groups": [
+        {
+          "group": "quads",
+          "effectiveSets": 6,
+          "targetMin": 8,
+          "targetMax": 12,
+          "status": "below"
+        },
+        {
+          "group": "glutes",
+          "effectiveSets": 11,
+          "targetMin": 10,
+          "targetMax": 14,
+          "status": "within"
+        },
+        {
+          "group": "core",
+          "effectiveSets": 0,
+          "targetMin": null,
+          "targetMax": null,
+          "status": "no_target"
+        }
+      ]
+    }
+  ]
+}
