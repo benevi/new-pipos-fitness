@@ -9,14 +9,25 @@ Future<void> tapKey(
 }) async {
   final finder = find.byKey(Key(key));
   if (finder.evaluate().isEmpty) {
-    // Listas perezosas: el elemento aún no está construido.
-    await tester.scrollUntilVisible(
-      finder,
-      200,
-      scrollable: find.byType(Scrollable).last,
-    );
+    // Listas perezosas: el elemento aún no está construido. Se busca
+    // primero hacia arriba y luego hacia abajo.
+    try {
+      await tester.scrollUntilVisible(
+        finder,
+        -200,
+        scrollable: verticalScrollable(),
+        maxScrolls: 30,
+      );
+    } on StateError {
+      await tester.scrollUntilVisible(
+        finder,
+        200,
+        scrollable: verticalScrollable(),
+      );
+    }
   }
-  await tester.ensureVisible(finder);
+  // Centrado: que no quede bajo la AppBar ni bajo la barra inferior.
+  await Scrollable.ensureVisible(tester.element(finder), alignment: 0.5);
   await tester.pump();
   await tester.tap(finder);
   if (settle) {
@@ -54,3 +65,10 @@ Future<void> scrollToTop(WidgetTester tester) async {
   await tester.drag(find.byKey(const Key('today-list')), const Offset(0, 3000));
   await pumpFrames(tester, frames: 5);
 }
+
+/// La lista vertical visible más interna (no el Scrollable de un TextField).
+Finder verticalScrollable() => find
+    .byWidgetPredicate(
+      (w) => w is Scrollable && w.axisDirection == AxisDirection.down,
+    )
+    .last;

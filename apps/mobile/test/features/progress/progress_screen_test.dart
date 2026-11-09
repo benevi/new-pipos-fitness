@@ -63,7 +63,7 @@ void main() {
       await tester.scrollUntilVisible(
         find.text('2 de 3 sesiones (67 %)'),
         200,
-        scrollable: find.byType(Scrollable).last,
+        scrollable: verticalScrollable(),
       );
       expect(find.text('2 de 3 sesiones (67 %)'), findsOneWidget);
       await harness.drainAndUnmount(tester);
