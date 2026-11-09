@@ -218,6 +218,44 @@ class ExerciseRef {
   Json toJson() => {'id': id, 'slug': slug, 'nameEs': nameEs};
 }
 
+/// Músculo de un ejercicio con su papel (ADR-0014, Fase 1). La API los
+/// envía ordenados: principales primero y, dentro de cada rol, en el orden
+/// del enum.
+class ExerciseMuscleRef {
+  const ExerciseMuscleRef({required this.muscle, required this.role});
+
+  final Muscle muscle;
+  final MuscleRole role;
+
+  factory ExerciseMuscleRef.fromJson(Json j) => ExerciseMuscleRef(
+    muscle: j.enumValue('muscle', Muscle.values),
+    role: j.enumValue('role', MuscleRole.values),
+  );
+
+  /// Lista `muscles` de Hoy o Plan; vacía si falta (caché de una versión
+  /// anterior de la app o respuesta anterior a la Fase 1).
+  static List<ExerciseMuscleRef> listFrom(Json j) => j.orDefault(
+    'muscles',
+    const <ExerciseMuscleRef>[],
+    (k) => j.objList(k, ExerciseMuscleRef.fromJson),
+  );
+
+  Json toJson() => {'muscle': muscle.wire, 'role': role.wire};
+}
+
+/// Principales y secundarios de una lista de músculos, en su orden.
+extension ExerciseMuscles on List<ExerciseMuscleRef> {
+  List<Muscle> get primary => [
+    for (final m in this)
+      if (m.role == MuscleRole.primary) m.muscle,
+  ];
+
+  List<Muscle> get secondary => [
+    for (final m in this)
+      if (m.role == MuscleRole.secondary) m.muscle,
+  ];
+}
+
 class Substitution {
   const Substitution({
     required this.workoutId,
@@ -308,6 +346,7 @@ class SubstituteOption {
     required this.nameEs,
     required this.score,
     required this.rationale,
+    this.primaryMuscles = const [],
   });
 
   final String exerciseId;
@@ -316,12 +355,21 @@ class SubstituteOption {
   final double score;
   final List<String> rationale;
 
+  /// Músculos principales de la alternativa (ADR-0014); vacío en cachés
+  /// anteriores a la Fase 1.
+  final List<Muscle> primaryMuscles;
+
   factory SubstituteOption.fromJson(Json j) => SubstituteOption(
     exerciseId: j.str('exerciseId'),
     slug: j.str('slug'),
     nameEs: j.str('nameEs'),
     score: j.number('score'),
     rationale: j.strList('rationale'),
+    primaryMuscles: j.orDefault(
+      'primaryMuscles',
+      const <Muscle>[],
+      (k) => j.enumList(k, Muscle.values),
+    ),
   );
 
   Json toJson() => {
@@ -330,6 +378,7 @@ class SubstituteOption {
     'nameEs': nameEs,
     'score': jsonNum(score),
     'rationale': rationale,
+    'primaryMuscles': wires(primaryMuscles),
   };
 }
 
@@ -451,6 +500,7 @@ class TodayExercise {
     this.plates,
     this.pinned = false,
     this.note,
+    this.muscles = const [],
   });
 
   final String planExerciseId;
@@ -481,6 +531,10 @@ class TodayExercise {
   /// Nota fija del usuario para este ejercicio (idea 2).
   final String? note;
 
+  /// Músculos del ejercicio realmente hecho (ADR-0014, Fase 1): principales
+  /// primero.
+  final List<ExerciseMuscleRef> muscles;
+
   TodayExercise copyWith({String? note, bool clearNote = false}) =>
       TodayExercise(
         planExerciseId: planExerciseId,
@@ -500,11 +554,13 @@ class TodayExercise {
         plates: plates,
         pinned: pinned,
         note: clearNote ? null : (note ?? this.note),
+        muscles: muscles,
       );
 
   /// Vista local de un cambio de ejercicio aún sin confirmar por la API
-  /// (#23): sin la carga, los discos, el calentamiento ni la nota del
-  /// original, que no valen para el sustituto (se rellenan al sincronizar).
+  /// (#23): sin la carga, los discos, el calentamiento, la nota ni los
+  /// músculos del original, que no valen para el sustituto (se rellenan al
+  /// sincronizar).
   TodayExercise withPendingSwap(ExerciseRef to, ExerciseRef original) =>
       TodayExercise(
         planExerciseId: planExerciseId,
@@ -558,6 +614,7 @@ class TodayExercise {
     ),
     pinned: j.orDefault('pinned', false, j.boolean),
     note: j.orDefault('note', null, j.strOrNull),
+    muscles: ExerciseMuscleRef.listFrom(j),
   );
 
   Json toJson() => {
@@ -578,6 +635,7 @@ class TodayExercise {
     'plates': plates?.toJson(),
     'pinned': pinned,
     'note': note,
+    'muscles': muscles.map((m) => m.toJson()).toList(),
   };
 }
 

@@ -12,6 +12,9 @@
       "score": 0.91,
       "rationale": [
         "Mismo patrón (sentadilla) y mismos músculos principales."
+      ],
+      "primaryMuscles": [
+        "quads"
       ]
     },
     {
@@ -21,6 +24,9 @@
       "score": 0.88,
       "rationale": [
         "Solo necesita una mancuerna."
+      ],
+      "primaryMuscles": [
+        "quads"
       ]
     },
     {
@@ -30,6 +36,10 @@
       "score": 0.8,
       "rationale": [
         "Unilateral: trabaja cuádriceps y glúteo."
+      ],
+      "primaryMuscles": [
+        "glutes",
+        "quads"
       ]
     }
   ]

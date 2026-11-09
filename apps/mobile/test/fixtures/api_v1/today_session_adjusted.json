@@ -66,7 +66,25 @@
         "remainderKg": 0
       },
       "pinned": false,
-      "note": "Asiento en el 4; barra a la altura del pecho."
+      "note": "Asiento en el 4; barra a la altura del pecho.",
+      "muscles": [
+        {
+          "muscle": "glutes",
+          "role": "primary"
+        },
+        {
+          "muscle": "quads",
+          "role": "primary"
+        },
+        {
+          "muscle": "lower_back",
+          "role": "secondary"
+        },
+        {
+          "muscle": "adductors",
+          "role": "secondary"
+        }
+      ]
     },
     {
       "planExerciseId": "00000000-0000-4000-8000-000000000032",
@@ -102,7 +120,21 @@
       "loadStepKg": null,
       "plates": null,
       "pinned": false,
-      "note": null
+      "note": null,
+      "muscles": [
+        {
+          "muscle": "chest",
+          "role": "primary"
+        },
+        {
+          "muscle": "front_delts",
+          "role": "secondary"
+        },
+        {
+          "muscle": "triceps",
+          "role": "secondary"
+        }
+      ]
     }
   ],
   "scheduledToday": true,

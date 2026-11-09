@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/core/api/dio_error_mapper.dart';
 import 'package:pipos_fitness/models/body.dart';
+import 'package:pipos_fitness/models/enums.dart';
 import 'package:pipos_fitness/models/json.dart';
 import 'package:pipos_fitness/models/notes_breaks.dart';
 import 'package:pipos_fitness/models/plan.dart';
@@ -165,6 +166,42 @@ void main() {
       expect(s.exercises.first.pinned, isFalse);
     },
   );
+
+  test('músculos (ADR-0014): respuestas y cachés anteriores sin `muscles` '
+      'ni `primaryMuscles` siguen valiendo, con listas vacías', () {
+    final today = fixture('today_session');
+    for (final e in (today['exercises'] as List).cast<Json>()) {
+      e.remove('muscles');
+    }
+    final first = TodaySession.fromJson(today).exercises.first;
+    expect(first.muscles, isEmpty);
+    expect(first.toJson()['muscles'], isEmpty);
+
+    final plan = fixture('plan_version');
+    final slot =
+        (((plan['sessions'] as List).first as Json)['exercises'] as List)
+            .cast<Json>()
+            .first
+          ..remove('muscles');
+    expect(PlanExercise.fromJson(slot).muscles, isEmpty);
+
+    final subs = fixture('substitutes');
+    for (final o in (subs['substitutes'] as List).cast<Json>()) {
+      o.remove('primaryMuscles');
+    }
+    expect(
+      SubstitutesResponse.fromJson(subs).substitutes.first.primaryMuscles,
+      isEmpty,
+    );
+  });
+
+  test('músculos: principales y secundarios en el orden de la API', () {
+    final squat = TodaySession.fromJson(
+      fixture('today_session'),
+    ).exercises.first;
+    expect(squat.muscles.primary, [Muscle.glutes, Muscle.quads]);
+    expect(squat.muscles.secondary, [Muscle.lowerBack, Muscle.adductors]);
+  });
 
   test('export: valida cabecera y conserva el JSON completo', () {
     final e = AccountExport.fromJson(fixture('export'));

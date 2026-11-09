@@ -3,7 +3,7 @@ library;
 
 import 'enums.dart';
 import 'json.dart';
-import 'workout.dart' show ExerciseRef;
+import 'workout.dart' show ExerciseMuscleRef, ExerciseRef;
 
 class WarmupSet {
   const WarmupSet({required this.reps, this.loadPct, this.loadKg});
@@ -47,6 +47,7 @@ class PlanExercise {
     required this.rationale,
     this.loadImplement,
     this.pinned,
+    this.muscles = const [],
   });
 
   final String id;
@@ -74,6 +75,10 @@ class PlanExercise {
   /// Ejercicio fijado por el usuario para este hueco (idea 3); null = el del
   /// plan.
   final ExerciseRef? pinned;
+
+  /// Músculos del ejercicio que se hace en el hueco (el fijado si lo hay):
+  /// principales primero (ADR-0014, Fase 1).
+  final List<ExerciseMuscleRef> muscles;
 
   factory PlanExercise.fromJson(Json j) => PlanExercise(
     id: j.str('id'),
@@ -104,6 +109,7 @@ class PlanExercise {
       null,
       (k) => j.objOrNull(k) == null ? null : ExerciseRef.fromJson(j.obj(k)),
     ),
+    muscles: ExerciseMuscleRef.listFrom(j),
   );
 
   Json toJson() => {
@@ -127,6 +133,7 @@ class PlanExercise {
     'warmupSets': warmupSets.map((w) => w.toJson()).toList(),
     'estimatedMinutes': jsonNum(estimatedMinutes),
     'rationale': rationale,
+    'muscles': muscles.map((m) => m.toJson()).toList(),
   };
 }
 
