@@ -437,6 +437,19 @@ class FakeBackend
     if (outdatedPlanSessions.contains(request.planSessionId)) {
       throw _error(409, ApiErrorCode.planSessionOutdated);
     }
+    // Como la API: uno en curso sin actividad desde hace más de 12 h se
+    // abandona solo; si no, 409 WORKOUT_IN_PROGRESS.
+    final cutoff = request.startedAt.subtract(const Duration(hours: 12));
+    for (final w in workouts.values.toList()) {
+      if (w.status != WorkoutStatus.inProgress) continue;
+      var last = w.startedAt;
+      for (final set in sets.values) {
+        if (set.workoutId == w.id && set.completedAt.isAfter(last)) {
+          last = set.completedAt;
+        }
+      }
+      if (last.isBefore(cutoff)) autoAbandon(w.id);
+    }
     if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
       throw _error(409, ApiErrorCode.workoutInProgress);
     }
@@ -549,6 +562,39 @@ class FakeBackend
     );
     workouts[w.clientId] = done;
     return done;
+  }
+
+  int abandons = 0;
+
+  Workout _withStatus(Workout w, WorkoutStatus status) => Workout(
+    id: w.id,
+    clientId: w.clientId,
+    planSessionId: w.planSessionId,
+    status: status,
+    startedAt: w.startedAt,
+    completedAt: w.completedAt,
+    sets: w.sets,
+    substitutions: w.substitutions,
+  );
+
+  @override
+  Future<Workout> abandonWorkout(String workoutId) async {
+    _guard('POST /workouts/$workoutId/abandon');
+    final w = _byServerId(workoutId);
+    if (w == null) throw _error(404, ApiErrorCode.notFound);
+    if (w.status == WorkoutStatus.abandoned) return w;
+    if (w.status != WorkoutStatus.inProgress) {
+      throw _error(409, ApiErrorCode.workoutFinished);
+    }
+    abandons++;
+    return workouts[w.clientId] = _withStatus(w, WorkoutStatus.abandoned);
+  }
+
+  /// Simula el abandono automático del servidor (> 12 h sin actividad al
+  /// empezar otro entrenamiento).
+  void autoAbandon(String workoutId) {
+    final w = _byServerId(workoutId)!;
+    workouts[w.clientId] = _withStatus(w, WorkoutStatus.abandoned);
   }
 
   /// Series borradas con `DELETE` (clientId).

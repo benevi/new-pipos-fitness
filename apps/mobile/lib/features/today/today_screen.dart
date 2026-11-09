@@ -273,6 +273,50 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     );
   }
 
+  /// «Abandonar entrenamiento» (issue #13): pide confirmación, cierra el
+  /// entrenamiento en local (la cola envía el abandono, también sin red) y
+  /// deja Hoy limpio, también en la copia guardada para el modo avión.
+  Future<void> _abandon(LocalWorkout? local) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.todayAbandonTitle),
+        content: Text(l10n.todayAbandonBody),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('abandon-confirm'),
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+              foregroundColor: Theme.of(ctx).colorScheme.onError,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.todayAbandon),
+          ),
+        ],
+      ),
+    );
+    if (ok != true || !mounted) return;
+    final workout = local ?? await _ensureWorkout();
+    await ref.read(syncServiceProvider).abandonWorkout(workout.clientId);
+    ref.read(restTimerProvider.notifier).skip();
+    final json = session.toJson()
+      ..['workout'] = null
+      ..['exercises'] = [
+        for (final e in session.exercises) {...e.toJson(), 'loggedSets': []},
+      ];
+    await ref.read(cacheStoreProvider).write(CacheKeys.today, json);
+    ref.invalidate(todaySessionProvider);
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(l10n.todayAbandoned)));
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -350,6 +394,10 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               in ref.watch(conflictingWorkoutsProvider).valueOrNull ??
                   const <LocalWorkout>[])
             _ConflictBanner(workout: c),
+          for (final c
+              in ref.watch(closedRemotelyProvider).valueOrNull ??
+                  const <LocalWorkout>[])
+            _ClosedRemotelyBanner(workout: c),
           if (session.activeBreak != null)
             NoticeBanner(
               key: const Key('today-break'),
@@ -450,6 +498,20 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             icon: const Icon(Icons.flag_outlined),
             label: Text(l10n.todayFinish),
           ),
+          if (workout != null ||
+              session.workout?.status == WorkoutStatus.inProgress)
+            Align(
+              child: TextButton.icon(
+                key: const Key('abandon-workout'),
+                style: TextButton.styleFrom(
+                  foregroundColor: theme.colorScheme.error,
+                  minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                ),
+                onPressed: () => _abandon(workout),
+                icon: const Icon(Icons.close),
+                label: Text(l10n.todayAbandon),
+              ),
+            ),
           const SizedBox(height: AppSpacing.md),
           NoticeBanner(
             text: l10n.medicalNotice,
@@ -537,6 +599,45 @@ class _ConflictBanner extends ConsumerWidget {
                 child: Text(l10n.todayConflictDiscard),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// El servidor cerró un entrenamiento que la persona no había terminado
+/// (abandono automático tras 12 h sin actividad, o terminado en otro
+/// dispositivo): se explica qué series no se subieron.
+class _ClosedRemotelyBanner extends ConsumerWidget {
+  const _ClosedRemotelyBanner({required this.workout});
+
+  final LocalWorkout workout;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final lost =
+        (ref.watch(localSetsProvider(workout.clientId)).valueOrNull ??
+                const <LocalSetLog>[])
+            .where((s) => !s.confirmed && !s.deleted)
+            .length;
+    return Padding(
+      key: Key('workout-closed-${workout.clientId}'),
+      padding: const EdgeInsets.only(bottom: AppSpacing.md),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          NoticeBanner(
+            text: l10n.todayClosedRemotely(lost),
+            icon: Icons.info_outline,
+          ),
+          TextButton(
+            key: const Key('workout-closed-dismiss'),
+            onPressed: () => ref
+                .read(syncServiceProvider)
+                .dismissClosedNotice(workout.clientId),
+            child: Text(l10n.actionUnderstood),
           ),
         ],
       ),

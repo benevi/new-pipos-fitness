@@ -184,15 +184,21 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
   y ofrece descartarlo (se conserva en el móvil hasta entonces); la sesión y el plan se releen.
   Tests en `test/core/offline/sync_service_test.dart`.
 
-### [Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos
-- **Severidad:** Baja
-- **Contexto:** la API ya admite `Idempotency-Key` en `POST /plans/generate` (issue #11) y
-  `POST /workouts/:id/abandon` (issue #13); la app todavía no los usa.
-- **Comportamiento esperado del cliente:** un UUID v4 por pulsación de «Generar plan», reenviado
-  igual en cada reintento (200 y 201 son éxito; ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un
-  reintento). Acción «Descartar entrenamiento» que encole `abandon` (idempotente). Si una serie
-  encolada recibe `409 WORKOUT_FINISHED` y el entrenamiento está `abandoned` (abandono automático
-  tras 12 h sin actividad al empezar otro), mostrarlo y no reintentar.
+### ~~[Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`.
+- **Qué se hizo:**
+  - «Generar mi plan» envía `Idempotency-Key` (UUID v4 por pulsación, reutilizado en cada
+    reintento hasta que sale bien); ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un reintento.
+    La edición del perfil no llama a `/plans/generate` (la versión la crea `PUT /me/profile`).
+    Tests en `test/features/onboarding/onboarding_test.dart`.
+  - «Abandonar entrenamiento» en Hoy (con confirmación), también sin red: cierra el entrenamiento en
+    local (columna `abandoned`, drift v5), descarta las series no confirmadas y la cola envía
+    `POST /workouts/:id/abandon` (idempotente; `409 WORKOUT_FINISHED` se da por cerrado).
+  - Una serie o un cambio de ejercicio que recibe `409 WORKOUT_FINISHED` (entrenamiento cerrado en
+    el servidor, p. ej. abandonado solo tras 12 h) cierra el entrenamiento en local sin reintentar
+    ni bloquear la cola, y Hoy avisa de cuántas series no se subieron. Un entrenamiento abierto, sin
+    nada pendiente y sin actividad desde hace más de 12 h se cierra como abandonado al empezar otro.
+    Tests: `test/core/offline/abandon_queue_test.dart`, `test/features/today/abandon_workout_test.dart`.
 
 ### ~~[Móvil] Poder descartar una serie rechazada de forma permanente por la API~~ — RESUELTO (PR pendiente)
 - **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #21.

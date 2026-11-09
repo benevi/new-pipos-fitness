@@ -1046,6 +1046,42 @@ abstract class AppLocalizations {
   /// **'Terminar entrenamiento'**
   String get todayFinish;
 
+  /// No description provided for @todayAbandon.
+  ///
+  /// In es, this message translates to:
+  /// **'Abandonar entrenamiento'**
+  String get todayAbandon;
+
+  /// No description provided for @todayAbandonTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Abandonar el entrenamiento?'**
+  String get todayAbandonTitle;
+
+  /// No description provided for @todayAbandonBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Lo registrado se conserva pero no contará en tu progreso ni en la adherencia, y no podrás añadir más series. Se enviará aunque ahora no tengas conexión.'**
+  String get todayAbandonBody;
+
+  /// No description provided for @todayAbandoned.
+  ///
+  /// In es, this message translates to:
+  /// **'Entrenamiento abandonado.'**
+  String get todayAbandoned;
+
+  /// No description provided for @todayClosedRemotely.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu entrenamiento anterior se cerró en el servidor (p. ej., se abandonó solo tras 12 h sin actividad). {count, plural, =0{No quedó nada sin subir.} =1{1 serie no llegó a subirse.} other{{count} series no llegaron a subirse.}}'**
+  String todayClosedRemotely(int count);
+
+  /// No description provided for @actionUnderstood.
+  ///
+  /// In es, this message translates to:
+  /// **'Entendido'**
+  String get actionUnderstood;
+
   /// No description provided for @todayFinishConfirmTitle.
   ///
   /// In es, this message translates to:

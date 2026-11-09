@@ -134,6 +134,21 @@ class $LocalWorkoutsTable extends LocalWorkouts
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _abandonedMeta = const VerificationMeta(
+    'abandoned',
+  );
+  @override
+  late final GeneratedColumn<bool> abandoned = GeneratedColumn<bool>(
+    'abandoned',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("abandoned" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -147,6 +162,7 @@ class $LocalWorkoutsTable extends LocalWorkouts
     lastError,
     nextAttemptAt,
     adjustmentJson,
+    abandoned,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -246,6 +262,12 @@ class $LocalWorkoutsTable extends LocalWorkouts
         ),
       );
     }
+    if (data.containsKey('abandoned')) {
+      context.handle(
+        _abandonedMeta,
+        abandoned.isAcceptableOrUnknown(data['abandoned']!, _abandonedMeta),
+      );
+    }
     return context;
   }
 
@@ -299,6 +321,10 @@ class $LocalWorkoutsTable extends LocalWorkouts
         DriftSqlType.string,
         data['${effectivePrefix}adjustment_json'],
       ),
+      abandoned: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}abandoned'],
+      )!,
     );
   }
 
@@ -328,6 +354,10 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
   /// Ajuste de hoy elegido antes de empezar (JSON de `WorkoutAdjustment`;
   /// null = sesión completa). Se envía en `POST /workouts`.
   final String? adjustmentJson;
+
+  /// Abandonado (issue #13): `finishedAt` es el momento del abandono y el
+  /// cierre se envía con `POST /workouts/:id/abandon` en vez de `finish`.
+  final bool abandoned;
   const LocalWorkout({
     required this.clientId,
     required this.userId,
@@ -340,6 +370,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     this.lastError,
     this.nextAttemptAt,
     this.adjustmentJson,
+    required this.abandoned,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -365,6 +396,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     if (!nullToAbsent || adjustmentJson != null) {
       map['adjustment_json'] = Variable<String>(adjustmentJson);
     }
+    map['abandoned'] = Variable<bool>(abandoned);
     return map;
   }
 
@@ -391,6 +423,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       adjustmentJson: adjustmentJson == null && nullToAbsent
           ? const Value.absent()
           : Value(adjustmentJson),
+      abandoned: Value(abandoned),
     );
   }
 
@@ -411,6 +444,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       lastError: serializer.fromJson<String?>(json['lastError']),
       nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
       adjustmentJson: serializer.fromJson<String?>(json['adjustmentJson']),
+      abandoned: serializer.fromJson<bool>(json['abandoned']),
     );
   }
   @override
@@ -428,6 +462,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       'lastError': serializer.toJson<String?>(lastError),
       'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
       'adjustmentJson': serializer.toJson<String?>(adjustmentJson),
+      'abandoned': serializer.toJson<bool>(abandoned),
     };
   }
 
@@ -443,6 +478,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     Value<String?> lastError = const Value.absent(),
     Value<DateTime?> nextAttemptAt = const Value.absent(),
     Value<String?> adjustmentJson = const Value.absent(),
+    bool? abandoned,
   }) => LocalWorkout(
     clientId: clientId ?? this.clientId,
     userId: userId ?? this.userId,
@@ -459,6 +495,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     adjustmentJson: adjustmentJson.present
         ? adjustmentJson.value
         : this.adjustmentJson,
+    abandoned: abandoned ?? this.abandoned,
   );
   LocalWorkout copyWithCompanion(LocalWorkoutsCompanion data) {
     return LocalWorkout(
@@ -483,6 +520,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       adjustmentJson: data.adjustmentJson.present
           ? data.adjustmentJson.value
           : this.adjustmentJson,
+      abandoned: data.abandoned.present ? data.abandoned.value : this.abandoned,
     );
   }
 
@@ -499,7 +537,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
-          ..write('adjustmentJson: $adjustmentJson')
+          ..write('adjustmentJson: $adjustmentJson, ')
+          ..write('abandoned: $abandoned')
           ..write(')'))
         .toString();
   }
@@ -517,6 +556,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     lastError,
     nextAttemptAt,
     adjustmentJson,
+    abandoned,
   );
   @override
   bool operator ==(Object other) =>
@@ -532,7 +572,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           other.attempts == this.attempts &&
           other.lastError == this.lastError &&
           other.nextAttemptAt == this.nextAttemptAt &&
-          other.adjustmentJson == this.adjustmentJson);
+          other.adjustmentJson == this.adjustmentJson &&
+          other.abandoned == this.abandoned);
 }
 
 class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
@@ -547,6 +588,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
   final Value<String?> lastError;
   final Value<DateTime?> nextAttemptAt;
   final Value<String?> adjustmentJson;
+  final Value<bool> abandoned;
   final Value<int> rowid;
   const LocalWorkoutsCompanion({
     this.clientId = const Value.absent(),
@@ -560,6 +602,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
     this.adjustmentJson = const Value.absent(),
+    this.abandoned = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalWorkoutsCompanion.insert({
@@ -574,6 +617,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
     this.adjustmentJson = const Value.absent(),
+    this.abandoned = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        userId = Value(userId),
@@ -591,6 +635,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Expression<String>? lastError,
     Expression<DateTime>? nextAttemptAt,
     Expression<String>? adjustmentJson,
+    Expression<bool>? abandoned,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -605,6 +650,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       if (lastError != null) 'last_error': lastError,
       if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
       if (adjustmentJson != null) 'adjustment_json': adjustmentJson,
+      if (abandoned != null) 'abandoned': abandoned,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -621,6 +667,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Value<String?>? lastError,
     Value<DateTime?>? nextAttemptAt,
     Value<String?>? adjustmentJson,
+    Value<bool>? abandoned,
     Value<int>? rowid,
   }) {
     return LocalWorkoutsCompanion(
@@ -635,6 +682,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       lastError: lastError ?? this.lastError,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
       adjustmentJson: adjustmentJson ?? this.adjustmentJson,
+      abandoned: abandoned ?? this.abandoned,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -675,6 +723,9 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     if (adjustmentJson.present) {
       map['adjustment_json'] = Variable<String>(adjustmentJson.value);
     }
+    if (abandoned.present) {
+      map['abandoned'] = Variable<bool>(abandoned.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -695,6 +746,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
           ..write('adjustmentJson: $adjustmentJson, ')
+          ..write('abandoned: $abandoned, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -2677,6 +2729,7 @@ typedef $$LocalWorkoutsTableCreateCompanionBuilder =
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<String?> adjustmentJson,
+      Value<bool> abandoned,
       Value<int> rowid,
     });
 typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
@@ -2692,6 +2745,7 @@ typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
       Value<String?> adjustmentJson,
+      Value<bool> abandoned,
       Value<int> rowid,
     });
 
@@ -2756,6 +2810,11 @@ class $$LocalWorkoutsTableFilterComposer
 
   ColumnFilters<String> get adjustmentJson => $composableBuilder(
     column: $table.adjustmentJson,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get abandoned => $composableBuilder(
+    column: $table.abandoned,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2823,6 +2882,11 @@ class $$LocalWorkoutsTableOrderingComposer
     column: $table.adjustmentJson,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<bool> get abandoned => $composableBuilder(
+    column: $table.abandoned,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalWorkoutsTableAnnotationComposer
@@ -2876,6 +2940,9 @@ class $$LocalWorkoutsTableAnnotationComposer
     column: $table.adjustmentJson,
     builder: (column) => column,
   );
+
+  GeneratedColumn<bool> get abandoned =>
+      $composableBuilder(column: $table.abandoned, builder: (column) => column);
 }
 
 class $$LocalWorkoutsTableTableManager
@@ -2920,6 +2987,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<String?> adjustmentJson = const Value.absent(),
+                Value<bool> abandoned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion(
                 clientId: clientId,
@@ -2933,6 +3001,7 @@ class $$LocalWorkoutsTableTableManager
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
                 adjustmentJson: adjustmentJson,
+                abandoned: abandoned,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2948,6 +3017,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
                 Value<String?> adjustmentJson = const Value.absent(),
+                Value<bool> abandoned = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion.insert(
                 clientId: clientId,
@@ -2961,6 +3031,7 @@ class $$LocalWorkoutsTableTableManager
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
                 adjustmentJson: adjustmentJson,
+                abandoned: abandoned,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

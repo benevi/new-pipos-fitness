@@ -597,6 +597,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinish => 'Finish workout';
 
   @override
+  String get todayAbandon => 'Abandon workout';
+
+  @override
+  String get todayAbandonTitle => 'Abandon the workout?';
+
+  @override
+  String get todayAbandonBody =>
+      'What you logged is kept but won\'t count towards your progress or adherence, and you can\'t add more sets. It will be sent even if you\'re offline right now.';
+
+  @override
+  String get todayAbandoned => 'Workout abandoned.';
+
+  @override
+  String todayClosedRemotely(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets weren\'t uploaded.',
+      one: '1 set wasn\'t uploaded.',
+      zero: 'Nothing was left to upload.',
+    );
+    return 'Your previous workout was closed on the server (e.g. abandoned automatically after 12 h without activity). $_temp0';
+  }
+
+  @override
+  String get actionUnderstood => 'Got it';
+
+  @override
   String get todayFinishConfirmTitle => 'Finish the workout?';
 
   @override

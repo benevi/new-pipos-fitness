@@ -235,6 +235,7 @@ class SyncService {
     if (_userId == null || _disposed) return;
     await recoverInterrupted();
     await _purgeOld();
+    await _closeStaleWorkouts();
     _connectivitySub ??= _connectivity.onlineChanges.listen((online) {
       if (online) _kick();
     });
@@ -292,6 +293,7 @@ class SyncService {
     String planSessionId,
     WorkoutAdjustment? adjustment,
   ) async {
+    await _closeStaleWorkouts();
     final open = await openWorkoutFor(planSessionId);
     if (open != null) return open;
     return _db
@@ -656,6 +658,159 @@ class SyncService {
       (_db.select(_sets)
             ..where((t) => t.clientId.equals(clientId) & t.userId.equals(_uid)))
           .getSingleOrNull();
+
+  /// Sin actividad durante este tiempo, la API abandona sola un
+  /// entrenamiento en curso al empezar otro.
+  static const staleAfter = Duration(hours: 12);
+
+  /// «Abandonar entrenamiento» (issue #13): funciona sin red. Si nunca llegó
+  /// al servidor se borra sin más; si no, se cierra en local (deja de estar
+  /// abierto) y la cola envía `POST /workouts/:id/abandon` (idempotente).
+  /// Las series que la API no había confirmado se descartan: un entrenamiento
+  /// abandonado no admite series nuevas y lo hecho deja de contar.
+  Future<void> abandonWorkout(String workoutClientId) async {
+    final w = await workoutByClientId(workoutClientId);
+    if (w == null) return;
+    if (w.serverId == null) return discardWorkout(workoutClientId);
+    await _db.transaction(() async {
+      await (_db.delete(_sets)..where(
+            (t) =>
+                t.workoutClientId.equals(workoutClientId) &
+                t.confirmed.equals(false),
+          ))
+          .go();
+      for (final m in await _swapRowsOf(workoutClientId)) {
+        await (_db.delete(_mutations)..where(
+              (t) =>
+                  t.userId.equals(m.userId) &
+                  t.mutationKey.equals(m.mutationKey),
+            ))
+            .go();
+      }
+      await (_db.update(
+        _workouts,
+      )..where((t) => t.clientId.equals(workoutClientId))).write(
+        LocalWorkoutsCompanion(
+          finishedAt: Value(_clock()),
+          abandoned: const Value(true),
+          finishSynced: const Value(false),
+          attempts: const Value(0),
+          nextAttemptAt: const Value(null),
+          lastError: const Value(null),
+        ),
+      );
+    });
+    _notify();
+    _kick();
+  }
+
+  /// Entrenamientos abiertos ya enlazados con la API, sin nada pendiente y
+  /// sin actividad desde hace más de [staleAfter]: el servidor los
+  /// abandonará (o ya lo hizo) al empezar otro. Se cierran también en local,
+  /// como abandonados, para que una sesión nueva no se registre en ellos.
+  Future<void> _closeStaleWorkouts() async {
+    final userId = _userId;
+    if (userId == null) return;
+    final cutoff = _clock().subtract(staleAfter);
+    final open =
+        await (_db.select(_workouts)..where(
+              (t) =>
+                  t.userId.equals(userId) &
+                  t.finishedAt.isNull() &
+                  t.serverId.isNotNull() &
+                  t.startedAt.isSmallerThanValue(cutoff),
+            ))
+            .get();
+    for (final w in open) {
+      final sets = await (_db.select(
+        _sets,
+      )..where((t) => t.workoutClientId.equals(w.clientId))).get();
+      if (sets.any((s) => s.status != SetSyncStatus.synced)) continue;
+      var last = w.startedAt;
+      for (final s in sets) {
+        if (s.updatedAt.isAfter(last)) last = s.updatedAt;
+      }
+      if (!last.isBefore(cutoff)) continue;
+      await (_db.update(
+        _workouts,
+      )..where((t) => t.clientId.equals(w.clientId))).write(
+        LocalWorkoutsCompanion(
+          finishedAt: Value(last),
+          abandoned: const Value(true),
+          attempts: const Value(0),
+        ),
+      );
+    }
+  }
+
+  /// La API rechazó una escritura con `409 WORKOUT_FINISHED`: el
+  /// entrenamiento ya está cerrado en el servidor (terminado en otro
+  /// dispositivo o abandonado solo tras 12 h sin actividad). Se trata como
+  /// cerrado: no se reintenta nada de él; sus series sin confirmar quedan
+  /// fuera (sin bloquear la cola) y, si la persona no lo había terminado,
+  /// Hoy lo explica ([watchClosedRemotely]).
+  Future<void> _closedRemotely(String workoutClientId) async {
+    final w = await workoutByClientId(workoutClientId);
+    if (w == null) return;
+    await (_db.update(_sets)..where(
+          (t) =>
+              t.workoutClientId.equals(workoutClientId) &
+              t.confirmed.equals(false) &
+              t.status.equalsValue(SetSyncStatus.synced).not(),
+        ))
+        .write(
+          const LocalSetLogsCompanion(
+            status: Value(SetSyncStatus.synced),
+            lastError: Value(ApiErrorCode.workoutFinished),
+            nextAttemptAt: Value(null),
+          ),
+        );
+    for (final m in await _swapRowsOf(workoutClientId)) {
+      await (_db.delete(_mutations)..where(
+            (t) =>
+                t.userId.equals(m.userId) & t.mutationKey.equals(m.mutationKey),
+          ))
+          .go();
+    }
+    await (_db.update(
+      _workouts,
+    )..where((t) => t.clientId.equals(workoutClientId))).write(
+      LocalWorkoutsCompanion(
+        finishedAt: Value(w.finishedAt ?? _clock()),
+        finishSynced: const Value(true),
+        abandoned: Value(w.abandoned || w.finishedAt == null),
+        lastError: Value(w.finishedAt == null ? closedRemotelyCode : null),
+        nextAttemptAt: const Value(null),
+      ),
+    );
+    _notify();
+  }
+
+  /// `lastError` de un entrenamiento que el servidor cerró por su cuenta.
+  static const closedRemotelyCode = 'WORKOUT_CLOSED_REMOTELY';
+
+  /// Entrenamientos cerrados por el servidor sin que la persona los
+  /// terminara (aviso en Hoy hasta que lo cierre con [dismissClosedNotice]).
+  Stream<List<LocalWorkout>> watchClosedRemotely() {
+    final userId = _userId;
+    if (userId == null) return Stream.value(const []);
+    return _watch(
+      () =>
+          (_db.select(_workouts)..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.lastError.equals(closedRemotelyCode),
+              ))
+              .get(),
+    );
+  }
+
+  Future<void> dismissClosedNotice(String workoutClientId) async {
+    await (_db.update(_workouts)
+          ..where((t) => t.clientId.equals(workoutClientId)))
+        .write(const LocalWorkoutsCompanion(lastError: Value(null)));
+    _notify();
+  }
 
   /// Marca el entrenamiento como terminado; el `finish` se envía cuando
   /// TODAS sus series estén sincronizadas. Las `failed` se vuelven a poner
@@ -1158,6 +1313,11 @@ class SyncService {
           failed++;
           continue;
         }
+        if (f.code == ApiErrorCode.workoutFinished && !item.confirmed) {
+          await _closedRemotely(item.workoutClientId);
+          failed++;
+          continue;
+        }
         if (!_isTransient(f) || attempts >= backoff.maxAttempts) {
           await _markSetFailed(item, _reason(f), attempts);
           failed++;
@@ -1206,17 +1366,24 @@ class SyncService {
             .get();
     for (final w in finished) {
       if (_disposed) break;
-      final open =
-          await (_db.select(_sets)..where(
-                (t) =>
-                    t.workoutClientId.equals(w.clientId) &
-                    t.status.equalsValue(SetSyncStatus.synced).not(),
-              ))
-              .get();
+      // Un abandono no espera a las series (las no confirmadas ya se
+      // descartaron; editar o borrar las confirmadas sigue permitido).
+      final open = w.abandoned
+          ? const <LocalSetLog>[]
+          : await (_db.select(_sets)..where(
+                  (t) =>
+                      t.workoutClientId.equals(w.clientId) &
+                      t.status.equalsValue(SetSyncStatus.synced).not(),
+                ))
+                .get();
       if (open.isNotEmpty) continue;
       if (_deferIfNotDue(w.nextAttemptAt)) continue;
       try {
-        await _api.finishWorkout(w.serverId!, w.finishedAt!);
+        if (w.abandoned) {
+          await _api.abandonWorkout(w.serverId!);
+        } else {
+          await _api.finishWorkout(w.serverId!, w.finishedAt!);
+        }
         await _markFinishSynced(w.clientId);
         sent++;
       } catch (e) {
@@ -1327,7 +1494,12 @@ class SyncService {
       await _mutationSent(m);
       return _SwapOutcome.sent;
     } catch (e) {
-      return await _mutationFailed(m, ApiFailure.from(e))
+      final f = ApiFailure.from(e);
+      if (f.code == ApiErrorCode.workoutFinished) {
+        await _closedRemotely(swap.workoutClientId);
+        return _SwapOutcome.failed;
+      }
+      return await _mutationFailed(m, f)
           ? _SwapOutcome.failed
           : _SwapOutcome.deferred;
     }

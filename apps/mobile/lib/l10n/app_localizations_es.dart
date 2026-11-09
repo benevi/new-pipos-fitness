@@ -599,6 +599,34 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinish => 'Terminar entrenamiento';
 
   @override
+  String get todayAbandon => 'Abandonar entrenamiento';
+
+  @override
+  String get todayAbandonTitle => '¿Abandonar el entrenamiento?';
+
+  @override
+  String get todayAbandonBody =>
+      'Lo registrado se conserva pero no contará en tu progreso ni en la adherencia, y no podrás añadir más series. Se enviará aunque ahora no tengas conexión.';
+
+  @override
+  String get todayAbandoned => 'Entrenamiento abandonado.';
+
+  @override
+  String todayClosedRemotely(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series no llegaron a subirse.',
+      one: '1 serie no llegó a subirse.',
+      zero: 'No quedó nada sin subir.',
+    );
+    return 'Tu entrenamiento anterior se cerró en el servidor (p. ej., se abandonó solo tras 12 h sin actividad). $_temp0';
+  }
+
+  @override
+  String get actionUnderstood => 'Entendido';
+
+  @override
   String get todayFinishConfirmTitle => '¿Terminar el entrenamiento?';
 
   @override

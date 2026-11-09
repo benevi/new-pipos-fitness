@@ -62,6 +62,10 @@ class LocalWorkouts extends Table {
   /// null = sesión completa). Se envía en `POST /workouts`.
   TextColumn get adjustmentJson => text().nullable()();
 
+  /// Abandonado (issue #13): `finishedAt` es el momento del abandono y el
+  /// cierre se envía con `POST /workouts/:id/abandon` en vez de `finish`.
+  BoolColumn get abandoned => boolean().withDefault(const Constant(false))();
+
   @override
   Set<Column<Object>> get primaryKey => {clientId};
 }
@@ -165,7 +169,7 @@ class AppDatabase extends _$AppDatabase {
     : super(executor ?? driftDatabase(name: 'pipos_fitness'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -191,6 +195,10 @@ class AppDatabase extends _$AppDatabase {
         await customStatement(
           "UPDATE local_set_logs SET confirmed = 1 WHERE status = 'synced'",
         );
+      }
+      if (from < 5) {
+        // Abandonar entrenamientos (issue #13 de la API).
+        await m.addColumn(localWorkouts, localWorkouts.abandoned);
       }
     },
   );

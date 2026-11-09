@@ -76,6 +76,10 @@ abstract class WorkoutApi {
   );
   Future<Workout> finishWorkout(String workoutId, DateTime completedAt);
 
+  /// `POST /workouts/:id/abandon` (idempotente; 409 WORKOUT_FINISHED si ya
+  /// estaba terminado).
+  Future<Workout> abandonWorkout(String workoutId);
+
   /// `DELETE /workouts/:id/sets/:clientId` (borrado lógico, idempotente;
   /// 404 si la serie nunca llegó al servidor).
   Future<SetLog> deleteSet(String workoutId, String clientId);
@@ -348,6 +352,13 @@ class DioPiposApi
           ),
         ),
       );
+
+  @override
+  Future<Workout> abandonWorkout(String workoutId) => _call(
+    () async => Workout.fromJson(
+      _json(await _client.post('/workouts/$workoutId/abandon')),
+    ),
+  );
 
   @override
   Future<SetLog> deleteSet(String workoutId, String clientId) => _call(

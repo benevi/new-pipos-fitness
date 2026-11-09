@@ -143,6 +143,12 @@ final openWorkoutProvider = StreamProvider.autoDispose
           ref.watch(syncServiceProvider).watchOpenWorkout(planSessionId),
     );
 
+/// Entrenamientos que el servidor cerró sin que la persona los terminara
+/// (p. ej. abandonados solos tras 12 h sin actividad).
+final closedRemotelyProvider = StreamProvider.autoDispose<List<LocalWorkout>>(
+  (ref) => ref.watch(syncServiceProvider).watchClosedRemotely(),
+);
+
 /// La API avisó de que el plan cambió (`409 PLAN_SESSION_OUTDATED`).
 final planOutdatedProvider = StreamProvider.autoDispose<void>(
   (ref) => ref.watch(syncServiceProvider).planOutdated,
