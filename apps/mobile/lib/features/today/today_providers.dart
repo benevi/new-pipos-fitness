@@ -37,6 +37,7 @@ final todaySessionProvider = FutureProvider.autoDispose<Cached<TodaySession>?>((
       TodaySession.fromJson(cached.json),
       savedAt: cached.savedAt,
       fromCache: true,
+      isStale: !isSameLocalDay(cached.savedAt, ref.read(clockProvider)()),
     );
   }
 });
@@ -47,6 +48,13 @@ final openWorkoutProvider = StreamProvider.autoDispose
     .family<LocalWorkout?, String>(
       (ref, planSessionId) =>
           ref.watch(syncServiceProvider).watchOpenWorkout(planSessionId),
+    );
+
+/// Entrenamientos locales bloqueados por otro en curso en la cuenta
+/// (`409 WORKOUT_IN_PROGRESS` de otra sesión del plan).
+final conflictingWorkoutsProvider =
+    StreamProvider.autoDispose<List<LocalWorkout>>(
+      (ref) => ref.watch(syncServiceProvider).watchConflictingWorkouts(),
     );
 
 /// Series locales del entrenamiento.
@@ -109,20 +117,36 @@ List<LoggedSetView> mergeSets(TodayExercise exercise, List<LocalSetLog> local) {
 // ── Temporizador de descanso ──
 
 class RestTimerState {
-  const RestTimerState({required this.total, required this.remaining});
+  const RestTimerState({
+    required this.total,
+    required this.endsAt,
+    required this.remaining,
+  });
 
   final int total;
+
+  /// Momento (reloj de la app) en que termina el descanso.
+  final DateTime endsAt;
+
+  /// Segundos que faltan, calculados contra el reloj (no contando ticks).
   final int remaining;
 
   bool get done => remaining <= 0;
 }
 
 /// Cuenta atrás de descanso que arranca sola tras confirmar una serie.
-/// Al terminar vibra (si el dispositivo lo permite). Un `Timer` por
-/// segundo; se cancela al saltar o al salir de la pantalla.
+/// Al terminar vibra (si el dispositivo lo permite).
+///
+/// Se guarda `endsAt` y lo que falta se calcula con el reloj en cada tick:
+/// si la app se suspende (pantalla apagada, otra app), los ticks no llegan,
+/// pero al volver el tiempo restante es el real. [refresh] lo recalcula al
+/// instante (lo llama la barra al volver a primer plano).
 class RestTimerController extends StateNotifier<RestTimerState?> {
-  RestTimerController() : super(null);
+  RestTimerController({DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now,
+      super(null);
 
+  final DateTime Function() _clock;
   Timer? _ticker;
 
   void start(int seconds) {
@@ -131,21 +155,32 @@ class RestTimerController extends StateNotifier<RestTimerState?> {
       state = null;
       return;
     }
-    state = RestTimerState(total: seconds, remaining: seconds);
-    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => _tick());
+    _set(seconds, _clock().add(Duration(seconds: seconds)));
+    _ticker = Timer.periodic(const Duration(seconds: 1), (_) => refresh());
   }
 
-  void _tick() {
+  int _remainingUntil(DateTime endsAt) {
+    final ms = endsAt.difference(_clock()).inMilliseconds;
+    return ms <= 0 ? 0 : (ms / 1000).ceil();
+  }
+
+  void _set(int total, DateTime endsAt) {
+    state = RestTimerState(
+      total: total,
+      endsAt: endsAt,
+      remaining: _remainingUntil(endsAt),
+    );
+  }
+
+  /// Recalcula lo que falta según el reloj.
+  void refresh() {
     final s = state;
-    if (s == null) return;
-    final remaining = s.remaining - 1;
-    if (remaining <= 0) {
+    if (s == null || s.done) return;
+    _set(s.total, s.endsAt);
+    if (state!.done) {
       _ticker?.cancel();
-      state = RestTimerState(total: s.total, remaining: 0);
       HapticFeedback.heavyImpact();
-      return;
     }
-    state = RestTimerState(total: s.total, remaining: remaining);
   }
 
   void add(int seconds) {
@@ -155,10 +190,7 @@ class RestTimerController extends StateNotifier<RestTimerState?> {
       start(seconds);
       return;
     }
-    state = RestTimerState(
-      total: s.total + seconds,
-      remaining: s.remaining + seconds,
-    );
+    _set(s.total + seconds, s.endsAt.add(Duration(seconds: seconds)));
   }
 
   void skip() {
@@ -175,7 +207,7 @@ class RestTimerController extends StateNotifier<RestTimerState?> {
 
 final restTimerProvider =
     StateNotifierProvider.autoDispose<RestTimerController, RestTimerState?>(
-      (ref) => RestTimerController(),
+      (ref) => RestTimerController(clock: ref.watch(clockProvider)),
     );
 
 /// Resumen que recibe la pantalla de fin de entrenamiento.

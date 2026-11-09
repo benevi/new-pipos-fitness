@@ -103,7 +103,7 @@ class CacheStore {
     )..where((t) => t.userId.equals(userId) & t.cacheKey.equals(key))).go();
   }
 
-  /// Borra todo lo local del usuario (cuenta eliminada).
+  /// Borra todo lo local del usuario (cuenta eliminada o logout confirmado).
   Future<void> wipeUser() async {
     final userId = _userId;
     if (userId == null) return;
@@ -129,11 +129,29 @@ final cacheStoreProvider = Provider<CacheStore>(
 
 /// Resultado de una lectura con respaldo en caché.
 class Cached<T> {
-  const Cached(this.value, {this.savedAt, this.fromCache = false});
+  const Cached(
+    this.value, {
+    this.savedAt,
+    this.fromCache = false,
+    this.isStale = false,
+  });
 
   final T value;
+
+  /// Cuándo se obtuvo de la API (fetchedAt de la copia en caché).
   final DateTime? savedAt;
 
   /// `true` si viene de la caché porque no había red.
   final bool fromCache;
+
+  /// `true` si la copia es de otro día local: la UI no debe presentarla
+  /// como «la sesión de hoy».
+  final bool isStale;
+}
+
+/// `true` si [a] y [b] caen en el mismo día del calendario local.
+bool isSameLocalDay(DateTime a, DateTime b) {
+  final la = a.toLocal();
+  final lb = b.toLocal();
+  return la.year == lb.year && la.month == lb.month && la.day == lb.day;
 }

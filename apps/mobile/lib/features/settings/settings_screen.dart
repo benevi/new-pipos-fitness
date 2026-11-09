@@ -77,7 +77,7 @@ class SettingsScreen extends ConsumerWidget {
                   minTileHeight: AppSpacing.xxl + AppSpacing.md,
                   leading: const Icon(Icons.logout),
                   title: Text(l10n.settingsLogout),
-                  onTap: () => ref.read(authProvider.notifier).logout(),
+                  onTap: () => _logout(context, ref),
                 ),
               ],
             ),
@@ -127,6 +127,51 @@ class SettingsScreen extends ConsumerWidget {
         SnackBar(content: Text(ApiFailure.from(e).localized(l10n))),
       );
     }
+  }
+
+  /// Cerrar sesión: confirma avisando de las series sin enviar (se
+  /// perderían) y, tras confirmar, borra del dispositivo los datos de este
+  /// usuario (caché del plan/sesión y cola offline).
+  Future<void> _logout(BuildContext context, WidgetRef ref) async {
+    final l10n = AppLocalizations.of(context);
+    final sync = ref.read(syncServiceProvider);
+    var summary = await sync.watchSummary().first;
+    if (!summary.isClean) {
+      // Último intento de enviar lo pendiente antes de preguntar.
+      try {
+        await sync.syncNow().timeout(const Duration(seconds: 5));
+      } catch (_) {}
+      summary = await sync.watchSummary().first;
+    }
+    final unsent = summary.pending + summary.failed;
+    if (!context.mounted) return;
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.settingsLogoutConfirmTitle),
+        content: Text(
+          unsent > 0
+              ? l10n.settingsLogoutUnsent(unsent)
+              : l10n.settingsLogoutConfirmBody,
+          key: const Key('logout-body'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('logout-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.settingsLogout),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await sync.dispose();
+    await ref.read(cacheStoreProvider).wipeUser();
+    await ref.read(authProvider.notifier).logout();
   }
 
   void _showLegal(BuildContext context) {

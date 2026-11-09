@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
+import 'package:pipos_fitness/core/offline/offline_providers.dart';
 import 'package:pipos_fitness/features/auth/auth_provider.dart';
 import 'package:pipos_fitness/features/auth/login_screen.dart';
 
@@ -17,6 +18,16 @@ Future<AppHarness> openSettings(
   await tester.pumpAndSettle();
   await tapKey(tester, 'nav-settings');
   return harness;
+}
+
+/// Deja que drift (que aquí necesita tiempo real) resuelva sus consultas.
+Future<void> _settleDb(WidgetTester tester) async {
+  for (var i = 0; i < 10; i++) {
+    await tester.runAsync(
+      () => Future<void>.delayed(const Duration(milliseconds: 20)),
+    );
+    await tester.pump(const Duration(milliseconds: 100));
+  }
 }
 
 void main() {
@@ -153,4 +164,66 @@ void main() {
       await harness.drainAndUnmount(tester);
     },
   );
+
+  group('cerrar sesión', () {
+    testWidgets('avisa de las series sin enviar; cancelar no borra nada', (
+      tester,
+    ) async {
+      final harness = await openSettings(tester);
+      harness.setOnline(false);
+      final sync = harness.container(tester).read(syncServiceProvider);
+      await tester.runAsync(() async {
+        final w = await sync.startWorkout(planSessionId: 'ps-1');
+        await sync.logSet(
+          workoutClientId: w.clientId,
+          planExerciseId: null,
+          exerciseId: 'ex-1',
+          setIndex: 0,
+          reps: 8,
+          loadKg: 50,
+        );
+      });
+      await tapKey(tester, 'settings-logout', settle: false);
+      await _settleDb(tester);
+      expect(find.textContaining('Hay 1 serie sin enviar'), findsOneWidget);
+
+      await tapText(tester, 'Cancelar');
+      expect(
+        harness.container(tester).read(authProvider).isAuthenticated,
+        isTrue,
+      );
+      final db = harness.database;
+      expect(
+        await tester.runAsync(() => db.select(db.localSetLogs).get()),
+        hasLength(1),
+      );
+      await harness.drainAndUnmount(tester);
+    });
+
+    testWidgets('al confirmar borra los datos locales del usuario', (
+      tester,
+    ) async {
+      final harness = await openSettings(tester);
+      final db = harness.database;
+      expect(
+        await tester.runAsync(() => db.select(db.cachedPayloads).get()),
+        isNotEmpty,
+        reason: 'el plan/sesión se cachearon al abrir la app',
+      );
+      await tapKey(tester, 'settings-logout', settle: false);
+      await _settleDb(tester);
+      expect(find.byKey(const Key('logout-body')), findsOneWidget);
+      await tapKey(tester, 'logout-confirm', settle: false);
+      await _settleDb(tester);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(harness.storage.accessToken, isNull);
+      expect(
+        await tester.runAsync(() => db.select(db.cachedPayloads).get()),
+        isEmpty,
+      );
+      await harness.drainAndUnmount(tester);
+    });
+  });
 }
