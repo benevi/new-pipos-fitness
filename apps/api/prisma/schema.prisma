@@ -247,6 +247,7 @@ model User {
   planOverrides       PlanExerciseOverride[]
   trainingBreaks      TrainingBreak[]
   bodyMeasurements    BodyMeasurement[]
+  auditEvents         AuditEvent[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -492,36 +493,45 @@ model ExerciseMedia {
 // ─────────────────────────────────────────────────────────────
 
 model TrainingPlan {
-  id        String        @id @default(uuid()) @db.Uuid
-  userId    String        @db.Uuid
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    PlanStatus    @default(active)
-  createdAt DateTime      @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime      @updatedAt @db.Timestamptz(3)
-  versions  PlanVersion[]
+  id           String        @id @default(uuid()) @db.Uuid
+  userId       String        @db.Uuid
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status       PlanStatus    @default(active)
+  /// Fecha local (zona del usuario) del primer entreno de la última descarga real, programada o
+  /// reactiva (issue #15). Ancla el ciclo de descarga programada; null = se cuenta desde createdAt.
+  lastDeloadOn DateTime?     @db.Date
+  createdAt    DateTime      @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime      @updatedAt @db.Timestamptz(3)
+  versions     PlanVersion[]
 
   @@unique([id, userId])
   @@index([userId, status])
 }
 
 model PlanVersion {
-  id             String        @id @default(uuid()) @db.Uuid
-  planId         String        @db.Uuid
-  userId         String        @db.Uuid
-  plan           TrainingPlan  @relation(fields: [planId, userId], references: [id, userId], onDelete: Cascade)
-  version        Int
-  engineVersion  String        @db.VarChar(32)
-  objectiveScore Float
-  mesocycleWeeks Int           @db.SmallInt
+  id              String        @id @default(uuid()) @db.Uuid
+  planId          String        @db.Uuid
+  userId          String        @db.Uuid
+  plan            TrainingPlan  @relation(fields: [planId, userId], references: [id, userId], onDelete: Cascade)
+  version         Int
+  engineVersion   String        @db.VarChar(32)
+  objectiveScore  Float
+  mesocycleWeeks  Int           @db.SmallInt
   /// Explicación estructurada del motor (split, rationale, warnings, volumen, score).
-  rationale      Json
+  rationale       Json
   /// Perfil usado (puede contener datos art. 9; se redacta al retirar el consentimiento).
-  inputSnapshot  Json
-  createdAt      DateTime      @default(now()) @db.Timestamptz(3)
-  sessions       PlanSession[]
+  inputSnapshot   Json
+  /// Cabecera `Idempotency-Key` de POST /plans/generate (issue #11): repetir la clave devuelve
+  /// esta versión en vez de crear otra. Null si la petición no la envió.
+  idempotencyKey  String?       @db.VarChar(128)
+  /// SHA-256 de la entrada del motor con la que se generó (misma clave + otra entrada → 422).
+  idempotencyHash String?       @db.Char(64)
+  createdAt       DateTime      @default(now()) @db.Timestamptz(3)
+  sessions        PlanSession[]
 
   @@unique([planId, version])
   @@unique([id, userId])
+  @@unique([userId, idempotencyKey])
   @@index([userId, createdAt(sort: Desc)])
 }
 
@@ -736,4 +746,56 @@ model WeeklyAdherence {
   computedAt        DateTime @default(now()) @db.Timestamptz(3)
 
   @@id([userId, weekStart])
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUDITORÍA (issue #17)
+// ─────────────────────────────────────────────────────────────
+
+enum AuditEventType {
+  login_succeeded
+  login_failed
+  /// Reutilización de un refresh token rotado: se revocaron todas las sesiones.
+  refresh_reuse_detected
+  health_consent_granted
+  health_consent_withdrawn
+  /// Cambio de limitaciones, peso o altura del perfil (solo el tipo, nunca los valores).
+  health_profile_changed
+  body_measurement_saved
+  body_measurement_deleted
+  account_deleted
+}
+
+/// Registro de auditoría append-only (un trigger impide UPDATE). SIN datos personales ni de
+/// salud: solo tipo, usuario y fecha. Un login fallido de un email desconocido no guarda nada que
+/// lo identifique (userId null). Se borra con la cuenta (supresión, RGPD art. 17) salvo el propio
+/// `account_deleted`, que se guarda sin userId y con un id de borrado aleatorio (`subjectRef`).
+/// Retención: AUDIT_RETENTION_DAYS (180) con `pnpm --filter @pipos/api audit:cleanup`.
+model AuditEvent {
+  id         String         @id @default(uuid()) @db.Uuid
+  type       AuditEventType
+  userId     String?        @db.Uuid
+  user       User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Id aleatorio sin relación con el usuario (solo en `account_deleted`).
+  subjectRef String?        @db.Uuid
+  createdAt  DateTime       @default(now()) @db.Timestamptz(3)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+}
+
+// ─────────────────────────────────────────────────────────────
+// INFRAESTRUCTURA
+// ─────────────────────────────────────────────────────────────
+
+/// Contadores del rate limiting compartidos entre réplicas (THROTTLE_STORE=postgres; issue #9).
+/// Ventana fija por clave: la clave la genera @nestjs/throttler (hash de ruta + throttler + IP),
+/// así que no guarda la IP en claro. Filas efímeras: se borran al caducar (limpieza periódica).
+model ThrottlerRecord {
+  key          String    @id @db.VarChar(128)
+  hits         Int
+  expiresAt    DateTime  @db.Timestamptz(3)
+  blockedUntil DateTime? @db.Timestamptz(3)
+
+  @@index([expiresAt])
 }

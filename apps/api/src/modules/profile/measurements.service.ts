@@ -19,6 +19,7 @@ import { Clock } from '../../common/clock';
 import { addDays, dateColumn, fromDateColumn, localDate } from '../../common/time';
 import { PrismaService } from '../../prisma/prisma.service';
 import { AnalyticsService } from '../analytics/analytics.service';
+import { AuditService } from '../audit/audit.service';
 import { ageFrom } from '../plans/engine-input.service';
 import { coversScopes, healthConsentStatus, latestHealthConsent } from './consent-status';
 
@@ -69,6 +70,7 @@ export class MeasurementsService {
     private readonly prisma: PrismaService,
     private readonly analytics: AnalyticsService,
     private readonly clock: Clock,
+    private readonly audit: AuditService,
   ) {}
 
   private async profileOf(userId: string) {
@@ -131,6 +133,7 @@ export class MeasurementsService {
         });
         if (newer === 0) await tx.trainingProfile.update({ where: { userId }, data: { weightKg: input.weightKg } });
       }
+      await this.audit.record('body_measurement_saved', userId, tx);
       return toMeasurementResponse(row);
     });
   }
@@ -149,7 +152,10 @@ export class MeasurementsService {
 
   /** Borrado idempotente de las medidas de un día. El peso del perfil no cambia. */
   async remove(userId: string, date: string): Promise<void> {
-    await this.prisma.bodyMeasurement.deleteMany({ where: { userId, measuredOn: dateColumn(date) } });
+    await this.prisma.$transaction(async (tx) => {
+      const { count } = await tx.bodyMeasurement.deleteMany({ where: { userId, measuredOn: dateColumn(date) } });
+      if (count > 0) await this.audit.record('body_measurement_deleted', userId, tx);
+    });
   }
 
   /** GET /progress/body: se calcula al leer con funciones puras del motor (no escribe nada). */

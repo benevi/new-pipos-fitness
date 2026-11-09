@@ -9,32 +9,36 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 ## API y backend
 
-### [API] Configurar `trust proxy` y un almacén compartido para el rate limiting
-- **Severidad:** Alta (bloquea producción)
-- **Impacto:** detrás del proxy del hosting todas las peticiones llegan con la IP del proxy: el
-  throttler (por IP, en memoria) limitaría a todos los usuarios a la vez (p. ej. 5 logins/min en
-  total). Con varias réplicas, cada una cuenta por separado.
-- **Propuesta:** `app.set('trust proxy', <n saltos>)` configurable por entorno (`TRUST_PROXY_HOPS`)
-  con test e2e de `X-Forwarded-For`; almacén compartido (Postgres o Redis) antes de escalar a >1 réplica.
+### ~~[API] Configurar `trust proxy` y un almacén compartido para el rate limiting~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #9.
+- **Qué se hizo:** `TRUST_PROXY_HOPS` (entero 0-10, por defecto 0, validado en `env.ts`) →
+  `app.set('trust proxy', n)`; contadores del throttler en Postgres (`ThrottlerRecord`, un
+  `INSERT … ON CONFLICT DO UPDATE` atómico con caducidad y bloqueo; limpieza de filas caducadas
+  como mucho una vez por minuto y réplica) con `THROTTLE_STORE=memory|postgres` (por defecto
+  `postgres` en producción, `memory` fuera). e2e: límites por cliente con `X-Forwarded-For` y
+  1 salto, cabecera ignorada con 0, dos réplicas compartiendo el contador, upsert concurrente sin
+  pérdidas. Ya no hace falta una sola instancia (DEPLOY_CHECKLIST actualizado).
 
-### [API] Rechazar entrenamientos sobre sesiones de una versión de plan antigua
-- **Severidad:** Baja
-- **Impacto:** `POST /workouts` acepta una `planSessionId` de una versión no vigente
-  (`workouts.service.ts`, `start`). El entreno cuenta para la analítica, pero no avanza el
-  microciclo de la versión vigente (`nextPendingSession` solo mira la vigente).
-- **Por qué no se hizo en la Fase 5:** la cola offline de la app trata cualquier 4xx como fallo
-  permanente: rechazarlo podría dejar en `failed` un entreno hecho sin red justo antes de un cambio
-  de perfil hecho desde otro dispositivo.
-- **Propuesta:** devolver `409 PLAN_SESSION_OUTDATED` solo para entrenos nuevos sin series, y en la
-  app refrescar `/sessions/today` ante ese código; o aceptar y mapear la sesión a la vigente por `order`.
+### ~~[API] Rechazar entrenamientos sobre sesiones de una versión de plan antigua~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #10. Falta el manejo en la app
+  (entrada «[Móvil] Manejar `409 PLAN_SESSION_OUTDATED`» más abajo).
+- **Qué se hizo:** `POST /workouts` devuelve `409 PLAN_SESSION_OUTDATED` si `planSessionId` no es de
+  la versión vigente del plan activo, **solo al crear** un entrenamiento (que nunca tiene series
+  todavía). Reenviar un `clientId` ya registrado devuelve el existente (200) aunque su versión ya
+  no sea la vigente, y ese entrenamiento sigue aceptando series, ediciones, sustituciones y cierre.
+  e2e: `plan-outdated.e2e-spec.ts`.
 
-### [API] Idempotencia de `POST /plans/generate` (doble toque → dos versiones)
-- **Severidad:** Baja
-- **Impacto:** dos pulsaciones seguidas crean dos versiones idénticas del plan; reinicia el
-  microciclo de la versión (no el ciclo de descarga, que ya se ancla al plan).
-- **Propuesta:** cabecera opcional `Idempotency-Key` (columna única `(userId, idempotencyKey)` en
-  `PlanVersion`) que la app envíe; o devolver la última versión si su `inputSnapshot` es idéntico
-  y se creó hace < 10 s. Ojo: hay un e2e que espera dos versiones con dos generaciones simultáneas.
+### ~~[API] Idempotencia de `POST /plans/generate` (doble toque → dos versiones)~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #11. La app debe enviar la cabecera.
+- **Qué se hizo:** cabecera opcional `Idempotency-Key` (1-128 caracteres ASCII visibles; 400 si no)
+  con `UNIQUE(userId, idempotencyKey)` en `PlanVersion` y la huella SHA-256 de la entrada del motor.
+  Misma clave y misma entrada → la versión ya creada con **200** (la primera vez, 201); misma clave
+  con otra entrada (el perfil cambió entre medias) → **422 `IDEMPOTENCY_KEY_REUSED`**. Dos toques
+  simultáneos con la misma clave crean una sola versión. Sin cabecera nada cambia (el e2e de dos
+  generaciones simultáneas sigue esperando dos versiones). e2e: `plan-idempotency.e2e-spec.ts`.
+- **Para la app:** generar un UUID v4 por pulsación de «Generar plan» y reenviar el mismo en cada
+  reintento de esa pulsación; tratar 200 y 201 igual; ante 422 `IDEMPOTENCY_KEY_REUSED`, generar
+  una clave nueva y reintentar una vez.
 
 ### ~~[Motor] Redondear la carga a los incrementos reales del material (mancuernas, máquinas)~~ — RESUELTO
 - **Estado:** resuelto con ADR-0013 (idea 1); cierra el issue #12.
@@ -44,44 +48,75 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   supera el 10 %) y bajadas; desglose de discos por lado en la sesión de hoy. Test de propiedad
   «la carga propuesta es múltiplo del paso del material».
 
-### [API] Estado `abandoned` sin flujo: un entreno en curso olvidado bloquea los siguientes
-- **Severidad:** Media
-- **Impacto:** `WorkoutStatus.abandoned` existe pero ningún endpoint lo usa. Un entreno sin
-  cerrar devuelve `409 WORKOUT_IN_PROGRESS` a cualquier inicio nuevo hasta que se cierre.
-- **Propuesta:** `POST /workouts/:id/abandon` (idempotente) y/o abandono automático al iniciar uno
-  nuevo si el anterior lleva > 12 h; excluirlo de adherencia (ya se excluye de la analítica).
+### ~~[API] Estado `abandoned` sin flujo: un entreno en curso olvidado bloquea los siguientes~~ — RESUELTO (API)
+- **Estado:** resuelto en la API (PR pendiente); cierra el issue #13.
+- **Qué se hizo:** `POST /workouts/:id/abandon` (idempotente: abandonar uno ya abandonado devuelve
+  200 con el mismo estado; uno terminado → `409 WORKOUT_FINISHED`; ajeno → 404). Al empezar un
+  entrenamiento, si el que está en curso lleva más de `STALE_WORKOUT_HOURS` = **12 h** sin
+  actividad (inicio o última serie, reloj del cliente) se abandona solo y se crea el nuevo; si no,
+  sigue el `409 WORKOUT_IN_PROGRESS`. Un abandonado conserva sus series pero no cuenta en e1RM,
+  volumen ni adherencia (se recalcula su semana en la misma transacción) y no admite series nuevas
+  ni cierre (`409 WORKOUT_FINISHED`). e2e: `abandon.e2e-spec.ts`.
+- **Para la app:** botón «Descartar entrenamiento» que llame a `abandon` (idempotente, apto para la
+  cola offline). Si una serie encolada recibe `409 WORKOUT_FINISHED` y `GET /workouts/:id` dice
+  `abandoned`, avisar de que ese entrenamiento se descartó (automáticamente tras 12 h) y no
+  reintentar.
 
-### [API] La adherencia de semanas pasadas usa la versión vigente del plan
-- **Severidad:** Baja
-- **Impacto:** `recomputeWeek` toma las sesiones/series planificadas de la versión vigente al
-  escribir, y `GET /progress/adherence` rellena las semanas sin actividad con la última versión.
-  Tras cambiar de 3 a 5 días, las semanas antiguas aparecen con 5 sesiones previstas al recalcular.
-- **Propuesta:** usar la versión vigente en cada semana (`PlanVersion.createdAt ≤ fin de semana`),
-  también en `analytics:rebuild`; test con dos versiones.
+### ~~[API] La adherencia de semanas pasadas usa la versión vigente del plan~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #14.
+- **Qué se hizo:** `recomputeWeek` (al escribir y en `analytics:rebuild`) toma la versión del plan
+  activo creada antes del final de esa semana (`createdAt < lunes siguiente`, zona del usuario) y
+  la guarda en `WeeklyAdherence.planVersionId`; `GET /progress/adherence` rellena cada semana sin
+  actividad con la versión vigente en esa semana (nada antes del primer plan). Helpers puros
+  `versionForWeek`/`plannedOf`. e2e con dos versiones (3 → 5 días):
+  `adherence-versions.e2e-spec.ts`. Tras desplegar, `analytics:rebuild` corrige las filas antiguas.
 
-### [Motor] La descarga reactiva no reinicia el ciclo de descarga programada
-- **Severidad:** Baja
-- **Impacto:** `weeksSinceDeload` se cuenta desde el inicio del plan (corregido en la Fase 5), pero
-  una descarga reactiva no se registra, así que puede haber una programada poco después.
-- **Propuesta:** registrar la última semana de descarga real (p. ej. `TrainingPlan.lastDeloadOn`,
-  actualizado al cerrar un entreno cuya prescripción era `deload`) y anclar el ciclo a ella.
+### ~~[Motor] La descarga reactiva no reinicia el ciclo de descarga programada~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #15.
+- **Qué se hizo:** `TrainingPlan.lastDeloadOn` (fecha local, migración incremental) se fija al
+  cerrar un entrenamiento cuya prescripción era de descarga: la sesión cuenta como descarga si al
+  menos la mitad de sus ejercicios la tenían (la programada descarga todos; la reactiva de un solo
+  ejercicio estancado no es una semana de descarga del plan). Solo se mueve si ya terminó la
+  descarga anterior (`deloadDurationDays`, 7). `weeksSinceDeload` se ancla a esa fecha: durante
+  esos 7 días sigue la descarga y después cuenta las semanas desde que terminó; sin descarga
+  registrada, desde el inicio del plan como antes. Unit (`weeksSinceDeload`, `isDeloadSession`,
+  `startsNewDeload`, cierre) y e2e (`deload.e2e-spec.ts`).
 
 ### [Seguridad] Enumeración de emails por `409 AUTH_EMAIL_TAKEN` en el registro
 - **Severidad:** Media
 - **Impacto:** el registro revela si un email existe; solo lo frena el rate limiting (5/min/IP).
 - **Propuesta:** respuesta neutra y verificación por email (requiere proveedor de correo).
 
-### [Seguridad] Sin registro de auditoría de autenticación ni de cambios de datos de salud
-- **Severidad:** Media
-- **Impacto:** no hay trazabilidad de logins, revocaciones por reutilización ni cambios del
-  perfil (salvo `ConsentEvent`).
-- **Propuesta:** tabla `AuditEvent` append-only sin datos personales (tipo, userId, fecha) con
-  retención limitada; registrar login, refresh reutilizado, cambio/borrado de datos de salud.
+### ~~[Seguridad] Sin registro de auditoría de autenticación ni de cambios de datos de salud~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #17.
+- **Qué se hizo:** tabla `AuditEvent` append-only (un trigger rechaza UPDATE; INSERT y DELETE sí)
+  con solo `type`, `userId`, `subjectRef` y `createdAt`. Eventos: `login_succeeded`,
+  `login_failed` (con un email desconocido, `userId` null y nada que lo identifique: ni email ni
+  hash), `refresh_reuse_detected`, `health_consent_granted`/`withdrawn`,
+  `health_profile_changed` (limitaciones, peso o altura: solo el tipo), `body_measurement_saved`/
+  `deleted` y `account_deleted`. Decisión RGPD: al borrar la cuenta sus eventos se borran en
+  cascada y queda solo `account_deleted` **sin userId**, con un id de borrado aleatorio
+  (`subjectRef`, también en el log). Retención `AUDIT_RETENTION_DAYS` = 180 días con
+  `pnpm --filter @pipos/api audit:cleanup` (tarea diaria, DEPLOY_CHECKLIST). Se incluye en
+  `GET /me/export` (`auditEvents`: tipo y fecha). Unit + e2e (`audit.e2e-spec.ts`).
 
-### [CI] Dependabot y `pnpm audit` / `flutter pub outdated` en CI
+### ~~[CI] Dependabot y `pnpm audit` / `flutter pub outdated` en CI~~ — RESUELTO
+- **Estado:** resuelto (PR pendiente); cierra el issue #18.
+- **Qué se hizo:** `.github/dependabot.yml` (npm en la raíz, pub en `apps/mobile`, github-actions;
+  semanal, agrupado por menores/parches) y paso de CI `pnpm audit --prod --audit-level high`, que
+  falla con vulnerabilidades altas o críticas. Para dejarlo en verde: `bcrypt` 5 → 6 (quita
+  `node-pre-gyp`, `tar` y `brace-expansion`) y `pnpm.overrides` mínimos a la versión parcheada
+  dentro de la misma mayor (multer, body-parser, path-to-regexp, proxy-addr, lodash, js-yaml).
+  Excepción documentada en SECURITY §6.3: `zod` (GHSA-mrhx-c7xc-m3w5, solo parcheado en zod 4;
+  entrada acotada por el límite de cuerpo). `flutter pub outdated` no se añade: Dependabot de pub
+  cubre las actualizaciones de la app.
+
+### [CI] Migrar a zod 4 (excepción de `pnpm audit`)
 - **Severidad:** Media
-- **Impacto:** solo hay `--frozen-lockfile`; nada avisa de dependencias vulnerables.
-- **Propuesta:** `.github/dependabot.yml` (npm, pub, actions) y un paso `pnpm audit --prod --audit-level high`.
+- **Impacto:** `pnpm audit` ignora GHSA-mrhx-c7xc-m3w5 (zod 3) porque el parche solo existe en zod 4.
+- **Propuesta:** migrar `packages/contracts` y la API a zod 4 (o a `zod/v4`), sustituir
+  `zod-to-json-schema` por `z.toJSONSchema`, regenerar OpenAPI y validar los fixtures móviles;
+  después quitar la excepción de `package.json`.
 
 ### [Catálogo] Pullover en polea frente al jalón con hombro limitado
 - **Severidad:** Baja
@@ -97,6 +132,9 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 - **Propuesta:** solo si hubiera datos previos: migración que marque como `health` las notas que
   empiecen por «Precaución por tu limitación» / «Por tu limitación» y los avisos con
   `data.reason = 'limitation'`.
+- **Estado (issue #20, abierto):** no hace falta mientras no exista ninguna base de datos con planes
+  generados antes de la Fase 5 (la API nunca se ha desplegado). Solo habría que hacerlo si se
+  importaran o restauraran datos de esa época; si se confirma que no los hay, se puede cerrar.
 
 ### [Motor] Pasos de carga propios del usuario (microdiscos, mancuernas de 1 kg)
 - **Severidad:** Baja
@@ -122,8 +160,9 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 ### [Motor] Anclar la descarga programada al final de una pausa planificada
 - **Severidad:** Baja
 - **Impacto:** tras una pausa de 7 días o más (ADR-0013, idea 6) la descarga programada puede caer
-  poco después de volver. Se cruza con «La descarga reactiva no reinicia el ciclo».
-- **Propuesta:** reiniciar `weeksSinceDeload` al terminar una pausa de 7 días o más.
+  poco después de volver. La descarga reactiva ya ancla el ciclo (issue #15); la pausa todavía no.
+- **Propuesta:** reiniciar `weeksSinceDeload` al terminar una pausa de 7 días o más (con el ancla
+  `TrainingPlan.lastDeloadOn` del issue #15 basta con tratar el fin de la pausa como una descarga).
 
 ### [RGPD] DPIA: medidas corporales, estimaciones derivadas y notas de texto libre
 - **Severidad:** Media (bloquea el lanzamiento público junto con la DPIA pendiente)
@@ -135,6 +174,34 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 ## App móvil
 
 Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
+
+### [Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento
+- **Severidad:** Media (sin esto, un inicio encolado offline justo antes de un cambio de plan
+  hecho en otro dispositivo queda en `failed` con sus series)
+- **Contexto:** desde el issue #10 la API rechaza `POST /workouts` con una sesión de una versión
+  del plan que ya no es la vigente. Solo afecta a entrenamientos **nuevos**: si el `clientId` ya
+  existe en el servidor, el reenvío devuelve 200 y las series se siguen aceptando.
+- **Comportamiento esperado del cliente:**
+  1. Tratar `PLAN_SESSION_OUTDATED` como recuperable, **no** como fallo permanente de la cola.
+  2. Refrescar `GET /sessions/today` (y la caché del plan, `GET /plans/current`).
+  3. Si el entrenamiento local **no tiene series**: reapuntarlo a la `planSessionId` vigente que
+     devuelve `/sessions/today` y reintentar el `POST /workouts` con el **mismo `clientId`**.
+  4. Si **ya tiene series** locales (hechas offline con la sesión antigua): no se pueden subir a
+     la sesión nueva (sus `planExerciseId` son de la versión antigua → 400). Avisar al usuario
+     («tu plan cambió mientras entrenabas sin conexión») y ofrecer descartar el entrenamiento
+     local o rehacerlo con la sesión vigente; nunca dejarlo bloqueando la cola.
+  5. Test de sincronización: inicio encolado + regeneración del plan → reintento con la sesión
+     vigente y el mismo `clientId`.
+
+### [Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos
+- **Severidad:** Baja
+- **Contexto:** la API ya admite `Idempotency-Key` en `POST /plans/generate` (issue #11) y
+  `POST /workouts/:id/abandon` (issue #13); la app todavía no los usa.
+- **Comportamiento esperado del cliente:** un UUID v4 por pulsación de «Generar plan», reenviado
+  igual en cada reintento (200 y 201 son éxito; ante `422 IDEMPOTENCY_KEY_REUSED`, clave nueva y un
+  reintento). Acción «Descartar entrenamiento» que encole `abandon` (idempotente). Si una serie
+  encolada recibe `409 WORKOUT_FINISHED` y el entrenamiento está `abandoned` (abandono automático
+  tras 12 h sin actividad al empezar otro), mostrarlo y no reintentar.
 
 ### ~~[Móvil] Poder descartar una serie rechazada de forma permanente por la API~~ — RESUELTO (PR pendiente)
 - **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #21.

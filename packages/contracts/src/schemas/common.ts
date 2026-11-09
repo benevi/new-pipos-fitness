@@ -63,8 +63,12 @@ export const ERROR_CODES = [
   'PLAN_REQUIRED',
   'PLAN_GENERATION_FAILED',
   'PLAN_VERSION_CONFLICT',
+  /** Misma `Idempotency-Key` con otra entrada (issue #11): usa una clave nueva. */
+  'IDEMPOTENCY_KEY_REUSED',
   'UNKNOWN_EXERCISE',
   'WORKOUT_IN_PROGRESS',
+  /** POST /workouts con una sesión de una versión del plan que ya no es la vigente (issue #10). */
+  'PLAN_SESSION_OUTDATED',
   'WORKOUT_FINISHED',
   'CLIENT_ID_CONFLICT',
   'NUTRITION_INPUT_INCOMPLETE',
@@ -82,6 +86,19 @@ export const ErrorResponseSchema = z
   })
   .strict();
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
+
+/**
+ * Cabecera opcional `Idempotency-Key` (issue #11): identificador único por intento lógico que
+ * genera el cliente (se recomienda un UUID v4) y reenvía igual en cada reintento. Las cabeceras
+ * HTTP no distinguen mayúsculas; Node las entrega en minúsculas.
+ */
+export const IdempotencyKeyHeadersSchema = z.object({
+  'idempotency-key': z
+    .string()
+    .regex(/^[\x21-\x7E]{1,128}$/, 'Idempotency-Key must be 1-128 visible ASCII characters')
+    .optional(),
+});
+export type IdempotencyKeyHeaders = z.infer<typeof IdempotencyKeyHeadersSchema>;
 
 export const OkResponseSchema = z.object({ ok: z.literal(true) }).strict();
 export type OkResponse = z.infer<typeof OkResponseSchema>;

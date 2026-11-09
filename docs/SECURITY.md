@@ -76,14 +76,15 @@ Fronteras de confianza:
 | `GET/PUT /me/profile`, `GET/POST/DELETE /me/consents/health` | JWT | Datos de salud solo con consentimiento vigente (409 `HEALTH_CONSENT_REQUIRED`) |
 | `GET /me/nutrition-targets` | JWT | Cálculo puro; no se persiste |
 | `POST /plans/generate`, `GET /plans/current`, `GET /plans/versions[/:id]` | JWT | Generar: 10 req/min; recursos de otro usuario → 404 |
-| `GET /sessions/today`, `POST /workouts`, `GET /workouts/:id`, `POST/PATCH/DELETE /workouts/:id/sets[/:clientId]`, `POST /workouts/:id/finish`, `POST /workouts/:id/exercises/:planExerciseId/substitute`, `GET /exercises/:id/substitutes` | JWT | Idempotencia por `clientId`; propiedad en servicio + FK compuestas `(id, userId)` en BD |
+| `GET /sessions/today`, `POST /workouts`, `GET /workouts/:id`, `POST/PATCH/DELETE /workouts/:id/sets[/:clientId]`, `POST /workouts/:id/finish`, `POST /workouts/:id/abandon`, `POST /workouts/:id/exercises/:planExerciseId/substitute`, `GET /exercises/:id/substitutes` | JWT | Idempotencia por `clientId`; propiedad en servicio + FK compuestas `(id, userId)` en BD |
 | `GET /progress/e1rm`, `/progress/volume`, `/progress/adherence` | JWT | Solo leen tablas resumen (e2e: ningún GET escribe) |
 | ADR-0013: `PUT/DELETE /exercises/:id/note`, `GET /me/exercise-notes`, `PUT/DELETE /plans/current/exercises/:planExerciseId/override`, `PATCH /me/profile/schedule`, `GET/POST/DELETE /me/breaks`, `GET/PUT /me/measurements`, `DELETE /me/measurements/:date`, `GET /progress/body`, `GET /sessions/today?minutes=&mode=` | JWT | Todo filtrado por `userId` (otro usuario → 404 o sin efecto); medidas solo con el ámbito del consentimiento (409 `HEALTH_CONSENT_REQUIRED`); pausas idempotentes por `clientId`; los GET no escriben (e2e) |
 | `GET /exercises`, `GET /exercises/:id` | No | Catálogo de solo lectura, paginado (`pageSize ≤ 100`) |
 | `GET /health`, `GET /health/ready` | No | 60 req/min; `ready` comprueba Postgres (503 si falla) |
 | `GET /docs` (Swagger desde los contratos) | No | **Solo** si `NODE_ENV !== 'production'` |
 
-Límite global por defecto: 100 req/min por IP (`apps/api/src/config/throttle.ts`).
+Límite global por defecto: 100 req/min por IP (`apps/api/src/config/throttle.ts`); IP real tras
+`TRUST_PROXY_HOPS` proxies y contadores compartidos en Postgres (`THROTTLE_STORE`).
 
 ## 6. STRIDE
 
@@ -101,7 +102,7 @@ DEUDA_TECNICA) · ⚠️ riesgo aceptado.
 | S | Reutilización de refresh token robado | Rotación en cada uso; reutilizar uno revocado fuera de la ventana de gracia revoca **todas** las sesiones (`AUTH_REFRESH_REUSED`) | ✅ e2e |
 | T | Dos refresh concurrentes → dos sesiones | Rotación atómica (`updateMany … revokedAt IS NULL`, `count === 1`) | ✅ e2e |
 | T | Contraseñas > 72 bytes truncadas por bcrypt | Registro exige 8–72 bytes UTF-8 | ✅ |
-| R | Sin auditoría de inicios de sesión / revocaciones | — | ⏳ deuda |
+| R | Sin auditoría de inicios de sesión / revocaciones | `AuditEvent` append-only (trigger sin UPDATE): login correcto/fallido (email desconocido → sin userId ni nada que lo identifique) y revocación por reutilización de refresh token | ✅ e2e (`audit.e2e-spec.ts`; issue #17) |
 | I | Fuga de hashes o tokens | Respuestas tipadas; solo SHA-256 del refresh token; redacción en logs | ✅ |
 | E | Escalada de rol | Rol en BD leído en cada petición por `JwtStrategy`; no existe ninguna ruta admin en v1 | ✅ |
 
@@ -126,8 +127,8 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | T | Series registradas en un hueco con un ejercicio ajeno (contamina e1RM/volumen) | Solo el ejercicio del hueco o su sustitución registrada | ✅ e2e (Fase 5) |
 | T | Datos de salud guardados sin consentimiento por carrera con la retirada | Candado por usuario (`pg_advisory_xact_lock`) y relectura del consentimiento dentro de la transacción | ✅ e2e (Fase 5) |
 | D | Generación de planes en bucle | 10/min por IP | ✅ e2e |
-| D | Throttler en memoria por instancia; tras un proxy todas las IPs son la del proxy | Una sola instancia en v1; falta `trust proxy` y almacén compartido | ⏳ despliegue |
-| R | Sin trazabilidad de escrituras sensibles (salvo `ConsentEvent`, append-only) | — | ⏳ deuda |
+| D | Throttler en memoria por instancia; tras un proxy todas las IPs son la del proxy | `TRUST_PROXY_HOPS` (`trust proxy` de Express) y contadores compartidos en Postgres (`THROTTLE_STORE=postgres`, upsert atómico con caducidad) | ✅ e2e (`throttle-proxy.e2e-spec.ts`; issue #9) |
+| R | Sin trazabilidad de escrituras sensibles (salvo `ConsentEvent`, append-only) | `AuditEvent`: concesión/retirada del consentimiento, cambio de datos de salud del perfil y alta/borrado de medidas (solo el tipo, nunca valores), borrado de la cuenta; retención 180 días | ✅ e2e (issue #17) |
 
 ### 6.3 Superficie HTTP, configuración y logs
 
@@ -141,8 +142,20 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | I | Errores de configuración que filtran secretos | `parseEnv` informa claves y reglas, nunca valores | ✅ |
 | T | Rate limiting desactivado en producción por error | `THROTTLE_ENABLED=false` rechazado con `NODE_ENV=production` | ✅ |
 | D | Proceso corrupto tras `uncaughtException` | Se registra y `exit(1)` (el orquestador reinicia) | ✅ |
-| T | Dependencias comprometidas | `--frozen-lockfile` en CI; sin Dependabot ni `pnpm audit` | ⏳ deuda |
+| T | Dependencias comprometidas o vulnerables | `--frozen-lockfile`; `pnpm audit --prod --audit-level high` en CI (falla con altas/críticas); Dependabot semanal agrupado (npm, pub, actions). Excepción documentada abajo | ✅ CI (issue #18) |
 | T | CI con permisos amplios | `permissions: contents: read` | ✅ |
+
+#**Excepciones de `pnpm audit`** (`package.json` → `pnpm.auditConfig.ignoreGhsas`; revisar en
+cada actualización de dependencias y quitarlas en cuanto haya parche aplicable):
+
+| Aviso | Paquete | Por qué se acepta | Salida |
+|---|---|---|---|
+| GHSA-mrhx-c7xc-m3w5 (alta) | `zod` 3.25 (contratos y validación de toda la API) | Solo hay parche en zod ≥ 4.6.6 (versión mayor, con cambios de API en todos los contratos y en `zod-to-json-schema`). El ataque necesita colecciones enormes en la entrada; los cuerpos JSON están limitados por `body-parser` (100 kB por defecto), así que el consumo de memoria por petición queda acotado; además hay rate limiting por IP | Migrar a zod 4 en un PR propio (contratos + OpenAPI + fixtures móviles) |
+
+Las demás vulnerabilidades altas/críticas transitivas (multer, body-parser, path-to-regexp,
+proxy-addr de `@nestjs/platform-express`; lodash y js-yaml de `@nestjs/swagger`) se corrigen con
+`pnpm.overrides` a la versión parcheada más cercana dentro de la misma mayor; tar y brace-expansion
+desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato de hash `$2b$`).
 
 ### 6.4 App móvil
 
@@ -166,6 +179,7 @@ e2e (`auth.e2e-spec.ts`, «limitación: si se pierde la respuesta…»).
 | Resto del perfil, preferencias, planes, entrenos, series, analítica | Confidencial | Sí | RGPD |
 | `User.email`, `emailNormalized` | Confidencial | Sí | RGPD |
 | `ConsentEvent` (acción, versión, hash del texto, idioma, fecha) | Confidencial | Sí | RGPD (prueba del consentimiento) |
+| `AuditEvent` (tipo, userId, fecha; issue #17). Sin emails, IPs, tokens ni valores de salud; `account_deleted` sin userId, con un id de borrado aleatorio | Confidencial | Sí (vinculado al userId) | RGPD; retención 180 días (`audit:cleanup`); se exporta y se borra con la cuenta |
 | `User.passwordHash`, `RefreshToken.tokenHash`, JWT | **Restringido** (credencial) | Vinculado | — |
 | `JWT_ACCESS_SECRET`, `DATABASE_URL` | **Restringido** (secreto) | No | — |
 | Catálogo | Público | No | — |
@@ -192,7 +206,8 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 | Retirada del consentimiento: en una transacción borra limitaciones/peso/altura, redacta `inputSnapshot` de todas las versiones, **borra las explicaciones derivadas de la limitación** de todas las versiones y ejercicios, y regenera el plan sin ellos | ✅ e2e (Fase 5: versión antigua, `/me/export` y BD sin rastro de la zona) |
 | Acceso/portabilidad: `GET /me/export` (JSON con todo, sin hashes) | ✅ e2e |
 | ADR-0013: consentimiento por ámbitos (`health-2026-11-v2` cubre perímetros y estimaciones; la versión anterior solo peso, altura y limitaciones); la retirada borra `BodyMeasurement`; notas, pausas, cambios fijados y medidas en la exportación y en `DELETE /me` | ✅ e2e (`ideas.e2e-spec.ts`) |
-| Supresión: `DELETE /me` con contraseña; borrado real en cascada | ✅ e2e (0 filas del usuario) |
+| Supresión: `DELETE /me` con contraseña; borrado real en cascada (también sus eventos de auditoría; queda solo `account_deleted` sin userId) | ✅ e2e (0 filas del usuario) |
+| Registro de auditoría sin datos personales ni de salud, con retención limitada (180 días) e incluido en `GET /me/export` | ✅ e2e (issue #17) |
 | Minimización: sin IP ni user-agent | ✅ (Fase 5) |
 | Política de privacidad y texto legal del consentimiento revisados por un jurista | ⏳ antes de producción |
 | Evaluación de impacto (EIPD/DPIA), probablemente obligatoria (salud a escala) | ⏳ antes de producción |
@@ -202,8 +217,9 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
 
 ## 9. Riesgos residuales
 
-- **Rate limiting por instancia y por IP**: insuficiente con varias réplicas o tras un proxy
-  sin `trust proxy`. Aceptado con una sola instancia; se resuelve al desplegar.
+- **Rate limiting por IP**: con `TRUST_PROXY_HOPS` mal configurado (más saltos de los reales)
+  un cliente podría falsificar su IP con `X-Forwarded-For`; con menos, todos compartirían la IP
+  del proxy. Los contadores se comparten entre réplicas en Postgres (issue #9).
 - **Respuesta de refresh perdida** → el usuario debe volver a iniciar sesión (§6.1).
 - **Access token válido hasta caducar** (15 min) tras logout/revocación; el rol y la
   existencia del usuario sí se comprueban en BD en cada petición.

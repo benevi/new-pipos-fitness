@@ -20,6 +20,7 @@
     "prisma:seed": "prisma db seed",
     "prisma:diff": "prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma --shadow-database-url \"$DATABASE_URL_SHADOW\" --exit-code",
     "analytics:rebuild": "tsx scripts/analytics-rebuild.ts",
+    "audit:cleanup": "tsx scripts/audit-cleanup.ts",
     "openapi:generate": "tsx scripts/openapi.ts write",
     "openapi:check": "tsx scripts/openapi.ts check"
   },
@@ -35,7 +36,7 @@
     "@pipos/contracts": "workspace:*",
     "@pipos/engine-rules": "workspace:*",
     "@prisma/client": "^5.9.0",
-    "bcrypt": "^5.1.1",
+    "bcrypt": "^6.0.0",
     "helmet": "^8.1.0",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

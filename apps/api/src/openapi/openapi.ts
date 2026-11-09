@@ -92,7 +92,7 @@ function objectShape(schema: ZodTypeAny): ZodRawShape {
   return s.shape as ZodRawShape;
 }
 
-function parameters(schema: ZodTypeAny | undefined, where: 'path' | 'query'): Json[] {
+function parameters(schema: ZodTypeAny | undefined, where: 'path' | 'query' | 'header'): Json[] {
   if (!schema) return [];
   return Object.entries(objectShape(schema)).map(([name, field]) => ({
     name,
@@ -164,7 +164,11 @@ export function buildOpenApiDocument(modules: readonly unknown[], options: OpenA
       summary: spec.summary,
       ...(spec.description ? { description: spec.description } : {}),
       ...(spec.auth === false ? { security: [] } : { security: [{ bearer: [] }] }),
-      parameters: [...parameters(spec.params, 'path'), ...parameters(spec.query, 'query')],
+      parameters: [
+        ...parameters(spec.params, 'path'),
+        ...parameters(spec.query, 'query'),
+        ...parameters(spec.headers, 'header'),
+      ],
       ...(spec.body
         ? { requestBody: { required: true, content: { 'application/json': { schema: ref(spec.body, 'input') } } } }
         : {}),

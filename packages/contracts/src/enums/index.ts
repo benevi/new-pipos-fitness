@@ -63,6 +63,21 @@ export const PLAN_STATUSES = ['active', 'archived'] as const;
 export const PlanStatusSchema = z.enum(PLAN_STATUSES);
 export type PlanStatus = z.infer<typeof PlanStatusSchema>;
 
+/** Tipos del registro de auditoría (issue #17); se exportan en GET /me/export. */
+export const AUDIT_EVENT_TYPES = [
+  'login_succeeded',
+  'login_failed',
+  'refresh_reuse_detected',
+  'health_consent_granted',
+  'health_consent_withdrawn',
+  'health_profile_changed',
+  'body_measurement_saved',
+  'body_measurement_deleted',
+  'account_deleted',
+] as const;
+export const AuditEventTypeSchema = z.enum(AUDIT_EVENT_TYPES);
+export type AuditEventType = z.infer<typeof AuditEventTypeSchema>;
+
 export const WORKOUT_STATUSES = ['in_progress', 'completed', 'abandoned'] as const;
 export const WorkoutStatusSchema = z.enum(WORKOUT_STATUSES);
 export type WorkoutStatus = z.infer<typeof WorkoutStatusSchema>;

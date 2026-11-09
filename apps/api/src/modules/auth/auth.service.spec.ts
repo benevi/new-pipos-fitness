@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { parseEnv } from '../../config/env';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { FixedClock, prismaMock, rejectsWithCode, UID } from '../../test/unit/support';
+import { AuditService } from '../audit/audit.service';
 import { AuthService, hashRefreshToken, normalizeEmail } from './auth.service';
 
 const env = parseEnv({ DATABASE_URL: 'postgresql://x@localhost/db', JWT_ACCESS_SECRET: 'x'.repeat(40) });
@@ -12,7 +13,8 @@ const user = { id: UID, email: 'A@b.com', emailNormalized: 'a@b.com', passwordHa
 function setup() {
   const prisma = prismaMock();
   const clock = new FixedClock();
-  const service = new AuthService(prisma as unknown as PrismaService, new JwtService({ secret: 's'.repeat(40) }), clock, env);
+  const audit = new AuditService(prisma as unknown as PrismaService, clock);
+  const service = new AuthService(prisma as unknown as PrismaService, new JwtService({ secret: 's'.repeat(40) }), clock, env, audit);
   return { prisma, clock, service };
 }
 
@@ -43,6 +45,13 @@ describe('AuthService', () => {
     await rejectsWithCode(service.login({ email: 'a@b.com', password: 'bad-pass' }), 'AUTH_INVALID_CREDENTIALS');
     const ok = await service.login({ email: 'a@b.com', password: 'good-pass' });
     expect(ok.accessToken).toEqual(expect.any(String));
+    // Auditoría (issue #17): email desconocido sin userId; contraseña mala con userId; éxito.
+    expect(prisma.auditEvent.create.mock.calls.map((c) => c[0].data)).toEqual([
+      expect.objectContaining({ type: 'login_failed', userId: null }),
+      expect.objectContaining({ type: 'login_failed', userId: UID }),
+      expect.objectContaining({ type: 'login_succeeded', userId: UID }),
+    ]);
+    expect(JSON.stringify(prisma.auditEvent.create.mock.calls)).not.toContain('a@b.com');
   });
 
   it('verifyPassword', async () => {
@@ -97,6 +106,7 @@ describe('AuthService', () => {
         where: { userId: UID, revokedAt: null },
         data: { revokedReason: 'reuse_detected' },
       });
+      expect(prisma.auditEvent.create.mock.calls[0][0].data).toMatchObject({ type: 'refresh_reuse_detected', userId: UID });
       prisma.refreshToken.findUnique.mockResolvedValueOnce(stored({ revokedAt: clock.now(), revokedReason: 'logout' }));
       await rejectsWithCode(service.refresh('x'), 'AUTH_REFRESH_REUSED');
     });

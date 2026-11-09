@@ -8,6 +8,7 @@ import {
   GROUP_VOLUME_FORMULA_VERSION,
   groupVolume,
   muscleVolume,
+  plannedOf,
   VOLUME_FORMULA_VERSION,
 } from './analytics-calc';
 
@@ -44,6 +45,16 @@ export class AnalyticsService {
 
   /** Tras cerrar un entrenamiento: la adherencia de su semana. */
   async onWorkoutFinished(tx: TransactionClient, workout: WorkoutForAnalytics): Promise<void> {
+    const tz = await this.timezoneOf(tx, workout.userId);
+    await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
+  }
+
+  /**
+   * Tras abandonar un entrenamiento (issue #13): sus series dejan de contar (e1RM, volumen y
+   * adherencia excluyen los abandonados), así que se borra su e1RM y se recalcula su semana.
+   */
+  async onWorkoutAbandoned(tx: TransactionClient, workout: WorkoutForAnalytics): Promise<void> {
+    await tx.exerciseE1rm.deleteMany({ where: { userId: workout.userId, workoutSessionId: workout.id } });
     const tz = await this.timezoneOf(tx, workout.userId);
     await this.recomputeWeek(tx, workout.userId, weekStartOf(workout.startedAt, tz), tz);
   }
@@ -116,16 +127,18 @@ export class AnalyticsService {
 
     const [completedSessions, version, schedule] = await Promise.all([
       tx.workoutSession.count({ where: { ...inWeek, status: 'completed' } }),
+      // La versión vigente EN ESA SEMANA (issue #14): la última creada antes de que acabe. Así,
+      // tras pasar de 3 a 5 días, las semanas anteriores siguen con 3 sesiones previstas (también
+      // al reconstruir con analytics:rebuild).
       tx.planVersion.findFirst({
-        where: { userId, plan: { status: 'active' } },
-        orderBy: { version: 'desc' },
+        where: { userId, plan: { status: 'active' }, createdAt: { lt: to } },
+        orderBy: [{ createdAt: 'desc' }, { version: 'desc' }],
         select: { id: true, sessions: { select: { exercises: { select: { sets: true } } } } },
       }),
       this.scheduleOf(tx, userId, weekStart, addDays(weekStart, 6)),
     ]);
     // Pausas planificadas (idea 6, PROGRAMACION.md §16.18): sus días no cuentan como previstos.
-    const sessionsPerWeek = version?.sessions.length ?? 0;
-    const totalSets = version?.sessions.reduce((n, s) => n + s.exercises.reduce((m, e) => m + e.sets, 0), 0) ?? 0;
+    const { sessions: sessionsPerWeek, sets: totalSets } = plannedOf(version);
     const weekPlan = plannedSessionsForWeek(sessionsPerWeek, weekStart, schedule.breaks, schedule.trainingWeekdays);
     const adherence = {
       plannedSessions: weekPlan.planned,

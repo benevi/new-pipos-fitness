@@ -6,6 +6,7 @@ import { Clock } from '../../common/clock';
 import { fromDateColumn } from '../../common/time';
 import { log } from '../../logging/logging';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AuditService } from '../audit/audit.service';
 import { AuthService } from '../auth/auth.service';
 import { planVersionInclude, toVersionResponse } from '../plans/plan-mapper';
 import { ProfileService } from '../profile/profile.service';
@@ -24,6 +25,7 @@ export class AccountService {
     private readonly auth: AuthService,
     private readonly profiles: ProfileService,
     private readonly clock: Clock,
+    private readonly audit: AuditService,
   ) {}
 
   async me(userId: string): Promise<MeResponse> {
@@ -37,7 +39,7 @@ export class AccountService {
 
   /** Todos los datos del usuario (sin passwordHash ni hashes de tokens). Solo lectura. */
   async export(userId: string): Promise<AccountExport> {
-    const [user, profile, consentEvents, plans, workouts, e1rm, volume, adherence, notes, breaks, measurements] = await Promise.all([
+    const [user, profile, consentEvents, plans, workouts, e1rm, volume, adherence, notes, breaks, measurements, auditEvents] = await Promise.all([
       this.me(userId),
       this.profiles.find(userId),
       this.prisma.consentEvent.findMany({ where: { userId }, orderBy: { occurredAt: 'asc' } }),
@@ -61,6 +63,7 @@ export class AccountService {
       }),
       this.prisma.trainingBreak.findMany({ where: { userId }, orderBy: [{ startsOn: 'asc' }, { id: 'asc' }] }),
       this.prisma.bodyMeasurement.findMany({ where: { userId }, orderBy: { measuredOn: 'asc' } }),
+      this.audit.forExport(userId),
     ]);
     return {
       formatVersion: 1,
@@ -88,6 +91,7 @@ export class AccountService {
       exerciseNotes: notes.map(toNoteResponse),
       trainingBreaks: breaks.map(toBreakResponse),
       bodyMeasurements: measurements.map(toMeasurementResponse),
+      auditEvents,
       analytics: {
         e1rm: e1rm.map((r) => ({
           exerciseId: r.exerciseId,
@@ -123,8 +127,13 @@ export class AccountService {
     if (!(await this.auth.verifyPassword(userId, password))) {
       throw new ApiError(HttpStatus.FORBIDDEN, 'AUTH_INVALID_CREDENTIALS', 'Password confirmation failed');
     }
-    await this.prisma.user.delete({ where: { id: userId } });
+    // En la misma transacción: la cascada borra también sus eventos de auditoría, y queda solo
+    // `account_deleted` con un id aleatorio (prueba de la supresión sin datos personales; issue #17).
+    const deletionId = await this.prisma.$transaction(async (tx) => {
+      await tx.user.delete({ where: { id: userId } });
+      return this.audit.recordAccountDeleted(tx);
+    });
     // Prueba de supresión sin datos personales (docs/MODELO_DATOS.md §5.4).
-    log('info', 'account deleted', { subject: createHash('sha256').update(userId).digest('hex') });
+    log('info', 'account deleted', { subject: createHash('sha256').update(userId).digest('hex'), deletionId });
   }
 }

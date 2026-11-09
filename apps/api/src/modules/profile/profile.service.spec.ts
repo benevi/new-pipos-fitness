@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { Prisma } from '@prisma/client';
 import { HEALTH_CONSENT_POLICY, ProfileUpsertRequestSchema } from '@pipos/contracts';
 import { coversScopes } from './consent-status';
 import type { PrismaService } from '../../prisma/prisma.service';
@@ -12,12 +13,13 @@ import {
   UID,
 } from '../../test/unit/support';
 import type { AnalyticsService } from '../analytics/analytics.service';
+import { AuditService } from '../audit/audit.service';
 import type { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import type { PlansService } from '../plans/plans.service';
 import { healthConsentStatus } from './consent-status';
 import { ConsentService } from './consent.service';
-import { healthFieldsWithValue, ProfileService, stableStringify } from './profile.service';
+import { healthFieldsChanged, healthFieldsWithValue, ProfileService, stableStringify } from './profile.service';
 
 const input = ProfileUpsertRequestSchema.parse({
   goal: 'hypertrophy',
@@ -40,6 +42,7 @@ function setup() {
     withVersionRetry: vi.fn(async (work: (tx: unknown) => unknown) => work(prisma)),
   };
   const analytics = { lockUser: vi.fn(), rebuildUser: vi.fn() } as unknown as AnalyticsService;
+  const audit = new AuditService(prisma as unknown as PrismaService, clock);
   const profiles = new ProfileService(
     prisma as unknown as PrismaService,
     catalog as unknown as CatalogService,
@@ -47,8 +50,9 @@ function setup() {
     plans as unknown as PlansService,
     clock,
     analytics,
+    audit,
   );
-  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock, analytics);
+  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock, analytics, audit);
   prisma.userExercisePreference.findMany.mockResolvedValue([]);
   return { prisma, plans, profiles, consents };
 }
@@ -65,6 +69,17 @@ describe('helpers de perfil', () => {
       'body.heightCm',
     ]);
   });
+  it('healthFieldsChanged: solo limitaciones, peso o altura; sin perfil, si tienen valor', () => {
+    const none = { limitations: [], weightKg: null, heightCm: null };
+    expect(healthFieldsChanged(null, none)).toBe(false);
+    expect(healthFieldsChanged(null, { ...none, weightKg: 80 })).toBe(true);
+    const stored = profileRow({ limitations: ['knee', 'shoulder'], weightKg: new Prisma.Decimal('80.50'), heightCm: null });
+    expect(healthFieldsChanged(stored, { limitations: ['shoulder', 'knee'], weightKg: 80.5, heightCm: null })).toBe(false);
+    expect(healthFieldsChanged(stored, { limitations: ['knee'], weightKg: 80.5, heightCm: null })).toBe(true);
+    expect(healthFieldsChanged(stored, { limitations: ['knee', 'shoulder'], weightKg: 81, heightCm: null })).toBe(true);
+    expect(healthFieldsChanged(stored, { limitations: ['knee', 'shoulder'], weightKg: 80.5, heightCm: 180 })).toBe(true);
+  });
+
   it('healthConsentStatus: versión antigua no vale', () => {
     expect(healthConsentStatus(null)).toMatchObject({ granted: false, version: null });
     expect(healthConsentStatus(grantedEvent() as never).granted).toBe(true);
@@ -138,6 +153,7 @@ describe('ConsentService', () => {
     expect(data).not.toHaveProperty('ip');
     expect(data).not.toHaveProperty('userAgent');
     expect(data.textHash).toMatch(/^[0-9a-f]{64}$/);
+    expect(prisma.auditEvent.create.mock.calls[0][0].data).toMatchObject({ type: 'health_consent_granted', userId: UID });
   });
 
   it('grant con un consentimiento de la versión anterior registra la nueva (ámbitos nuevos, ADR-0013)', async () => {
@@ -165,6 +181,7 @@ describe('ConsentService', () => {
     plans.hasActivePlan.mockResolvedValue(true);
     const res = await consents.withdraw(UID);
     expect(prisma.consentEvent.create.mock.calls[0][0].data).toMatchObject({ action: 'withdrawn' });
+    expect(prisma.auditEvent.create.mock.calls[0][0].data).toMatchObject({ type: 'health_consent_withdrawn', userId: UID });
     expect(prisma.trainingProfile.updateMany.mock.calls[0][0].data).toEqual({ limitations: [], weightKg: null, heightCm: null });
     expect(prisma.$executeRaw).toHaveBeenCalled();
     expect(plans.prepare.mock.calls[0][1].limitations).toEqual([]);
@@ -177,6 +194,7 @@ describe('ConsentService', () => {
     prisma.trainingProfile.findUnique.mockResolvedValue(null);
     const res = await consents.withdraw(UID);
     expect(prisma.consentEvent.create).not.toHaveBeenCalled();
+    expect(prisma.auditEvent.create).not.toHaveBeenCalled();
     expect(plans.prepare).not.toHaveBeenCalled();
     expect(res).toMatchObject({ planVersion: null, healthConsent: { granted: false } });
   });
