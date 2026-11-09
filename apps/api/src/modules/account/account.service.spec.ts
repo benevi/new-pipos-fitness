@@ -200,10 +200,21 @@ describe('CatalogService', () => {
     prisma.$queryRaw.mockResolvedValueOnce([{ id: 'id:a' }]);
     prisma.exercise.count.mockResolvedValueOnce(1);
     prisma.exercise.findMany.mockResolvedValueOnce([row('a')]);
-    const list = await service.list({ page: 1, pageSize: 10, equipment: ['dumbbell'], level: 'intermediate', movementPattern: 'squat', q: 'Sent' });
+    const list = await service.list({ page: 1, pageSize: 10, equipment: ['dumbbell'], level: 'intermediate', movementPattern: 'squat', q: 'Sent', role: 'primary' });
     expect(list.items[0]).toMatchObject({ slug: 'a', primaryMuscles: ['quads'] });
     const where = prisma.exercise.count.mock.calls[0][0].where;
     expect(where).toMatchObject({ deletedAt: null, movementPattern: 'squat', minLevel: { in: ['beginner', 'intermediate'] }, id: { in: ['id:a'] } });
+    expect(where.muscles).toBeUndefined();
+    expect(prisma.exercise.findMany.mock.calls.at(-1)?.[0].orderBy).toEqual({ slug: 'asc' });
+
+    // Biblioteca por músculo (ADR-0014, Fase 3): filtra por músculo y rol y ordena por nivel.
+    prisma.exercise.count.mockResolvedValueOnce(1);
+    prisma.exercise.findMany.mockResolvedValueOnce([row('a')]);
+    await service.list({ page: 1, pageSize: 100, muscle: 'quads', role: 'secondary' });
+    expect(prisma.exercise.count.mock.calls.at(-1)?.[0].where).toMatchObject({
+      muscles: { some: { muscle: 'quads', role: 'secondary' } },
+    });
+    expect(prisma.exercise.findMany.mock.calls.at(-1)?.[0].orderBy).toEqual([{ minLevel: 'asc' }, { nameEs: 'asc' }, { slug: 'asc' }]);
 
     prisma.exercise.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.get('nope'), 'NOT_FOUND', 404);

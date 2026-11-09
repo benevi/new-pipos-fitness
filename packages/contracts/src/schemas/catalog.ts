@@ -57,6 +57,13 @@ export const ExerciseListQuerySchema = PaginationQuerySchema.extend({
     .optional(),
   level: TrainingLevelSchema.optional(),
   q: z.string().trim().min(1).max(TEXT_LIMITS.SEARCH).optional(),
+  /**
+   * Biblioteca por músculo (ADR-0014, Fase 3): solo ejercicios que trabajan este músculo con el
+   * rol `role`. Con `muscle`, la lista sale ordenada por nivel mínimo y después por nombre.
+   */
+  muscle: MuscleSchema.optional(),
+  /** Rol del músculo en el ejercicio; solo se aplica con `muscle`. */
+  role: MuscleRoleSchema.default('primary'),
 }).strict();
 export type ExerciseListQuery = z.infer<typeof ExerciseListQuerySchema>;
 

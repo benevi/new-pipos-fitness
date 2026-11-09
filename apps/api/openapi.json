@@ -6234,6 +6234,55 @@
                 }
               ]
             }
+          },
+          {
+            "name": "muscle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "not": {}
+                },
+                {
+                  "type": "string",
+                  "enum": [
+                    "chest",
+                    "front_delts",
+                    "side_delts",
+                    "rear_delts",
+                    "lats",
+                    "upper_back",
+                    "traps",
+                    "biceps",
+                    "triceps",
+                    "forearms",
+                    "abs",
+                    "obliques",
+                    "lower_back",
+                    "glutes",
+                    "quads",
+                    "hamstrings",
+                    "adductors",
+                    "abductors",
+                    "calves"
+                  ]
+                }
+              ]
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "primary",
+                "secondary"
+              ],
+              "default": "primary"
+            }
           }
         ],
         "responses": {
