@@ -92,6 +92,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | Botones de icono con tooltip | ✓ | el test recorre todos los `IconButton` |
 | Movimiento reducido | ✓ | test de descanso con `disableAnimations` |
 | Contraste ≥ 4,5:1 (claro y oscuro) | ✓ | `test/app/tokens_contrast_test.dart`; solo colores de tokens/tema |
+| Contraste no textual ≥ 3:1: interruptores encendidos y apagados (borde y pulgar en `onSurfaceVariant`), iconos de estado | ✓ | `test/app/tokens_contrast_test.dart` |
 | Cabeceras semánticas | ✓ | títulos de pantalla, sección y ejercicio con `Semantics(header: true)` |
 | Cambios anunciados | ✓ | errores de campo, estado de sync, fin del descanso y resultados en `liveRegion` |
 | El color no es el único portador de significado | ✓ | barras de volumen y sparkline con etiqueta semántica textual; estado de cada serie con icono + texto |

@@ -48,6 +48,42 @@ void main() {
     });
   });
 
+  group('interruptores: contraste no textual ≥ 3:1 (WCAG 1.4.11)', () {
+    for (final t in [AppColorTokens.dark, AppColorTokens.light]) {
+      final theme = t.brightness == Brightness.dark
+          ? AppTheme.dark
+          : AppTheme.light;
+      final sw = theme.switchTheme;
+      final scheme = theme.colorScheme;
+      // Fondos donde aparecen: pantalla, tarjetas y hojas inferiores.
+      final backgrounds = <String, Color>{
+        'background': t.background,
+        'surface': t.surface,
+        'surfaceVariant': t.surfaceVariant,
+        'surfaceContainerLow': scheme.surfaceContainerLow,
+      };
+      test('${t.brightness.name} apagado: borde y pulgar visibles', () {
+        const off = <WidgetState>{};
+        final thumb = sw.thumbColor!.resolve(off)!;
+        final track = sw.trackColor!.resolve(off)!;
+        final outline = sw.trackOutlineColor!.resolve(off)!;
+        expect(contrast(thumb, track), greaterThanOrEqualTo(3));
+        backgrounds.forEach((name, bg) {
+          expect(contrast(outline, bg), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+      test('${t.brightness.name} encendido: pista y pulgar visibles', () {
+        const on = {WidgetState.selected};
+        final thumb = sw.thumbColor!.resolve(on)!;
+        final track = sw.trackColor!.resolve(on)!;
+        expect(contrast(thumb, track), greaterThanOrEqualTo(3));
+        backgrounds.forEach((name, bg) {
+          expect(contrast(track, bg), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+    }
+  });
+
   group('tipografía: misma familia en texto y componentes', () {
     for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
       test(platform.name, () {

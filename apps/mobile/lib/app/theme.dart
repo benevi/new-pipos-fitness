@@ -65,6 +65,34 @@ class AppTheme {
         centerTitle: true,
         titleTextStyle: textTheme.titleLarge,
       ),
+      // Interruptores: en apagado el borde y el pulgar usan onSurfaceVariant
+      // (≥ 3:1 sobre las superficies) y la pista es la propia superficie,
+      // para que «apagado» se vea claramente en claro y en oscuro (el
+      // `outline` por defecto daba ~1,5:1 en oscuro). Encendido: pista del
+      // acento y pulgar onAccent. Ver test/app/tokens_contrast_test.dart.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return t.onSurface.withValues(alpha: 0.38);
+          }
+          return states.contains(WidgetState.selected)
+              ? t.onAccent
+              : t.onSurfaceVariant;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return t.surfaceVariant;
+          }
+          return states.contains(WidgetState.selected) ? t.accent : t.surface;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return Colors.transparent;
+          if (states.contains(WidgetState.disabled)) {
+            return t.onSurface.withValues(alpha: 0.12);
+          }
+          return t.onSurfaceVariant;
+        }),
+      ),
       tabBarTheme: TabBarThemeData(
         labelStyle: textTheme.titleSmall,
         unselectedLabelStyle: textTheme.titleSmall,
