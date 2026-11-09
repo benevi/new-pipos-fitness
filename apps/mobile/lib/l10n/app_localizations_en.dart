@@ -1246,4 +1246,44 @@ class AppLocalizationsEn extends AppLocalizations {
   String loadIncrease(String step) {
     return 'Increase by $step';
   }
+
+  @override
+  String get noteLabel => 'Your note';
+
+  @override
+  String get noteAdd => 'Add note';
+
+  @override
+  String get noteEdit => 'Edit note';
+
+  @override
+  String noteSheetTitle(String exercise) {
+    return 'Note for $exercise';
+  }
+
+  @override
+  String get noteHint =>
+      'Machine settings, grip, seat height… You\'ll see it every time this exercise comes up.';
+
+  @override
+  String get noteFieldLabel => 'Note';
+
+  @override
+  String get notePrivacy =>
+      'Only you can see it. If something hurts, talk to a professional rather than noting it here.';
+
+  @override
+  String get noteSave => 'Save note';
+
+  @override
+  String get noteDelete => 'Delete note';
+
+  @override
+  String get noteEmptyError => 'Write the note or delete it.';
+
+  @override
+  String get noteSaved => 'Note saved.';
+
+  @override
+  String get noteDeleted => 'Note deleted.';
 }

@@ -1249,4 +1249,44 @@ class AppLocalizationsEs extends AppLocalizations {
   String loadIncrease(String step) {
     return 'Subir $step';
   }
+
+  @override
+  String get noteLabel => 'Tu nota';
+
+  @override
+  String get noteAdd => 'Añadir nota';
+
+  @override
+  String get noteEdit => 'Editar nota';
+
+  @override
+  String noteSheetTitle(String exercise) {
+    return 'Nota para $exercise';
+  }
+
+  @override
+  String get noteHint =>
+      'Ajustes de máquina, agarre, altura del asiento… La verás cada vez que toque este ejercicio.';
+
+  @override
+  String get noteFieldLabel => 'Nota';
+
+  @override
+  String get notePrivacy =>
+      'Solo la ves tú. Si tienes una molestia, mejor consulta a un profesional que apuntarla aquí.';
+
+  @override
+  String get noteSave => 'Guardar nota';
+
+  @override
+  String get noteDelete => 'Borrar nota';
+
+  @override
+  String get noteEmptyError => 'Escribe la nota o bórrala.';
+
+  @override
+  String get noteSaved => 'Nota guardada.';
+
+  @override
+  String get noteDeleted => 'Nota borrada.';
 }

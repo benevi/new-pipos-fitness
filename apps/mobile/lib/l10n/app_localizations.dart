@@ -1687,6 +1687,78 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Subir {step}'**
   String loadIncrease(String step);
+
+  /// No description provided for @noteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu nota'**
+  String get noteLabel;
+
+  /// No description provided for @noteAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir nota'**
+  String get noteAdd;
+
+  /// No description provided for @noteEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar nota'**
+  String get noteEdit;
+
+  /// No description provided for @noteSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota para {exercise}'**
+  String noteSheetTitle(String exercise);
+
+  /// No description provided for @noteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes de máquina, agarre, altura del asiento… La verás cada vez que toque este ejercicio.'**
+  String get noteHint;
+
+  /// No description provided for @noteFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get noteFieldLabel;
+
+  /// No description provided for @notePrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo la ves tú. Si tienes una molestia, mejor consulta a un profesional que apuntarla aquí.'**
+  String get notePrivacy;
+
+  /// No description provided for @noteSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar nota'**
+  String get noteSave;
+
+  /// No description provided for @noteDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar nota'**
+  String get noteDelete;
+
+  /// No description provided for @noteEmptyError.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe la nota o bórrala.'**
+  String get noteEmptyError;
+
+  /// No description provided for @noteSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota guardada.'**
+  String get noteSaved;
+
+  /// No description provided for @noteDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota borrada.'**
+  String get noteDeleted;
 }
 
 class _AppLocalizationsDelegate

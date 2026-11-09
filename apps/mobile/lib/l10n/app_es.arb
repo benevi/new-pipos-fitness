@@ -373,5 +373,19 @@
   "loadDecrease": "Bajar {step}",
   "@loadDecrease": { "placeholders": { "step": { "type": "String" } }},
   "loadIncrease": "Subir {step}",
-  "@loadIncrease": { "placeholders": { "step": { "type": "String" } }}
+  "@loadIncrease": { "placeholders": { "step": { "type": "String" } }},
+
+  "noteLabel": "Tu nota",
+  "noteAdd": "Añadir nota",
+  "noteEdit": "Editar nota",
+  "noteSheetTitle": "Nota para {exercise}",
+  "@noteSheetTitle": { "placeholders": { "exercise": { "type": "String" } }},
+  "noteHint": "Ajustes de máquina, agarre, altura del asiento… La verás cada vez que toque este ejercicio.",
+  "noteFieldLabel": "Nota",
+  "notePrivacy": "Solo la ves tú. Si tienes una molestia, mejor consulta a un profesional que apuntarla aquí.",
+  "noteSave": "Guardar nota",
+  "noteDelete": "Borrar nota",
+  "noteEmptyError": "Escribe la nota o bórrala.",
+  "noteSaved": "Nota guardada.",
+  "noteDeleted": "Nota borrada."
 }

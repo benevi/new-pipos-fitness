@@ -61,6 +61,7 @@ Future<void> showPlatesSheet(
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
+    useRootNavigator: true,
     showDragHandle: true,
     builder: (ctx) => _PlatesSheet(
       totalKg: totalKg,

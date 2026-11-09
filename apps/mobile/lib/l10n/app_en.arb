@@ -286,5 +286,18 @@
   "platesBelowBar": "The load is lighter than the empty bar ({kg}).",
   "platesHelp": "Standard plates from 25 to 1.25 kg. Load the same on each side.",
   "loadDecrease": "Decrease by {step}",
-  "loadIncrease": "Increase by {step}"
+  "loadIncrease": "Increase by {step}",
+
+  "noteLabel": "Your note",
+  "noteAdd": "Add note",
+  "noteEdit": "Edit note",
+  "noteSheetTitle": "Note for {exercise}",
+  "noteHint": "Machine settings, grip, seat height… You'll see it every time this exercise comes up.",
+  "noteFieldLabel": "Note",
+  "notePrivacy": "Only you can see it. If something hurts, talk to a professional rather than noting it here.",
+  "noteSave": "Save note",
+  "noteDelete": "Delete note",
+  "noteEmptyError": "Write the note or delete it.",
+  "noteSaved": "Note saved.",
+  "noteDeleted": "Note deleted."
 }

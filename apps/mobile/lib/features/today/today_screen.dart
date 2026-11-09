@@ -21,6 +21,7 @@ import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
+import 'note_sheet.dart';
 import 'plates.dart';
 import 'rest_timer_bar.dart';
 import 'swap_sheet.dart';
@@ -245,6 +246,18 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     final hasLogged =
         local.isNotEmpty ||
         session.exercises.any((e) => e.loggedSets.isNotEmpty);
+    final pendingNotes =
+        ref.watch(pendingNotesProvider).valueOrNull ??
+        const <String, String?>{};
+    // Una nota que deja de estar pendiente ya está en la API: se relee la
+    // sesión para mostrar la versión del servidor.
+    ref.listen(pendingNotesProvider, (prev, next) {
+      final before = prev?.valueOrNull?.keys ?? const <String>[];
+      final now = next.valueOrNull?.keys.toSet() ?? const <String>{};
+      if (before.any((k) => !now.contains(k))) {
+        ref.invalidate(todaySessionProvider);
+      }
+    });
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(todaySessionProvider.future),
@@ -297,6 +310,16 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             ExerciseCard(
               key: Key('exercise-${e.planExerciseId}'),
               exercise: e,
+              note: pendingNotes.containsKey(e.exercise.id)
+                  ? pendingNotes[e.exercise.id]
+                  : e.note,
+              notePending: pendingNotes.containsKey(e.exercise.id),
+              onEditNote: (current) => showNoteSheet(
+                context,
+                exerciseId: e.exercise.id,
+                exerciseName: e.exercise.nameEs,
+                current: current,
+              ),
               logged: mergeSets(e, local),
               onLog: (index, reps, load, rir) =>
                   _logSet(e, index, reps, load, rir),
@@ -410,12 +433,20 @@ class ExerciseCard extends StatelessWidget {
     required this.logged,
     required this.onLog,
     required this.onSwap,
+    this.note,
+    this.notePending = false,
+    this.onEditNote,
   });
 
   final TodayExercise exercise;
   final List<LoggedSetView> logged;
   final LogSetCallback onLog;
   final VoidCallback onSwap;
+
+  /// Nota fija (la local pendiente manda sobre la de la API).
+  final String? note;
+  final bool notePending;
+  final void Function(String? current)? onEditNote;
 
   @override
   Widget build(BuildContext context) {
@@ -469,6 +500,13 @@ class ExerciseCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (onEditNote != null)
+              _NoteBox(
+                planExerciseId: exercise.planExerciseId,
+                note: note,
+                pending: notePending,
+                onEdit: () => onEditNote!(note),
+              ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               l10n.todayTarget(p.sets, p.repMin, p.repMax, p.targetRir),
@@ -585,6 +623,83 @@ class ExerciseCard extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Nota fija del ejercicio, o «Añadir nota» si no hay.
+class _NoteBox extends StatelessWidget {
+  const _NoteBox({
+    required this.planExerciseId,
+    required this.note,
+    required this.pending,
+    required this.onEdit,
+  });
+
+  final String planExerciseId;
+  final String? note;
+  final bool pending;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final text = note;
+    if (text == null) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          key: Key('note-add-$planExerciseId'),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+          ),
+          onPressed: onEdit,
+          icon: const Icon(Icons.sticky_note_2_outlined),
+          label: Text(l10n.noteAdd),
+        ),
+      );
+    }
+    return Container(
+      key: Key('note-$planExerciseId'),
+      margin: const EdgeInsets.only(top: AppSpacing.xs),
+      padding: const EdgeInsets.only(left: AppSpacing.ms),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        children: [
+          ExcludeSemantics(
+            child: Icon(
+              Icons.push_pin_outlined,
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Semantics(
+              label: l10n.noteLabel,
+              child: Text(text, style: theme.textTheme.bodyMedium),
+            ),
+          ),
+          if (pending)
+            Tooltip(
+              message: l10n.syncStatusPending,
+              child: Icon(
+                Icons.cloud_upload_outlined,
+                key: Key('note-pending-$planExerciseId'),
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          IconButton(
+            key: Key('note-edit-$planExerciseId'),
+            tooltip: l10n.noteEdit,
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: onEdit,
+          ),
+        ],
       ),
     );
   }
