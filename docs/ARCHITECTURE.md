@@ -103,6 +103,10 @@ servidor es idempotente.
 ## 5. Datos
 
 Esquema Prisma en `apps/api/prisma/schema.prisma` (documentado en [MODELO_DATOS.md](MODELO_DATOS.md)).
+Prisma 7: las URL (`DATABASE_URL` y, para `prisma:diff`, `DATABASE_URL_SHADOW`), la carpeta de
+migraciones y el seed se configuran en `apps/api/prisma.config.ts`, y el cliente conecta con el
+driver adapter `@prisma/adapter-pg` (`PrismaService`, `createPrismaClient`). `.env` lo carga
+`src/config/dotenv.ts` (Prisma 7 ya no lo hace).
 Migraciones en `apps/api/prisma/migrations` (inicial + cambios de la Fase 5); CI comprueba que no
 hay deriva (`prisma migrate diff --exit-code`). El catálogo se siembra desde `packages/catalog`
 (`pnpm --filter @pipos/api prisma:seed`, idempotente, borrado lógico de lo retirado).

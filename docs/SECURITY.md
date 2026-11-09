@@ -158,8 +158,9 @@ GHSA-mrhx-c7xc-m3w5 (`zod` 3), se cerró al migrar a zod 4.6 (contratos, API y O
 `z.toJSONSchema`).
 
 Las demás vulnerabilidades altas/críticas transitivas se corrigen con `pnpm.overrides` a la versión
-parcheada más cercana dentro de la misma mayor: hoy solo `proxy-addr` (de Express 5) y `js-yaml` 4
-(herramientas de desarrollo). Las de multer, body-parser, path-to-regexp y lodash desaparecieron con
+parcheada más cercana dentro de la misma mayor: hoy `proxy-addr` (de Express 5), `js-yaml` 4
+(herramientas de desarrollo) y `fast-uri` y `source-map-js` (del CLI de Prisma 7, que entra en el
+árbol de producción como peer opcional de `@prisma/client`). Las de multer, body-parser, path-to-regexp y lodash desaparecieron con
 NestJS 12 (Express 5 y `@nestjs/swagger` 12 ya traen versiones parcheadas) y sus overrides se
 quitaron; tar y brace-expansion desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato
 de hash `$2b$`).
