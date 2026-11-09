@@ -614,5 +614,17 @@
   "exerciseDetailWatchZones": "Zonas a vigilar",
   "exerciseDetailZoneLine": "{zone}: {level, select, avoid{este ejercicio la carga mucho} other{este ejercicio la carga}}",
   "@exerciseDetailZoneLine": {"placeholders": {"zone": {"type": "String"}, "level": {"type": "String"}}},
-  "exerciseDetailWatchZonesNote": "Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario."
+  "exerciseDetailWatchZonesNote": "Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.",
+  "exerciseVideoButton": "Ver vídeo (YouTube)",
+  "exerciseVideoSemantics": "Ver vídeo de técnica de {name} en YouTube. Sales de Pipos.",
+  "@exerciseVideoSemantics": {"placeholders": {"name": {"type": "String"}}},
+  "exerciseVideoChannel": "Vídeo revisado del canal {channel}. Se abre en YouTube, fuera de Pipos.",
+  "@exerciseVideoChannel": {"placeholders": {"channel": {"type": "String"}}},
+  "exerciseVideoLeaveTitle": "Vas a salir de Pipos",
+  "exerciseVideoLeaveBody": "El vídeo del canal {channel} se abre en YouTube (la app o el navegador). Pipos no envía ningún dato tuyo; lo que hagas allí lo gestiona YouTube.",
+  "@exerciseVideoLeaveBody": {"placeholders": {"channel": {"type": "String"}}},
+  "exerciseVideoLeaveConfirm": "Abrir YouTube",
+  "exerciseVideoOffline": "Sin conexión: el vídeo necesita internet. Inténtalo cuando vuelvas a tener red.",
+  "exerciseVideoUnavailable": "Este ejercicio ya no tiene un vídeo revisado.",
+  "exerciseVideoOpenFailed": "No se ha podido abrir YouTube."
 }

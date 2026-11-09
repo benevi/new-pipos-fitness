@@ -17,26 +17,38 @@ const exerciseDetailRefreshAfter = Duration(days: 7);
 /// o con el servidor caído, la última copia guardada. Sin copia, el fallo
 /// llega a la pantalla («Necesitas conexión para ver esta ficha»).
 final exerciseDetailProvider = FutureProvider.autoDispose
-    .family<Cached<ExerciseDetail>, String>((ref, idOrSlug) async {
-      final cache = ref.read(cacheStoreProvider);
-      final key = CacheKeys.exercise(idOrSlug);
-      try {
-        final detail = await ref
-            .watch(catalogApiProvider)
-            .getExercise(idOrSlug);
-        await cache.write(key, detail.toJson());
-        return Cached(detail);
-      } on ApiFailure catch (f) {
-        if (!f.isConnectivity && f.type != ApiFailureType.server) rethrow;
-        final saved = await cache.read(key);
-        if (saved == null) rethrow;
-        return Cached(
-          ExerciseDetail.fromJson(saved.json),
-          savedAt: saved.savedAt,
-          fromCache: true,
-        );
-      }
-    });
+    .family<Cached<ExerciseDetail>, String>(
+      (ref, idOrSlug) => loadExerciseDetail(
+        ref.watch(catalogApiProvider),
+        ref.read(cacheStoreProvider),
+        idOrSlug,
+      ),
+    );
+
+/// Ficha de [idOrSlug] de la API (y a la caché) o, sin red o con el servidor
+/// caído, la última copia guardada. Sin copia, relanza el fallo. La usan la
+/// pantalla de la ficha y el botón «Ver vídeo» de Hoy (ADR-0014, Fase 4).
+Future<Cached<ExerciseDetail>> loadExerciseDetail(
+  CatalogApi api,
+  CacheStore cache,
+  String idOrSlug,
+) async {
+  final key = CacheKeys.exercise(idOrSlug);
+  try {
+    final detail = await api.getExercise(idOrSlug);
+    await cache.write(key, detail.toJson());
+    return Cached(detail);
+  } on ApiFailure catch (f) {
+    if (!f.isConnectivity && f.type != ApiFailureType.server) rethrow;
+    final saved = await cache.read(key);
+    if (saved == null) rethrow;
+    return Cached(
+      ExerciseDetail.fromJson(saved.json),
+      savedAt: saved.savedAt,
+      fromCache: true,
+    );
+  }
+}
 
 /// Guarda en caché las fichas de [exerciseIds] que falten o tengan más de
 /// [exerciseDetailRefreshAfter], para abrirlas sin red (plan vigente y

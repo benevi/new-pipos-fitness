@@ -45,6 +45,57 @@ class ExerciseRiskTag {
   Json toJson() => {'zone': zone.wire, 'level': level.wire};
 }
 
+/// Vídeo de técnica de YouTube revisado (ADR-0014, Fase 4): un vídeo
+/// concreto, elegido y aprobado por PR. Nunca un enlace a una búsqueda.
+class ExerciseVideo {
+  const ExerciseVideo({
+    required this.videoId,
+    required this.channelName,
+    required this.locale,
+    this.startSeconds,
+    this.endSeconds,
+    this.isPrimary = false,
+  });
+
+  /// Identificador de YouTube: 11 caracteres de `[A-Za-z0-9_-]`.
+  static final videoIdPattern = RegExp(r'^[A-Za-z0-9_-]{11}$');
+
+  final String videoId;
+  final String channelName;
+  final String locale;
+  final int? startSeconds;
+  final int? endSeconds;
+  final bool isPrimary;
+
+  /// Vídeo de un elemento de `media`; null si no es un vídeo de YouTube o
+  /// no tiene la forma esperada (la app nunca abre un enlace dudoso).
+  static ExerciseVideo? tryParse(Json j) {
+    if (j['kind'] != 'youtube') return null;
+    final id = j['videoId'];
+    final channel = j['channelName'];
+    final locale = j['locale'];
+    if (id is! String || !videoIdPattern.hasMatch(id)) return null;
+    if (channel is! String || locale is! String) return null;
+    final start = j['startSeconds'];
+    final end = j['endSeconds'];
+    return ExerciseVideo(
+      videoId: id,
+      channelName: channel,
+      locale: locale,
+      startSeconds: start is int && start > 0 ? start : null,
+      endSeconds: end is int ? end : null,
+      isPrimary: j['isPrimary'] == true,
+    );
+  }
+
+  /// Enlace público del vídeo en el segundo de inicio. Se abre FUERA de la
+  /// app (app de YouTube o navegador): Pipos no carga código de terceros.
+  Uri get watchUri => Uri.https('www.youtube.com', '/watch', {
+    'v': videoId,
+    if (startSeconds != null) 't': '${startSeconds}s',
+  });
+}
+
 class ExerciseDetail {
   const ExerciseDetail({
     required this.id,
@@ -89,9 +140,18 @@ class ExerciseDetail {
   /// Errores comunes (0-3).
   final List<String> mistakesEs;
 
-  /// Vídeos e imágenes revisados (Fase 4). Hasta entonces llega vacía y se
-  /// conserva tal cual para que la copia en caché no pierda datos.
+  /// Vídeos e imágenes revisados (ADR-0014, Fase 4), el principal primero.
+  /// Se conservan tal cual para que la copia en caché no pierda datos; las
+  /// imágenes aún no se muestran (ADR-0014: esta iteración sale con vídeos).
   final List<Json> media;
+
+  /// Vídeo que abre «Ver vídeo»: el principal o, si el principal es una
+  /// imagen, el primer vídeo. null si no hay ninguno revisado.
+  ExerciseVideo? get primaryVideo {
+    final videos = [for (final m in media) ?ExerciseVideo.tryParse(m)];
+    if (videos.isEmpty) return null;
+    return videos.firstWhere((v) => v.isPrimary, orElse: () => videos.first);
+  }
 
   /// Nombre en el idioma de la UI (el catálogo trae ES y EN).
   String localizedName(String languageCode) =>

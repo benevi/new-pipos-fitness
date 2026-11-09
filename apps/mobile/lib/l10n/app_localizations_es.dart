@@ -2058,4 +2058,39 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get exerciseDetailWatchZonesNote =>
       'Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.';
+
+  @override
+  String get exerciseVideoButton => 'Ver vídeo (YouTube)';
+
+  @override
+  String exerciseVideoSemantics(String name) {
+    return 'Ver vídeo de técnica de $name en YouTube. Sales de Pipos.';
+  }
+
+  @override
+  String exerciseVideoChannel(String channel) {
+    return 'Vídeo revisado del canal $channel. Se abre en YouTube, fuera de Pipos.';
+  }
+
+  @override
+  String get exerciseVideoLeaveTitle => 'Vas a salir de Pipos';
+
+  @override
+  String exerciseVideoLeaveBody(String channel) {
+    return 'El vídeo del canal $channel se abre en YouTube (la app o el navegador). Pipos no envía ningún dato tuyo; lo que hagas allí lo gestiona YouTube.';
+  }
+
+  @override
+  String get exerciseVideoLeaveConfirm => 'Abrir YouTube';
+
+  @override
+  String get exerciseVideoOffline =>
+      'Sin conexión: el vídeo necesita internet. Inténtalo cuando vuelvas a tener red.';
+
+  @override
+  String get exerciseVideoUnavailable =>
+      'Este ejercicio ya no tiene un vídeo revisado.';
+
+  @override
+  String get exerciseVideoOpenFailed => 'No se ha podido abrir YouTube.';
 }

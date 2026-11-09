@@ -23,6 +23,7 @@ import '../../models/profile.dart';
 import '../../shared/widgets.dart';
 import '../onboarding/onboarding_controller.dart' show profileProvider;
 import 'exercise_providers.dart';
+import 'exercise_video.dart';
 
 /// Ruta de la ficha (`/exercise/:id`, id o slug).
 String exerciseDetailLocation(String idOrSlug) =>
@@ -112,6 +113,8 @@ class _DetailBody extends ConsumerWidget {
     // las zonas a vigilar, nunca se adivinan.
     final profile = ref.watch(profileProvider).valueOrNull;
     final watchZones = zonesToWatch(detail, profile);
+    final video = detail.primaryVideo;
+    final lang = Localizations.localeOf(context).languageCode;
 
     return ListView(
       key: const Key('exercise-detail'),
@@ -129,6 +132,27 @@ class _DetailBody extends ConsumerWidget {
               description,
               key: const Key('exercise-description'),
               style: theme.textTheme.bodyLarge,
+            ),
+          ),
+        // Vídeo revisado (ADR-0014, Fase 4): sin vídeo, ni botón ni hueco.
+        if (video != null)
+          Padding(
+            key: const Key('exercise-video'),
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ExerciseVideoButton(
+                  idOrSlug: detail.id,
+                  exerciseName: detail.localizedName(lang),
+                  video: video,
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  l10n.exerciseVideoChannel(video.channelName),
+                  style: theme.textTheme.bodySmall,
+                ),
+              ],
             ),
           ),
         SectionCard(
