@@ -85,8 +85,12 @@ export class AuthService {
   /**
    * Rotación de refresh token atómica con detección de reutilización:
    * - Desconocido o caducado → 401 AUTH_REFRESH_INVALID.
-   * - Rotado hace menos de REFRESH_REUSE_GRACE_SECONDS (respuesta perdida o dos peticiones
-   *   simultáneas) → 401 AUTH_REFRESH_RACE, sin revocar nada: el cliente usa el token nuevo.
+   * - Rotado hace menos de REFRESH_REUSE_GRACE_SECONDS → 401 AUTH_REFRESH_RACE, sin revocar nada.
+   *   Cubre bien las peticiones simultáneas del mismo cliente (una gana y guarda el par nuevo; las
+   *   demás usan ese par). NO recupera una respuesta perdida: solo se guarda el hash del token
+   *   nuevo, así que no se puede reenviar, y el cliente que no lo recibió tendrá que volver a
+   *   iniciar sesión (la familia no se revoca; el token nuevo caduca sin usarse). Limitación
+   *   documentada en docs/SECURITY.md.
    * - Cualquier otra reutilización → se revocan TODAS las sesiones del usuario y
    *   401 AUTH_REFRESH_REUSED.
    */

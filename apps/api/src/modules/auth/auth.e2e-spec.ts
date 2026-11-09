@@ -180,12 +180,25 @@ describe('Auth (e2e, Postgres real)', () => {
     it('ventana de gracia: reenviar un token recién rotado → 401 AUTH_REFRESH_RACE sin revocar la familia', async () => {
       const u = await registerUser(ctx.app);
       const rotated = await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(200);
-      // Respuesta perdida: el cliente reintenta con el token viejo.
+      // Otra petición simultánea del mismo cliente llega con el token viejo.
       const retry = await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(401);
       expect(retry.body.code).toBe(AUTH_REFRESH_RACE);
       // Nada revocado: el token nuevo sigue funcionando.
       expect(await ctx.prisma.refreshToken.count({ where: { userId: u.id, revokedReason: 'reuse_detected' } })).toBe(0);
       await request(server()).post('/auth/refresh').send({ refreshToken: rotated.body.refreshToken }).expect(200);
+    });
+
+    it('limitación: si se pierde la respuesta del refresh, el token viejo no recupera el par nuevo (hay que volver a entrar)', async () => {
+      const u = await registerUser(ctx.app);
+      await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(200); // respuesta «perdida»
+      for (let i = 0; i < 2; i++) {
+        const retry = await request(server()).post('/auth/refresh').send({ refreshToken: u.refreshToken }).expect(401);
+        expect(retry.body.code).toBe(AUTH_REFRESH_RACE);
+        expect(retry.body).not.toHaveProperty('refreshToken');
+      }
+      // Pero no se trata como robo: nada revocado y el login sigue funcionando.
+      expect(await ctx.prisma.refreshToken.count({ where: { userId: u.id, revokedReason: 'reuse_detected' } })).toBe(0);
+      await request(server()).post('/auth/login').send({ email: u.email, password: u.password }).expect(200);
     });
 
     it('fuera de la ventana (REFRESH_REUSE_GRACE_SECONDS=0) la reutilización revoca todo', async () => {
