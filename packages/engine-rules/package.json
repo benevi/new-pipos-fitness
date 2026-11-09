@@ -30,7 +30,7 @@
     "eslint": "^8.56.0",
     "fast-check": "^3.23.2",
     "tsx": "^4.19.0",
-    "typescript": "^5.3.3",
+    "typescript": "^7.0.2",
     "vitest": "^2.1.0"
   }
 }
