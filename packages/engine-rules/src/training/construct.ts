@@ -186,7 +186,7 @@ export function fitToBudget(session: DraftSession, ctx: Ctx): DraftSession {
     // Todo en el mínimo: quitar el último accesorio de relleno, luego accesorios y core de plantilla.
     const removable = [...cur.items.keys()]
       .filter((i) => cur.items[i].role === 'accessory' || cur.items[i].role === 'core')
-      .sort((a, b) => (cur.items[a].slot ? 1 : 0) - (cur.items[b].slot ? 1 : 0) || b - a);
+      .sort((a, b) => keepRank(cur.items[a], ctx) - keepRank(cur.items[b], ctx) || (cur.items[a].slot ? 1 : 0) - (cur.items[b].slot ? 1 : 0) || b - a);
     if (removable.length > 0) {
       cur = { ...cur, items: cur.items.filter((_, i) => i !== removable[0]) };
       continue;
@@ -199,6 +199,11 @@ export function fitToBudget(session: DraftSession, ctx: Ctx): DraftSession {
     return cur;
   }
   return cur;
+}
+
+/** 1 si el ejercicio es favorito o trabaja un músculo prioritario: se quita el último. */
+function keepRank(it: DraftItem, ctx: Ctx): number {
+  return ctx.favourites.has(it.ex.slug) || trainsPriority(it.ex, ctx) ? 1 : 0;
 }
 
 export function replaceItem(session: DraftSession, idx: number, item: DraftItem): DraftSession {
@@ -315,28 +320,32 @@ export function repairCeilings(sessions: DraftSession[], ctx: Ctx): DraftSession
       .filter(([g, v]) => v > (ctx.ceilings.get(g) ?? Infinity) + 1e-9)
       .sort((a, b) => cmpStr(a[0], b[0]))[0];
     if (!over) return cur;
-    if (!reduceOne(cur, over[0], min, false, ctx) && !reduceOne(cur, over[0], min, true, ctx)) return cur;
+    const g = over[0];
+    if (!reduceOne(cur, g, min, 'sets', ctx) && !reduceOne(cur, g, min, 'drop', ctx) && !reduceOne(cur, g, min, 'any', ctx)) {
+      return cur;
+    }
   }
   return cur;
 }
 
 /**
- * Quita una serie (o un accesorio ya en el mínimo) que aporte al grupo, de accesorios a principales.
- * Con `touchKept = false` no toca favoritos ni el trabajo directo de un músculo prioritario.
+ * Quita una serie o un accesorio que aporte al grupo. Modo 'sets': solo series, sin tocar
+ * favoritos; 'drop': quita accesorios que no sean favoritos ni trabajo directo del músculo
+ * prioritario; 'any': cualquier cosa (último recurso).
  */
-function reduceOne(cur: DraftSession[], g: VolumeGroup, min: number, touchKept: boolean, ctx: Ctx): boolean {
+function reduceOne(cur: DraftSession[], g: VolumeGroup, min: number, mode: 'sets' | 'drop' | 'any', ctx: Ctx): boolean {
   for (const role of ['accessory', 'core', 'secondary', 'main'] as ExerciseRole[]) {
     for (let si = cur.length - 1; si >= 0; si--) {
       const items = cur[si].items;
       for (let i = items.length - 1; i >= 0; i--) {
         const it = items[i];
         if (it.role !== role || (it.ex.groups.get(g) ?? 0) === 0) continue;
-        if (!touchKept && (ctx.favourites.has(it.ex.slug) || trainsPriority(it.ex, ctx))) continue;
-        if (it.sets > min) {
+        const kept = ctx.favourites.has(it.ex.slug) || trainsPriority(it.ex, ctx);
+        if (mode !== 'drop' && it.sets > min && (mode === 'any' || !ctx.favourites.has(it.ex.slug))) {
           cur[si] = replaceItem(cur[si], i, { ...it, sets: it.sets - 1 });
           return true;
         }
-        if (role === 'accessory' || role === 'core') {
+        if (mode !== 'sets' && (role === 'accessory' || role === 'core') && (mode === 'any' || !kept)) {
           cur[si] = { ...cur[si], items: items.filter((_, j) => j !== i) };
           return true;
         }

@@ -295,14 +295,29 @@ function exerciseRationale(
   return out;
 }
 
+const GOAL_RATIONALE: Record<engineV2.TrainingGoal, string> = {
+  strength:
+    'Fuerza: los multiarticulares principales van a 3-6 repeticiones con cargas altas (≥80 % 1RM) y 3 min de descanso; el resto, a 6-12 (ACSM 2026; Schoenfeld 2017).',
+  hypertrophy:
+    'Hipertrofia: 8-12 repeticiones en multiarticulares y 10-15 en aislamiento, cerca del fallo pero sin llegar en los ejercicios pesados (Schoenfeld 2017; Robinson 2024).',
+  fat_loss:
+    'Pérdida de grasa: se entrena como para hipertrofia para conservar el músculo; el déficit lo marcan tus objetivos nutricionales, no el entrenamiento.',
+  muscular_endurance: 'Resistencia muscular: 15-25 repeticiones con cargas ligeras y descansos cortos de 60 s.',
+  general_health:
+    'Salud general: 8-12 repeticiones dejando margen (RIR 2-3) y hasta 3 series por ejercicio, con todos los grupos principales 2 veces por semana (OMS 2020; ACSM 2009).',
+};
+
 function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[], meta: engineV2.LocalSearchMeta): string[] {
   const p = ctx.profile;
   const out: string[] = [];
+  const equipmentText =
+    p.equipment.length >= 10
+      ? 'material de gimnasio completo'
+      : list(p.equipment.length ? p.equipment.map((e) => EQUIPMENT_ES[e]) : ['tu peso corporal']);
   out.push(
-    `Plan para ${GOAL_ES[p.goal]}, nivel ${LEVEL_ES[p.level]}, ${p.daysPerWeek} días de ${p.minutesPerSession} min con ${list(
-      p.equipment.length ? p.equipment.map((e) => EQUIPMENT_ES[e]) : ['tu peso corporal'],
-    )}.`,
+    `Plan para ${GOAL_ES[p.goal]}, nivel ${LEVEL_ES[p.level]}, ${p.daysPerWeek} días de ${p.minutesPerSession} min con ${equipmentText}.`,
   );
+  out.push(GOAL_RATIONALE[p.goal]);
   const vmin = vol[0]?.min ?? 0;
   const vmax = ctx.config.volume.weeklyMax[p.level].value;
   out.push(
