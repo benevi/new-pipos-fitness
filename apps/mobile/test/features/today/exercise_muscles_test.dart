@@ -135,7 +135,10 @@ void main() {
       expect(find.byKey(Key('muscle-chip-$squat-$m')), findsOneWidget);
     }
     expect(find.byKey(const Key('muscle-chip-$squat-chest')), findsNothing);
-    expect(find.byKey(const Key('muscle-chip-$planPushup-chest')), findsOneWidget);
+    expect(
+      find.byKey(const Key('muscle-chip-$planPushup-chest')),
+      findsOneWidget,
+    );
     expect(
       find.bySemanticsLabel(
         'Trabaja: Glúteos, Cuádriceps. También: Lumbares, Aductores',

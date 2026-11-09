@@ -1996,4 +1996,60 @@ class AppLocalizationsEn extends AppLocalizations {
   String settingsLegalConsentVersion(String version, String date) {
     return 'Your health consent: text version $version, accepted on $date.';
   }
+
+  @override
+  String get exerciseDetailTitle => 'Exercise guide';
+
+  @override
+  String exerciseDetailOpen(String name) {
+    return 'Open the guide for $name';
+  }
+
+  @override
+  String get exerciseDetailNeedsConnection =>
+      'You need a connection to see this guide.';
+
+  @override
+  String get exerciseDetailNotFound =>
+      'This exercise is no longer in the catalogue.';
+
+  @override
+  String get exerciseDetailMuscles => 'Muscles worked';
+
+  @override
+  String get exerciseDetailPrimary => 'Main';
+
+  @override
+  String get exerciseDetailSecondary => 'Secondary';
+
+  @override
+  String get exerciseDetailCues => 'Technique cues';
+
+  @override
+  String get exerciseDetailMistakes => 'Common mistakes';
+
+  @override
+  String get exerciseDetailRequirements => 'What you need';
+
+  @override
+  String get exerciseDetailEquipment => 'Equipment';
+
+  @override
+  String get exerciseDetailMinLevel => 'Minimum level';
+
+  @override
+  String get exerciseDetailWatchZones => 'Areas to watch';
+
+  @override
+  String exerciseDetailZoneLine(String zone, String level) {
+    String _temp0 = intl.Intl.selectLogic(level, {
+      'avoid': 'this exercise loads it heavily',
+      'other': 'this exercise loads it',
+    });
+    return '$zone: $_temp0';
+  }
+
+  @override
+  String get exerciseDetailWatchZonesNote =>
+      'Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional.';
 }

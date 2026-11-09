@@ -45,6 +45,8 @@ export async function seedCatalog(
           loadType: ex.loadType,
           substitutionGroupId: groupIds.get(ex.substitutionGroup) ?? null,
           cuesEs: ex.cuesEs,
+          descriptionEs: ex.descriptionEs,
+          mistakesEs: ex.mistakesEs,
           deletedAt: null,
         };
         const row = await tx.exercise.upsert({

@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
+import { getExercise } from '@pipos/catalog';
 import { loadImplement } from '@pipos/engine-rules';
 import { sortExerciseMuscles } from '@pipos/contracts';
 import type {
@@ -51,6 +52,9 @@ export interface EngineCatalog {
 export const CATALOG_CACHE_TTL_MS = 60_000;
 
 export function toEngineExercise(row: ExerciseRow): engineV2.CatalogExercise {
+  // El motor no usa la ficha, pero su esquema la exige. Si la BD aún no tiene el texto (migrada y
+  // sin seed), se toma del catálogo versionado, que es la fuente de verdad (ADR-0005).
+  const packaged = row.descriptionEs === null ? getExercise(row.slug) : undefined;
   return {
     slug: row.slug,
     nameEs: row.nameEs,
@@ -65,6 +69,8 @@ export function toEngineExercise(row: ExerciseRow): engineV2.CatalogExercise {
     riskTags: row.riskTags.map((r) => ({ zone: r.zone, level: r.level })),
     substitutionGroup: row.substitutionGroup?.key ?? row.slug.replace(/-/g, '_'),
     cuesEs: row.cuesEs,
+    descriptionEs: row.descriptionEs ?? packaged?.descriptionEs ?? `Ejercicio del catálogo: ${row.nameEs}`,
+    mistakesEs: row.descriptionEs === null ? (packaged?.mistakesEs ?? []) : row.mistakesEs,
     media: null,
   };
 }
@@ -101,6 +107,7 @@ function toEntry(row: ExerciseRow): CatalogEntry {
 }
 
 const LEVELS = ['beginner', 'intermediate', 'advanced'] as const;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 @Injectable()
 export class CatalogService {
@@ -180,8 +187,10 @@ export class CatalogService {
     return { items: rows.map(toSummary), page: query.page, pageSize: query.pageSize, total };
   }
 
-  async get(id: string): Promise<ExerciseDetail> {
-    const row = await this.prisma.exercise.findFirst({ where: { id, deletedAt: null }, include: exerciseInclude });
+  /** Detalle de la ficha por id (UUID) o por slug; los ejercicios retirados dan 404. */
+  async get(idOrSlug: string): Promise<ExerciseDetail> {
+    const by = UUID_REGEX.test(idOrSlug) ? { id: idOrSlug } : { slug: idOrSlug };
+    const row = await this.prisma.exercise.findFirst({ where: { ...by, deletedAt: null }, include: exerciseInclude });
     if (!row) throw ApiError.notFound('Exercise not found');
     return {
       ...toSummary(row),
@@ -189,6 +198,10 @@ export class CatalogService {
       riskTags: row.riskTags.map((r) => ({ zone: r.zone, level: r.level })),
       substitutionGroup: row.substitutionGroup?.key ?? null,
       cuesEs: row.cuesEs,
+      descriptionEs: row.descriptionEs,
+      mistakesEs: row.mistakesEs,
+      // Fase 4 (ADR-0014): solo medios revisados del catálogo; hasta entonces, ninguno.
+      media: [],
     };
   }
 }

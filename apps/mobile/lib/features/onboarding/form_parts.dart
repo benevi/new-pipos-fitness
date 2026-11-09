@@ -11,6 +11,7 @@ import '../../app/tokens.dart';
 import '../../data/pipos_api.dart';
 import '../../l10n/app_localizations.dart';
 import '../../models/progress.dart';
+import '../exercise/exercise_detail_screen.dart';
 import 'profile_draft.dart';
 
 /// Título de pregunta (anunciado como cabecera).
@@ -310,6 +311,18 @@ class _ExercisePickerState extends ConsumerState<_ExercisePicker> {
                           ListTile(
                             title: Text(e.localizedName(lang)),
                             onTap: () => Navigator.of(context).pop(e),
+                            trailing: IconButton(
+                              key: Key('exercise-info-${e.id}'),
+                              tooltip: l10n.exerciseDetailOpen(
+                                e.localizedName(lang),
+                              ),
+                              icon: const Icon(Icons.info_outline),
+                              onPressed: () => openExerciseDetail(
+                                context,
+                                e.id,
+                                fromModal: true,
+                              ),
+                            ),
                           ),
                       ],
                     ),

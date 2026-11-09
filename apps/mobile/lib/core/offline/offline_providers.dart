@@ -69,6 +69,9 @@ class CacheKeys {
   /// Alternativas de un ejercicio (para cambiarlo sin red, #23).
   static String substitutes(String exerciseId) =>
       'exercises/$exerciseId/substitutes';
+
+  /// Ficha de un ejercicio (ADR-0014), por el id o slug con que se abrió.
+  static String exercise(String idOrSlug) => 'exercises/$idOrSlug';
 }
 
 /// Última respuesta JSON de lecturas clave, por usuario (modo avión).

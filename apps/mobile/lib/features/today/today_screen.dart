@@ -22,6 +22,7 @@ import '../../models/notes_breaks.dart' show parseCalendarDate;
 
 import '../../models/plan.dart';
 import '../../models/workout.dart';
+import '../exercise/exercise_detail_screen.dart';
 import '../../shared/decimal_input.dart';
 import '../../shared/exercise_muscles.dart';
 import '../../shared/widgets.dart';
@@ -711,12 +712,11 @@ class ExerciseCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Semantics(
+                      ExerciseNameLink(
+                        idOrSlug: exercise.exercise.id,
+                        name: exercise.exercise.nameEs,
+                        style: theme.textTheme.titleLarge,
                         header: true,
-                        child: Text(
-                          exercise.exercise.nameEs,
-                          style: theme.textTheme.titleLarge,
-                        ),
                       ),
                       if (exercise.pinned)
                         Padding(

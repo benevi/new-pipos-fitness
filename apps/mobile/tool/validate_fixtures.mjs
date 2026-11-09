@@ -34,6 +34,10 @@ const map = {
   adherence: 'AdherenceResponseSchema',
   nutrition_targets: 'NutritionTargetsResponseSchema',
   exercise_list: 'ExerciseListResponseSchema',
+  // Ficha del ejercicio (ADR-0014). La «legacy» es la respuesta anterior a la
+  // Fase 2, sin descripción, errores ni medios: debe seguir siendo válida.
+  exercise_detail: 'ExerciseDetailSchema',
+  exercise_detail_legacy: 'ExerciseDetailSchema',
   error_validation: 'ErrorResponseSchema',
   error_nutrition_incomplete: 'ErrorResponseSchema',
   export: 'AccountExportSchema',
@@ -60,14 +64,17 @@ const map = {
 };
 
 /**
- * Listas `muscles` de Hoy y Plan (ADR-0014): principales primero y en el orden del enum. El orden
+ * Listas `muscles` de Hoy y Plan (ADR-0014, `{ muscle, role }`; no el detalle del catálogo, que
+ * lleva `fraction`): principales primero y en el orden del enum. El orden
  * no es parte del esquema Zod (perdería el tipo en openapi.json), así que se comprueba aparte.
  */
 function unorderedMuscles(node, path = []) {
   if (Array.isArray(node)) return node.flatMap((n, i) => unorderedMuscles(n, [...path, i]));
   if (!node || typeof node !== 'object') return [];
   const own =
-    Array.isArray(node.muscles) && node.muscles.every((m) => 'role' in m) && !contracts.areExerciseMusclesOrdered(node.muscles)
+    Array.isArray(node.muscles) &&
+    node.muscles.every((m) => 'role' in m && !('fraction' in m)) &&
+    !contracts.areExerciseMusclesOrdered(node.muscles)
       ? [[...path, 'muscles'].join('.')]
       : [];
   return [...own, ...Object.entries(node).flatMap(([k, v]) => unorderedMuscles(v, [...path, k]))];

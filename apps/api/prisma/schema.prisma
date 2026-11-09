@@ -424,6 +424,8 @@ model Exercise {
   substitutionGroup   SubstitutionGroup? @relation(fields: [substitutionGroupId], references: [id], onDelete: SetNull)
   cuesEs              String[]           @default([])
   cuesEn              String[]           @default([])
+  /// Errores comunes de la ficha del ejercicio (0-3; ADR-0014). Los escribe el seed del catálogo.
+  mistakesEs          String[]           @default([])
   createdAt           DateTime           @default(now()) @db.Timestamptz(3)
   updatedAt           DateTime           @updatedAt @db.Timestamptz(3)
   deletedAt           DateTime?          @db.Timestamptz(3)

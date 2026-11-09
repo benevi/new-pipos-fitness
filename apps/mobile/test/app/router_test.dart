@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pipos_fitness/app/router.dart';
 import 'package:pipos_fitness/features/auth/auth_provider.dart';
+import 'package:pipos_fitness/features/setup/setup_provider.dart';
 
 import '../helpers/app_harness.dart';
 import '../helpers/fake_http_adapter.dart';
@@ -16,6 +17,18 @@ void main() {
     const signedOut = AuthState(status: AuthStatus.unauthenticated);
     const loading = AuthState(status: AuthStatus.loading);
     const signedIn = AuthState(status: AuthStatus.authenticated);
+
+    test('ficha del ejercicio: abierta con plan y durante el onboarding '
+        '(CUJ-11); sin sesión, a login', () {
+      const path = '/exercise/press-banca-barra';
+      expect(appRedirect(signedIn, SetupStatus.ready, path), isNull);
+      expect(appRedirect(signedIn, SetupStatus.needsOnboarding, path), isNull);
+      expect(
+        appRedirect(signedIn, SetupStatus.needsOnboarding, '/plan'),
+        AppRoutes.onboarding,
+      );
+      expect(appRedirect(signedOut, SetupStatus.ready, path), AppRoutes.login);
+    });
 
     test('sin resolver → splash', () {
       expect(authRedirect(unknown, '/today'), AppRoutes.splash);

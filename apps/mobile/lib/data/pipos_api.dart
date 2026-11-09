@@ -14,6 +14,7 @@ import '../core/api/api_client.dart';
 import '../core/api/api_failure.dart';
 import '../models/body.dart';
 import '../models/enums.dart';
+import '../models/exercise.dart';
 import '../models/json.dart';
 import '../models/notes_breaks.dart';
 import '../models/plan.dart';
@@ -143,6 +144,9 @@ abstract class CatalogApi {
     String? query,
     int page = 1,
   });
+
+  /// Ficha del ejercicio por id o por slug (`GET /exercises/:id`, ADR-0014).
+  Future<ExerciseDetail> getExercise(String idOrSlug);
 }
 
 /// Implementación real sobre el Dio autenticado.
@@ -570,6 +574,13 @@ class DioPiposApi
         ),
       ),
       ExerciseSummary.fromJson,
+    ),
+  );
+
+  @override
+  Future<ExerciseDetail> getExercise(String idOrSlug) => _call(
+    () async => ExerciseDetail.fromJson(
+      _json(await _client.get('/exercises/${Uri.encodeComponent(idOrSlug)}')),
     ),
   );
 }

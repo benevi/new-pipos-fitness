@@ -34,4 +34,12 @@ describe('seed del catálogo (e2e, Postgres real)', () => {
     expect((await ctx.prisma.exercise.findUniqueOrThrow({ where: { slug: removed.slug } })).deletedAt).toBeNull();
     expect(await ctx.prisma.exerciseMuscle.count({ where: { exerciseId: row.id } })).toBe(removed.muscles.length);
   });
+
+  it('escribe la ficha de cada ejercicio: descripción y errores comunes (ADR-0014)', async () => {
+    const rows = await ctx.prisma.exercise.findMany({ select: { slug: true, descriptionEs: true, mistakesEs: true } });
+    const bySlug = new Map(rows.map((r) => [r.slug, r]));
+    for (const ex of loadCatalog()) {
+      expect(bySlug.get(ex.slug)).toEqual({ slug: ex.slug, descriptionEs: ex.descriptionEs, mistakesEs: ex.mistakesEs });
+    }
+  });
 });

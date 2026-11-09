@@ -16,6 +16,9 @@
 - [ ] **[BLOQUEA]** Contratos de encargado (DPA) con hosting, base de datos, backups y Sentry, con
       datos en la UE.
 - [ ] Revisión de los planes de ejemplo por un entrenador titulado (`docs/engine/ejemplos/REVISION.md`).
+- [ ] Revisión de la ficha de los 144 ejercicios (descripción y errores comunes,
+      `packages/catalog/data/exercises.json`) por un entrenador titulado (ADR-0014); al terminar,
+      `GUIDE_CONTENT_REVIEW.status = 'professionally_reviewed'` con la fecha en `packages/catalog`.
 
 ## 1. Pre-despliegue
 
@@ -54,6 +57,8 @@
 - [ ] Migraciones: `pnpm --filter @pipos/api prisma:migrate:deploy` (`prisma migrate deploy`) como paso
       previo al arranque, **una sola vez por despliegue**. Comprobar antes en staging.
 - [ ] Seed del catálogo: `pnpm --filter @pipos/api prisma:seed` (idempotente; retira con `deletedAt`).
+      Tras `20261113000000_ficha_ejercicio`, el seed rellena la ficha (`descriptionEs`, `mistakesEs`);
+      hasta entonces el motor toma la ficha del catálogo empaquetado.
 - [ ] Si el despliegue incluye `20261110000100_volumen_por_grupo`, cambia una `formulaVersion` o
       cambia cómo se calcula la adherencia (p. ej. issue #14, versión del plan por semana):
       `pnpm --filter @pipos/api analytics:rebuild` tras migrar.

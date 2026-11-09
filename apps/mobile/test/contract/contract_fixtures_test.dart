@@ -7,6 +7,7 @@ import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/core/api/dio_error_mapper.dart';
 import 'package:pipos_fitness/models/body.dart';
 import 'package:pipos_fitness/models/enums.dart';
+import 'package:pipos_fitness/models/exercise.dart';
 import 'package:pipos_fitness/models/json.dart';
 import 'package:pipos_fitness/models/notes_breaks.dart';
 import 'package:pipos_fitness/models/plan.dart';
@@ -47,6 +48,17 @@ void main() {
     ).toJson((s) => s.toJson()),
   );
   roundTrip('set_log', (j) => SetLog.fromJson(j).toJson());
+  roundTrip('exercise_detail', (j) => ExerciseDetail.fromJson(j).toJson());
+  test(
+    'exercise_detail_legacy: sin ficha → descripción null, listas vacías',
+    () {
+      final d = ExerciseDetail.fromJson(fixture('exercise_detail_legacy'));
+      expect(d.descriptionEs, isNull);
+      expect(d.mistakesEs, isEmpty);
+      expect(d.media, isEmpty);
+      expect(d.musclesWith(MuscleRole.primary), [Muscle.quads, Muscle.glutes]);
+    },
+  );
   roundTrip('workout', (j) => Workout.fromJson(j).toJson());
   roundTrip('substitution', (j) => Substitution.fromJson(j).toJson());
   roundTrip('substitutes', (j) => SubstitutesResponse.fromJson(j).toJson());

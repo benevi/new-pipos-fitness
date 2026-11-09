@@ -1,0 +1,61 @@
+{
+  "id": "00000000-0000-4000-8000-000000000040",
+  "slug": "sentadilla-trasera-barra",
+  "nameEs": "Sentadilla trasera con barra",
+  "nameEn": "Barbell back squat",
+  "movementPattern": "squat",
+  "isCompound": true,
+  "isUnilateral": false,
+  "minLevel": "intermediate",
+  "equipment": [
+    "barbell",
+    "squat_rack"
+  ],
+  "loadType": "weighted",
+  "primaryMuscles": [
+    "quads",
+    "glutes"
+  ],
+  "muscles": [
+    {
+      "muscle": "quads",
+      "role": "primary",
+      "fraction": 1
+    },
+    {
+      "muscle": "glutes",
+      "role": "primary",
+      "fraction": 1
+    },
+    {
+      "muscle": "adductors",
+      "role": "secondary",
+      "fraction": 0.5
+    },
+    {
+      "muscle": "lower_back",
+      "role": "secondary",
+      "fraction": 0.5
+    }
+  ],
+  "riskTags": [
+    {
+      "zone": "knee",
+      "level": "caution"
+    },
+    {
+      "zone": "lumbar",
+      "level": "caution"
+    },
+    {
+      "zone": "hip",
+      "level": "caution"
+    }
+  ],
+  "substitutionGroup": "squat_bilateral",
+  "cuesEs": [
+    "Barra apoyada en la parte alta de la espalda",
+    "Rodillas en la dirección de los pies",
+    "Baja hasta donde mantengas la espalda neutra"
+  ]
+}
