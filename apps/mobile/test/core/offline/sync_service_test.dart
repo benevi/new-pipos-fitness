@@ -405,6 +405,102 @@ void main() {
     expect(await service.setsOf(set.workoutClientId), isEmpty);
   });
 
+  test('#25 dos inicios encolados de la misma sesión: el segundo adopta '
+      'el primero (409) y se fusiona en él, sin dos locales con el mismo id '
+      'remoto', () async {
+    // Sin red: se empieza, se termina en local y se vuelve a empezar la
+    // misma sesión (dos entrenamientos locales sin id de la API).
+    final a = await service.startWorkout(planSessionId: planSession);
+    final a1 = await service.logSet(
+      workoutClientId: a.clientId,
+      planExerciseId: planExercise,
+      exerciseId: exercise,
+      setIndex: 0,
+      reps: 8,
+      loadKg: 60,
+    );
+    await service.finishWorkout(a.clientId);
+    now = now.add(const Duration(minutes: 1));
+    final b = await service.startWorkout(planSessionId: planSession);
+    expect(b.clientId, isNot(a.clientId));
+    final b1 = await service.logSet(
+      workoutClientId: b.clientId,
+      planExerciseId: planExercise,
+      exerciseId: exercise,
+      setIndex: 1,
+      reps: 7,
+      loadKg: 60,
+    );
+
+    connectivity.online = true;
+    await service.syncNow();
+
+    // El primero crea el entrenamiento; el segundo recibe 409, adopta el
+    // remoto (misma sesión) y se fusiona en el primero.
+    expect(backend.workouts, hasLength(1));
+    final remoteId = 'srv-${a.clientId}';
+    final locals = await db.select(db.localWorkouts).get();
+    expect(locals, hasLength(1));
+    expect(locals.single.clientId, a.clientId);
+    expect(locals.single.serverId, remoteId);
+    expect(
+      locals.single.finishedAt,
+      isNull,
+      reason: 'la persona seguía entrenando en el segundo',
+    );
+    final sets = await service.setsOf(a.clientId);
+    expect(sets.map((s) => s.clientId), [a1.clientId, b1.clientId]);
+    expect(sets.every((s) => s.status == SetSyncStatus.synced), isTrue);
+    expect(backend.sets.values.map((s) => s.workoutId).toSet(), {remoteId});
+    expect(backend.finishCalls, 0);
+
+    // Al terminar se cierra el único entrenamiento remoto.
+    await service.finishWorkout(a.clientId);
+    await service.syncNow();
+    expect(backend.finishes, 1);
+  });
+
+  test('#25 adoptar desde Hoy un remoto ya enlazado a otro local fusiona '
+      'el duplicado', () async {
+    connectivity.online = true;
+    final a = await service.startWorkout(planSessionId: planSession);
+    await service.syncNow();
+    final remote = (await service.workoutByClientId(a.clientId))!.serverId!;
+
+    // Un segundo local de la misma sesión sin id de la API (p. ej. creado
+    // antes de que llegara la adopción) se enlaza al mismo remoto.
+    await db
+        .into(db.localWorkouts)
+        .insert(
+          LocalWorkoutsCompanion.insert(
+            clientId: 'dup-local',
+            userId: 'user-1',
+            planSessionId: planSession,
+            startedAt: now.add(const Duration(minutes: 1)),
+          ),
+        );
+    await service.logSet(
+      workoutClientId: 'dup-local',
+      planExerciseId: planExercise,
+      exerciseId: exercise,
+      setIndex: 0,
+      reps: 5,
+      loadKg: 50,
+    );
+    final kept = await service.startWorkout(
+      planSessionId: planSession,
+      adopt: TodayWorkoutRef(
+        id: remote,
+        clientId: 'dup-local',
+        status: WorkoutStatus.inProgress,
+        startedAt: now,
+      ),
+    );
+    expect(kept.clientId, a.clientId);
+    expect(await db.select(db.localWorkouts).get(), hasLength(1));
+    expect(await service.setsOf(a.clientId), hasLength(1));
+  });
+
   test('los syncNow lanzados sin esperar capturan y reportan el error '
       '(no hay error no manejado)', () async {
     final broken = _BrokenConnectivity();

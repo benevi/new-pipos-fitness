@@ -168,12 +168,12 @@ Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
 - **Impacto:** si la app pasa a segundo plano, el fin del descanso no avisa.
 - **Propuesta:** notificación local programada al iniciar el descanso.
 
-### [Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409
-- **Severidad:** Baja
-- **Impacto:** cuando `POST /workouts` responde `409 WORKOUT_IN_PROGRESS` y la app adopta el
-  entrenamiento remoto, en casos límite dos entrenamientos locales quedan con el mismo `serverId`.
-- **Propuesta:** al adoptar, fusionar las series del duplicado en el entrenamiento ya enlazado y
-  borrar el duplicado; test de sincronización con dos inicios encolados.
+### ~~[Móvil] Dos entrenamientos locales pueden apuntar al mismo id remoto al adoptar un 409~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`; cierra el issue #25.
+- **Qué se hizo:** todo enlace con un id de la API pasa por `SyncService._linkToServer`: si otro
+  entrenamiento local ya apunta a ese id, las series del duplicado pasan al ya enlazado y el
+  duplicado se borra; queda terminado solo si los dos lo estaban. Tests en
+  `test/core/offline/sync_service_test.dart` (dos inicios encolados; adopción desde Hoy).
 
 ### [Móvil] Login offline con solo el userId en caché muestra el email vacío
 - **Severidad:** Baja

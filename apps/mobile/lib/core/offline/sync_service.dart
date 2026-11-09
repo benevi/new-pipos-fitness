@@ -323,18 +323,19 @@ class SyncService {
     final existing = await workoutByClientId(adopt.clientId);
     if (existing != null) {
       if (existing.serverId == null) {
-        await (_db.update(_workouts)
-              ..where((t) => t.clientId.equals(adopt.clientId)))
-            .write(LocalWorkoutsCompanion(serverId: Value(adopt.id)));
+        final kept = await _linkToServer(adopt.clientId, adopt.id);
+        return (await workoutByClientId(kept))!;
       }
-      return (await workoutByClientId(adopt.clientId))!;
+      return existing;
     }
     // Un entrenamiento local abierto para la misma sesión sin id de la API
     // (o con ese mismo id) es el mismo: se enlaza en vez de duplicarlo.
     final open = await openWorkoutFor(planSessionId);
     if (open != null && (open.serverId == null || open.serverId == adopt.id)) {
-      await _saveServerId(open.clientId, adopt.id);
-      return (await workoutByClientId(open.clientId))!;
+      final kept = open.serverId == adopt.id
+          ? open.clientId
+          : await _linkToServer(open.clientId, adopt.id);
+      return (await workoutByClientId(kept))!;
     }
     return _db
         .into(_workouts)
@@ -773,7 +774,7 @@ class SyncService {
           adjustment: adjustmentOf(w),
         ),
       );
-      await _saveServerId(w.clientId, result.value.id);
+      await _db.transaction(() => _linkToServer(w.clientId, result.value.id));
       return result.value.id;
     } catch (e) {
       final f = ApiFailure.from(e);
@@ -783,7 +784,7 @@ class SyncService {
       if (remote != null &&
           remote.status == WorkoutStatus.inProgress &&
           today.planSessionId == w.planSessionId) {
-        await _saveServerId(w.clientId, remote.id);
+        await _db.transaction(() => _linkToServer(w.clientId, remote.id));
         return remote.id;
       }
       throw f;
@@ -1137,6 +1138,63 @@ class SyncService {
     completedAt: item.completedAt,
     clientUpdatedAt: item.updatedAt,
   );
+
+  /// Enlaza el entrenamiento local [clientId] con el id de la API. Si otro
+  /// entrenamiento local ya apunta a ese id (p. ej. dos inicios encolados de
+  /// la misma sesión y el segundo adopta el primero tras un `409
+  /// WORKOUT_IN_PROGRESS`), se fusionan: las series del duplicado pasan al
+  /// ya enlazado y el duplicado se borra. El resultado queda terminado solo
+  /// si los dos lo estaban (si no, la persona sigue entrenando en él).
+  /// Devuelve el `clientId` que sobrevive. Llamar dentro de una transacción.
+  Future<String> _linkToServer(String clientId, String serverId) async {
+    final linked =
+        await (_db.select(_workouts)
+              ..where(
+                (t) =>
+                    t.userId.equals(_uid) &
+                    t.serverId.equals(serverId) &
+                    t.clientId.equals(clientId).not(),
+              )
+              ..orderBy([(t) => OrderingTerm.asc(t.startedAt)])
+              ..limit(1))
+            .getSingleOrNull();
+    final dup = await workoutByClientId(clientId);
+    if (linked == null || dup == null) {
+      await _saveServerId(clientId, serverId);
+      return clientId;
+    }
+    await _mergeInto(dup, linked);
+    return linked.clientId;
+  }
+
+  /// Pasa a [target] todo lo que cuelga de [dup] y borra [dup].
+  Future<void> _mergeInto(LocalWorkout dup, LocalWorkout target) async {
+    await (_db.update(_sets)
+          ..where((t) => t.workoutClientId.equals(dup.clientId)))
+        .write(LocalSetLogsCompanion(workoutClientId: Value(target.clientId)));
+    final bothFinished = dup.finishedAt != null && target.finishedAt != null;
+    final finishedAt = !bothFinished
+        ? null
+        : (dup.finishedAt!.isAfter(target.finishedAt!)
+              ? dup.finishedAt
+              : target.finishedAt);
+    if (finishedAt != target.finishedAt) {
+      await (_db.update(
+        _workouts,
+      )..where((t) => t.clientId.equals(target.clientId))).write(
+        LocalWorkoutsCompanion(
+          finishedAt: Value(finishedAt),
+          finishSynced: const Value(false),
+          attempts: const Value(0),
+          nextAttemptAt: const Value(null),
+        ),
+      );
+    }
+    await (_db.delete(
+      _workouts,
+    )..where((t) => t.clientId.equals(dup.clientId))).go();
+    _notify();
+  }
 
   Future<void> _saveServerId(String clientId, String serverId) =>
       (_db.update(_workouts)..where((t) => t.clientId.equals(clientId))).write(
