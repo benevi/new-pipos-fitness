@@ -116,9 +116,32 @@ void main() {
     },
   );
 
+  testWidgets('tarjetas de lista alineadas con las de sección; versión del '
+      'consentimiento solo en el aviso legal', (tester) async {
+    final harness = await openSettings(tester);
+    Rect cardOf(String key) => tester.getRect(
+      find.ancestor(of: find.byKey(Key(key)), matching: find.byType(Card)),
+    );
+    final profile = cardOf('settings-profile');
+    final health = cardOf('health-status');
+    expect(profile.left, health.left);
+    expect(profile.right, health.right);
+
+    await tapKey(tester, 'settings-legal');
+    expect(
+      find.text(
+        'Tu consentimiento de salud: versión health-2026-11 del texto, '
+        'aceptada el 9 nov 2026.',
+      ),
+      findsOneWidget,
+    );
+    await harness.drainAndUnmount(tester);
+  });
+
   testWidgets('nutrición: objetivos diarios', (tester) async {
     final harness = await openSettings(tester);
-    expect(find.text('2350 kcal al día'), findsOneWidget);
+    // Separador de miles del idioma.
+    expect(find.text('2.350 kcal al día'), findsOneWidget);
     expect(
       find.text('Proteína 125 g · Grasa 70 g · Hidratos 300 g'),
       findsOneWidget,
@@ -130,7 +153,12 @@ void main() {
     'retirar el consentimiento pide confirmación y borra los datos de salud',
     (tester) async {
       final harness = await openSettings(tester);
-      expect(find.text('Consentimiento dado (health-2026-11)'), findsOneWidget);
+      // Fecha legible; la versión del texto no se muestra en la tarjeta.
+      expect(
+        find.text('Consentimiento de salud dado el 9 nov 2026'),
+        findsOneWidget,
+      );
+      expect(find.textContaining('health-2026'), findsNothing);
       await tapKey(tester, 'health-withdraw');
       expect(find.text('¿Retirar el consentimiento?'), findsOneWidget);
       await tapKey(tester, 'withdraw-confirm');

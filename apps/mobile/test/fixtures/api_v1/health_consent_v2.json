@@ -1,0 +1,13 @@
+{
+  "granted": true,
+  "version": "health-2026-11-v2",
+  "grantedAt": "2026-11-09T08:00:00.000Z",
+  "currentVersion": "health-2026-11-v2",
+  "scopes": [
+    "weight",
+    "height",
+    "limitations",
+    "body_measurements",
+    "derived_estimates"
+  ]
+}

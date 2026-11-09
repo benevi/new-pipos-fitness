@@ -7,6 +7,7 @@ import '../../data/pipos_api.dart';
 import '../../features/auth/auth_provider.dart';
 import 'app_database.dart';
 import 'connectivity.dart';
+import 'mutation_sender.dart';
 import 'sync_service.dart';
 
 /// Base de datos local. Vive FUERA del ciclo de sesión: `PiposRoot` la abre
@@ -35,6 +36,10 @@ final syncServiceProvider = Provider<SyncService>((ref) {
     connectivity: ref.watch(connectivitySourceProvider),
     userId: userId,
     clock: ref.watch(clockProvider),
+    mutations: ApiMutationSender(
+      notes: ref.watch(notesApiProvider),
+      body: ref.watch(bodyApiProvider),
+    ),
   );
   service.start();
   ref.onDispose(service.dispose);
@@ -51,6 +56,15 @@ class CacheKeys {
   CacheKeys._();
   static const today = 'sessions/today';
   static const currentPlan = 'plans/current';
+
+  /// Pausas planificadas (para «hoy toca» y el recordatorio sin red).
+  static const breaks = 'me/breaks';
+
+  /// Medidas corporales (lista del último año).
+  static const measurements = 'me/measurements';
+
+  /// Evolución corporal (`GET /progress/body`).
+  static const bodyProgress = 'progress/body';
 }
 
 /// Última respuesta JSON de lecturas clave, por usuario (modo avión).
@@ -115,6 +129,9 @@ class CacheStore {
     )..where((t) => t.userId.equals(userId))).go();
     await (_db.delete(
       _db.localWorkouts,
+    )..where((t) => t.userId.equals(userId))).go();
+    await (_db.delete(
+      _db.pendingMutations,
     )..where((t) => t.userId.equals(userId))).go();
   }
 }

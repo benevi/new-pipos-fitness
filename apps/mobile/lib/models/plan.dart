@@ -3,6 +3,7 @@ library;
 
 import 'enums.dart';
 import 'json.dart';
+import 'workout.dart' show ExerciseRef;
 
 class WarmupSet {
   const WarmupSet({required this.reps, this.loadPct, this.loadKg});
@@ -44,6 +45,8 @@ class PlanExercise {
     required this.warmupSets,
     required this.estimatedMinutes,
     required this.rationale,
+    this.loadImplement,
+    this.pinned,
   });
 
   final String id;
@@ -65,6 +68,13 @@ class PlanExercise {
   final double estimatedMinutes;
   final List<String> rationale;
 
+  /// Material que fija el paso de carga; null sin carga en kg.
+  final LoadImplement? loadImplement;
+
+  /// Ejercicio fijado por el usuario para este hueco (idea 3); null = el del
+  /// plan.
+  final ExerciseRef? pinned;
+
   factory PlanExercise.fromJson(Json j) => PlanExercise(
     id: j.str('id'),
     order: j.integer('order'),
@@ -84,6 +94,16 @@ class PlanExercise {
     warmupSets: j.objList('warmupSets', WarmupSet.fromJson),
     estimatedMinutes: j.number('estimatedMinutes'),
     rationale: j.strList('rationale'),
+    loadImplement: j.orDefault(
+      'loadImplement',
+      null,
+      (k) => j.enumOrNull(k, LoadImplement.values),
+    ),
+    pinned: j.orDefault(
+      'pinned',
+      null,
+      (k) => j.objOrNull(k) == null ? null : ExerciseRef.fromJson(j.obj(k)),
+    ),
   );
 
   Json toJson() => {
@@ -102,6 +122,8 @@ class PlanExercise {
     'restSeconds': restSeconds,
     'initialLoadKg': initialLoadKg == null ? null : jsonNum(initialLoadKg!),
     'initialLoadIsEstimate': initialLoadIsEstimate,
+    'loadImplement': loadImplement?.wire,
+    'pinned': pinned?.toJson(),
     'warmupSets': warmupSets.map((w) => w.toJson()).toList(),
     'estimatedMinutes': jsonNum(estimatedMinutes),
     'rationale': rationale,
@@ -334,5 +356,38 @@ class Paginated<T> {
     'page': page,
     'pageSize': pageSize,
     'total': total,
+  };
+}
+
+/// PUT/DELETE /plans/current/exercises/:planExerciseId/override (idea 3).
+class PlanExerciseOverride {
+  const PlanExerciseOverride({
+    required this.planVersionId,
+    required this.planExerciseIds,
+    required this.original,
+    required this.pinned,
+  });
+
+  final String planVersionId;
+  final List<String> planExerciseIds;
+  final ExerciseRef original;
+
+  /// null tras volver al original (DELETE).
+  final ExerciseRef? pinned;
+
+  factory PlanExerciseOverride.fromJson(Json j) => PlanExerciseOverride(
+    planVersionId: j.str('planVersionId'),
+    planExerciseIds: j.strList('planExerciseIds'),
+    original: ExerciseRef.fromJson(j.obj('original')),
+    pinned: j.objOrNull('pinned') == null
+        ? null
+        : ExerciseRef.fromJson(j.obj('pinned')),
+  );
+
+  Json toJson() => {
+    'planVersionId': planVersionId,
+    'planExerciseIds': planExerciseIds,
+    'original': original.toJson(),
+    'pinned': pinned?.toJson(),
   };
 }

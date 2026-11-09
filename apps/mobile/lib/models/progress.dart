@@ -184,6 +184,7 @@ class AdherenceWeek {
     required this.plannedSets,
     required this.completedSets,
     required this.sessionRatio,
+    this.breakDays = 0,
   });
 
   final String weekStart;
@@ -193,6 +194,9 @@ class AdherenceWeek {
   final int completedSets;
   final double sessionRatio;
 
+  /// Días en pausa planificada (ya descontados de `plannedSessions`).
+  final int breakDays;
+
   factory AdherenceWeek.fromJson(Json j) => AdherenceWeek(
     weekStart: j.str('weekStart'),
     plannedSessions: j.integer('plannedSessions'),
@@ -200,6 +204,7 @@ class AdherenceWeek {
     plannedSets: j.integer('plannedSets'),
     completedSets: j.integer('completedSets'),
     sessionRatio: j.number('sessionRatio'),
+    breakDays: j.orDefault('breakDays', 0, j.integer),
   );
 
   Json toJson() => {
@@ -209,6 +214,7 @@ class AdherenceWeek {
     'plannedSets': plannedSets,
     'completedSets': completedSets,
     'sessionRatio': jsonNum(sessionRatio),
+    'breakDays': breakDays,
   };
 }
 

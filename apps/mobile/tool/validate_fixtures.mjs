@@ -37,6 +37,25 @@ const map = {
   error_validation: 'ErrorResponseSchema',
   error_nutrition_incomplete: 'ErrorResponseSchema',
   export: 'AccountExportSchema',
+  // ADR-0013 (ideas recuperadas). Los *_request son lo que serializa la app.
+  health_consent_v2: 'HealthConsentStatusSchema',
+  exercise_note: 'ExerciseNoteResponseSchema',
+  exercise_notes: 'ExerciseNoteListResponseSchema',
+  exercise_note_request: 'ExerciseNoteRequestSchema',
+  plan_override: 'PlanExerciseOverrideResponseSchema',
+  today_session_adjusted: 'TodaySessionResponseSchema',
+  today_session_break: 'TodaySessionResponseSchema',
+  start_workout_adjusted: 'StartWorkoutRequestSchema',
+  training_break: 'TrainingBreakResponseSchema',
+  training_breaks: 'TrainingBreakListResponseSchema',
+  training_break_request: 'CreateTrainingBreakRequestSchema',
+  profile_schedule_request: 'ProfileScheduleRequestSchema',
+  body_measurement: 'BodyMeasurementResponseSchema',
+  body_measurements: 'BodyMeasurementListResponseSchema',
+  body_measurement_request: 'UpsertBodyMeasurementRequestSchema',
+  body_progress: 'BodyProgressResponseSchema',
+  body_progress_not_applicable: 'BodyProgressResponseSchema',
+  body_progress_consent_required: 'BodyProgressResponseSchema',
 };
 
 let failed = 0;

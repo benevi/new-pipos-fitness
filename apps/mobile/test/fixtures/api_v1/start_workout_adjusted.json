@@ -1,0 +1,9 @@
+{
+  "clientId": "00000000-0000-4000-8000-000000000080",
+  "planSessionId": "00000000-0000-4000-8000-000000000020",
+  "startedAt": "2026-11-09T08:00:00.000Z",
+  "adjustment": {
+    "availableMinutes": 30,
+    "reducedVolume": false
+  }
+}

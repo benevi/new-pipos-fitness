@@ -1,0 +1,108 @@
+{
+  "timezone": "Europe/Madrid",
+  "weight": {
+    "latest": {
+      "date": "2026-11-09",
+      "value": 80.4
+    },
+    "trend": {
+      "status": "too_slow",
+      "weeklyRatePct": -0.46,
+      "target": {
+        "direction": "loss",
+        "minPct": 0.5,
+        "maxPct": 1
+      },
+      "movingAverage": [
+        {
+          "date": "2026-10-12",
+          "kg": 82.0
+        },
+        {
+          "date": "2026-10-19",
+          "kg": 81.6
+        },
+        {
+          "date": "2026-10-26",
+          "kg": 81.3
+        },
+        {
+          "date": "2026-11-02",
+          "kg": 80.9
+        },
+        {
+          "date": "2026-11-09",
+          "kg": 80.5
+        }
+      ],
+      "spanDays": 28,
+      "rationale": [
+        "En los últimos 28 días tu peso cambia a un ritmo de -0,46 % por semana (tendencia de 5 registros).",
+        "Bajas más despacio que el 0,5-1 % semanal recomendado. Si se mantiene 2-3 semanas, revisa tus objetivos diarios."
+      ]
+    }
+  },
+  "bmi": {
+    "status": "consent_required",
+    "measuredOn": null,
+    "result": null,
+    "series": []
+  },
+  "bodyFat": {
+    "status": "consent_required",
+    "measuredOn": null,
+    "result": null,
+    "series": []
+  },
+  "circumferences": [
+    {
+      "field": "waistCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 86
+      },
+      "change4w": -1.5,
+      "change12w": -3
+    },
+    {
+      "field": "neckCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 38.5
+      },
+      "change4w": 0,
+      "change12w": null
+    },
+    {
+      "field": "hipCm",
+      "latest": null,
+      "change4w": null,
+      "change12w": null
+    },
+    {
+      "field": "chestCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 101
+      },
+      "change4w": 0.5,
+      "change12w": null
+    },
+    {
+      "field": "armCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 35
+      },
+      "change4w": null,
+      "change12w": null
+    },
+    {
+      "field": "thighCm",
+      "latest": null,
+      "change4w": null,
+      "change12w": null
+    }
+  ],
+  "disclaimer": "Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario."
+}

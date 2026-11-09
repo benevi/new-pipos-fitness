@@ -7,7 +7,8 @@
       "completedSessions": 2,
       "plannedSets": 45,
       "completedSets": 30,
-      "sessionRatio": 0.6667
+      "sessionRatio": 0.6667,
+      "breakDays": 0
     }
   ],
   "totals": {

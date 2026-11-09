@@ -49,23 +49,28 @@ extension AuthErrorCodeL10n on AuthErrorCode {
 extension L10nFormat on AppLocalizations {
   /// `62,5` (es) / `62.5` (en); sin decimales si es entero.
   String number(num value, {int maxDecimals = 1}) {
-    final f = NumberFormat.decimalPatternDigits(
-      locale: localeName,
-      decimalDigits: maxDecimals,
-    );
-    final rounded = value is int
-        ? value
-        : double.parse(value.toStringAsFixed(maxDecimals));
-    if (rounded == rounded.roundToDouble()) {
-      return NumberFormat.decimalPatternDigits(
-        locale: localeName,
-        decimalDigits: 0,
-      ).format(rounded);
-    }
-    return f.format(rounded);
+    // Hasta [maxDecimals] decimales, sin ceros sobrantes (0,5 y no 0,50).
+    final f = NumberFormat.decimalPattern(localeName)
+      ..minimumFractionDigits = 0
+      ..maximumFractionDigits = maxDecimals;
+    return f.format(value);
   }
 
   String kg(num value) => loadKgValue(number(value));
+
+  /// Con hasta 2 decimales (discos de 1,25 kg, cargas de 62,25 kg).
+  String kgPrecise(num value) => loadKgValue(number(value, maxDecimals: 2));
+
+  /// Día y mes («12 oct.»), para los ejes de las gráficas.
+  String dayMonth(DateTime d) => DateFormat.MMMd(localeName).format(d);
+
+  /// Periodo entre dos fechas: en semanas desde 14 días, si no en días.
+  String period(DateTime from, DateTime to) {
+    final days = to.difference(from).inDays.abs();
+    return days >= 14
+        ? chartPeriodWeeks((days / 7).round())
+        : chartPeriodDays(days);
+  }
 
   String shortDate(DateTime d) =>
       DateFormat.yMMMd(localeName).format(d.toLocal());

@@ -41,6 +41,54 @@ void main() {
     },
   );
 
+  testWidgets(
+    'texto ×2.0: pantallas y hojas de ADR-0013 sin overflow y accesibles',
+    (tester) async {
+      usePhoneSize(tester);
+      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final semantics = tester.ensureSemantics();
+      const squat = '00000000-0000-4000-8000-000000000030';
+
+      final harness = AppHarness.signedIn();
+      await harness.pump(tester);
+      await tester.pumpAndSettle();
+
+      // Hoy: hojas de discos, nota y ajuste de hoy.
+      for (final (open, sheet) in [
+        ('plates-$squat', 'plates-sheet'),
+        ('note-edit-$squat', 'note-field'),
+        ('adjust-open', 'adjust-sheet'),
+      ]) {
+        await tapKey(tester, open);
+        expect(find.byKey(Key(sheet)), findsOneWidget);
+        await _checkScreen(tester);
+        Navigator.of(tester.element(find.byKey(Key(sheet)))).pop();
+        await tester.pumpAndSettle();
+      }
+
+      // Ajustes → días, pausas y recordatorio.
+      await tapKey(tester, 'nav-settings');
+      await tapKey(tester, 'settings-schedule');
+      await _checkScreen(tester);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('reminder-toggle')),
+        200,
+        scrollable: verticalScrollable(),
+      );
+      await _checkScreen(tester);
+
+      // Progreso → Cuerpo y formulario de medidas.
+      await tapKey(tester, 'nav-progress');
+      await tapKey(tester, 'progress-tab-body');
+      await _checkScreen(tester);
+      await tapKey(tester, 'body-add');
+      await _checkScreen(tester);
+      semantics.dispose();
+      await harness.drainAndUnmount(tester);
+    },
+  );
+
   testWidgets('texto ×2.0: cuestionario sin overflow', (tester) async {
     usePhoneSize(tester);
     tester.platformDispatcher.textScaleFactorTestValue = 2.0;

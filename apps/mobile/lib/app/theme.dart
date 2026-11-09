@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'tokens.dart';
@@ -31,7 +32,21 @@ class AppTheme {
           error: t.error,
           onError: t.onError,
         );
-    final textTheme = AppTypography.textTheme(t);
+    // Tipografía: la fuente del sistema de cada plataforma (Roboto en
+    // Android, San Francisco en iOS) según `Typography.material2021`. La
+    // escala de AppTypography se fusiona SOBRE esa base para que cada estilo
+    // lleve `fontFamily`; los estilos de componentes (botones, AppBar,
+    // pestañas, barra de navegación) salen de este TextTheme ya fusionado y
+    // no de AppTypography en crudo, que no tiene familia y en iOS caía en
+    // otra fuente que el resto de la app (docs/UX_MOVIL.md §3).
+    final typography = Typography.material2021(
+      platform: defaultTargetPlatform,
+      colorScheme: colorScheme,
+    );
+    final base = t.brightness == Brightness.dark
+        ? typography.white
+        : typography.black;
+    final textTheme = base.merge(AppTypography.textTheme(t));
     final shape = RoundedRectangleBorder(
       borderRadius: BorderRadius.circular(AppRadius.md),
     );
@@ -41,6 +56,7 @@ class AppTheme {
       brightness: t.brightness,
       colorScheme: colorScheme,
       scaffoldBackgroundColor: t.background,
+      typography: typography,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
@@ -48,6 +64,45 @@ class AppTheme {
         elevation: 0,
         centerTitle: true,
         titleTextStyle: textTheme.titleLarge,
+      ),
+      // Tarjetas sobre el token `surface` (no el surfaceContainerLow derivado
+      // de la semilla): así los contrastes verificados de iconos de estado y
+      // textos son los que se ven (test/app/tokens_contrast_test.dart).
+      cardTheme: CardThemeData(
+        color: t.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
+      // Interruptores: en apagado el borde y el pulgar usan onSurfaceVariant
+      // (≥ 3:1 sobre las superficies) y la pista es la propia superficie,
+      // para que «apagado» se vea claramente en claro y en oscuro (el
+      // `outline` por defecto daba ~1,5:1 en oscuro). Encendido: pista del
+      // acento y pulgar onAccent. Ver test/app/tokens_contrast_test.dart.
+      switchTheme: SwitchThemeData(
+        thumbColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return t.onSurface.withValues(alpha: 0.38);
+          }
+          return states.contains(WidgetState.selected)
+              ? t.onAccent
+              : t.onSurfaceVariant;
+        }),
+        trackColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.disabled)) {
+            return t.surfaceVariant;
+          }
+          return states.contains(WidgetState.selected) ? t.accent : t.surface;
+        }),
+        trackOutlineColor: WidgetStateProperty.resolveWith((states) {
+          if (states.contains(WidgetState.selected)) return Colors.transparent;
+          if (states.contains(WidgetState.disabled)) {
+            return t.onSurface.withValues(alpha: 0.12);
+          }
+          return t.onSurfaceVariant;
+        }),
+      ),
+      tabBarTheme: TabBarThemeData(
+        labelStyle: textTheme.titleSmall,
+        unselectedLabelStyle: textTheme.titleSmall,
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: t.surfaceVariant,

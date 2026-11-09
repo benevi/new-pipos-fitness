@@ -37,6 +37,7 @@ import '../features/auth/register_screen.dart';
 import '../features/onboarding/onboarding_screen.dart';
 import '../features/plan/plan_screen.dart';
 import '../features/progress/progress_screen.dart';
+import '../features/settings/schedule_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../features/setup/setup_provider.dart';
 import '../features/today/today_providers.dart';
@@ -193,6 +194,10 @@ final routerProvider = Provider<GoRouter>((ref) {
                     path: 'profile',
                     builder: (_, __) => const ProfileEditScreen(),
                   ),
+                  GoRoute(
+                    path: 'schedule',
+                    builder: (_, __) => const ScheduleScreen(),
+                  ),
                 ],
               ),
             ],
@@ -221,7 +226,8 @@ class ScaffoldWithNav extends ConsumerWidget {
     final sync = ref.watch(syncSummaryProvider).valueOrNull;
     final showBar = isOffline || (sync != null && !sync.isClean);
     return Scaffold(
-      body: shell,
+      body: ReminderRefresher(child: shell),
+
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -230,6 +236,8 @@ class ScaffoldWithNav extends ConsumerWidget {
               offline: isOffline,
               pending: sync?.pending ?? 0,
               failed: sync?.failed ?? 0,
+              pendingChanges: sync?.pendingChanges ?? 0,
+              failedChanges: sync?.failedChanges ?? 0,
               onRetry: () => ref.read(syncServiceProvider).retryFailed(),
             ),
           NavigationBar(
@@ -279,21 +287,32 @@ class SyncStatusBar extends StatelessWidget {
     required this.pending,
     required this.failed,
     required this.onRetry,
+    this.pendingChanges = 0,
+    this.failedChanges = 0,
   });
 
   final bool offline;
   final int pending;
   final int failed;
+
+  /// Otras escrituras offline (notas, medidas).
+  final int pendingChanges;
+  final int failedChanges;
   final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final anyFailed = failed > 0 || failedChanges > 0;
     final message = failed > 0
         ? l10n.failedSyncCount(failed)
+        : failedChanges > 0
+        ? l10n.failedChangesCount(failedChanges)
         : pending > 0
         ? l10n.pendingSyncCount(pending)
+        : pendingChanges > 0
+        ? l10n.pendingChangesCount(pendingChanges)
         : l10n.offlineBanner;
     return Semantics(
       liveRegion: true,
@@ -308,18 +327,18 @@ class SyncStatusBar extends StatelessWidget {
         child: Row(
           children: [
             Icon(
-              failed > 0
+              anyFailed
                   ? Icons.error_outline
                   : offline
                   ? Icons.cloud_off_outlined
                   : Icons.cloud_upload_outlined,
-              color: failed > 0
+              color: anyFailed
                   ? theme.colorScheme.error
                   : theme.colorScheme.onSurfaceVariant,
             ),
             const SizedBox(width: AppSpacing.sm),
             Expanded(child: Text(message, style: theme.textTheme.bodyMedium)),
-            if (failed > 0)
+            if (anyFailed)
               TextButton(
                 key: const Key('sync-retry'),
                 onPressed: onRetry,

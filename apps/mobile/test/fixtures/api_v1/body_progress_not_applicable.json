@@ -1,0 +1,133 @@
+{
+  "timezone": "Europe/Madrid",
+  "weight": {
+    "latest": {
+      "date": "2026-11-09",
+      "value": 80.4
+    },
+    "trend": {
+      "status": "too_slow",
+      "weeklyRatePct": -0.46,
+      "target": {
+        "direction": "loss",
+        "minPct": 0.5,
+        "maxPct": 1
+      },
+      "movingAverage": [
+        {
+          "date": "2026-10-12",
+          "kg": 82.0
+        },
+        {
+          "date": "2026-10-19",
+          "kg": 81.6
+        },
+        {
+          "date": "2026-10-26",
+          "kg": 81.3
+        },
+        {
+          "date": "2026-11-02",
+          "kg": 80.9
+        },
+        {
+          "date": "2026-11-09",
+          "kg": 80.5
+        }
+      ],
+      "spanDays": 28,
+      "rationale": [
+        "En los últimos 28 días tu peso cambia a un ritmo de -0,46 % por semana (tendencia de 5 registros).",
+        "Bajas más despacio que el 0,5-1 % semanal recomendado. Si se mantiene 2-3 semanas, revisa tus objetivos diarios."
+      ]
+    }
+  },
+  "bmi": {
+    "status": "ok",
+    "measuredOn": "2026-11-09",
+    "result": {
+      "status": "ok",
+      "value": 24.8,
+      "category": "normal",
+      "categoryEs": "peso normal",
+      "caveats": [
+        "El IMC no distingue músculo de grasa: en personas que entrenan fuerza puede sobrestimar la grasa.",
+        "Los puntos de corte son los de la OMS para adultos; en algunas poblaciones (p. ej. asiáticas) se usan cortes más bajos.",
+        "Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario."
+      ]
+    },
+    "series": [
+      {
+        "date": "2026-11-09",
+        "value": 24.8
+      }
+    ]
+  },
+  "bodyFat": {
+    "status": "not_applicable",
+    "measuredOn": null,
+    "result": {
+      "status": "not_applicable",
+      "percent": null,
+      "method": "navy_hodgdon_beckett_1984",
+      "issues": [
+        "La fórmula solo está validada para hombres y para mujeres por separado."
+      ],
+      "caveats": [
+        "Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario."
+      ]
+    },
+    "series": []
+  },
+  "circumferences": [
+    {
+      "field": "waistCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 86
+      },
+      "change4w": -1.5,
+      "change12w": -3
+    },
+    {
+      "field": "neckCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 38.5
+      },
+      "change4w": 0,
+      "change12w": null
+    },
+    {
+      "field": "hipCm",
+      "latest": null,
+      "change4w": null,
+      "change12w": null
+    },
+    {
+      "field": "chestCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 101
+      },
+      "change4w": 0.5,
+      "change12w": null
+    },
+    {
+      "field": "armCm",
+      "latest": {
+        "date": "2026-11-09",
+        "value": 35
+      },
+      "change4w": null,
+      "change12w": null
+    },
+    {
+      "field": "thighCm",
+      "latest": null,
+      "change4w": null,
+      "change12w": null
+    }
+  ],
+  "disclaimer": "Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario."
+}

@@ -9,7 +9,11 @@ import { IsoDateSchema } from './history.js';
 export const WeightEntrySchema = z.object({ date: IsoDateSchema, weightKg: z.number().min(25).max(400) }).strict();
 export type WeightEntry = z.infer<typeof WeightEntrySchema>;
 
-export const WEIGHT_TREND_STATUSES = ['on_track', 'too_fast', 'too_slow', 'no_target', 'insufficient_data'] as const;
+/**
+ * `wrong_direction`: el peso se mueve en sentido contrario al objetivo (p. ej. baja con meta de
+ * hipertrofia); `too_slow` queda para cuando va en la dirección buscada pero por debajo del rango.
+ */
+export const WEIGHT_TREND_STATUSES = ['on_track', 'too_fast', 'too_slow', 'wrong_direction', 'no_target', 'insufficient_data'] as const;
 export const WeightTrendStatusSchema = z.enum(WEIGHT_TREND_STATUSES);
 export type WeightTrendStatus = z.infer<typeof WeightTrendStatusSchema>;
 

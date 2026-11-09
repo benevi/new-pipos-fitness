@@ -276,7 +276,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get healthConsentText =>
-      'Acepto que Pipos Fitness trate mis datos de salud (peso, altura y limitaciones o molestias por zona del cuerpo) con el único fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales. Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos y el plan se regenera sin ellos. Pipos Fitness no da consejo médico.';
+      'Acepto que Pipos Fitness trate mis datos de salud (peso, altura, limitaciones o molestias por zona del cuerpo y medidas corporales: perímetros de cintura, cuello, cadera, pecho, brazo y muslo) con el fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales, y de mostrarme su evolución y estimaciones derivadas (índice de masa corporal y porcentaje de grasa estimado). Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos, incluido el registro de medidas, y el plan se regenera sin ellos. Las estimaciones no son un diagnóstico y Pipos Fitness no da consejo médico.';
 
   @override
   String get onboardingLimitationsTitle => '¿Alguna zona con molestias?';
@@ -735,8 +735,15 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String progressE1rmTrend(String name, String first, String last, int count) {
-    return 'Tendencia de $name: de $first a $last kg en $count sesiones';
+  String progressE1rmTrend(
+    String name,
+    String first,
+    String last,
+    String since,
+    String until,
+    int count,
+  ) {
+    return '$name: de $first a $last kg entre el $since y el $until ($count sesiones)';
   }
 
   @override
@@ -789,8 +796,8 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsHealth => 'Datos de salud y limitaciones';
 
   @override
-  String settingsHealthGranted(String version) {
-    return 'Consentimiento dado ($version)';
+  String settingsHealthGranted(String date) {
+    return 'Consentimiento de salud dado el $date';
   }
 
   @override
@@ -818,12 +825,12 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsNutrition => 'Objetivos de nutrición';
 
   @override
-  String settingsNutritionKcal(int kcal) {
+  String settingsNutritionKcal(String kcal) {
     return '$kcal kcal al día';
   }
 
   @override
-  String settingsNutritionMacros(int protein, int fat, int carbs) {
+  String settingsNutritionMacros(String protein, String fat, String carbs) {
     return 'Proteína $protein g · Grasa $fat g · Hidratos $carbs g';
   }
 
@@ -1147,5 +1154,697 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String loadPctValue(String pct) {
     return '$pct % de la carga';
+  }
+
+  @override
+  String get settingsHealthUpdateBody =>
+      'Hay una versión nueva del texto que añade las medidas corporales (perímetros) y las estimaciones de IMC y % de grasa. Tu consentimiento actual sigue cubriendo peso, altura y limitaciones.';
+
+  @override
+  String get settingsHealthUpdate => 'Leer y aceptar la versión nueva';
+
+  @override
+  String pendingChangesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios pendientes de sincronizar',
+      one: '1 cambio pendiente de sincronizar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String failedChangesCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count cambios no se pudieron enviar',
+      one: '1 cambio no se pudo enviar',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String loadImplementLabel(String implement) {
+    String _temp0 = intl.Intl.selectLogic(implement, {
+      'barbell': 'Barra',
+      'trap_bar': 'Barra hexagonal',
+      'ez_bar': 'Barra EZ',
+      'smith_machine': 'Multipower',
+      'dumbbell': 'Mancuernas',
+      'kettlebell': 'Kettlebell',
+      'machine': 'Máquina',
+      'cable': 'Polea',
+      'weight_plate': 'Disco',
+      'other': '$implement',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String todayLoadStep(String implement, String step) {
+    return '$implement · de $step en $step';
+  }
+
+  @override
+  String get platesButton => 'Discos';
+
+  @override
+  String platesButtonFor(String kg) {
+    return 'Ver discos para $kg';
+  }
+
+  @override
+  String platesTitle(String kg) {
+    return 'Discos para $kg';
+  }
+
+  @override
+  String platesBar(String kg) {
+    return 'Barra: $kg';
+  }
+
+  @override
+  String platesPerSide(String plates) {
+    return 'Por lado: $plates';
+  }
+
+  @override
+  String get platesOnlyBar => 'Solo la barra, sin discos.';
+
+  @override
+  String platesRemainder(String kg) {
+    return 'Faltan $kg que no se pueden formar con discos estándar: usa el peso más cercano.';
+  }
+
+  @override
+  String platesBelowBar(String kg) {
+    return 'La carga es menor que la barra vacía ($kg).';
+  }
+
+  @override
+  String get platesHelp =>
+      'Discos estándar de 25 a 1,25 kg. Pon los mismos a cada lado.';
+
+  @override
+  String loadDecrease(String step) {
+    return 'Bajar $step';
+  }
+
+  @override
+  String loadIncrease(String step) {
+    return 'Subir $step';
+  }
+
+  @override
+  String get noteLabel => 'Tu nota';
+
+  @override
+  String get noteAdd => 'Añadir nota';
+
+  @override
+  String get noteEdit => 'Editar nota';
+
+  @override
+  String noteSheetTitle(String exercise) {
+    return 'Nota para $exercise';
+  }
+
+  @override
+  String get noteHint =>
+      'Ajustes de máquina, agarre, altura del asiento… La verás cada vez que toque este ejercicio.';
+
+  @override
+  String get noteFieldLabel => 'Nota';
+
+  @override
+  String get notePrivacy =>
+      'Solo la ves tú. Si tienes una molestia, mejor consulta a un profesional que apuntarla aquí.';
+
+  @override
+  String get noteSave => 'Guardar nota';
+
+  @override
+  String get noteDelete => 'Borrar nota';
+
+  @override
+  String get noteEmptyError => 'Escribe la nota o bórrala.';
+
+  @override
+  String get noteSaved => 'Nota guardada.';
+
+  @override
+  String get noteDeleted => 'Nota borrada.';
+
+  @override
+  String get swapPinLabel => 'Usar siempre este cambio';
+
+  @override
+  String get swapPinHelp =>
+      'Se aplica a todas las sesiones de este plan con este ejercicio y se mantiene en las versiones nuevas mientras siga siendo válido.';
+
+  @override
+  String swapPinnedDone(String name) {
+    return 'A partir de ahora harás $name en este plan';
+  }
+
+  @override
+  String get pinnedBadge => 'Cambio fijado';
+
+  @override
+  String pinnedInsteadOf(String name) {
+    return 'Cambio fijado: en lugar de $name';
+  }
+
+  @override
+  String unpinAction(String name) {
+    return 'Volver a $name';
+  }
+
+  @override
+  String unpinDone(String name) {
+    return 'Has vuelto a $name';
+  }
+
+  @override
+  String get pinDroppedTitle => 'Un cambio fijado ya no se puede aplicar.';
+
+  @override
+  String get adjustOpen => '¿Poco tiempo hoy?';
+
+  @override
+  String get adjustTitle => 'Ajustar la sesión de hoy';
+
+  @override
+  String get adjustIntro =>
+      'Elige el tiempo que tienes o una versión más ligera. Solo cambia hoy: tu plan sigue igual y no cuenta como bajada de rendimiento.';
+
+  @override
+  String get adjustMinutesLabel => 'Tiempo disponible';
+
+  @override
+  String adjustMinutesChip(int minutes) {
+    return '$minutes min';
+  }
+
+  @override
+  String get adjustReducedLabel => 'Volumen reducido';
+
+  @override
+  String get adjustReducedHelp =>
+      'Una serie menos por ejercicio y 1 repetición más en reserva, sin subir carga.';
+
+  @override
+  String get adjustPreview => 'Ver cómo queda';
+
+  @override
+  String get adjustPickSomething =>
+      'Elige un tiempo o activa el volumen reducido.';
+
+  @override
+  String adjustEstimated(int minutes) {
+    return 'Duración estimada: $minutes min';
+  }
+
+  @override
+  String get adjustDroppedTitle => 'Hoy se quitan:';
+
+  @override
+  String get adjustNothingDropped => 'No se quita ningún ejercicio.';
+
+  @override
+  String get adjustDoesNotFit =>
+      'Ni con lo esencial cabe en ese tiempo: haz lo que puedas, empezando por el principal.';
+
+  @override
+  String get adjustApply => 'Empezar con este ajuste';
+
+  @override
+  String adjustBannerMinutes(int minutes) {
+    return 'Sesión ajustada a $minutes min';
+  }
+
+  @override
+  String get adjustBannerReduced => 'Sesión con volumen reducido';
+
+  @override
+  String adjustBannerBoth(int minutes) {
+    return 'Sesión ajustada a $minutes min y con volumen reducido';
+  }
+
+  @override
+  String adjustBannerDropped(String names) {
+    return 'Hoy sin: $names';
+  }
+
+  @override
+  String get adjustRemove => 'Volver a la sesión completa';
+
+  @override
+  String get settingsSchedule => 'Días de entreno, pausas y recordatorio';
+
+  @override
+  String get settingsScheduleSubtitle =>
+      'Qué días entrenas, vacaciones y aviso en el móvil';
+
+  @override
+  String get scheduleTitle => 'Días y pausas';
+
+  @override
+  String get scheduleDaysTitle => 'Días de entreno';
+
+  @override
+  String get scheduleDaysIntro =>
+      'Sirven para el recordatorio y para saber si hoy toca. No cambian tu plan: sigue el orden de tus sesiones.';
+
+  @override
+  String scheduleDaysCount(int count, int max) {
+    return '$count de $max días elegidos';
+  }
+
+  @override
+  String get scheduleDaysDefault =>
+      'Sin días elegidos: se usan los días del plan.';
+
+  @override
+  String scheduleDaysTooMany(int max) {
+    return 'Tu plan tiene $max días por semana: elige $max como mucho.';
+  }
+
+  @override
+  String get scheduleDaysSave => 'Guardar días';
+
+  @override
+  String get scheduleDaysSaved => 'Días de entreno guardados.';
+
+  @override
+  String get scheduleBreaksTitle => 'Pausas';
+
+  @override
+  String get scheduleBreaksIntro =>
+      'Vacaciones o días sin entrenar (de 1 a 60 días). No cuentan en tu adherencia, no bajan la carga al volver y el recordatorio no suena.';
+
+  @override
+  String get scheduleBreaksEmpty => 'No tienes pausas planificadas.';
+
+  @override
+  String scheduleBreakRange(String start, String end) {
+    return 'Del $start al $end';
+  }
+
+  @override
+  String scheduleBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get scheduleBreakAdd => 'Añadir pausa';
+
+  @override
+  String get scheduleBreakPickerHelp => 'Elige el primer y el último día';
+
+  @override
+  String get scheduleBreakTooLong => 'Una pausa dura como mucho 60 días.';
+
+  @override
+  String get scheduleBreakAdded => 'Pausa añadida.';
+
+  @override
+  String get scheduleBreakDelete => 'Borrar pausa';
+
+  @override
+  String get scheduleBreakDeleteTitle => '¿Borrar esta pausa?';
+
+  @override
+  String get scheduleBreakDeleteBody =>
+      'Esos días volverán a contar en tu adherencia.';
+
+  @override
+  String get scheduleBreakDeleted => 'Pausa borrada.';
+
+  @override
+  String get scheduleReminderTitle => 'Recordatorio';
+
+  @override
+  String get scheduleReminderToggle => 'Recordarme los días de entreno';
+
+  @override
+  String get scheduleReminderHelp =>
+      'Un aviso en este móvil, sin pasar por nuestro servidor. No suena en las pausas.';
+
+  @override
+  String scheduleReminderTime(String time) {
+    return 'Hora: $time';
+  }
+
+  @override
+  String get scheduleReminderTimeEdit => 'Cambiar la hora del recordatorio';
+
+  @override
+  String get scheduleReminderPermissionTitle => '¿Te avisamos?';
+
+  @override
+  String get scheduleReminderPermissionBody =>
+      'Para avisarte los días de entreno, Android te pedirá permiso para mostrar notificaciones. Solo usamos este permiso para el recordatorio.';
+
+  @override
+  String get scheduleReminderPermissionContinue => 'Continuar';
+
+  @override
+  String get scheduleReminderPermissionLater => 'Ahora no';
+
+  @override
+  String get scheduleReminderDenied =>
+      'Sin permiso no podemos avisarte. Puedes activarlo en los ajustes del sistema.';
+
+  @override
+  String get reminderNotificationTitle => 'Hoy toca entrenar';
+
+  @override
+  String get reminderNotificationBody =>
+      'Tu sesión te espera en Pipos Fitness.';
+
+  @override
+  String todayBreakNotice(String date) {
+    return 'Estás en pausa hasta el $date. Si te apetece, puedes entrenar igualmente.';
+  }
+
+  @override
+  String get todayRestDayNotice =>
+      'Hoy no es uno de tus días de entreno. Puedes descansar o entrenar igualmente.';
+
+  @override
+  String progressAdherenceBreakDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días en pausa: no cuentan',
+      one: '1 día en pausa: no cuenta',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get progressTabTraining => 'Entreno';
+
+  @override
+  String get progressTabBody => 'Cuerpo';
+
+  @override
+  String get bodyConsentNeededTitle => 'Tus medidas son datos de salud';
+
+  @override
+  String get bodyConsentNeededBody =>
+      'Para registrar peso y perímetros y ver su evolución necesitamos tu consentimiento. Puedes retirarlo cuando quieras y se borran.';
+
+  @override
+  String get bodyConsentUpgradeBody =>
+      'Tu consentimiento cubre el peso. Para perímetros, IMC y % de grasa estimado acepta la versión nueva del texto.';
+
+  @override
+  String get bodyConsentReview => 'Leer y aceptar';
+
+  @override
+  String get bodyAddMeasurement => 'Añadir medidas';
+
+  @override
+  String get bodyEmpty =>
+      'Aún no has registrado medidas. Pésate y mide siempre en condiciones parecidas (por ejemplo, por la mañana).';
+
+  @override
+  String get bodyWeightTitle => 'Peso';
+
+  @override
+  String bodyWeightLatest(String kg, String date) {
+    return 'Último: $kg ($date)';
+  }
+
+  @override
+  String bodyTrendStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'on_track': 'Vas a buen ritmo',
+      'too_fast': 'Vas demasiado rápido',
+      'too_slow': 'Vas más lento de lo previsto',
+      'wrong_direction': 'Vas en sentido contrario a tu objetivo',
+      'no_target': 'Tu objetivo no fija un ritmo',
+      'insufficient_data': 'Faltan datos para ver el ritmo',
+      'other': '$status',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyTrendRate(String rate) {
+    return '$rate % por semana';
+  }
+
+  @override
+  String bodyTrendTarget(String direction, String min, String max) {
+    String _temp0 = intl.Intl.selectLogic(direction, {
+      'loss': 'Objetivo: perder entre el $min y el $max % por semana',
+      'gain': 'Objetivo: ganar entre el $min y el $max % por semana',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyChartLabel(String first, String last, String period) {
+    return 'Peso: de $first a $last kg en $period';
+  }
+
+  @override
+  String get bodyChartTitle =>
+      'Peso (kg): media móvil de 7 días en cada pesada';
+
+  @override
+  String get bodyEstimateLabel => 'Estimación — no es un diagnóstico';
+
+  @override
+  String get bodyBmiTitle => 'Índice de masa corporal (IMC)';
+
+  @override
+  String bmiCategoryLabel(String category) {
+    String _temp0 = intl.Intl.selectLogic(category, {
+      'underweight': 'Bajo peso',
+      'normal': 'Peso normal',
+      'pre_obese': 'Sobrepeso (preobesidad)',
+      'obese_class_1': 'Obesidad de clase I',
+      'obese_class_2': 'Obesidad de clase II',
+      'obese_class_3': 'Obesidad de clase III',
+      'other': '$category',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiWhoNote => 'Categorías de la OMS para adultos.';
+
+  @override
+  String get bodyFatTitle => '% de grasa estimado';
+
+  @override
+  String bodyFatValue(String value) {
+    return '$value %';
+  }
+
+  @override
+  String get bodyNotApplicable => 'No aplica';
+
+  @override
+  String bodyEstimateStatus(String status) {
+    String _temp0 = intl.Intl.selectLogic(status, {
+      'insufficient_data': 'Faltan datos para calcularlo.',
+      'consent_required':
+          'Requiere aceptar la versión nueva del consentimiento de salud.',
+      'invalid_input': 'Revisa las medidas: no se puede calcular.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyBmiMissing => 'Necesita tu peso y tu altura (perfil).';
+
+  @override
+  String get bodyFatMissing =>
+      'Necesita cintura, cuello y, en mujeres, cadera del mismo día, y tu altura.';
+
+  @override
+  String bodyMeasuredOn(String date) {
+    return 'Medido el $date';
+  }
+
+  @override
+  String get bodyCircumferencesTitle => 'Perímetros';
+
+  @override
+  String get bodyCircumferencesNote =>
+      'Pecho, brazo y muslo son solo de seguimiento.';
+
+  @override
+  String bodyFieldLabel(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'Peso',
+      'waistCm': 'Cintura',
+      'neckCm': 'Cuello',
+      'hipCm': 'Cadera',
+      'chestCm': 'Pecho',
+      'armCm': 'Brazo',
+      'thighCm': 'Muslo',
+      'other': '$field',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyFieldHelp(String field) {
+    String _temp0 = intl.Intl.selectLogic(field, {
+      'weightKg': 'Por la mañana, tras ir al baño y antes de comer.',
+      'waistCm':
+          'Hombres: a la altura del ombligo. Mujeres: en la parte más estrecha de la cintura. Al final de una espiración normal.',
+      'neckCm': 'Justo por debajo de la nuez (laringe).',
+      'hipCm': 'En la parte más ancha de los glúteos.',
+      'chestCm':
+          'A la altura de los pezones, al final de una espiración normal.',
+      'armCm': 'Brazo relajado, en el punto medio entre el hombro y el codo.',
+      'thighCm': 'En el punto medio entre la ingle y la rótula.',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String bodyCm(String value) {
+    return '$value cm';
+  }
+
+  @override
+  String bodyLatestValue(String value, String date) {
+    return '$value ($date)';
+  }
+
+  @override
+  String bodyChange(String weeks, String change) {
+    String _temp0 = intl.Intl.selectLogic(weeks, {
+      'w4': 'Δ 4 sem: $change',
+      'w12': 'Δ 12 sem: $change',
+      'other': '',
+    });
+    return '$_temp0';
+  }
+
+  @override
+  String get bodyNoValue => 'Sin datos';
+
+  @override
+  String get bodyHistoryTitle => 'Registros';
+
+  @override
+  String bodyHistoryDelete(String date) {
+    return 'Borrar las medidas del $date';
+  }
+
+  @override
+  String get bodyHistoryDeleted => 'Medidas borradas.';
+
+  @override
+  String get measureTitle => 'Añadir medidas';
+
+  @override
+  String get measureIntro =>
+      'Todas son opcionales: rellena al menos una. Mide siempre igual y en condiciones parecidas.';
+
+  @override
+  String measureDate(String date) {
+    return 'Fecha: $date';
+  }
+
+  @override
+  String get measureDateEdit => 'Cambiar la fecha';
+
+  @override
+  String get measureAtLeastOne => 'Introduce al menos una medida.';
+
+  @override
+  String get measureNeedsConsent =>
+      'Los perímetros requieren aceptar la versión nueva del consentimiento de salud.';
+
+  @override
+  String get measureSave => 'Guardar medidas';
+
+  @override
+  String get measureSaved => 'Medidas guardadas.';
+
+  @override
+  String get measureUnitKg => 'kg';
+
+  @override
+  String get measureUnitCm => 'cm';
+
+  @override
+  String chartPeriodWeeks(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count semanas',
+      one: '1 semana',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String chartPeriodDays(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count días',
+      one: '1 día',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeSets(num count, String sets) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$sets series',
+      one: '$sets serie',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String progressVolumeTarget(String min, String max) {
+    return 'objetivo $min–$max';
+  }
+
+  @override
+  String get progressVolumeLegendBelow => 'Por debajo del rango';
+
+  @override
+  String get progressVolumeLegendWithin => 'Dentro del rango';
+
+  @override
+  String get progressVolumeLegendAbove => 'Por encima del rango';
+
+  @override
+  String get progressVolumeLegendBand =>
+      'La franja marca el rango objetivo de series efectivas.';
+
+  @override
+  String get settingsHealthGrantedNoDate => 'Consentimiento de salud dado';
+
+  @override
+  String settingsLegalConsentVersion(String version, String date) {
+    return 'Tu consentimiento de salud: versión $version del texto, aceptada el $date.';
   }
 }

@@ -5,7 +5,9 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/core/api/api_failure.dart';
 import 'package:pipos_fitness/core/api/dio_error_mapper.dart';
+import 'package:pipos_fitness/models/body.dart';
 import 'package:pipos_fitness/models/json.dart';
+import 'package:pipos_fitness/models/notes_breaks.dart';
 import 'package:pipos_fitness/models/plan.dart';
 import 'package:pipos_fitness/models/profile.dart';
 import 'package:pipos_fitness/models/progress.dart';
@@ -58,6 +60,100 @@ void main() {
       j,
       ExerciseSummary.fromJson,
     ).toJson((s) => s.toJson()),
+  );
+
+  // ADR-0013 (ideas recuperadas).
+  roundTrip(
+    'health_consent_v2',
+    (j) => HealthConsentStatus.fromJson(j).toJson(),
+  );
+  roundTrip('exercise_note', (j) => ExerciseNote.fromJson(j).toJson());
+  roundTrip('exercise_notes', (j) => ExerciseNoteList.fromJson(j).toJson());
+  roundTrip('plan_override', (j) => PlanExerciseOverride.fromJson(j).toJson());
+  roundTrip('today_session_adjusted', (j) => TodaySession.fromJson(j).toJson());
+  roundTrip('today_session_break', (j) => TodaySession.fromJson(j).toJson());
+  roundTrip('training_break', (j) => TrainingBreak.fromJson(j).toJson());
+  roundTrip('training_breaks', (j) => TrainingBreakList.fromJson(j).toJson());
+  roundTrip(
+    'training_break_request',
+    (j) => CreateTrainingBreakRequest.fromJson(j).toJson(),
+  );
+  roundTrip(
+    'body_measurement',
+    (j) => BodyMeasurementRecord.fromJson(j).toJson(),
+  );
+  roundTrip(
+    'body_measurements',
+    (j) => BodyMeasurementList.fromJson(j).toJson(),
+  );
+  roundTrip(
+    'body_measurement_request',
+    (j) => BodyMeasurement.fromJson(j).toJson(),
+  );
+  roundTrip('body_progress', (j) => BodyProgress.fromJson(j).toJson());
+  roundTrip(
+    'body_progress_not_applicable',
+    (j) => BodyProgress.fromJson(j).toJson(),
+  );
+  roundTrip(
+    'body_progress_consent_required',
+    (j) => BodyProgress.fromJson(j).toJson(),
+  );
+
+  test('peticiones nuevas: serializan como los fixtures validados con Zod', () {
+    final start = fixture('start_workout_adjusted');
+    expect(
+      StartWorkoutRequest(
+        clientId: start['clientId'] as String,
+        planSessionId: start['planSessionId'] as String,
+        startedAt: DateTime.utc(2026, 11, 9, 8),
+        adjustment: const WorkoutAdjustment(availableMinutes: 30),
+      ).toJson(),
+      start,
+    );
+    final note = fixture('exercise_note_request');
+    expect(
+      ExerciseNoteRequest(
+        text: note['text'] as String,
+        clientUpdatedAt: DateTime.utc(2026, 11, 9, 8),
+      ).toJson(),
+      note,
+    );
+    expect(
+      const ProfileScheduleRequest([1, 3, 5]).toJson(),
+      fixture('profile_schedule_request'),
+    );
+    // Sin ajuste no se envía el campo (clientes anteriores).
+    expect(
+      StartWorkoutRequest(
+        clientId: 'c',
+        planSessionId: 'p',
+        startedAt: DateTime.utc(2026),
+      ).toJson().containsKey('adjustment'),
+      isFalse,
+    );
+  });
+
+  test(
+    'copias en caché de versiones anteriores: campos nuevos por defecto',
+    () {
+      final j = fixture('today_session')
+        ..remove('scheduledToday')
+        ..remove('activeBreak')
+        ..remove('adjustment');
+      for (final e in (j['exercises'] as List).cast<Json>()) {
+        e
+          ..remove('loadImplement')
+          ..remove('loadStepKg')
+          ..remove('plates')
+          ..remove('pinned')
+          ..remove('note');
+      }
+      final s = TodaySession.fromJson(j);
+      expect(s.scheduledToday, isTrue);
+      expect(s.exercises.first.plates, isNull);
+      expect(s.exercises.first.pinned, isFalse);
+    },
   );
 
   test('export: valida cabecera y conserva el JSON completo', () {

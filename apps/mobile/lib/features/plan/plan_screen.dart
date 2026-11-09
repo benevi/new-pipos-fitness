@@ -3,6 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../app/tokens.dart';
+import '../../core/api/api_failure.dart';
+import '../../data/pipos_api.dart';
+import '../../models/plan.dart';
+import '../today/today_providers.dart';
+
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../shared/widgets.dart';
@@ -53,6 +58,7 @@ class PlanScreen extends ConsumerWidget {
             onRefresh: () => ref.refresh(currentPlanProvider.future),
             child: PlanOverview(
               plan: cached.value,
+              onUnpin: cached.fromCache ? null : (e) => _unpin(context, ref, e),
               header: cached.fromCache && cached.savedAt != null
                   ? NoticeBanner(
                       text: l10n.cachedDataNotice(
@@ -64,6 +70,33 @@ class PlanScreen extends ConsumerWidget {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Vuelve al ejercicio original de un hueco fijado (idea 3). Necesita red.
+Future<void> _unpin(
+  BuildContext context,
+  WidgetRef ref,
+  PlanExercise exercise,
+) async {
+  final l10n = AppLocalizations.of(context);
+  final messenger = ScaffoldMessenger.of(context);
+  try {
+    await ref.read(planApiProvider).unpinExercise(exercise.id);
+    ref.invalidate(currentPlanProvider);
+    ref.invalidate(todaySessionProvider);
+    messenger
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(l10n.unpinDone(exercise.nameEs))));
+  } catch (e) {
+    final f = ApiFailure.from(e);
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(
+          f.isConnectivity ? l10n.errorOfflineAction : f.localized(l10n),
+        ),
       ),
     );
   }

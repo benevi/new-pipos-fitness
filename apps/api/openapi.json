@@ -1529,6 +1529,7 @@
                       "on_track",
                       "too_fast",
                       "too_slow",
+                      "wrong_direction",
                       "no_target",
                       "insufficient_data"
                     ]

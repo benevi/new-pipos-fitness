@@ -123,6 +123,17 @@ class $LocalWorkoutsTable extends LocalWorkouts
         type: DriftSqlType.dateTime,
         requiredDuringInsert: false,
       );
+  static const VerificationMeta _adjustmentJsonMeta = const VerificationMeta(
+    'adjustmentJson',
+  );
+  @override
+  late final GeneratedColumn<String> adjustmentJson = GeneratedColumn<String>(
+    'adjustment_json',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   @override
   List<GeneratedColumn> get $columns => [
     clientId,
@@ -135,6 +146,7 @@ class $LocalWorkoutsTable extends LocalWorkouts
     attempts,
     lastError,
     nextAttemptAt,
+    adjustmentJson,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -225,6 +237,15 @@ class $LocalWorkoutsTable extends LocalWorkouts
         ),
       );
     }
+    if (data.containsKey('adjustment_json')) {
+      context.handle(
+        _adjustmentJsonMeta,
+        adjustmentJson.isAcceptableOrUnknown(
+          data['adjustment_json']!,
+          _adjustmentJsonMeta,
+        ),
+      );
+    }
     return context;
   }
 
@@ -274,6 +295,10 @@ class $LocalWorkoutsTable extends LocalWorkouts
         DriftSqlType.dateTime,
         data['${effectivePrefix}next_attempt_at'],
       ),
+      adjustmentJson: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}adjustment_json'],
+      ),
     );
   }
 
@@ -299,6 +324,10 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
   final int attempts;
   final String? lastError;
   final DateTime? nextAttemptAt;
+
+  /// Ajuste de hoy elegido antes de empezar (JSON de `WorkoutAdjustment`;
+  /// null = sesión completa). Se envía en `POST /workouts`.
+  final String? adjustmentJson;
   const LocalWorkout({
     required this.clientId,
     required this.userId,
@@ -310,6 +339,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     required this.attempts,
     this.lastError,
     this.nextAttemptAt,
+    this.adjustmentJson,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -331,6 +361,9 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     }
     if (!nullToAbsent || nextAttemptAt != null) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    if (!nullToAbsent || adjustmentJson != null) {
+      map['adjustment_json'] = Variable<String>(adjustmentJson);
     }
     return map;
   }
@@ -355,6 +388,9 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       nextAttemptAt: nextAttemptAt == null && nullToAbsent
           ? const Value.absent()
           : Value(nextAttemptAt),
+      adjustmentJson: adjustmentJson == null && nullToAbsent
+          ? const Value.absent()
+          : Value(adjustmentJson),
     );
   }
 
@@ -374,6 +410,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       attempts: serializer.fromJson<int>(json['attempts']),
       lastError: serializer.fromJson<String?>(json['lastError']),
       nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+      adjustmentJson: serializer.fromJson<String?>(json['adjustmentJson']),
     );
   }
   @override
@@ -390,6 +427,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       'attempts': serializer.toJson<int>(attempts),
       'lastError': serializer.toJson<String?>(lastError),
       'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+      'adjustmentJson': serializer.toJson<String?>(adjustmentJson),
     };
   }
 
@@ -404,6 +442,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     int? attempts,
     Value<String?> lastError = const Value.absent(),
     Value<DateTime?> nextAttemptAt = const Value.absent(),
+    Value<String?> adjustmentJson = const Value.absent(),
   }) => LocalWorkout(
     clientId: clientId ?? this.clientId,
     userId: userId ?? this.userId,
@@ -417,6 +456,9 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     nextAttemptAt: nextAttemptAt.present
         ? nextAttemptAt.value
         : this.nextAttemptAt,
+    adjustmentJson: adjustmentJson.present
+        ? adjustmentJson.value
+        : this.adjustmentJson,
   );
   LocalWorkout copyWithCompanion(LocalWorkoutsCompanion data) {
     return LocalWorkout(
@@ -438,6 +480,9 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
       nextAttemptAt: data.nextAttemptAt.present
           ? data.nextAttemptAt.value
           : this.nextAttemptAt,
+      adjustmentJson: data.adjustmentJson.present
+          ? data.adjustmentJson.value
+          : this.adjustmentJson,
     );
   }
 
@@ -453,7 +498,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           ..write('finishSynced: $finishSynced, ')
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
-          ..write('nextAttemptAt: $nextAttemptAt')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('adjustmentJson: $adjustmentJson')
           ..write(')'))
         .toString();
   }
@@ -470,6 +516,7 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
     attempts,
     lastError,
     nextAttemptAt,
+    adjustmentJson,
   );
   @override
   bool operator ==(Object other) =>
@@ -484,7 +531,8 @@ class LocalWorkout extends DataClass implements Insertable<LocalWorkout> {
           other.finishSynced == this.finishSynced &&
           other.attempts == this.attempts &&
           other.lastError == this.lastError &&
-          other.nextAttemptAt == this.nextAttemptAt);
+          other.nextAttemptAt == this.nextAttemptAt &&
+          other.adjustmentJson == this.adjustmentJson);
 }
 
 class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
@@ -498,6 +546,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
   final Value<int> attempts;
   final Value<String?> lastError;
   final Value<DateTime?> nextAttemptAt;
+  final Value<String?> adjustmentJson;
   final Value<int> rowid;
   const LocalWorkoutsCompanion({
     this.clientId = const Value.absent(),
@@ -510,6 +559,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.adjustmentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   LocalWorkoutsCompanion.insert({
@@ -523,6 +573,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     this.attempts = const Value.absent(),
     this.lastError = const Value.absent(),
     this.nextAttemptAt = const Value.absent(),
+    this.adjustmentJson = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : clientId = Value(clientId),
        userId = Value(userId),
@@ -539,6 +590,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Expression<int>? attempts,
     Expression<String>? lastError,
     Expression<DateTime>? nextAttemptAt,
+    Expression<String>? adjustmentJson,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -552,6 +604,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       if (attempts != null) 'attempts': attempts,
       if (lastError != null) 'last_error': lastError,
       if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (adjustmentJson != null) 'adjustment_json': adjustmentJson,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -567,6 +620,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     Value<int>? attempts,
     Value<String?>? lastError,
     Value<DateTime?>? nextAttemptAt,
+    Value<String?>? adjustmentJson,
     Value<int>? rowid,
   }) {
     return LocalWorkoutsCompanion(
@@ -580,6 +634,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
       attempts: attempts ?? this.attempts,
       lastError: lastError ?? this.lastError,
       nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      adjustmentJson: adjustmentJson ?? this.adjustmentJson,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -617,6 +672,9 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
     if (nextAttemptAt.present) {
       map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
     }
+    if (adjustmentJson.present) {
+      map['adjustment_json'] = Variable<String>(adjustmentJson.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -636,6 +694,7 @@ class LocalWorkoutsCompanion extends UpdateCompanion<LocalWorkout> {
           ..write('attempts: $attempts, ')
           ..write('lastError: $lastError, ')
           ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('adjustmentJson: $adjustmentJson, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -1886,12 +1945,608 @@ class CachedPayloadsCompanion extends UpdateCompanion<CachedPayload> {
   }
 }
 
+class $PendingMutationsTable extends PendingMutations
+    with TableInfo<$PendingMutationsTable, PendingMutation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $PendingMutationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _userIdMeta = const VerificationMeta('userId');
+  @override
+  late final GeneratedColumn<String> userId = GeneratedColumn<String>(
+    'user_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _mutationKeyMeta = const VerificationMeta(
+    'mutationKey',
+  );
+  @override
+  late final GeneratedColumn<String> mutationKey = GeneratedColumn<String>(
+    'mutation_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<MutationKind, String> kind =
+      GeneratedColumn<String>(
+        'kind',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<MutationKind>($PendingMutationsTable.$converterkind);
+  static const VerificationMeta _payloadMeta = const VerificationMeta(
+    'payload',
+  );
+  @override
+  late final GeneratedColumn<String> payload = GeneratedColumn<String>(
+    'payload',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  @override
+  late final GeneratedColumnWithTypeConverter<SetSyncStatus, String> status =
+      GeneratedColumn<String>(
+        'status',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+        defaultValue: Constant(SetSyncStatus.pending.name),
+      ).withConverter<SetSyncStatus>($PendingMutationsTable.$converterstatus);
+  static const VerificationMeta _attemptsMeta = const VerificationMeta(
+    'attempts',
+  );
+  @override
+  late final GeneratedColumn<int> attempts = GeneratedColumn<int>(
+    'attempts',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(0),
+  );
+  static const VerificationMeta _lastErrorMeta = const VerificationMeta(
+    'lastError',
+  );
+  @override
+  late final GeneratedColumn<String> lastError = GeneratedColumn<String>(
+    'last_error',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _nextAttemptAtMeta = const VerificationMeta(
+    'nextAttemptAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> nextAttemptAt =
+      GeneratedColumn<DateTime>(
+        'next_attempt_at',
+        aliasedName,
+        true,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+      );
+  @override
+  List<GeneratedColumn> get $columns => [
+    userId,
+    mutationKey,
+    kind,
+    payload,
+    updatedAt,
+    status,
+    attempts,
+    lastError,
+    nextAttemptAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'pending_mutations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<PendingMutation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('user_id')) {
+      context.handle(
+        _userIdMeta,
+        userId.isAcceptableOrUnknown(data['user_id']!, _userIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_userIdMeta);
+    }
+    if (data.containsKey('mutation_key')) {
+      context.handle(
+        _mutationKeyMeta,
+        mutationKey.isAcceptableOrUnknown(
+          data['mutation_key']!,
+          _mutationKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_mutationKeyMeta);
+    }
+    if (data.containsKey('payload')) {
+      context.handle(
+        _payloadMeta,
+        payload.isAcceptableOrUnknown(data['payload']!, _payloadMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_payloadMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('attempts')) {
+      context.handle(
+        _attemptsMeta,
+        attempts.isAcceptableOrUnknown(data['attempts']!, _attemptsMeta),
+      );
+    }
+    if (data.containsKey('last_error')) {
+      context.handle(
+        _lastErrorMeta,
+        lastError.isAcceptableOrUnknown(data['last_error']!, _lastErrorMeta),
+      );
+    }
+    if (data.containsKey('next_attempt_at')) {
+      context.handle(
+        _nextAttemptAtMeta,
+        nextAttemptAt.isAcceptableOrUnknown(
+          data['next_attempt_at']!,
+          _nextAttemptAtMeta,
+        ),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {userId, mutationKey};
+  @override
+  PendingMutation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return PendingMutation(
+      userId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}user_id'],
+      )!,
+      mutationKey: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}mutation_key'],
+      )!,
+      kind: $PendingMutationsTable.$converterkind.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}kind'],
+        )!,
+      ),
+      payload: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}payload'],
+      )!,
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      status: $PendingMutationsTable.$converterstatus.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}status'],
+        )!,
+      ),
+      attempts: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}attempts'],
+      )!,
+      lastError: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}last_error'],
+      ),
+      nextAttemptAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}next_attempt_at'],
+      ),
+    );
+  }
+
+  @override
+  $PendingMutationsTable createAlias(String alias) {
+    return $PendingMutationsTable(attachedDatabase, alias);
+  }
+
+  static JsonTypeConverter2<MutationKind, String, String> $converterkind =
+      const EnumNameConverter<MutationKind>(MutationKind.values);
+  static JsonTypeConverter2<SetSyncStatus, String, String> $converterstatus =
+      const EnumNameConverter<SetSyncStatus>(SetSyncStatus.values);
+}
+
+class PendingMutation extends DataClass implements Insertable<PendingMutation> {
+  final String userId;
+
+  /// Clave lógica: `note:<exerciseId>` o `measurement:<YYYY-MM-DD>`.
+  final String mutationKey;
+  final MutationKind kind;
+
+  /// Cuerpo de la petición (JSON) o datos para construirla.
+  final String payload;
+
+  /// Momento de la edición local (para la nota: `clientUpdatedAt`).
+  final DateTime updatedAt;
+
+  /// `pending`, `syncing` o `failed` (al confirmarse la fila se borra).
+  final SetSyncStatus status;
+  final int attempts;
+  final String? lastError;
+  final DateTime? nextAttemptAt;
+  const PendingMutation({
+    required this.userId,
+    required this.mutationKey,
+    required this.kind,
+    required this.payload,
+    required this.updatedAt,
+    required this.status,
+    required this.attempts,
+    this.lastError,
+    this.nextAttemptAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['user_id'] = Variable<String>(userId);
+    map['mutation_key'] = Variable<String>(mutationKey);
+    {
+      map['kind'] = Variable<String>(
+        $PendingMutationsTable.$converterkind.toSql(kind),
+      );
+    }
+    map['payload'] = Variable<String>(payload);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    {
+      map['status'] = Variable<String>(
+        $PendingMutationsTable.$converterstatus.toSql(status),
+      );
+    }
+    map['attempts'] = Variable<int>(attempts);
+    if (!nullToAbsent || lastError != null) {
+      map['last_error'] = Variable<String>(lastError);
+    }
+    if (!nullToAbsent || nextAttemptAt != null) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt);
+    }
+    return map;
+  }
+
+  PendingMutationsCompanion toCompanion(bool nullToAbsent) {
+    return PendingMutationsCompanion(
+      userId: Value(userId),
+      mutationKey: Value(mutationKey),
+      kind: Value(kind),
+      payload: Value(payload),
+      updatedAt: Value(updatedAt),
+      status: Value(status),
+      attempts: Value(attempts),
+      lastError: lastError == null && nullToAbsent
+          ? const Value.absent()
+          : Value(lastError),
+      nextAttemptAt: nextAttemptAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(nextAttemptAt),
+    );
+  }
+
+  factory PendingMutation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return PendingMutation(
+      userId: serializer.fromJson<String>(json['userId']),
+      mutationKey: serializer.fromJson<String>(json['mutationKey']),
+      kind: $PendingMutationsTable.$converterkind.fromJson(
+        serializer.fromJson<String>(json['kind']),
+      ),
+      payload: serializer.fromJson<String>(json['payload']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      status: $PendingMutationsTable.$converterstatus.fromJson(
+        serializer.fromJson<String>(json['status']),
+      ),
+      attempts: serializer.fromJson<int>(json['attempts']),
+      lastError: serializer.fromJson<String?>(json['lastError']),
+      nextAttemptAt: serializer.fromJson<DateTime?>(json['nextAttemptAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'userId': serializer.toJson<String>(userId),
+      'mutationKey': serializer.toJson<String>(mutationKey),
+      'kind': serializer.toJson<String>(
+        $PendingMutationsTable.$converterkind.toJson(kind),
+      ),
+      'payload': serializer.toJson<String>(payload),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'status': serializer.toJson<String>(
+        $PendingMutationsTable.$converterstatus.toJson(status),
+      ),
+      'attempts': serializer.toJson<int>(attempts),
+      'lastError': serializer.toJson<String?>(lastError),
+      'nextAttemptAt': serializer.toJson<DateTime?>(nextAttemptAt),
+    };
+  }
+
+  PendingMutation copyWith({
+    String? userId,
+    String? mutationKey,
+    MutationKind? kind,
+    String? payload,
+    DateTime? updatedAt,
+    SetSyncStatus? status,
+    int? attempts,
+    Value<String?> lastError = const Value.absent(),
+    Value<DateTime?> nextAttemptAt = const Value.absent(),
+  }) => PendingMutation(
+    userId: userId ?? this.userId,
+    mutationKey: mutationKey ?? this.mutationKey,
+    kind: kind ?? this.kind,
+    payload: payload ?? this.payload,
+    updatedAt: updatedAt ?? this.updatedAt,
+    status: status ?? this.status,
+    attempts: attempts ?? this.attempts,
+    lastError: lastError.present ? lastError.value : this.lastError,
+    nextAttemptAt: nextAttemptAt.present
+        ? nextAttemptAt.value
+        : this.nextAttemptAt,
+  );
+  PendingMutation copyWithCompanion(PendingMutationsCompanion data) {
+    return PendingMutation(
+      userId: data.userId.present ? data.userId.value : this.userId,
+      mutationKey: data.mutationKey.present
+          ? data.mutationKey.value
+          : this.mutationKey,
+      kind: data.kind.present ? data.kind.value : this.kind,
+      payload: data.payload.present ? data.payload.value : this.payload,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      status: data.status.present ? data.status.value : this.status,
+      attempts: data.attempts.present ? data.attempts.value : this.attempts,
+      lastError: data.lastError.present ? data.lastError.value : this.lastError,
+      nextAttemptAt: data.nextAttemptAt.present
+          ? data.nextAttemptAt.value
+          : this.nextAttemptAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingMutation(')
+          ..write('userId: $userId, ')
+          ..write('mutationKey: $mutationKey, ')
+          ..write('kind: $kind, ')
+          ..write('payload: $payload, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('status: $status, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError, ')
+          ..write('nextAttemptAt: $nextAttemptAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    userId,
+    mutationKey,
+    kind,
+    payload,
+    updatedAt,
+    status,
+    attempts,
+    lastError,
+    nextAttemptAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is PendingMutation &&
+          other.userId == this.userId &&
+          other.mutationKey == this.mutationKey &&
+          other.kind == this.kind &&
+          other.payload == this.payload &&
+          other.updatedAt == this.updatedAt &&
+          other.status == this.status &&
+          other.attempts == this.attempts &&
+          other.lastError == this.lastError &&
+          other.nextAttemptAt == this.nextAttemptAt);
+}
+
+class PendingMutationsCompanion extends UpdateCompanion<PendingMutation> {
+  final Value<String> userId;
+  final Value<String> mutationKey;
+  final Value<MutationKind> kind;
+  final Value<String> payload;
+  final Value<DateTime> updatedAt;
+  final Value<SetSyncStatus> status;
+  final Value<int> attempts;
+  final Value<String?> lastError;
+  final Value<DateTime?> nextAttemptAt;
+  final Value<int> rowid;
+  const PendingMutationsCompanion({
+    this.userId = const Value.absent(),
+    this.mutationKey = const Value.absent(),
+    this.kind = const Value.absent(),
+    this.payload = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.status = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  PendingMutationsCompanion.insert({
+    required String userId,
+    required String mutationKey,
+    required MutationKind kind,
+    required String payload,
+    required DateTime updatedAt,
+    this.status = const Value.absent(),
+    this.attempts = const Value.absent(),
+    this.lastError = const Value.absent(),
+    this.nextAttemptAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : userId = Value(userId),
+       mutationKey = Value(mutationKey),
+       kind = Value(kind),
+       payload = Value(payload),
+       updatedAt = Value(updatedAt);
+  static Insertable<PendingMutation> custom({
+    Expression<String>? userId,
+    Expression<String>? mutationKey,
+    Expression<String>? kind,
+    Expression<String>? payload,
+    Expression<DateTime>? updatedAt,
+    Expression<String>? status,
+    Expression<int>? attempts,
+    Expression<String>? lastError,
+    Expression<DateTime>? nextAttemptAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (userId != null) 'user_id': userId,
+      if (mutationKey != null) 'mutation_key': mutationKey,
+      if (kind != null) 'kind': kind,
+      if (payload != null) 'payload': payload,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (status != null) 'status': status,
+      if (attempts != null) 'attempts': attempts,
+      if (lastError != null) 'last_error': lastError,
+      if (nextAttemptAt != null) 'next_attempt_at': nextAttemptAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  PendingMutationsCompanion copyWith({
+    Value<String>? userId,
+    Value<String>? mutationKey,
+    Value<MutationKind>? kind,
+    Value<String>? payload,
+    Value<DateTime>? updatedAt,
+    Value<SetSyncStatus>? status,
+    Value<int>? attempts,
+    Value<String?>? lastError,
+    Value<DateTime?>? nextAttemptAt,
+    Value<int>? rowid,
+  }) {
+    return PendingMutationsCompanion(
+      userId: userId ?? this.userId,
+      mutationKey: mutationKey ?? this.mutationKey,
+      kind: kind ?? this.kind,
+      payload: payload ?? this.payload,
+      updatedAt: updatedAt ?? this.updatedAt,
+      status: status ?? this.status,
+      attempts: attempts ?? this.attempts,
+      lastError: lastError ?? this.lastError,
+      nextAttemptAt: nextAttemptAt ?? this.nextAttemptAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (userId.present) {
+      map['user_id'] = Variable<String>(userId.value);
+    }
+    if (mutationKey.present) {
+      map['mutation_key'] = Variable<String>(mutationKey.value);
+    }
+    if (kind.present) {
+      map['kind'] = Variable<String>(
+        $PendingMutationsTable.$converterkind.toSql(kind.value),
+      );
+    }
+    if (payload.present) {
+      map['payload'] = Variable<String>(payload.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(
+        $PendingMutationsTable.$converterstatus.toSql(status.value),
+      );
+    }
+    if (attempts.present) {
+      map['attempts'] = Variable<int>(attempts.value);
+    }
+    if (lastError.present) {
+      map['last_error'] = Variable<String>(lastError.value);
+    }
+    if (nextAttemptAt.present) {
+      map['next_attempt_at'] = Variable<DateTime>(nextAttemptAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('PendingMutationsCompanion(')
+          ..write('userId: $userId, ')
+          ..write('mutationKey: $mutationKey, ')
+          ..write('kind: $kind, ')
+          ..write('payload: $payload, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('status: $status, ')
+          ..write('attempts: $attempts, ')
+          ..write('lastError: $lastError, ')
+          ..write('nextAttemptAt: $nextAttemptAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$AppDatabase extends GeneratedDatabase {
   _$AppDatabase(QueryExecutor e) : super(e);
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $LocalWorkoutsTable localWorkouts = $LocalWorkoutsTable(this);
   late final $LocalSetLogsTable localSetLogs = $LocalSetLogsTable(this);
   late final $CachedPayloadsTable cachedPayloads = $CachedPayloadsTable(this);
+  late final $PendingMutationsTable pendingMutations = $PendingMutationsTable(
+    this,
+  );
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -1900,6 +2555,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     localWorkouts,
     localSetLogs,
     cachedPayloads,
+    pendingMutations,
   ];
 }
 
@@ -1915,6 +2571,7 @@ typedef $$LocalWorkoutsTableCreateCompanionBuilder =
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
+      Value<String?> adjustmentJson,
       Value<int> rowid,
     });
 typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
@@ -1929,6 +2586,7 @@ typedef $$LocalWorkoutsTableUpdateCompanionBuilder =
       Value<int> attempts,
       Value<String?> lastError,
       Value<DateTime?> nextAttemptAt,
+      Value<String?> adjustmentJson,
       Value<int> rowid,
     });
 
@@ -1988,6 +2646,11 @@ class $$LocalWorkoutsTableFilterComposer
 
   ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
     column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get adjustmentJson => $composableBuilder(
+    column: $table.adjustmentJson,
     builder: (column) => ColumnFilters(column),
   );
 }
@@ -2050,6 +2713,11 @@ class $$LocalWorkoutsTableOrderingComposer
     column: $table.nextAttemptAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get adjustmentJson => $composableBuilder(
+    column: $table.adjustmentJson,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$LocalWorkoutsTableAnnotationComposer
@@ -2098,6 +2766,11 @@ class $$LocalWorkoutsTableAnnotationComposer
     column: $table.nextAttemptAt,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get adjustmentJson => $composableBuilder(
+    column: $table.adjustmentJson,
+    builder: (column) => column,
+  );
 }
 
 class $$LocalWorkoutsTableTableManager
@@ -2141,6 +2814,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<String?> adjustmentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion(
                 clientId: clientId,
@@ -2153,6 +2827,7 @@ class $$LocalWorkoutsTableTableManager
                 attempts: attempts,
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
+                adjustmentJson: adjustmentJson,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -2167,6 +2842,7 @@ class $$LocalWorkoutsTableTableManager
                 Value<int> attempts = const Value.absent(),
                 Value<String?> lastError = const Value.absent(),
                 Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<String?> adjustmentJson = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => LocalWorkoutsCompanion.insert(
                 clientId: clientId,
@@ -2179,6 +2855,7 @@ class $$LocalWorkoutsTableTableManager
                 attempts: attempts,
                 lastError: lastError,
                 nextAttemptAt: nextAttemptAt,
+                adjustmentJson: adjustmentJson,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -2809,6 +3486,294 @@ typedef $$CachedPayloadsTableProcessedTableManager =
       CachedPayload,
       PrefetchHooks Function()
     >;
+typedef $$PendingMutationsTableCreateCompanionBuilder =
+    PendingMutationsCompanion Function({
+      required String userId,
+      required String mutationKey,
+      required MutationKind kind,
+      required String payload,
+      required DateTime updatedAt,
+      Value<SetSyncStatus> status,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<DateTime?> nextAttemptAt,
+      Value<int> rowid,
+    });
+typedef $$PendingMutationsTableUpdateCompanionBuilder =
+    PendingMutationsCompanion Function({
+      Value<String> userId,
+      Value<String> mutationKey,
+      Value<MutationKind> kind,
+      Value<String> payload,
+      Value<DateTime> updatedAt,
+      Value<SetSyncStatus> status,
+      Value<int> attempts,
+      Value<String?> lastError,
+      Value<DateTime?> nextAttemptAt,
+      Value<int> rowid,
+    });
+
+class $$PendingMutationsTableFilterComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get mutationKey => $composableBuilder(
+    column: $table.mutationKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<MutationKind, MutationKind, String> get kind =>
+      $composableBuilder(
+        column: $table.kind,
+        builder: (column) => ColumnWithTypeConverterFilters(column),
+      );
+
+  ColumnFilters<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<SetSyncStatus, SetSyncStatus, String>
+  get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$PendingMutationsTableOrderingComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get userId => $composableBuilder(
+    column: $table.userId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get mutationKey => $composableBuilder(
+    column: $table.mutationKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get kind => $composableBuilder(
+    column: $table.kind,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get payload => $composableBuilder(
+    column: $table.payload,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get attempts => $composableBuilder(
+    column: $table.attempts,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get lastError => $composableBuilder(
+    column: $table.lastError,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$PendingMutationsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $PendingMutationsTable> {
+  $$PendingMutationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get userId =>
+      $composableBuilder(column: $table.userId, builder: (column) => column);
+
+  GeneratedColumn<String> get mutationKey => $composableBuilder(
+    column: $table.mutationKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumnWithTypeConverter<MutationKind, String> get kind =>
+      $composableBuilder(column: $table.kind, builder: (column) => column);
+
+  GeneratedColumn<String> get payload =>
+      $composableBuilder(column: $table.payload, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<SetSyncStatus, String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<int> get attempts =>
+      $composableBuilder(column: $table.attempts, builder: (column) => column);
+
+  GeneratedColumn<String> get lastError =>
+      $composableBuilder(column: $table.lastError, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get nextAttemptAt => $composableBuilder(
+    column: $table.nextAttemptAt,
+    builder: (column) => column,
+  );
+}
+
+class $$PendingMutationsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $PendingMutationsTable,
+          PendingMutation,
+          $$PendingMutationsTableFilterComposer,
+          $$PendingMutationsTableOrderingComposer,
+          $$PendingMutationsTableAnnotationComposer,
+          $$PendingMutationsTableCreateCompanionBuilder,
+          $$PendingMutationsTableUpdateCompanionBuilder,
+          (
+            PendingMutation,
+            BaseReferences<
+              _$AppDatabase,
+              $PendingMutationsTable,
+              PendingMutation
+            >,
+          ),
+          PendingMutation,
+          PrefetchHooks Function()
+        > {
+  $$PendingMutationsTableTableManager(
+    _$AppDatabase db,
+    $PendingMutationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$PendingMutationsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$PendingMutationsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$PendingMutationsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> userId = const Value.absent(),
+                Value<String> mutationKey = const Value.absent(),
+                Value<MutationKind> kind = const Value.absent(),
+                Value<String> payload = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<SetSyncStatus> status = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingMutationsCompanion(
+                userId: userId,
+                mutationKey: mutationKey,
+                kind: kind,
+                payload: payload,
+                updatedAt: updatedAt,
+                status: status,
+                attempts: attempts,
+                lastError: lastError,
+                nextAttemptAt: nextAttemptAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String userId,
+                required String mutationKey,
+                required MutationKind kind,
+                required String payload,
+                required DateTime updatedAt,
+                Value<SetSyncStatus> status = const Value.absent(),
+                Value<int> attempts = const Value.absent(),
+                Value<String?> lastError = const Value.absent(),
+                Value<DateTime?> nextAttemptAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => PendingMutationsCompanion.insert(
+                userId: userId,
+                mutationKey: mutationKey,
+                kind: kind,
+                payload: payload,
+                updatedAt: updatedAt,
+                status: status,
+                attempts: attempts,
+                lastError: lastError,
+                nextAttemptAt: nextAttemptAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$PendingMutationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $PendingMutationsTable,
+      PendingMutation,
+      $$PendingMutationsTableFilterComposer,
+      $$PendingMutationsTableOrderingComposer,
+      $$PendingMutationsTableAnnotationComposer,
+      $$PendingMutationsTableCreateCompanionBuilder,
+      $$PendingMutationsTableUpdateCompanionBuilder,
+      (
+        PendingMutation,
+        BaseReferences<_$AppDatabase, $PendingMutationsTable, PendingMutation>,
+      ),
+      PendingMutation,
+      PrefetchHooks Function()
+    >;
 
 class $AppDatabaseManager {
   final _$AppDatabase _db;
@@ -2819,4 +3784,6 @@ class $AppDatabaseManager {
       $$LocalSetLogsTableTableManager(_db, _db.localSetLogs);
   $$CachedPayloadsTableTableManager get cachedPayloads =>
       $$CachedPayloadsTableTableManager(_db, _db.cachedPayloads);
+  $$PendingMutationsTableTableManager get pendingMutations =>
+      $$PendingMutationsTableTableManager(_db, _db.pendingMutations);
 }

@@ -539,7 +539,7 @@ abstract class AppLocalizations {
   /// No description provided for @healthConsentText.
   ///
   /// In es, this message translates to:
-  /// **'Acepto que Pipos Fitness trate mis datos de salud (peso, altura y limitaciones o molestias por zona del cuerpo) con el único fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales. Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos y el plan se regenera sin ellos. Pipos Fitness no da consejo médico.'**
+  /// **'Acepto que Pipos Fitness trate mis datos de salud (peso, altura, limitaciones o molestias por zona del cuerpo y medidas corporales: perímetros de cintura, cuello, cadera, pecho, brazo y muslo) con el fin de adaptar mi plan de entrenamiento y mis objetivos nutricionales, y de mostrarme su evolución y estimaciones derivadas (índice de masa corporal y porcentaje de grasa estimado). Puedo retirar este consentimiento en cualquier momento desde Ajustes; al hacerlo se borran esos datos, incluido el registro de medidas, y el plan se regenera sin ellos. Las estimaciones no son un diagnóstico y Pipos Fitness no da consejo médico.'**
   String get healthConsentText;
 
   /// No description provided for @onboardingLimitationsTitle.
@@ -1217,8 +1217,15 @@ abstract class AppLocalizations {
   /// No description provided for @progressE1rmTrend.
   ///
   /// In es, this message translates to:
-  /// **'Tendencia de {name}: de {first} a {last} kg en {count} sesiones'**
-  String progressE1rmTrend(String name, String first, String last, int count);
+  /// **'{name}: de {first} a {last} kg entre el {since} y el {until} ({count} sesiones)'**
+  String progressE1rmTrend(
+    String name,
+    String first,
+    String last,
+    String since,
+    String until,
+    int count,
+  );
 
   /// No description provided for @progressVolumeTitle.
   ///
@@ -1301,8 +1308,8 @@ abstract class AppLocalizations {
   /// No description provided for @settingsHealthGranted.
   ///
   /// In es, this message translates to:
-  /// **'Consentimiento dado ({version})'**
-  String settingsHealthGranted(String version);
+  /// **'Consentimiento de salud dado el {date}'**
+  String settingsHealthGranted(String date);
 
   /// No description provided for @settingsHealthNotGranted.
   ///
@@ -1350,13 +1357,13 @@ abstract class AppLocalizations {
   ///
   /// In es, this message translates to:
   /// **'{kcal} kcal al día'**
-  String settingsNutritionKcal(int kcal);
+  String settingsNutritionKcal(String kcal);
 
   /// No description provided for @settingsNutritionMacros.
   ///
   /// In es, this message translates to:
   /// **'Proteína {protein} g · Grasa {fat} g · Hidratos {carbs} g'**
-  String settingsNutritionMacros(int protein, int fat, int carbs);
+  String settingsNutritionMacros(String protein, String fat, String carbs);
 
   /// No description provided for @settingsNutritionIncomplete.
   ///
@@ -1585,6 +1592,912 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'{pct} % de la carga'**
   String loadPctValue(String pct);
+
+  /// No description provided for @settingsHealthUpdateBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Hay una versión nueva del texto que añade las medidas corporales (perímetros) y las estimaciones de IMC y % de grasa. Tu consentimiento actual sigue cubriendo peso, altura y limitaciones.'**
+  String get settingsHealthUpdateBody;
+
+  /// No description provided for @settingsHealthUpdate.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer y aceptar la versión nueva'**
+  String get settingsHealthUpdate;
+
+  /// Notas o medidas guardadas sin conexión que aún no se han enviado
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio pendiente de sincronizar} other{{count} cambios pendientes de sincronizar}}'**
+  String pendingChangesCount(int count);
+
+  /// No description provided for @failedChangesCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 cambio no se pudo enviar} other{{count} cambios no se pudieron enviar}}'**
+  String failedChangesCount(int count);
+
+  /// No description provided for @loadImplementLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{implement, select, barbell{Barra} trap_bar{Barra hexagonal} ez_bar{Barra EZ} smith_machine{Multipower} dumbbell{Mancuernas} kettlebell{Kettlebell} machine{Máquina} cable{Polea} weight_plate{Disco} other{{implement}}}'**
+  String loadImplementLabel(String implement);
+
+  /// Material y paso real de carga del ejercicio
+  ///
+  /// In es, this message translates to:
+  /// **'{implement} · de {step} en {step}'**
+  String todayLoadStep(String implement, String step);
+
+  /// No description provided for @platesButton.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos'**
+  String get platesButton;
+
+  /// No description provided for @platesButtonFor.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver discos para {kg}'**
+  String platesButtonFor(String kg);
+
+  /// No description provided for @platesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos para {kg}'**
+  String platesTitle(String kg);
+
+  /// No description provided for @platesBar.
+  ///
+  /// In es, this message translates to:
+  /// **'Barra: {kg}'**
+  String platesBar(String kg);
+
+  /// No description provided for @platesPerSide.
+  ///
+  /// In es, this message translates to:
+  /// **'Por lado: {plates}'**
+  String platesPerSide(String plates);
+
+  /// No description provided for @platesOnlyBar.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo la barra, sin discos.'**
+  String get platesOnlyBar;
+
+  /// No description provided for @platesRemainder.
+  ///
+  /// In es, this message translates to:
+  /// **'Faltan {kg} que no se pueden formar con discos estándar: usa el peso más cercano.'**
+  String platesRemainder(String kg);
+
+  /// No description provided for @platesBelowBar.
+  ///
+  /// In es, this message translates to:
+  /// **'La carga es menor que la barra vacía ({kg}).'**
+  String platesBelowBar(String kg);
+
+  /// No description provided for @platesHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Discos estándar de 25 a 1,25 kg. Pon los mismos a cada lado.'**
+  String get platesHelp;
+
+  /// No description provided for @loadDecrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Bajar {step}'**
+  String loadDecrease(String step);
+
+  /// No description provided for @loadIncrease.
+  ///
+  /// In es, this message translates to:
+  /// **'Subir {step}'**
+  String loadIncrease(String step);
+
+  /// No description provided for @noteLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu nota'**
+  String get noteLabel;
+
+  /// No description provided for @noteAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir nota'**
+  String get noteAdd;
+
+  /// No description provided for @noteEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Editar nota'**
+  String get noteEdit;
+
+  /// No description provided for @noteSheetTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota para {exercise}'**
+  String noteSheetTitle(String exercise);
+
+  /// No description provided for @noteHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustes de máquina, agarre, altura del asiento… La verás cada vez que toque este ejercicio.'**
+  String get noteHint;
+
+  /// No description provided for @noteFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota'**
+  String get noteFieldLabel;
+
+  /// No description provided for @notePrivacy.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo la ves tú. Si tienes una molestia, mejor consulta a un profesional que apuntarla aquí.'**
+  String get notePrivacy;
+
+  /// No description provided for @noteSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar nota'**
+  String get noteSave;
+
+  /// No description provided for @noteDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar nota'**
+  String get noteDelete;
+
+  /// No description provided for @noteEmptyError.
+  ///
+  /// In es, this message translates to:
+  /// **'Escribe la nota o bórrala.'**
+  String get noteEmptyError;
+
+  /// No description provided for @noteSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota guardada.'**
+  String get noteSaved;
+
+  /// No description provided for @noteDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Nota borrada.'**
+  String get noteDeleted;
+
+  /// No description provided for @swapPinLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Usar siempre este cambio'**
+  String get swapPinLabel;
+
+  /// No description provided for @swapPinHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Se aplica a todas las sesiones de este plan con este ejercicio y se mantiene en las versiones nuevas mientras siga siendo válido.'**
+  String get swapPinHelp;
+
+  /// No description provided for @swapPinnedDone.
+  ///
+  /// In es, this message translates to:
+  /// **'A partir de ahora harás {name} en este plan'**
+  String swapPinnedDone(String name);
+
+  /// No description provided for @pinnedBadge.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio fijado'**
+  String get pinnedBadge;
+
+  /// No description provided for @pinnedInsteadOf.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambio fijado: en lugar de {name}'**
+  String pinnedInsteadOf(String name);
+
+  /// No description provided for @unpinAction.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a {name}'**
+  String unpinAction(String name);
+
+  /// No description provided for @unpinDone.
+  ///
+  /// In es, this message translates to:
+  /// **'Has vuelto a {name}'**
+  String unpinDone(String name);
+
+  /// No description provided for @pinDroppedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Un cambio fijado ya no se puede aplicar.'**
+  String get pinDroppedTitle;
+
+  /// No description provided for @adjustOpen.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Poco tiempo hoy?'**
+  String get adjustOpen;
+
+  /// No description provided for @adjustTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ajustar la sesión de hoy'**
+  String get adjustTitle;
+
+  /// No description provided for @adjustIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige el tiempo que tienes o una versión más ligera. Solo cambia hoy: tu plan sigue igual y no cuenta como bajada de rendimiento.'**
+  String get adjustIntro;
+
+  /// No description provided for @adjustMinutesLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Tiempo disponible'**
+  String get adjustMinutesLabel;
+
+  /// No description provided for @adjustMinutesChip.
+  ///
+  /// In es, this message translates to:
+  /// **'{minutes} min'**
+  String adjustMinutesChip(int minutes);
+
+  /// No description provided for @adjustReducedLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Volumen reducido'**
+  String get adjustReducedLabel;
+
+  /// No description provided for @adjustReducedHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Una serie menos por ejercicio y 1 repetición más en reserva, sin subir carga.'**
+  String get adjustReducedHelp;
+
+  /// No description provided for @adjustPreview.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver cómo queda'**
+  String get adjustPreview;
+
+  /// No description provided for @adjustPickSomething.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un tiempo o activa el volumen reducido.'**
+  String get adjustPickSomething;
+
+  /// No description provided for @adjustEstimated.
+  ///
+  /// In es, this message translates to:
+  /// **'Duración estimada: {minutes} min'**
+  String adjustEstimated(int minutes);
+
+  /// No description provided for @adjustDroppedTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy se quitan:'**
+  String get adjustDroppedTitle;
+
+  /// No description provided for @adjustNothingDropped.
+  ///
+  /// In es, this message translates to:
+  /// **'No se quita ningún ejercicio.'**
+  String get adjustNothingDropped;
+
+  /// No description provided for @adjustDoesNotFit.
+  ///
+  /// In es, this message translates to:
+  /// **'Ni con lo esencial cabe en ese tiempo: haz lo que puedas, empezando por el principal.'**
+  String get adjustDoesNotFit;
+
+  /// No description provided for @adjustApply.
+  ///
+  /// In es, this message translates to:
+  /// **'Empezar con este ajuste'**
+  String get adjustApply;
+
+  /// No description provided for @adjustBannerMinutes.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión ajustada a {minutes} min'**
+  String adjustBannerMinutes(int minutes);
+
+  /// No description provided for @adjustBannerReduced.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión con volumen reducido'**
+  String get adjustBannerReduced;
+
+  /// No description provided for @adjustBannerBoth.
+  ///
+  /// In es, this message translates to:
+  /// **'Sesión ajustada a {minutes} min y con volumen reducido'**
+  String adjustBannerBoth(int minutes);
+
+  /// No description provided for @adjustBannerDropped.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy sin: {names}'**
+  String adjustBannerDropped(String names);
+
+  /// No description provided for @adjustRemove.
+  ///
+  /// In es, this message translates to:
+  /// **'Volver a la sesión completa'**
+  String get adjustRemove;
+
+  /// No description provided for @settingsSchedule.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno, pausas y recordatorio'**
+  String get settingsSchedule;
+
+  /// No description provided for @settingsScheduleSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Qué días entrenas, vacaciones y aviso en el móvil'**
+  String get settingsScheduleSubtitle;
+
+  /// No description provided for @scheduleTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Días y pausas'**
+  String get scheduleTitle;
+
+  /// No description provided for @scheduleDaysTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno'**
+  String get scheduleDaysTitle;
+
+  /// No description provided for @scheduleDaysIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Sirven para el recordatorio y para saber si hoy toca. No cambian tu plan: sigue el orden de tus sesiones.'**
+  String get scheduleDaysIntro;
+
+  /// No description provided for @scheduleDaysCount.
+  ///
+  /// In es, this message translates to:
+  /// **'{count} de {max} días elegidos'**
+  String scheduleDaysCount(int count, int max);
+
+  /// No description provided for @scheduleDaysDefault.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin días elegidos: se usan los días del plan.'**
+  String get scheduleDaysDefault;
+
+  /// No description provided for @scheduleDaysTooMany.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan tiene {max} días por semana: elige {max} como mucho.'**
+  String scheduleDaysTooMany(int max);
+
+  /// No description provided for @scheduleDaysSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar días'**
+  String get scheduleDaysSave;
+
+  /// No description provided for @scheduleDaysSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Días de entreno guardados.'**
+  String get scheduleDaysSaved;
+
+  /// No description provided for @scheduleBreaksTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausas'**
+  String get scheduleBreaksTitle;
+
+  /// No description provided for @scheduleBreaksIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Vacaciones o días sin entrenar (de 1 a 60 días). No cuentan en tu adherencia, no bajan la carga al volver y el recordatorio no suena.'**
+  String get scheduleBreaksIntro;
+
+  /// No description provided for @scheduleBreaksEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'No tienes pausas planificadas.'**
+  String get scheduleBreaksEmpty;
+
+  /// No description provided for @scheduleBreakRange.
+  ///
+  /// In es, this message translates to:
+  /// **'Del {start} al {end}'**
+  String scheduleBreakRange(String start, String end);
+
+  /// No description provided for @scheduleBreakDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String scheduleBreakDays(int count);
+
+  /// No description provided for @scheduleBreakAdd.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir pausa'**
+  String get scheduleBreakAdd;
+
+  /// No description provided for @scheduleBreakPickerHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige el primer y el último día'**
+  String get scheduleBreakPickerHelp;
+
+  /// No description provided for @scheduleBreakTooLong.
+  ///
+  /// In es, this message translates to:
+  /// **'Una pausa dura como mucho 60 días.'**
+  String get scheduleBreakTooLong;
+
+  /// No description provided for @scheduleBreakAdded.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausa añadida.'**
+  String get scheduleBreakAdded;
+
+  /// No description provided for @scheduleBreakDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar pausa'**
+  String get scheduleBreakDelete;
+
+  /// No description provided for @scheduleBreakDeleteTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Borrar esta pausa?'**
+  String get scheduleBreakDeleteTitle;
+
+  /// No description provided for @scheduleBreakDeleteBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Esos días volverán a contar en tu adherencia.'**
+  String get scheduleBreakDeleteBody;
+
+  /// No description provided for @scheduleBreakDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Pausa borrada.'**
+  String get scheduleBreakDeleted;
+
+  /// No description provided for @scheduleReminderTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordatorio'**
+  String get scheduleReminderTitle;
+
+  /// No description provided for @scheduleReminderToggle.
+  ///
+  /// In es, this message translates to:
+  /// **'Recordarme los días de entreno'**
+  String get scheduleReminderToggle;
+
+  /// No description provided for @scheduleReminderHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'Un aviso en este móvil, sin pasar por nuestro servidor. No suena en las pausas.'**
+  String get scheduleReminderHelp;
+
+  /// No description provided for @scheduleReminderTime.
+  ///
+  /// In es, this message translates to:
+  /// **'Hora: {time}'**
+  String scheduleReminderTime(String time);
+
+  /// No description provided for @scheduleReminderTimeEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar la hora del recordatorio'**
+  String get scheduleReminderTimeEdit;
+
+  /// No description provided for @scheduleReminderPermissionTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Te avisamos?'**
+  String get scheduleReminderPermissionTitle;
+
+  /// No description provided for @scheduleReminderPermissionBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para avisarte los días de entreno, Android te pedirá permiso para mostrar notificaciones. Solo usamos este permiso para el recordatorio.'**
+  String get scheduleReminderPermissionBody;
+
+  /// No description provided for @scheduleReminderPermissionContinue.
+  ///
+  /// In es, this message translates to:
+  /// **'Continuar'**
+  String get scheduleReminderPermissionContinue;
+
+  /// No description provided for @scheduleReminderPermissionLater.
+  ///
+  /// In es, this message translates to:
+  /// **'Ahora no'**
+  String get scheduleReminderPermissionLater;
+
+  /// No description provided for @scheduleReminderDenied.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin permiso no podemos avisarte. Puedes activarlo en los ajustes del sistema.'**
+  String get scheduleReminderDenied;
+
+  /// No description provided for @reminderNotificationTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy toca entrenar'**
+  String get reminderNotificationTitle;
+
+  /// No description provided for @reminderNotificationBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu sesión te espera en Pipos Fitness.'**
+  String get reminderNotificationBody;
+
+  /// No description provided for @todayBreakNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Estás en pausa hasta el {date}. Si te apetece, puedes entrenar igualmente.'**
+  String todayBreakNotice(String date);
+
+  /// No description provided for @todayRestDayNotice.
+  ///
+  /// In es, this message translates to:
+  /// **'Hoy no es uno de tus días de entreno. Puedes descansar o entrenar igualmente.'**
+  String get todayRestDayNotice;
+
+  /// No description provided for @progressAdherenceBreakDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día en pausa: no cuenta} other{{count} días en pausa: no cuentan}}'**
+  String progressAdherenceBreakDays(int count);
+
+  /// No description provided for @progressTabTraining.
+  ///
+  /// In es, this message translates to:
+  /// **'Entreno'**
+  String get progressTabTraining;
+
+  /// No description provided for @progressTabBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuerpo'**
+  String get progressTabBody;
+
+  /// No description provided for @bodyConsentNeededTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus medidas son datos de salud'**
+  String get bodyConsentNeededTitle;
+
+  /// No description provided for @bodyConsentNeededBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Para registrar peso y perímetros y ver su evolución necesitamos tu consentimiento. Puedes retirarlo cuando quieras y se borran.'**
+  String get bodyConsentNeededBody;
+
+  /// No description provided for @bodyConsentUpgradeBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu consentimiento cubre el peso. Para perímetros, IMC y % de grasa estimado acepta la versión nueva del texto.'**
+  String get bodyConsentUpgradeBody;
+
+  /// No description provided for @bodyConsentReview.
+  ///
+  /// In es, this message translates to:
+  /// **'Leer y aceptar'**
+  String get bodyConsentReview;
+
+  /// No description provided for @bodyAddMeasurement.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir medidas'**
+  String get bodyAddMeasurement;
+
+  /// No description provided for @bodyEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Aún no has registrado medidas. Pésate y mide siempre en condiciones parecidas (por ejemplo, por la mañana).'**
+  String get bodyEmpty;
+
+  /// No description provided for @bodyWeightTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso'**
+  String get bodyWeightTitle;
+
+  /// No description provided for @bodyWeightLatest.
+  ///
+  /// In es, this message translates to:
+  /// **'Último: {kg} ({date})'**
+  String bodyWeightLatest(String kg, String date);
+
+  /// No description provided for @bodyTrendStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'{status, select, on_track{Vas a buen ritmo} too_fast{Vas demasiado rápido} too_slow{Vas más lento de lo previsto} wrong_direction{Vas en sentido contrario a tu objetivo} no_target{Tu objetivo no fija un ritmo} insufficient_data{Faltan datos para ver el ritmo} other{{status}}}'**
+  String bodyTrendStatus(String status);
+
+  /// No description provided for @bodyTrendRate.
+  ///
+  /// In es, this message translates to:
+  /// **'{rate} % por semana'**
+  String bodyTrendRate(String rate);
+
+  /// No description provided for @bodyTrendTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'{direction, select, loss{Objetivo: perder entre el {min} y el {max} % por semana} gain{Objetivo: ganar entre el {min} y el {max} % por semana} other{}}'**
+  String bodyTrendTarget(String direction, String min, String max);
+
+  /// No description provided for @bodyChartLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso: de {first} a {last} kg en {period}'**
+  String bodyChartLabel(String first, String last, String period);
+
+  /// No description provided for @bodyChartTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Peso (kg): media móvil de 7 días en cada pesada'**
+  String get bodyChartTitle;
+
+  /// No description provided for @bodyEstimateLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'Estimación — no es un diagnóstico'**
+  String get bodyEstimateLabel;
+
+  /// No description provided for @bodyBmiTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Índice de masa corporal (IMC)'**
+  String get bodyBmiTitle;
+
+  /// No description provided for @bmiCategoryLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{category, select, underweight{Bajo peso} normal{Peso normal} pre_obese{Sobrepeso (preobesidad)} obese_class_1{Obesidad de clase I} obese_class_2{Obesidad de clase II} obese_class_3{Obesidad de clase III} other{{category}}}'**
+  String bmiCategoryLabel(String category);
+
+  /// No description provided for @bodyBmiWhoNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Categorías de la OMS para adultos.'**
+  String get bodyBmiWhoNote;
+
+  /// No description provided for @bodyFatTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'% de grasa estimado'**
+  String get bodyFatTitle;
+
+  /// No description provided for @bodyFatValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} %'**
+  String bodyFatValue(String value);
+
+  /// No description provided for @bodyNotApplicable.
+  ///
+  /// In es, this message translates to:
+  /// **'No aplica'**
+  String get bodyNotApplicable;
+
+  /// No description provided for @bodyEstimateStatus.
+  ///
+  /// In es, this message translates to:
+  /// **'{status, select, insufficient_data{Faltan datos para calcularlo.} consent_required{Requiere aceptar la versión nueva del consentimiento de salud.} invalid_input{Revisa las medidas: no se puede calcular.} other{}}'**
+  String bodyEstimateStatus(String status);
+
+  /// No description provided for @bodyBmiMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesita tu peso y tu altura (perfil).'**
+  String get bodyBmiMissing;
+
+  /// No description provided for @bodyFatMissing.
+  ///
+  /// In es, this message translates to:
+  /// **'Necesita cintura, cuello y, en mujeres, cadera del mismo día, y tu altura.'**
+  String get bodyFatMissing;
+
+  /// No description provided for @bodyMeasuredOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Medido el {date}'**
+  String bodyMeasuredOn(String date);
+
+  /// No description provided for @bodyCircumferencesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Perímetros'**
+  String get bodyCircumferencesTitle;
+
+  /// No description provided for @bodyCircumferencesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Pecho, brazo y muslo son solo de seguimiento.'**
+  String get bodyCircumferencesNote;
+
+  /// No description provided for @bodyFieldLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{field, select, weightKg{Peso} waistCm{Cintura} neckCm{Cuello} hipCm{Cadera} chestCm{Pecho} armCm{Brazo} thighCm{Muslo} other{{field}}}'**
+  String bodyFieldLabel(String field);
+
+  /// No description provided for @bodyFieldHelp.
+  ///
+  /// In es, this message translates to:
+  /// **'{field, select, weightKg{Por la mañana, tras ir al baño y antes de comer.} waistCm{Hombres: a la altura del ombligo. Mujeres: en la parte más estrecha de la cintura. Al final de una espiración normal.} neckCm{Justo por debajo de la nuez (laringe).} hipCm{En la parte más ancha de los glúteos.} chestCm{A la altura de los pezones, al final de una espiración normal.} armCm{Brazo relajado, en el punto medio entre el hombro y el codo.} thighCm{En el punto medio entre la ingle y la rótula.} other{}}'**
+  String bodyFieldHelp(String field);
+
+  /// No description provided for @bodyCm.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} cm'**
+  String bodyCm(String value);
+
+  /// No description provided for @bodyLatestValue.
+  ///
+  /// In es, this message translates to:
+  /// **'{value} ({date})'**
+  String bodyLatestValue(String value, String date);
+
+  /// No description provided for @bodyChange.
+  ///
+  /// In es, this message translates to:
+  /// **'{weeks, select, w4{Δ 4 sem: {change}} w12{Δ 12 sem: {change}} other{}}'**
+  String bodyChange(String weeks, String change);
+
+  /// No description provided for @bodyNoValue.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin datos'**
+  String get bodyNoValue;
+
+  /// No description provided for @bodyHistoryTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Registros'**
+  String get bodyHistoryTitle;
+
+  /// No description provided for @bodyHistoryDelete.
+  ///
+  /// In es, this message translates to:
+  /// **'Borrar las medidas del {date}'**
+  String bodyHistoryDelete(String date);
+
+  /// No description provided for @bodyHistoryDeleted.
+  ///
+  /// In es, this message translates to:
+  /// **'Medidas borradas.'**
+  String get bodyHistoryDeleted;
+
+  /// No description provided for @measureTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir medidas'**
+  String get measureTitle;
+
+  /// No description provided for @measureIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Todas son opcionales: rellena al menos una. Mide siempre igual y en condiciones parecidas.'**
+  String get measureIntro;
+
+  /// No description provided for @measureDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Fecha: {date}'**
+  String measureDate(String date);
+
+  /// No description provided for @measureDateEdit.
+  ///
+  /// In es, this message translates to:
+  /// **'Cambiar la fecha'**
+  String get measureDateEdit;
+
+  /// No description provided for @measureAtLeastOne.
+  ///
+  /// In es, this message translates to:
+  /// **'Introduce al menos una medida.'**
+  String get measureAtLeastOne;
+
+  /// No description provided for @measureNeedsConsent.
+  ///
+  /// In es, this message translates to:
+  /// **'Los perímetros requieren aceptar la versión nueva del consentimiento de salud.'**
+  String get measureNeedsConsent;
+
+  /// No description provided for @measureSave.
+  ///
+  /// In es, this message translates to:
+  /// **'Guardar medidas'**
+  String get measureSave;
+
+  /// No description provided for @measureSaved.
+  ///
+  /// In es, this message translates to:
+  /// **'Medidas guardadas.'**
+  String get measureSaved;
+
+  /// No description provided for @measureUnitKg.
+  ///
+  /// In es, this message translates to:
+  /// **'kg'**
+  String get measureUnitKg;
+
+  /// No description provided for @measureUnitCm.
+  ///
+  /// In es, this message translates to:
+  /// **'cm'**
+  String get measureUnitCm;
+
+  /// No description provided for @chartPeriodWeeks.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 semana} other{{count} semanas}}'**
+  String chartPeriodWeeks(int count);
+
+  /// No description provided for @chartPeriodDays.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{1 día} other{{count} días}}'**
+  String chartPeriodDays(int count);
+
+  /// No description provided for @progressVolumeSets.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{{sets} serie} other{{sets} series}}'**
+  String progressVolumeSets(num count, String sets);
+
+  /// No description provided for @progressVolumeTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'objetivo {min}–{max}'**
+  String progressVolumeTarget(String min, String max);
+
+  /// No description provided for @progressVolumeLegendBelow.
+  ///
+  /// In es, this message translates to:
+  /// **'Por debajo del rango'**
+  String get progressVolumeLegendBelow;
+
+  /// No description provided for @progressVolumeLegendWithin.
+  ///
+  /// In es, this message translates to:
+  /// **'Dentro del rango'**
+  String get progressVolumeLegendWithin;
+
+  /// No description provided for @progressVolumeLegendAbove.
+  ///
+  /// In es, this message translates to:
+  /// **'Por encima del rango'**
+  String get progressVolumeLegendAbove;
+
+  /// No description provided for @progressVolumeLegendBand.
+  ///
+  /// In es, this message translates to:
+  /// **'La franja marca el rango objetivo de series efectivas.'**
+  String get progressVolumeLegendBand;
+
+  /// No description provided for @settingsHealthGrantedNoDate.
+  ///
+  /// In es, this message translates to:
+  /// **'Consentimiento de salud dado'**
+  String get settingsHealthGrantedNoDate;
+
+  /// No description provided for @settingsLegalConsentVersion.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu consentimiento de salud: versión {version} del texto, aceptada el {date}.'**
+  String settingsLegalConsentVersion(String version, String date);
 }
 
 class _AppLocalizationsDelegate

@@ -874,7 +874,7 @@ Origen: idea 7 (ADR-0013; decisión de producto). Son **datos de salud** (art. 9
 - Ritmo semanal = pendiente de mínimos cuadrados de los pesos de las **últimas 4 semanas** × 7 / peso medio, en % (heurística, baja; §11 regla 6 pide recalibrar con la tendencia real cada 2-3 semanas).
 - Datos insuficientes: menos de **4 registros** o menos de **14 días** entre el primero y el último de la ventana (heurística, baja).
 - Objetivo por meta (§11.5): pérdida de grasa **0,5-1 %/semana** (Helms 2014; Garthe 2011; confianza media-alta); hipertrofia **0,25-0,5 %/semana** (Iraki et al. 2019, cifra de resúmenes secundarios **[NO VERIFICADO textualmente]**, confianza baja). Fuerza, salud general y resistencia **no fijan ritmo** (`no_target`): no se inventa uno.
-- Estados: `on_track`, `too_fast`, `too_slow`, `no_target`, `insufficient_data`.
+- Estados: `on_track`, `too_fast`, `too_slow` (en la dirección buscada pero por debajo del rango, o peso estable: |ritmo| ≤ 0,05 %/sem), `wrong_direction` (en sentido contrario al objetivo: baja con meta de ganar o sube con meta de perder), `no_target`, `insufficient_data`. Los rangos del texto usan hasta 2 decimales (0,25-0,5 %).
 
 **IMC** (`bmi`): kg/m², con las categorías de **adultos** de la OMS: < 18,5 bajo peso; 18,5-24,9 normal; 25-29,9 sobrepeso (preobesidad); 30-34,9 obesidad I; 35-39,9 obesidad II; ≥ 40 obesidad III.
 - Fuente: World Health Organization. *Obesity: preventing and managing the global epidemic. Report of a WHO consultation.* WHO Technical Report Series 894. Ginebra: OMS; 2000. Confianza **alta** en los cortes como convención poblacional. La cita no se ha releído en esta sesión (se cita de memoria).

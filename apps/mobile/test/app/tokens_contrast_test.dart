@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:pipos_fitness/app/config.dart';
@@ -45,6 +46,99 @@ void main() {
           .resolve({});
       expect(fg, AppColorTokens.dark.onAccent);
     });
+  });
+
+  group('interruptores: contraste no textual ≥ 3:1 (WCAG 1.4.11)', () {
+    for (final t in [AppColorTokens.dark, AppColorTokens.light]) {
+      final theme = t.brightness == Brightness.dark
+          ? AppTheme.dark
+          : AppTheme.light;
+      final sw = theme.switchTheme;
+      final scheme = theme.colorScheme;
+      // Fondos donde aparecen: pantalla, tarjetas y hojas inferiores.
+      final backgrounds = <String, Color>{
+        'background': t.background,
+        'surface': t.surface,
+        'surfaceVariant': t.surfaceVariant,
+        'surfaceContainerLow': scheme.surfaceContainerLow,
+      };
+      test('${t.brightness.name} apagado: borde y pulgar visibles', () {
+        const off = <WidgetState>{};
+        final thumb = sw.thumbColor!.resolve(off)!;
+        final track = sw.trackColor!.resolve(off)!;
+        final outline = sw.trackOutlineColor!.resolve(off)!;
+        expect(contrast(thumb, track), greaterThanOrEqualTo(3));
+        backgrounds.forEach((name, bg) {
+          expect(contrast(outline, bg), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+      test('${t.brightness.name} encendido: pista y pulgar visibles', () {
+        const on = {WidgetState.selected};
+        final thumb = sw.thumbColor!.resolve(on)!;
+        final track = sw.trackColor!.resolve(on)!;
+        expect(contrast(thumb, track), greaterThanOrEqualTo(3));
+        backgrounds.forEach((name, bg) {
+          expect(contrast(track, bg), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+    }
+  });
+
+  group('iconos de estado ≥ 3:1 sobre las tarjetas', () {
+    for (final t in [AppColorTokens.dark, AppColorTokens.light]) {
+      final theme = t.brightness == Brightness.dark
+          ? AppTheme.dark
+          : AppTheme.light;
+      test(t.brightness.name, () {
+        final card = theme.cardTheme.color!;
+        expect(card, t.surface);
+        final icons = <String, Color>{
+          'aviso (error)': theme.colorScheme.error,
+          'en rango (primary)': theme.colorScheme.primary,
+          'info (onSurfaceVariant)': theme.colorScheme.onSurfaceVariant,
+          'success': t.success,
+        };
+        icons.forEach((name, c) {
+          expect(contrast(c, card), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+    }
+  });
+
+  group('tipografía: misma familia en texto y componentes', () {
+    for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
+      test(platform.name, () {
+        debugDefaultTargetPlatformOverride = platform;
+        try {
+          for (final theme in [AppTheme.dark, AppTheme.light]) {
+            final family = theme.textTheme.bodyMedium!.fontFamily;
+            expect(family, isNotNull);
+            final styles = <String, TextStyle?>{
+              'filled': theme.filledButtonTheme.style!.textStyle!.resolve({}),
+              'outlined': theme.outlinedButtonTheme.style!.textStyle!.resolve(
+                {},
+              ),
+              'text': theme.textButtonTheme.style!.textStyle!.resolve({}),
+              'appBar': theme.appBarTheme.titleTextStyle,
+              'tab': theme.tabBarTheme.labelStyle,
+              'nav': theme.navigationBarTheme.labelTextStyle!.resolve({}),
+              'titleLarge': theme.textTheme.titleLarge,
+              'labelLarge': theme.textTheme.labelLarge,
+            };
+            styles.forEach((name, style) {
+              expect(style?.fontFamily, isNotNull, reason: name);
+            });
+            // Los textos de cuerpo y de componentes comparten familia de
+            // texto (en iOS los display usan la variante «Display»).
+            for (final name in ['filled', 'outlined', 'text', 'tab', 'nav']) {
+              expect(styles[name]!.fontFamily, family, reason: name);
+            }
+          }
+        } finally {
+          debugDefaultTargetPlatformOverride = null;
+        }
+      });
+    }
   });
 
   group('AppConfig', () {

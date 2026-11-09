@@ -3,7 +3,8 @@
     "granted": false,
     "version": null,
     "grantedAt": null,
-    "currentVersion": "health-2026-11"
+    "currentVersion": "health-2026-11-v2",
+    "scopes": []
   },
   "planVersion": {
     "id": "00000000-0000-4000-8000-000000000012",

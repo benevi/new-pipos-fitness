@@ -12,8 +12,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../core/api/api_client.dart';
 import '../core/api/api_failure.dart';
+import '../models/body.dart';
 import '../models/enums.dart';
 import '../models/json.dart';
+import '../models/notes_breaks.dart';
 import '../models/plan.dart';
 import '../models/profile.dart';
 import '../models/progress.dart';
@@ -47,10 +49,22 @@ abstract class PlanApi {
   Future<PlanVersion?> getCurrentPlan();
   Future<Paginated<PlanVersionSummary>> listVersions({int page = 1});
   Future<PlanVersion> getVersion(String id);
+
+  /// «Usar siempre este cambio en este plan» (idea 3).
+  Future<PlanExerciseOverride> pinExercise({
+    required String planExerciseId,
+    required String exerciseId,
+  });
+
+  /// Vuelve al ejercicio original del plan.
+  Future<PlanExerciseOverride> unpinExercise(String planExerciseId);
 }
 
 abstract class WorkoutApi {
-  Future<TodaySession> getToday();
+  /// Sesión de hoy. Con [adjustment] es una vista previa ajustada (solo
+  /// lectura, idea 4); sin él y con un entrenamiento en curso, la API aplica
+  /// el ajuste guardado al empezarlo.
+  Future<TodaySession> getToday({WorkoutAdjustment? adjustment});
   Future<Upserted<Workout>> startWorkout(StartWorkoutRequest request);
   Future<Upserted<SetLog>> upsertSet(
     String workoutId,
@@ -69,6 +83,33 @@ abstract class ProgressApi {
   Future<E1rmResponse> getE1rm();
   Future<VolumeResponse> getVolume({int weeks = 8});
   Future<AdherenceResponse> getAdherence({int weeks = 8});
+}
+
+/// Nota fija por ejercicio (idea 2).
+abstract class NotesApi {
+  Future<ExerciseNote> putNote(String exerciseId, ExerciseNoteRequest request);
+  Future<void> deleteNote(String exerciseId);
+  Future<ExerciseNoteList> listNotes();
+}
+
+/// Días de entreno y pausas planificadas (idea 6).
+abstract class ScheduleApi {
+  /// Lanza [ApiFailure] 422 si hay más días que `daysPerWeek`.
+  Future<ProfileResponse> updateSchedule(List<int> trainingWeekdays);
+  Future<TrainingBreakList> listBreaks({String? from});
+  Future<Upserted<TrainingBreak>> createBreak(
+    CreateTrainingBreakRequest request,
+  );
+  Future<void> deleteBreak(String id);
+}
+
+/// Medidas corporales (idea 7; datos de salud).
+abstract class BodyApi {
+  /// Lanza [ApiFailure] 409 HEALTH_CONSENT_REQUIRED sin el ámbito necesario.
+  Future<BodyMeasurementRecord> putMeasurement(BodyMeasurement measurement);
+  Future<BodyMeasurementList> listMeasurements({String? from, String? to});
+  Future<void> deleteMeasurement(String date);
+  Future<BodyProgress> getBodyProgress();
 }
 
 abstract class AccountApi {
@@ -93,7 +134,10 @@ class DioPiposApi
         WorkoutApi,
         ProgressApi,
         AccountApi,
-        CatalogApi {
+        CatalogApi,
+        NotesApi,
+        ScheduleApi,
+        BodyApi {
   DioPiposApi(this._client);
 
   final ApiClient _client;
@@ -204,11 +248,49 @@ class DioPiposApi
         PlanVersion.fromJson(_json(await _client.get('/plans/versions/$id'))),
   );
 
+  @override
+  Future<PlanExerciseOverride> pinExercise({
+    required String planExerciseId,
+    required String exerciseId,
+  }) => _call(
+    () async => PlanExerciseOverride.fromJson(
+      _json(
+        await _client.put(
+          '/plans/current/exercises/$planExerciseId/override',
+          data: {'exerciseId': exerciseId},
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Future<PlanExerciseOverride> unpinExercise(String planExerciseId) => _call(
+    () async => PlanExerciseOverride.fromJson(
+      _json(
+        await _client.delete(
+          '/plans/current/exercises/$planExerciseId/override',
+        ),
+      ),
+    ),
+  );
+
   // ── Entrenamientos ──
   @override
-  Future<TodaySession> getToday() => _call(
-    () async =>
-        TodaySession.fromJson(_json(await _client.get('/sessions/today'))),
+  Future<TodaySession> getToday({WorkoutAdjustment? adjustment}) => _call(
+    () async => TodaySession.fromJson(
+      _json(
+        await _client.get(
+          '/sessions/today',
+          queryParameters: adjustment == null || adjustment.isNone
+              ? null
+              : {
+                  if (adjustment.availableMinutes != null)
+                    'minutes': adjustment.availableMinutes,
+                  if (adjustment.reducedVolume) 'mode': 'reduced',
+                },
+        ),
+      ),
+    ),
   );
 
   @override
@@ -298,6 +380,110 @@ class DioPiposApi
     ),
   );
 
+  // ── Notas ──
+  @override
+  Future<ExerciseNote> putNote(
+    String exerciseId,
+    ExerciseNoteRequest request,
+  ) => _call(
+    () async => ExerciseNote.fromJson(
+      _json(
+        await _client.put(
+          '/exercises/$exerciseId/note',
+          data: request.toJson(),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Future<void> deleteNote(String exerciseId) => _call(() async {
+    await _client.delete('/exercises/$exerciseId/note');
+  });
+
+  @override
+  Future<ExerciseNoteList> listNotes() => _call(
+    () async => ExerciseNoteList.fromJson(
+      _json(await _client.get('/me/exercise-notes')),
+    ),
+  );
+
+  // ── Días de entreno y pausas ──
+  @override
+  Future<ProfileResponse> updateSchedule(List<int> trainingWeekdays) => _call(
+    () async => ProfileResponse.fromJson(
+      _json(
+        await _client.patch(
+          '/me/profile/schedule',
+          data: ProfileScheduleRequest(trainingWeekdays).toJson(),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Future<TrainingBreakList> listBreaks({String? from}) => _call(
+    () async => TrainingBreakList.fromJson(
+      _json(
+        await _client.get(
+          '/me/breaks',
+          queryParameters: from == null ? null : {'from': from},
+        ),
+      ),
+    ),
+  );
+
+  @override
+  Future<Upserted<TrainingBreak>> createBreak(
+    CreateTrainingBreakRequest request,
+  ) => _call(() async {
+    final r = await _client.post('/me/breaks', data: request.toJson());
+    return Upserted(
+      TrainingBreak.fromJson(_json(r)),
+      created: r.statusCode == 201,
+    );
+  });
+
+  @override
+  Future<void> deleteBreak(String id) => _call(() async {
+    await _client.delete('/me/breaks/$id');
+  });
+
+  // ── Medidas corporales ──
+  @override
+  Future<BodyMeasurementRecord> putMeasurement(BodyMeasurement measurement) =>
+      _call(
+        () async => BodyMeasurementRecord.fromJson(
+          _json(
+            await _client.put('/me/measurements', data: measurement.toJson()),
+          ),
+        ),
+      );
+
+  @override
+  Future<BodyMeasurementList> listMeasurements({String? from, String? to}) =>
+      _call(
+        () async => BodyMeasurementList.fromJson(
+          _json(
+            await _client.get(
+              '/me/measurements',
+              queryParameters: {'from': ?from, 'to': ?to},
+            ),
+          ),
+        ),
+      );
+
+  @override
+  Future<void> deleteMeasurement(String date) => _call(() async {
+    await _client.delete('/me/measurements/$date');
+  });
+
+  @override
+  Future<BodyProgress> getBodyProgress() => _call(
+    () async =>
+        BodyProgress.fromJson(_json(await _client.get('/progress/body'))),
+  );
+
   // ── Cuenta ──
   @override
   Future<AccountExport> exportData() => _call(
@@ -351,5 +537,14 @@ final accountApiProvider = Provider<AccountApi>(
   (ref) => ref.watch(dioPiposApiProvider),
 );
 final catalogApiProvider = Provider<CatalogApi>(
+  (ref) => ref.watch(dioPiposApiProvider),
+);
+final notesApiProvider = Provider<NotesApi>(
+  (ref) => ref.watch(dioPiposApiProvider),
+);
+final scheduleApiProvider = Provider<ScheduleApi>(
+  (ref) => ref.watch(dioPiposApiProvider),
+);
+final bodyApiProvider = Provider<BodyApi>(
   (ref) => ref.watch(dioPiposApiProvider),
 );

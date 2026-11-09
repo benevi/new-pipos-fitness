@@ -17,10 +17,16 @@ import '../../core/offline/offline_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../models/enums.dart';
+import '../../models/notes_breaks.dart' show parseCalendarDate;
+
 import '../../models/plan.dart';
 import '../../models/workout.dart';
+import '../../shared/decimal_input.dart';
 import '../../shared/widgets.dart';
 import '../setup/setup_provider.dart';
+import 'adjust_sheet.dart';
+import 'note_sheet.dart';
+import 'plates.dart';
 import 'rest_timer_bar.dart';
 import 'swap_sheet.dart';
 import 'today_providers.dart';
@@ -108,7 +114,11 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     if (open != null) return open;
     return ref
         .read(syncServiceProvider)
-        .startWorkout(planSessionId: session.planSessionId);
+        .startWorkout(
+          planSessionId: session.planSessionId,
+          adjustment:
+              ref.read(todayAdjustmentProvider) ?? session.adjustment?.request,
+        );
   }
 
   Future<void> _logSet(
@@ -244,6 +254,18 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     final hasLogged =
         local.isNotEmpty ||
         session.exercises.any((e) => e.loggedSets.isNotEmpty);
+    final pendingNotes =
+        ref.watch(pendingNotesProvider).valueOrNull ??
+        const <String, String?>{};
+    // Una nota que deja de estar pendiente ya está en la API: se relee la
+    // sesión para mostrar la versión del servidor.
+    ref.listen(pendingNotesProvider, (prev, next) {
+      final before = prev?.valueOrNull?.keys ?? const <String>[];
+      final now = next.valueOrNull?.keys.toSet() ?? const <String>{};
+      if (before.any((k) => !now.contains(k))) {
+        ref.invalidate(todaySessionProvider);
+      }
+    });
 
     return RefreshIndicator(
       onRefresh: () => ref.refresh(todaySessionProvider.future),
@@ -271,6 +293,20 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               in ref.watch(conflictingWorkoutsProvider).valueOrNull ??
                   const <LocalWorkout>[])
             _ConflictBanner(workout: c),
+          if (session.activeBreak != null)
+            NoticeBanner(
+              key: const Key('today-break'),
+              text: l10n.todayBreakNotice(
+                l10n.shortDate(parseCalendarDate(session.activeBreak!.endsOn)),
+              ),
+              icon: Icons.beach_access_outlined,
+            )
+          else if (!session.scheduledToday)
+            NoticeBanner(
+              key: const Key('today-rest-day'),
+              text: l10n.todayRestDayNotice,
+              icon: Icons.bedtime_outlined,
+            ),
           Semantics(
             header: true,
             child: Text(session.name, style: theme.textTheme.headlineSmall),
@@ -284,6 +320,33 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             style: theme.textTheme.bodyMedium,
           ),
           RationaleExpander(lines: session.rationale),
+          if (session.adjustment != null)
+            AdjustmentBanner(
+              adjustment: session.adjustment!,
+              canRemove:
+                  !hasLogged &&
+                  session.workout == null &&
+                  session.adjustment!.source == 'query',
+            )
+          else if (!hasLogged && session.workout == null)
+            // Hueco bajo el botón antes del siguiente aviso.
+            Padding(
+              key: const Key('adjust-gap'),
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  key: const Key('adjust-open'),
+                  style: OutlinedButton.styleFrom(
+                    minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                  ),
+                  onPressed: () => showAdjustSheet(context),
+                  icon: const Icon(Icons.timer_outlined),
+                  label: Text(l10n.adjustOpen),
+                ),
+              ),
+            ),
+
           if (session.generalWarmupMinutes > 0)
             NoticeBanner(
               text: l10n.todayGeneralWarmup(
@@ -296,6 +359,16 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
             ExerciseCard(
               key: Key('exercise-${e.planExerciseId}'),
               exercise: e,
+              note: pendingNotes.containsKey(e.exercise.id)
+                  ? pendingNotes[e.exercise.id]
+                  : e.note,
+              notePending: pendingNotes.containsKey(e.exercise.id),
+              onEditNote: (current) => showNoteSheet(
+                context,
+                exerciseId: e.exercise.id,
+                exerciseName: e.exercise.nameEs,
+                current: current,
+              ),
               logged: mergeSets(e, local),
               onLog: (index, reps, load, rir) =>
                   _logSet(e, index, reps, load, rir),
@@ -409,12 +482,20 @@ class ExerciseCard extends StatelessWidget {
     required this.logged,
     required this.onLog,
     required this.onSwap,
+    this.note,
+    this.notePending = false,
+    this.onEditNote,
   });
 
   final TodayExercise exercise;
   final List<LoggedSetView> logged;
   final LogSetCallback onLog;
   final VoidCallback onSwap;
+
+  /// Nota fija (la local pendiente manda sobre la de la API).
+  final String? note;
+  final bool notePending;
+  final void Function(String? current)? onEditNote;
 
   @override
   Widget build(BuildContext context) {
@@ -425,6 +506,9 @@ class ExerciseCard extends StatelessWidget {
     final noLoad = weighted && p.loadKg == null;
     final total = p.sets > logged.length ? p.sets : logged.length;
     final done = logged.length >= p.sets;
+    final implement = exercise.loadImplement;
+    final step = exercise.loadStepKg;
+    final barKg = exercise.plates?.barKg ?? barKgFor(implement);
 
     return Card(
       margin: const EdgeInsets.only(top: AppSpacing.md),
@@ -447,7 +531,32 @@ class ExerciseCard extends StatelessWidget {
                           style: theme.textTheme.titleLarge,
                         ),
                       ),
-                      if (exercise.substitutedFrom != null)
+                      if (exercise.pinned)
+                        Padding(
+                          padding: const EdgeInsets.only(top: AppSpacing.xs),
+                          child: Row(
+                            key: Key('pinned-${exercise.planExerciseId}'),
+                            children: [
+                              Icon(
+                                Icons.push_pin,
+                                size: AppSpacing.md,
+                                color: theme.colorScheme.primary,
+                              ),
+                              const SizedBox(width: AppSpacing.xs),
+                              Expanded(
+                                child: Text(
+                                  exercise.substitutedFrom == null
+                                      ? l10n.pinnedBadge
+                                      : l10n.pinnedInsteadOf(
+                                          exercise.substitutedFrom!.nameEs,
+                                        ),
+                                  style: theme.textTheme.bodySmall,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      else if (exercise.substitutedFrom != null)
                         Text(
                           l10n.todaySubstitutedFrom(
                             exercise.substitutedFrom!.nameEs,
@@ -465,6 +574,13 @@ class ExerciseCard extends StatelessWidget {
                 ),
               ],
             ),
+            if (onEditNote != null)
+              _NoteBox(
+                planExerciseId: exercise.planExerciseId,
+                note: note,
+                pending: notePending,
+                onEdit: () => onEditNote!(note),
+              ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               l10n.todayTarget(p.sets, p.repMin, p.repMax, p.targetRir),
@@ -479,7 +595,7 @@ class ExerciseCard extends StatelessWidget {
                   Text(l10n.loadBodyweight, style: theme.textTheme.bodyMedium)
                 else if (p.loadKg != null)
                   Text(
-                    l10n.todaySuggestedLoad(l10n.kg(p.loadKg!)),
+                    l10n.todaySuggestedLoad(l10n.kgPrecise(p.loadKg!)),
                     style: theme.textTheme.bodyMedium,
                   )
                 else
@@ -487,6 +603,35 @@ class ExerciseCard extends StatelessWidget {
                     key: Key('estimate-${exercise.planExerciseId}'),
                     avatar: const Icon(Icons.tune),
                     label: Text(l10n.todayInitialEstimate),
+                  ),
+                if (weighted && implement != null && step != null)
+                  Text(
+                    l10n.todayLoadStep(
+                      l10n.loadImplementLabel(implement.wire),
+                      l10n.kgPrecise(step),
+                    ),
+                    key: Key('load-step-${exercise.planExerciseId}'),
+                    style: theme.textTheme.bodySmall,
+                  ),
+                if (weighted && barKg != null && p.loadKg != null)
+                  TextButton.icon(
+                    key: Key('plates-${exercise.planExerciseId}'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                    ),
+                    onPressed: () => showPlatesSheet(
+                      context,
+                      totalKg: p.loadKg!,
+                      barKg: barKg,
+                      breakdown: exercise.plates,
+                    ),
+                    icon: const Icon(Icons.fitness_center),
+                    label: Text(
+                      l10n.platesButton,
+                      semanticsLabel: l10n.platesButtonFor(
+                        l10n.kgPrecise(p.loadKg!),
+                      ),
+                    ),
                   ),
                 if (p.isDeload) Chip(label: Text(l10n.todayDeload)),
                 Text(
@@ -523,6 +668,8 @@ class ExerciseCard extends StatelessWidget {
                   planExerciseId: exercise.planExerciseId,
                   index: i,
                   weighted: weighted,
+                  loadStepKg: step,
+                  barKg: barKg,
                   initialReps: logged.isNotEmpty ? logged.last.reps : p.repMin,
                   initialLoad: logged.isNotEmpty
                       ? logged.last.loadKg
@@ -550,6 +697,85 @@ class ExerciseCard extends StatelessWidget {
               ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Nota fija del ejercicio, o «Añadir nota» si no hay.
+class _NoteBox extends StatelessWidget {
+  const _NoteBox({
+    required this.planExerciseId,
+    required this.note,
+    required this.pending,
+    required this.onEdit,
+  });
+
+  final String planExerciseId;
+  final String? note;
+  final bool pending;
+  final VoidCallback onEdit;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final text = note;
+    if (text == null) {
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: TextButton.icon(
+          key: Key('note-add-$planExerciseId'),
+          style: TextButton.styleFrom(
+            minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+          ),
+          onPressed: onEdit,
+          icon: const Icon(Icons.sticky_note_2_outlined),
+          label: Text(l10n.noteAdd),
+        ),
+      );
+    }
+    return Container(
+      key: Key('note-$planExerciseId'),
+      margin: const EdgeInsets.only(top: AppSpacing.xs),
+      padding: const EdgeInsets.only(left: AppSpacing.ms),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      child: Row(
+        children: [
+          // Icono de nota; la chincheta es solo del cambio fijado.
+          ExcludeSemantics(
+            child: Icon(
+              Icons.sticky_note_2_outlined,
+              key: Key('note-icon-$planExerciseId'),
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            child: Semantics(
+              label: l10n.noteLabel,
+              child: Text(text, style: theme.textTheme.bodyMedium),
+            ),
+          ),
+          if (pending)
+            Tooltip(
+              message: l10n.syncStatusPending,
+              child: Icon(
+                Icons.cloud_upload_outlined,
+                key: Key('note-pending-$planExerciseId'),
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+          IconButton(
+            key: Key('note-edit-$planExerciseId'),
+            tooltip: l10n.noteEdit,
+            icon: const Icon(Icons.edit_outlined),
+            onPressed: onEdit,
+          ),
+        ],
       ),
     );
   }
@@ -689,11 +915,19 @@ class ActiveSetRow extends StatefulWidget {
     required this.initialLoad,
     required this.initialRir,
     required this.onConfirm,
+    this.loadStepKg,
+    this.barKg,
   });
 
   final String planExerciseId;
   final int index;
   final bool weighted;
+
+  /// Paso real del material (kg totales): lo que mueven − y +.
+  final double? loadStepKg;
+
+  /// Barra vacía si se puede desglosar en discos.
+  final double? barKg;
   final int initialReps;
   final double? initialLoad;
   final int initialRir;
@@ -705,16 +939,28 @@ class ActiveSetRow extends StatefulWidget {
 
 class _ActiveSetRowState extends State<ActiveSetRow> {
   late final _reps = TextEditingController(text: '${widget.initialReps}');
-  late final _load = TextEditingController(
-    text: widget.initialLoad == null ? '' : _fmt(widget.initialLoad!),
-  );
+  final _load = TextEditingController();
+  bool _loadPrefilled = false;
   late int _rir = widget.initialRir;
   String? _repsError;
   String? _loadError;
   bool _busy = false;
 
-  static String _fmt(double v) =>
-      v == v.roundToDouble() ? '${v.toInt()}' : '$v';
+  /// `62,5` en castellano (separador decimal del idioma, hasta 2 decimales).
+  String _fmt(double v) =>
+      formatDecimalInput(v, AppLocalizations.of(context).localeName);
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // La carga precargada necesita el idioma (contexto), así que se escribe
+    // aquí y una sola vez; luego el campo es de la persona.
+    if (!_loadPrefilled) {
+      _loadPrefilled = true;
+      final initial = widget.initialLoad;
+      if (initial != null) _load.text = _fmt(initial);
+    }
+  }
 
   @override
   void dispose() {
@@ -726,9 +972,7 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
   Future<void> _confirm() async {
     final l10n = AppLocalizations.of(context);
     final reps = int.tryParse(_reps.text.trim());
-    final load = widget.weighted
-        ? double.tryParse(_load.text.trim().replaceAll(',', '.'))
-        : 0.0;
+    final load = widget.weighted ? parseDecimalInput(_load.text) : 0.0;
     setState(() {
       _repsError = reps == null || reps < 0 || reps > 100
           ? l10n.validationRange('0', '100')
@@ -744,6 +988,20 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
     } finally {
       if (mounted) setState(() => _busy = false);
     }
+  }
+
+  double? get _currentLoad => parseDecimalInput(_load.text);
+
+  /// − / +: mueve la carga un paso real del material (nunca por debajo de 0).
+  void _stepLoad(int direction) {
+    final step = widget.loadStepKg;
+    if (step == null) return;
+    final current = _currentLoad ?? 0;
+    final next = (current + direction * step).clamp(0, 1000).toDouble();
+    setState(() {
+      _load.text = _fmt((next * 100).round() / 100);
+      _loadError = null;
+    });
   }
 
   Future<void> _pickRir() async {
@@ -762,7 +1020,9 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(setLabel, style: Theme.of(context).textTheme.labelLarge),
-          const SizedBox(height: AppSpacing.xs),
+          // Hueco para la etiqueta flotante (Reps / Kg) del campo, que se
+          // dibuja por encima del borde.
+          const SizedBox(height: AppSpacing.ms),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -834,6 +1094,50 @@ class _ActiveSetRowState extends State<ActiveSetRow> {
               ),
             ],
           ),
+          if (widget.weighted &&
+              (widget.loadStepKg != null || widget.barKg != null))
+            Wrap(
+              spacing: AppSpacing.xs,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (widget.loadStepKg != null) ...[
+                  IconButton.outlined(
+                    key: Key('load-minus-$id'),
+                    tooltip: l10n.loadDecrease(
+                      l10n.kgPrecise(widget.loadStepKg!),
+                    ),
+                    onPressed: () => _stepLoad(-1),
+                    icon: const Icon(Icons.remove),
+                  ),
+                  IconButton.outlined(
+                    key: Key('load-plus-$id'),
+                    tooltip: l10n.loadIncrease(
+                      l10n.kgPrecise(widget.loadStepKg!),
+                    ),
+                    onPressed: () => _stepLoad(1),
+                    icon: const Icon(Icons.add),
+                  ),
+                ],
+                if (widget.barKg != null)
+                  TextButton.icon(
+                    key: Key('row-plates-$id'),
+                    style: TextButton.styleFrom(
+                      minimumSize: const Size(AppSpacing.xxl, AppSpacing.xxl),
+                    ),
+                    onPressed: () {
+                      final load = _currentLoad;
+                      if (load == null) return;
+                      showPlatesSheet(
+                        context,
+                        totalKg: load,
+                        barKg: widget.barKg!,
+                      );
+                    },
+                    icon: const Icon(Icons.fitness_center),
+                    label: Text(l10n.platesButton),
+                  ),
+              ],
+            ),
         ],
       ),
     );

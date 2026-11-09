@@ -85,7 +85,9 @@
           "estimatedMinutes": 9.5,
           "rationale": [
             "Sentadilla trasera: multiarticular de squat para tu objetivo."
-          ]
+          ],
+          "loadImplement": "barbell",
+          "pinned": null
         },
         {
           "id": "00000000-0000-4000-8000-000000000031",
@@ -107,7 +109,9 @@
           "estimatedMinutes": 9.5,
           "rationale": [
             "Flexiones: multiarticular de horizontal_push para tu objetivo."
-          ]
+          ],
+          "loadImplement": null,
+          "pinned": null
         }
       ]
     },
@@ -143,7 +147,9 @@
           "estimatedMinutes": 9.5,
           "rationale": [
             "Remo con mancuerna: multiarticular de horizontal_pull para tu objetivo."
-          ]
+          ],
+          "loadImplement": "dumbbell",
+          "pinned": null
         }
       ]
     }
