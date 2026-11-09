@@ -1,6 +1,6 @@
 # ADR-0011: Datos de salud como categoría especial (GDPR art. 9)
 
-**Estado**: Propuesto · **Fecha**: 2026-11-09
+**Estado**: Aceptado; implementado en la API (Fase 3: consentimiento, exportar, borrar). DPIA y revisión legal pendientes · **Fecha**: 2026-11-09
 
 ## Contexto
 Peso, altura, edad, sexo y sobre todo las limitaciones o lesiones por zona son datos relativos a la salud. El art. 9 del RGPD exige consentimiento explícito (u otra base del art. 9.2) para tratarlos. La app no es un producto sanitario y no diagnostica.

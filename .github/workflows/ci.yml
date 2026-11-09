@@ -38,6 +38,8 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://pipos:pipos@localhost:5432/pipos_e2e
+      # Base de datos sombra para `prisma migrate diff` (deriva schema ↔ migraciones).
+      DATABASE_URL_SHADOW: postgresql://pipos:pipos@localhost:5432/pipos_shadow
     steps:
       - uses: actions/checkout@v4
 
@@ -54,6 +56,12 @@ jobs:
       - name: Prisma generate
         run: pnpm --filter @pipos/api prisma:generate
 
+      - name: Crear la base de datos sombra
+        run: PGPASSWORD=pipos psql -h localhost -U pipos -d pipos_e2e -c 'CREATE DATABASE pipos_shadow'
+
+      - name: Sin deriva entre schema.prisma y migraciones
+        run: pnpm --filter @pipos/api prisma:diff
+
       - name: Build
         run: pnpm build
 
@@ -63,7 +71,10 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-      - name: Unit tests
+      - name: OpenAPI al día (contratos → apps/api/openapi.json)
+        run: pnpm --filter @pipos/api openapi:check
+
+      - name: Unit tests (cobertura de servicios ≥ 80 %)
         run: pnpm test:ci
 
       - name: Apply migrations

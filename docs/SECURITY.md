@@ -24,8 +24,8 @@
 │  - access token (memoria)    │  JSON  │   helmet · CORS allowlist · throttler        │
 │  - refresh token (secure     │◀───────│   JwtAuthGuard · RolesGuard · Zod            │
 │    storage)                  │        │                                              │
-└──────────────────────────────┘        │  Worker BullMQ (stub, se elimina en Fase 3)  │
-                                        │   └──▶ Redis                                 │
+└──────────────────────────────┘        │  (sin worker ni Redis: ADR-0002, Fase 3)     │
+                                        │                                              │
   Navegador (Swagger, sólo dev) ───────▶│                                              │
                                         └──────────────────────────────────────────────┘
 ```
@@ -66,18 +66,17 @@ Fronteras de confianza que se cruzan:
 | Entrada | Auth | Notas |
 |---|---|---|
 | `POST /auth/register`, `POST /auth/login` | No | 5 req/min por IP |
-| `POST /auth/refresh`, `POST /auth/logout` | Refresh token | 10 req/min por IP |
-| `GET /me`, `PUT /me/*` | JWT | Datos de salud |
-| `POST /training-plans/generate`, `POST /nutrition-plans/generate` | JWT | 10 req/min; CPU intensiva |
-| `GET /training-plans/*`, `GET /nutrition-plans/*` | JWT | |
-| `POST/GET /workouts/*` | JWT | Recursos anidados (sesión → ejercicio → serie) |
-| `GET /analytics/*` | JWT | Derivado de datos de salud |
-| `POST /ai-coach/ask` | JWT | Texto libre (≤ 2000); módulo a eliminar en Fase 3 |
-| `GET /muscles`, `/equipment-items`, `/exercises*`, `/foods` | No | Catálogo de sólo lectura |
-| `GET /health`, `/health/db` | No | |
-| `GET /docs` (Swagger) | No | **Sólo** si `NODE_ENV !== 'production'` |
+| `POST /auth/refresh`, `POST /auth/logout` | Refresh token | 10 req/min por IP; ventana de gracia `REFRESH_REUSE_GRACE_SECONDS` (401 `AUTH_REFRESH_RACE`) |
+| `GET /me`, `GET /me/export`, `DELETE /me` | JWT | Exportar/borrar: 5 req/min; borrar exige contraseña |
+| `GET/PUT /me/profile`, `GET/POST/DELETE /me/consents/health` | JWT | Datos de salud solo con consentimiento vigente (409 `HEALTH_CONSENT_REQUIRED`) |
+| `GET /me/nutrition-targets` | JWT | Cálculo puro; no se persiste |
+| `POST /plans/generate`, `GET /plans/*` | JWT | Generar: 10 req/min; propiedad por `userId` (otro → 404) |
+| `GET /sessions/today`, `POST/GET/PATCH/DELETE /workouts/*`, `GET /exercises/:id/substitutes` | JWT | Recursos anidados; propiedad en servicio + FK compuestas `(id, userId)` en BD; idempotencia por `clientId` |
+| `GET /progress/*` | JWT | Derivado de datos de salud; solo lectura (e2e: ningún GET escribe) |
+| `GET /exercises`, `GET /exercises/:id` | No | Catálogo de sólo lectura, paginado (`pageSize ≤ 100`) |
+| `GET /health`, `GET /health/ready` | No | 60 req/min; `ready` comprueba Postgres (503 si falla) |
+| `GET /docs` (Swagger, generado desde los contratos Zod) | No | **Sólo** si `NODE_ENV !== 'production'` |
 | Variables de entorno / arranque | Operador | Validadas con Zod |
-| Worker BullMQ | Interno | Stub; registra sólo `job.id` |
 
 ## 6. STRIDE por punto de entrada
 
@@ -137,21 +136,22 @@ Valoración: Probabilidad × Impacto → **Crítico / Alto / Medio / Bajo**. Est
 | T | Desactivar el rate limiting en producción por error | Medio | `THROTTLE_ENABLED=false` rechazado si `NODE_ENV=production` | ✅ |
 | I | TLS | Alto | Terminación TLS en el hosting/proxy; HSTS ya enviado | ⏳ despliegue |
 
-### 6.5 Worker, logs y cadena de suministro
+### 6.5 Logs y cadena de suministro
 
 | STRIDE | Amenaza | Riesgo | Mitigación | Estado |
 |---|---|---|---|---|
-| I | El worker registraba `job.data` completo (posibles datos de salud) | Medio | Sólo se registra `job.id` y el mensaje de error | ✅ |
+| I | Logs con PII o datos de salud | Medio | Logs JSON con `requestId`; nunca cuerpos ni query; redacción por clave (email, tokens, peso, altura, limitaciones…); errores inesperados sin mensaje (solo pila). e2e lo comprueba | ✅ Fase 3 |
+| I | El worker registraba `job.data` | Medio | Worker eliminado (ADR-0002) | ✅ Fase 3 |
 | I | Artefactos binarios versionados (`.tools/`, zip de Node para Windows) | Medio | Eliminados del árbol y en `.gitignore` (permanecen en el historial; no se reescribe) | ✅ / ⚠️ |
 | T | Dependencias comprometidas | Medio | `--frozen-lockfile` en CI | ✅ parcial · Dependabot / `pnpm audit` en CI ⏳ |
 | T | CI con permisos amplios | Bajo | `permissions: contents: read` | ✅ |
 
-### 6.6 AI coach (`/ai-coach/ask`)
+### 6.6 AI coach (retirado en Fase 3)
 
 | STRIDE | Amenaza | Riesgo | Mitigación | Estado |
 |---|---|---|---|---|
-| I | Persistencia de preguntas en texto libre (`AIInteraction.question`, puede contener salud) | Medio | Pregunta ≤ 2000 caracteres; el módulo se elimina en Fase 3 | ⏳ Fase 3 |
-| T | Propuestas no validadas aplicadas al plan | Medio | Validador server-side; hoy no hay proveedor LLM real | ⏳ Fase 3 (eliminación) |
+| I | Persistencia de preguntas en texto libre (`AIInteraction.question`, puede contener salud) | Medio | Módulo y tabla eliminados (ADR-0003) | ✅ Fase 3 |
+| T | Propuestas no validadas aplicadas al plan | Medio | Sin endpoint; la interfaz `AiProvider` documenta la re-verificación obligatoria | ✅ Fase 3 |
 
 ## 7. Clasificación de datos
 

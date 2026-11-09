@@ -1,0 +1,2 @@
+CREATE DATABASE pipos_e2e;
+CREATE DATABASE pipos_shadow;

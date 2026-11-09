@@ -1,6 +1,23 @@
 # Modelo de datos v1 — Pipos Fitness (Prisma 5 / PostgreSQL)
 
-> Estado: **propuesta** (Fase 0). No se ha modificado nada del repo.
+> Estado: **implementado en la Fase 3** (`apps/api/prisma/schema.prisma` y la migración única `*_init`).
+> El schema real es la referencia; este documento conserva el razonamiento de la Fase 0.
+
+### Desviaciones de la implementación respecto a la propuesta (Fase 3)
+
+| Cambio | Motivo |
+|---|---|
+| `TrainingProfile.age` → `birthYear` (CHECK 1900..2100) | Decisión tomada: no caduca. La edad se calcula en la zona del usuario. |
+| `TrainingProfile.timezone` (IANA, obligatorio) | Decisión tomada (pendiente 6): límites de semana de la analítica y «hoy» de la progresión. |
+| `TrainingProfile.activityLevel` (enum `ActivityLevel`, opcional) | Lo exige `dailyTargets` del motor (ADR-0004). |
+| `Exercise.loadType` (enum `LoadType`) | El motor distingue carga en kg de peso corporal/bandas. `SubstitutionGroup` sin nombres (el catálogo solo trae la clave). |
+| `PlanSession.kind`, `estimatedMinutes`; `PlanExercise.role`, `warmupSets` (Json), `estimatedMinutes` | Salida del motor v2 que la sesión de hoy necesita. |
+| `PlanVersion` y `PlanSession` sin relación directa redundante a `User` | Permite crear versión + sesiones + ejercicios en una sola escritura anidada; la cascada desde `User` llega por `TrainingPlan` y la propiedad sigue impuesta por las FK compuestas `(id, userId)`. |
+| `SetLog.clientUpdatedAt`, `updatedAt`, `deletedAt` | ADR-0007: última escritura gana y borrado lógico (la cola offline puede reenviar). |
+| Nueva tabla `WorkoutSubstitution` (`UNIQUE(workoutSessionId, planExerciseId)`) | CUJ-4: el cambio de ejercicio se registra y se ve en sesión e historial. |
+| **Sin** tabla `NutritionTarget` | Los objetivos se calculan al vuelo (función pura) y no se guardan: menos copias de datos de salud (minimización, ADR-0011) y ningún GET escribe (ADR-0008). |
+| **Sin** `lastLoginAt` ni `AccountDeletionLog` | Decisiones tomadas: la prueba de supresión es un log con `sha256(userId)`. |
+| CHECK extra: `priorityMuscles ≤ 3`, `setIndex 0..50`, analítica ≥ 0 | Coherencia con los contratos. |
 > Fuentes leídas: `apps/api/prisma/schema.prisma` (366 líneas), las 6 migraciones en `apps/api/prisma/migrations/`, `packages/contracts/src/enums/index.ts`. Prisma instalado: `^5.9.0`.
 
 ## 0. Hallazgos sobre el estado actual (motivan el rediseño)
