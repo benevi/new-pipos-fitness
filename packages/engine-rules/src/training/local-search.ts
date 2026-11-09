@@ -5,8 +5,6 @@
 import type {
   TrainingEngineInput,
   TrainingEngineOutput,
-  PlanSession,
-  PlanExercise,
   CatalogExerciseSnapshot,
 } from '@pipos/contracts';
 import { buildCatalogMap, getCompatibleExercises, validatePlan } from './constraints.js';

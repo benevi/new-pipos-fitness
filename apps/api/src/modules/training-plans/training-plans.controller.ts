@@ -1,5 +1,8 @@
-import { Controller, Get, Post, Param, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
+import { THROTTLE_LIMITS } from '../../config/throttle';
+import { UuidParam } from '../../zod/zod-param';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../users/current-user.decorator';
 import { TrainingPlansService } from './training-plans.service';
@@ -12,6 +15,7 @@ export class TrainingPlansController {
   constructor(private readonly trainingPlansService: TrainingPlansService) {}
 
   @Post('generate')
+  @Throttle({ default: THROTTLE_LIMITS.PLAN_GENERATION })
   @ApiOperation({ summary: 'Generate a new training plan version' })
   generate(@CurrentUser() user: { id: string }) {
     return this.trainingPlansService.generatePlan(user.id);
@@ -31,7 +35,7 @@ export class TrainingPlansController {
 
   @Get('versions/:id')
   @ApiOperation({ summary: 'Get specific version' })
-  getVersionById(@CurrentUser() user: { id: string }, @Param('id') id: string) {
+  getVersionById(@CurrentUser() user: { id: string }, @UuidParam('id') id: string) {
     return this.trainingPlansService.getVersionById(user.id, id);
   }
 }

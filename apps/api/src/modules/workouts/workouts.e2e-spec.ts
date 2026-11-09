@@ -1,261 +1,194 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
-import * as request from 'supertest';
-import * as bcrypt from 'bcrypt';
-import { vi } from 'vitest';
-import { AppModule } from '../../app.module';
-import { PrismaService } from '../../prisma/prisma.service';
+import request from 'supertest';
+import { randomUUID } from 'crypto';
+import {
+  bearer,
+  createExercise,
+  createPlanSession,
+  createTestApp,
+  registerUser,
+  truncateAll,
+  type RegisteredUser,
+  type TestContext,
+} from '../../test/e2e/helpers';
 
-describe('Workouts (e2e)', () => {
-  let app: INestApplication;
-  let accessToken: string;
-
-  const userId = 'user-workout-1';
-  const mockUser = {
-    id: userId,
-    email: 'workout@example.com',
-    emailNormalized: 'workout@example.com',
-    passwordHash: '',
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    heightCm: null,
-    weightKg: null,
-    age: null,
-    sex: null,
-    trainingLevel: null,
-    preferredTrainingDays: null,
-    availableEquipment: null,
-    trainingLocation: null,
-    goals: null,
-    muscleFocus: null,
-  };
-
-  const workoutSessionId = 'ws-1';
-  const workoutExerciseId = 'we-1';
-  const exerciseId = 'ex-bench';
-
-  let sessionCompletedAt: Date | null = null;
-  let sessionDurationMinutes: number | null = null;
-  let sessionNotes: string | null = null;
-  const sessionExercises: Array<{ id: string; workoutSessionId: string; exerciseId: string; order: number; sets: unknown[] }> = [];
+describe('Workouts (e2e, Postgres real)', () => {
+  let ctx: TestContext;
+  let alice: RegisteredUser;
+  let bob: RegisteredUser;
+  let exerciseId: string;
+  const server = () => ctx.app.getHttpServer();
 
   beforeAll(async () => {
-    mockUser.passwordHash = await bcrypt.hash('password123', 10);
-    let sessionPlanVersionId: string | null = null;
-    const mockWorkoutSession = () => ({
-      id: workoutSessionId,
-      userId,
-      planSessionId: null,
-      planVersionId: sessionPlanVersionId,
-      startedAt: new Date(),
-      completedAt: sessionCompletedAt,
-      durationMinutes: sessionDurationMinutes,
-      notes: sessionNotes,
-      exercises: sessionExercises.map((e) => ({ ...e, sets: e.sets })),
-    });
-    const mockWorkoutExercise = {
-      id: workoutExerciseId,
-      workoutSessionId,
-      exerciseId,
-      order: 0,
-      sets: [] as unknown[],
-    };
+    ctx = await createTestApp();
+  });
 
-    const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [AppModule],
-    })
-      .overrideProvider(PrismaService)
-      .useValue({
-        user: {
-          findUnique: vi.fn().mockResolvedValue(mockUser),
-          findFirst: vi.fn(),
-          create: vi.fn(),
-          update: vi.fn(),
-        },
-        refreshToken: {
-          findFirst: vi.fn().mockResolvedValue({
-            id: 'rt-1',
-            userId: mockUser.id,
-            expiresAt: new Date(Date.now() + 86400000),
-            revokedAt: null,
-            user: mockUser,
-          }),
-          create: vi.fn().mockResolvedValue({ id: 'rt-new', userId: mockUser.id }),
-          update: vi.fn(),
-          delete: vi.fn(),
-        },
-        workoutSession: {
-          create: vi.fn().mockImplementation((args: { data: { userId: string; planSessionId?: string | null; planVersionId?: string | null } }) => {
-            sessionPlanVersionId = args.data.planVersionId ?? null;
-            return Promise.resolve({
-              ...mockWorkoutSession(),
-              ...args.data,
-              exercises: [],
-            });
-          }),
-          findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) => {
-            if (args.where.id === workoutSessionId) return Promise.resolve(mockWorkoutSession());
-            if (args.where.id === 'ws-other-user')
-              return Promise.resolve({ ...mockWorkoutSession(), id: 'ws-other-user', userId: 'other-user-id', completedAt: null });
-            return Promise.resolve(null);
-          }),
-          findMany: vi.fn().mockImplementation(() =>
-            Promise.resolve([mockWorkoutSession()]),
-          ),
-          update: vi.fn().mockImplementation((args: { data: { completedAt?: Date; durationMinutes?: number; notes?: string | null } }) => {
-            sessionCompletedAt = args.data.completedAt ?? sessionCompletedAt;
-            sessionDurationMinutes = args.data.durationMinutes ?? sessionDurationMinutes;
-            sessionNotes = args.data.notes ?? sessionNotes;
-            return Promise.resolve(mockWorkoutSession());
-          }),
-        },
-        workoutExercise: {
-          create: vi.fn().mockImplementation(() => {
-            sessionExercises.push({ ...mockWorkoutExercise, sets: [] });
-            return Promise.resolve({
-              ...mockWorkoutExercise,
-              sets: [],
-            });
-          }),
-          findFirst: vi.fn().mockImplementation(() => {
-            const ex = sessionExercises[sessionExercises.length - 1] ?? mockWorkoutExercise;
-            return Promise.resolve({ ...ex, sets: ex.sets ?? [] });
-          }),
-        },
-        workoutSet: {
-          create: vi.fn().mockImplementation(() => {
-            const lastEx = sessionExercises[sessionExercises.length - 1];
-            if (lastEx) lastEx.sets.push({ setIndex: lastEx.sets.length, weightKg: 80, reps: 10, rir: 2, completed: true });
-            return Promise.resolve({
-              id: 'set-1',
-              workoutExerciseId,
-              setIndex: 0,
-              weightKg: 80,
-              reps: 10,
-              rir: 2,
-              completed: true,
-            });
-          }),
-        },
-        trainingSession: {
-          findUnique: vi.fn().mockImplementation((args: { where: { id: string } }) =>
-            args.where.id === 'ts-1'
-              ? Promise.resolve({ id: 'ts-1', planVersionId: 'pv-1' })
-              : Promise.resolve(null),
-          ),
-        },
-        exercise: {
-          findUnique: vi.fn().mockResolvedValue({ id: exerciseId }),
-        },
-      })
-      .compile();
-
-    app = moduleFixture.createNestApplication();
-    void moduleFixture.get(PrismaService);
-    await app.init();
-
-    const loginRes = await request(app.getHttpServer())
-      .post('/auth/login')
-      .send({ email: 'workout@example.com', password: 'password123' })
-      .expect(200);
-    accessToken = loginRes.body.accessToken;
+  beforeEach(async () => {
+    await truncateAll(ctx.prisma);
+    alice = await registerUser(ctx.app, 'alice@example.com');
+    bob = await registerUser(ctx.app, 'bob@example.com');
+    exerciseId = (await createExercise(ctx.prisma, { slug: 'bench-press' })).id;
   });
 
   afterAll(async () => {
-    await app.close();
+    await ctx.app.close();
   });
 
-  describe('POST /workouts/start', () => {
-    it('returns 201 and workout session', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/workouts/start')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({})
+  async function startWorkout(user: RegisteredUser, body: Record<string, unknown> = {}) {
+    const res = await request(server()).post('/workouts/start').set(bearer(user.accessToken)).send(body).expect(201);
+    return res.body as { id: string; planSessionId: string | null; planVersionId: string | null };
+  }
+
+  async function addExercise(user: RegisteredUser, workoutId: string) {
+    const res = await request(server())
+      .post(`/workouts/${workoutId}/exercises`)
+      .set(bearer(user.accessToken))
+      .send({ exerciseId })
+      .expect(201);
+    return res.body.exercises[0].id as string;
+  }
+
+  describe('flujo completo del propietario', () => {
+    it('start → añadir ejercicio → registrar series → finalizar → historial', async () => {
+      const workout = await startWorkout(alice);
+      expect(workout).toMatchObject({ planSessionId: null, planVersionId: null });
+
+      const workoutExerciseId = await addExercise(alice, workout.id);
+
+      const withSet = await request(server())
+        .post(`/workouts/${workout.id}/exercises/${workoutExerciseId}/sets`)
+        .set(bearer(alice.accessToken))
+        .send({ weightKg: 80, reps: 10, rir: 2 })
         .expect(201);
-      expect(res.body).toHaveProperty('id');
-      expect(res.body.userId).toBe(userId);
-      expect(res.body.exercises).toEqual([]);
-      expect(res.body.startedAt).toBeDefined();
+      expect(withSet.body.exercises[0].sets).toEqual([
+        expect.objectContaining({ setIndex: 0, weightKg: 80, reps: 10, rir: 2, completed: true }),
+      ]);
+
+      const finished = await request(server())
+        .post(`/workouts/${workout.id}/finish`)
+        .set(bearer(alice.accessToken))
+        .send({ durationMinutes: 45, notes: 'Good session' })
+        .expect(201);
+      expect(finished.body.completedAt).toEqual(expect.any(String));
+      expect(finished.body.notes).toBe('Good session');
+
+      const history = await request(server()).get('/workouts/history').set(bearer(alice.accessToken)).expect(200);
+      expect(history.body.map((w: { id: string }) => w.id)).toEqual([workout.id]);
+
+      const detail = await request(server()).get(`/workouts/${workout.id}`).set(bearer(alice.accessToken)).expect(200);
+      expect(detail.body.id).toBe(workout.id);
     });
 
-    it('accepts planSessionId in body and returns planVersionId', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/workouts/start')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ planSessionId: 'ts-1' })
-        .expect(201);
-      expect(res.body.planVersionId).toBe('pv-1');
+    it('start con planSessionId propio devuelve planVersionId', async () => {
+      const plan = await createPlanSession(ctx.prisma, alice.id, exerciseId);
+      const workout = await startWorkout(alice, { planSessionId: plan.planSessionId });
+      expect(workout.planSessionId).toBe(plan.planSessionId);
+      expect(workout.planVersionId).toBe(plan.planVersionId);
     });
 
-    it('returns planVersionId null when starting without planSessionId', async () => {
-      const res = await request(app.getHttpServer())
-        .post('/workouts/start')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({})
-        .expect(201);
-      expect(res.body.planVersionId).toBeNull();
-    });
-  });
-
-  describe('POST /workouts/:id/exercises', () => {
-    it('adds exercise and returns session', async () => {
-      const res = await request(app.getHttpServer())
-        .post(`/workouts/${workoutSessionId}/exercises`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ exerciseId })
-        .expect(201);
-      expect(res.body.id).toBe(workoutSessionId);
-      expect(Array.isArray(res.body.exercises)).toBe(true);
-    });
-  });
-
-  describe('POST /workouts/:id/exercises/:workoutExerciseId/sets', () => {
-    it('logs set and returns session', async () => {
-      const res = await request(app.getHttpServer())
-        .post(`/workouts/${workoutSessionId}/exercises/${workoutExerciseId}/sets`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ weightKg: 80, reps: 10, rir: 2, completed: true })
-        .expect(201);
-      expect(res.body.id).toBe(workoutSessionId);
+    it('409 al registrar series en un entrenamiento ya finalizado', async () => {
+      const workout = await startWorkout(alice);
+      const weId = await addExercise(alice, workout.id);
+      await request(server()).post(`/workouts/${workout.id}/finish`).set(bearer(alice.accessToken)).send({}).expect(201);
+      await request(server())
+        .post(`/workouts/${workout.id}/exercises/${weId}/sets`)
+        .set(bearer(alice.accessToken))
+        .send({ reps: 5 })
+        .expect(409);
     });
 
-    it('returns 404 when workoutExerciseId does not belong to session', async () => {
-      await request(app.getHttpServer())
-        .post(`/workouts/${workoutSessionId}/exercises/non-existent-we-id/sets`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ weightKg: 80, reps: 10 })
+    it('404 si workoutExerciseId no pertenece a esa sesión', async () => {
+      const w1 = await startWorkout(alice);
+      const w2 = await startWorkout(alice);
+      const weOfW2 = await addExercise(alice, w2.id);
+      await request(server())
+        .post(`/workouts/${w1.id}/exercises/${weOfW2}/sets`)
+        .set(bearer(alice.accessToken))
+        .send({ reps: 5 })
         .expect(404);
     });
 
-    it('returns 403 when session belongs to another user', async () => {
-      await request(app.getHttpServer())
-        .post('/workouts/ws-other-user/exercises/we-1/sets')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ weightKg: 80, reps: 10 })
-        .expect(403);
+    it('404 si el ejercicio de catálogo no existe', async () => {
+      const workout = await startWorkout(alice);
+      await request(server())
+        .post(`/workouts/${workout.id}/exercises`)
+        .set(bearer(alice.accessToken))
+        .send({ exerciseId: randomUUID() })
+        .expect(404);
     });
   });
 
-  describe('POST /workouts/:id/finish', () => {
-    it('finishes session', async () => {
-      const res = await request(app.getHttpServer())
-        .post(`/workouts/${workoutSessionId}/finish`)
-        .set('Authorization', `Bearer ${accessToken}`)
-        .send({ durationMinutes: 45, notes: 'Good session' })
-        .expect(201);
-      expect(res.body.completedAt).toBeDefined();
-      expect(res.body.durationMinutes).toBe(45);
-      expect(res.body.notes).toBe('Good session');
+  describe('ownership: Bob no puede tocar recursos de Alice (404, nunca 403)', () => {
+    it('no puede iniciar un entrenamiento sobre la planSession de Alice', async () => {
+      const plan = await createPlanSession(ctx.prisma, alice.id, exerciseId);
+      const res = await request(server())
+        .post('/workouts/start')
+        .set(bearer(bob.accessToken))
+        .send({ planSessionId: plan.planSessionId })
+        .expect(404);
+      expect(res.body.message).toBe('Training session not found');
+      expect(await ctx.prisma.workoutSession.count({ where: { userId: bob.id } })).toBe(0);
+    });
+
+    it('no puede registrar series en la sesión de Alice', async () => {
+      const workout = await startWorkout(alice);
+      const weId = await addExercise(alice, workout.id);
+      await request(server())
+        .post(`/workouts/${workout.id}/exercises/${weId}/sets`)
+        .set(bearer(bob.accessToken))
+        .send({ weightKg: 100, reps: 1 })
+        .expect(404);
+      expect(await ctx.prisma.workoutSet.count()).toBe(0);
+    });
+
+    it('no puede leer, añadir ejercicios ni finalizar la sesión de Alice', async () => {
+      const workout = await startWorkout(alice);
+      await request(server()).get(`/workouts/${workout.id}`).set(bearer(bob.accessToken)).expect(404);
+      await request(server())
+        .post(`/workouts/${workout.id}/exercises`)
+        .set(bearer(bob.accessToken))
+        .send({ exerciseId })
+        .expect(404);
+      await request(server()).post(`/workouts/${workout.id}/finish`).set(bearer(bob.accessToken)).send({}).expect(404);
+      const stored = await ctx.prisma.workoutSession.findUniqueOrThrow({ where: { id: workout.id } });
+      expect(stored.completedAt).toBeNull();
+    });
+
+    it('el historial de Bob no incluye entrenamientos de Alice', async () => {
+      await startWorkout(alice);
+      const history = await request(server()).get('/workouts/history').set(bearer(bob.accessToken)).expect(200);
+      expect(history.body).toEqual([]);
+    });
+
+    it('la respuesta para un recurso ajeno es idéntica a la de uno inexistente', async () => {
+      const workout = await startWorkout(alice);
+      const foreign = await request(server()).get(`/workouts/${workout.id}`).set(bearer(bob.accessToken));
+      const missing = await request(server()).get(`/workouts/${randomUUID()}`).set(bearer(bob.accessToken));
+      expect(foreign.status).toBe(404);
+      expect(foreign.body).toEqual(missing.body);
     });
   });
 
-  describe('GET /workouts/history', () => {
-    it('returns recent sessions', async () => {
-      const res = await request(app.getHttpServer())
-        .get('/workouts/history')
-        .set('Authorization', `Bearer ${accessToken}`)
-        .expect(200);
-      expect(Array.isArray(res.body)).toBe(true);
+  describe('validación', () => {
+    it('400 si :id no es UUID', async () => {
+      await request(server()).get('/workouts/not-a-uuid').set(bearer(alice.accessToken)).expect(400);
+      await request(server())
+        .post(`/workouts/${randomUUID()}/exercises/nope/sets`)
+        .set(bearer(alice.accessToken))
+        .send({})
+        .expect(400);
+    });
+
+    it('400 si notes supera 1000 caracteres', async () => {
+      const workout = await startWorkout(alice);
+      await request(server())
+        .post(`/workouts/${workout.id}/finish`)
+        .set(bearer(alice.accessToken))
+        .send({ notes: 'n'.repeat(1001) })
+        .expect(400);
+    });
+
+    it('401 sin token', async () => {
+      await request(server()).post('/workouts/start').send({}).expect(401);
     });
   });
 });

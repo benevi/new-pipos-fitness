@@ -301,7 +301,6 @@ describe('edge cases', () => {
         availableEquipmentIds: [],
       },
     });
-    const out = generateTrainingPlan(input);
     const catalog = buildCatalogMap(input.catalog.exercises);
     const compat = getCompatibleExercises(input, catalog);
     expect(compat.length).toBe(1);

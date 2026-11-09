@@ -6,7 +6,8 @@
     "lint": "pnpm -r run lint",
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",
-    "test:ci": "pnpm -r run test:ci"
+    "test:ci": "pnpm -r run test:ci",
+    "test:e2e": "pnpm --filter @pipos/api test:e2e"
   },
   "devDependencies": {
     "typescript": "^5.3.3"

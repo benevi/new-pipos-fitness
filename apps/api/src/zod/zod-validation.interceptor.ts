@@ -7,6 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { type ZodType } from 'zod';
 import { Observable } from 'rxjs';
+import { parseOrBadRequest } from './zod-error';
 
 export const ZOD_SCHEMA_KEY = 'zodSchema';
 
@@ -21,7 +22,7 @@ export class ZodValidationInterceptor implements NestInterceptor {
     );
     if (schema) {
       const request = context.switchToHttp().getRequest();
-      request.body = schema.parse(request.body ?? {});
+      request.body = parseOrBadRequest(schema, request.body ?? {});
     }
     return next.handle();
   }

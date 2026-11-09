@@ -76,7 +76,7 @@ describe('AddExerciseToWorkoutRequestSchema', () => {
   it('requires exerciseId', () => {
     expect(AddExerciseToWorkoutRequestSchema.safeParse({}).success).toBe(false);
     expect(
-      AddExerciseToWorkoutRequestSchema.safeParse({ exerciseId: 'ex-1' }).success,
+      AddExerciseToWorkoutRequestSchema.safeParse({ exerciseId: '7b0c4a4e-2d0b-4c39-9a51-0f4d2f6f2b11' }).success,
     ).toBe(true);
   });
 });

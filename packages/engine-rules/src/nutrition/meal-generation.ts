@@ -3,7 +3,7 @@
  * Respects dislikedFoodIds. Deterministic (stable sort by id).
  */
 
-import type { FoodRecord, MealTemplateRecord, MacroTarget } from './nutrition-types.js';
+import type { FoodRecord, MealTemplateRecord } from './nutrition-types.js';
 
 export interface MealItem {
   foodId: string;
@@ -19,15 +19,6 @@ export interface GeneratedMeal {
 
 function caloriesForFood(food: FoodRecord, quantityG: number): number {
   return (food.caloriesPer100g * quantityG) / 100;
-}
-function proteinForFood(food: FoodRecord, quantityG: number): number {
-  return (food.proteinPer100g * quantityG) / 100;
-}
-function carbsForFood(food: FoodRecord, quantityG: number): number {
-  return (food.carbsPer100g * quantityG) / 100;
-}
-function fatForFood(food: FoodRecord, quantityG: number): number {
-  return (food.fatPer100g * quantityG) / 100;
 }
 
 /**

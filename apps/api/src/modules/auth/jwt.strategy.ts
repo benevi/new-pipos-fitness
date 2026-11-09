@@ -1,27 +1,45 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import type { UserRole } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
+import { APP_ENV, type Env } from '../../config/env';
+import type { AuthenticatedUser } from './authenticated-user';
 
-export type JwtPayload = { userId: string; email: string; iat?: number; exp?: number };
+export type JwtPayload = {
+  userId: string;
+  email: string;
+  role: UserRole;
+  iat?: number;
+  exp?: number;
+};
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
-  constructor(private readonly prisma: PrismaService) {
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(APP_ENV) env: Env,
+  ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: process.env.JWT_ACCESS_SECRET ?? 'dev-access-secret-change-in-production',
+      secretOrKey: env.JWT_ACCESS_SECRET,
+      algorithms: ['HS256'],
     });
   }
 
-  async validate(payload: JwtPayload) {
+  /**
+   * El rol se lee de la base de datos (fuente de verdad), no del token: un cambio de rol
+   * o el borrado del usuario se aplican sin esperar a que caduque el access token.
+   */
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.userId },
+      select: { id: true, email: true, role: true },
     });
     if (!user) {
       throw new UnauthorizedException();
     }
-    return { id: user.id, email: user.email };
+    return { id: user.id, email: user.email, role: user.role };
   }
 }

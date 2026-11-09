@@ -2,29 +2,36 @@ import { log } from '../logging/logging';
 
 let initialized = false;
 
-export function initMonitoring(): void {
-  if (initialized) return;
-  initialized = true;
+type Exit = (code: number) => never;
 
-  const dsn = process.env.SENTRY_DSN;
-  if (!dsn) {
-    log('info', 'Monitoring disabled (no SENTRY_DSN configured)');
-    return;
-  }
-
-  log('info', 'Monitoring initialized', { provider: 'sentry-like', hasDsn: true });
-
-  process.on('uncaughtException', (error: Error) => {
-    log('error', 'Uncaught exception', {
-      error: error.message,
-      stack: error.stack,
-    });
+/**
+ * Tras una excepción no capturada el proceso queda en estado indefinido:
+ * se registra y se termina con código 1 para que el orquestador lo reinicie.
+ */
+export function handleUncaughtException(error: Error, exit: Exit = process.exit): never {
+  log('error', 'Uncaught exception; exiting', {
+    error: error.message,
+    stack: error.stack,
   });
+  return exit(1);
+}
 
-  process.on('unhandledRejection', (reason: unknown) => {
-    log('error', 'Unhandled rejection', {
-      reason: reason instanceof Error ? reason.message : String(reason),
-    });
+export function handleUnhandledRejection(reason: unknown): void {
+  log('error', 'Unhandled rejection', {
+    reason: reason instanceof Error ? reason.message : String(reason),
   });
 }
 
+export function initMonitoring(options: { sentryDsn?: string } = {}): void {
+  if (initialized) return;
+  initialized = true;
+
+  process.on('uncaughtException', (error: Error) => handleUncaughtException(error));
+  process.on('unhandledRejection', handleUnhandledRejection);
+
+  if (!options.sentryDsn) {
+    log('info', 'Monitoring disabled (no SENTRY_DSN configured)');
+    return;
+  }
+  log('info', 'Monitoring initialized', { provider: 'sentry-like', hasDsn: true });
+}
