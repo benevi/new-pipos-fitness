@@ -92,12 +92,13 @@ void main() {
     expect(find.text('Δ 4 sem: -1,5 cm'), findsOneWidget);
     expect(find.text('Δ 12 sem: -3 cm'), findsOneWidget);
     await _scrollTo(tester, find.byKey(const Key('body-disclaimer')));
+    // Un solo aviso general al pie (las tarjetas llevan su etiqueta y sus
+    // límites propios, sin repetirlo), y el método de la Marina una vez.
     expect(
-      find.text(
-        'Es una estimación orientativa, no un diagnóstico. Para valorar tu salud, consulta a un profesional sanitario.',
-      ),
-      findsWidgets,
+      find.textContaining('Es una estimación orientativa, no un diagnóstico'),
+      findsOneWidget,
     );
+    expect(find.textContaining('método de la Marina'), findsOneWidget);
     await harness.drainAndUnmount(tester);
   });
 
@@ -143,6 +144,21 @@ void main() {
       expect(
         find.text('Vas en sentido contrario a tu objetivo'),
         findsOneWidget,
+      );
+      // Icono de aviso con el color de error del tema (≥ 3:1 sobre la tarjeta,
+      // ver tokens_contrast_test).
+      final icon = tester.widget<Icon>(
+        find.descendant(
+          of: find.byKey(const Key('weight-status')),
+          matching: find.byType(Icon),
+        ),
+      );
+      expect(icon.icon, Icons.warning_amber_outlined);
+      expect(
+        icon.color,
+        Theme.of(
+          tester.element(find.byKey(const Key('weight-status'))),
+        ).colorScheme.error,
       );
       expect(find.text('Vas más lento de lo previsto'), findsNothing);
       expect(

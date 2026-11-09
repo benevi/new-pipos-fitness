@@ -158,8 +158,8 @@ class _BodyProgressSections extends ConsumerWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _WeightCard(body: b),
-                _BmiCard(block: b.bmi),
-                _BodyFatCard(block: b.bodyFat),
+                _BmiCard(block: b.bmi, disclaimer: b.disclaimer),
+                _BodyFatCard(block: b.bodyFat, disclaimer: b.disclaimer),
                 _CircumferencesCard(items: b.circumferences),
                 Padding(
                   padding: const EdgeInsets.only(bottom: AppSpacing.md),
@@ -309,18 +309,26 @@ class _EstimateLabel extends StatelessWidget {
   }
 }
 
+/// Límites propios de cada estimación (p. ej. «el IMC no distingue músculo
+/// de grasa»). El aviso general («no es un diagnóstico…») sale una sola vez
+/// al pie de la pestaña, así que aquí se omite.
 class _Caveats extends StatelessWidget {
-  const _Caveats({required this.lines});
+  const _Caveats({required this.lines, required this.disclaimer});
 
   final List<String> lines;
+  final String disclaimer;
 
   @override
   Widget build(BuildContext context) {
     final style = Theme.of(context).textTheme.bodySmall;
+    final own = [
+      for (final c in lines)
+        if (c.trim() != disclaimer.trim()) c,
+    ];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        for (final c in lines)
+        for (final c in own)
           Padding(
             padding: const EdgeInsets.only(top: AppSpacing.xs),
             child: Text('• $c', style: style),
@@ -331,9 +339,10 @@ class _Caveats extends StatelessWidget {
 }
 
 class _BmiCard extends StatelessWidget {
-  const _BmiCard({required this.block});
+  const _BmiCard({required this.block, required this.disclaimer});
 
   final BmiBlock block;
+  final String disclaimer;
 
   @override
   Widget build(BuildContext context) {
@@ -371,7 +380,7 @@ class _BmiCard extends StatelessWidget {
                   ? l10n.bodyBmiMissing
                   : l10n.bodyEstimateStatus(block.status.wire),
             ),
-          if (r != null) _Caveats(lines: r.caveats),
+          if (r != null) _Caveats(lines: r.caveats, disclaimer: disclaimer),
         ],
       ),
     );
@@ -379,9 +388,10 @@ class _BmiCard extends StatelessWidget {
 }
 
 class _BodyFatCard extends StatelessWidget {
-  const _BodyFatCard({required this.block});
+  const _BodyFatCard({required this.block, required this.disclaimer});
 
   final BodyFatBlock block;
+  final String disclaimer;
 
   @override
   Widget build(BuildContext context) {
@@ -406,7 +416,6 @@ class _BodyFatCard extends StatelessWidget {
                 l10n.bodyMeasuredOn(_date(l10n, block.measuredOn!)),
                 style: theme.textTheme.bodySmall,
               ),
-            Text(l10n.bodyFatMethod, style: theme.textTheme.bodySmall),
           ] else if (block.status == EstimateStatus.notApplicable)
             Text(
               l10n.bodyNotApplicable,
@@ -425,7 +434,7 @@ class _BodyFatCard extends StatelessWidget {
                 padding: const EdgeInsets.only(top: AppSpacing.xs),
                 child: Text(i, style: theme.textTheme.bodyMedium),
               ),
-            _Caveats(lines: r.caveats),
+            _Caveats(lines: r.caveats, disclaimer: disclaimer),
           ],
         ],
       ),

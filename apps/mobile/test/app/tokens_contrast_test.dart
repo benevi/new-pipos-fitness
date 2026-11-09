@@ -84,6 +84,27 @@ void main() {
     }
   });
 
+  group('iconos de estado ≥ 3:1 sobre las tarjetas', () {
+    for (final t in [AppColorTokens.dark, AppColorTokens.light]) {
+      final theme = t.brightness == Brightness.dark
+          ? AppTheme.dark
+          : AppTheme.light;
+      test(t.brightness.name, () {
+        final card = theme.cardTheme.color!;
+        expect(card, t.surface);
+        final icons = <String, Color>{
+          'aviso (error)': theme.colorScheme.error,
+          'en rango (primary)': theme.colorScheme.primary,
+          'info (onSurfaceVariant)': theme.colorScheme.onSurfaceVariant,
+          'success': t.success,
+        };
+        icons.forEach((name, c) {
+          expect(contrast(c, card), greaterThanOrEqualTo(3), reason: name);
+        });
+      });
+    }
+  });
+
   group('tipografía: misma familia en texto y componentes', () {
     for (final platform in [TargetPlatform.android, TargetPlatform.iOS]) {
       test(platform.name, () {

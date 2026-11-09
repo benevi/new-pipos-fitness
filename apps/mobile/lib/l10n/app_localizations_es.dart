@@ -1656,10 +1656,6 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
-  String get bodyFatMethod =>
-      'Método de circunferencias de la Marina de EE. UU. (Hodgdon y Beckett, 1984). Sin categorías: compara tu evolución.';
-
-  @override
   String get bodyNotApplicable => 'No aplica';
 
   @override

@@ -1652,10 +1652,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get bodyFatMethod =>
-      'US Navy circumference method (Hodgdon and Beckett, 1984). No categories: compare your own trend.';
-
-  @override
   String get bodyNotApplicable => 'Not applicable';
 
   @override

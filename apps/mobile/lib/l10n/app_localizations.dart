@@ -2283,12 +2283,6 @@ abstract class AppLocalizations {
   /// **'{value} %'**
   String bodyFatValue(String value);
 
-  /// No description provided for @bodyFatMethod.
-  ///
-  /// In es, this message translates to:
-  /// **'Método de circunferencias de la Marina de EE. UU. (Hodgdon y Beckett, 1984). Sin categorías: compara tu evolución.'**
-  String get bodyFatMethod;
-
   /// No description provided for @bodyNotApplicable.
   ///
   /// In es, this message translates to:

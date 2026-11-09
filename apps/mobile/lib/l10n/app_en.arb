@@ -390,7 +390,6 @@
   "bodyBmiWhoNote": "WHO categories for adults.",
   "bodyFatTitle": "Estimated body fat",
   "bodyFatValue": "{value}%",
-  "bodyFatMethod": "US Navy circumference method (Hodgdon and Beckett, 1984). No categories: compare your own trend.",
   "bodyNotApplicable": "Not applicable",
   "bodyEstimateStatus": "{status, select, insufficient_data{Not enough data to calculate it.} consent_required{Requires accepting the new version of the health consent.} invalid_input{Check your measurements: it can't be calculated.} other{}}",
   "bodyBmiMissing": "Needs your weight and your height (profile).",

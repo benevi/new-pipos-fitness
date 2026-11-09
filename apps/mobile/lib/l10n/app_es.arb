@@ -501,7 +501,6 @@
   "bodyFatTitle": "% de grasa estimado",
   "bodyFatValue": "{value} %",
   "@bodyFatValue": { "placeholders": { "value": { "type": "String" } }},
-  "bodyFatMethod": "Método de circunferencias de la Marina de EE. UU. (Hodgdon y Beckett, 1984). Sin categorías: compara tu evolución.",
   "bodyNotApplicable": "No aplica",
   "bodyEstimateStatus": "{status, select, insufficient_data{Faltan datos para calcularlo.} consent_required{Requiere aceptar la versión nueva del consentimiento de salud.} invalid_input{Revisa las medidas: no se puede calcular.} other{}}",
   "@bodyEstimateStatus": { "placeholders": { "status": { "type": "String" } }},

@@ -65,6 +65,13 @@ class AppTheme {
         centerTitle: true,
         titleTextStyle: textTheme.titleLarge,
       ),
+      // Tarjetas sobre el token `surface` (no el surfaceContainerLow derivado
+      // de la semilla): así los contrastes verificados de iconos de estado y
+      // textos son los que se ven (test/app/tokens_contrast_test.dart).
+      cardTheme: CardThemeData(
+        color: t.surface,
+        surfaceTintColor: Colors.transparent,
+      ),
       // Interruptores: en apagado el borde y el pulgar usan onSurfaceVariant
       // (≥ 3:1 sobre las superficies) y la pista es la propia superficie,
       // para que «apagado» se vea claramente en claro y en oscuro (el
