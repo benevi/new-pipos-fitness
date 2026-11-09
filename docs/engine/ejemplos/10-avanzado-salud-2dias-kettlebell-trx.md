@@ -119,9 +119,9 @@
 - Salud general: 8-12 repeticiones dejando margen (RIR 2-3) y hasta 3 series por ejercicio, con todos los grupos principales 2 veces por semana (OMS 2020; ACSM 2009).
 - Volumen objetivo: 6-20 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
 - Para salud general basta con un volumen bajo o moderado (en fuerza los rendimientos decrecientes llegan antes), así que el mínimo baja a 6 series; si sobra tiempo se sube hacia el rango alto.
-- Por tu limitación de zona lumbar se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
 - Con 2 días de 60 min y este material, tríceps no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
-- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
+- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.
+- (salud) Por tu limitación de zona lumbar se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
 
 ## Puntuación
 

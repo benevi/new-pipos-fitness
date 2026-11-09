@@ -1,5 +1,9 @@
 # Análisis del estado actual de Pipos Fitness (noviembre 2026)
 
+> **Documento histórico.** Describe el proyecto **antes** de la reconstrucción (commit `e7e8c1b`,
+> Fase 0). Casi todo lo que señala se corrigió en las Fases 1–5 ([PHASES.md](PHASES.md)); no lo uses
+> como descripción del sistema actual: ver [ARCHITECTURE.md](ARCHITECTURE.md) y [SECURITY.md](SECURITY.md).
+
 Análisis hecho sobre el commit `e7e8c1b`. Combina lo que se ejecutó (instalación, build, lint, typecheck, tests) con tres revisiones de código independientes: seguridad de la API, arquitectura y motores, y app Flutter. Los hallazgos más graves se comprobaron a mano.
 
 **Resumen:** la base y el diseño de los motores son sólidos, pero la app no está lista para producción. El build no pasa, el CI no puede ir en verde, el panel de administración no pide login, y el worker y el coach de IA son esqueletos.

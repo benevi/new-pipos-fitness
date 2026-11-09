@@ -10,6 +10,7 @@ import {
   rejectsWithCode,
   UID,
 } from '../../test/unit/support';
+import type { AnalyticsService } from '../analytics/analytics.service';
 import type { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import type { PlansService } from '../plans/plans.service';
@@ -37,14 +38,16 @@ function setup() {
     persistVersion: vi.fn().mockResolvedValue({ id: 'v2', version: 2 }),
     withVersionRetry: vi.fn(async (work: (tx: unknown) => unknown) => work(prisma)),
   };
+  const analytics = { lockUser: vi.fn(), rebuildUser: vi.fn() } as unknown as AnalyticsService;
   const profiles = new ProfileService(
     prisma as unknown as PrismaService,
     catalog as unknown as CatalogService,
     engineInput,
     plans as unknown as PlansService,
     clock,
+    analytics,
   );
-  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock);
+  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock, analytics);
   prisma.userExercisePreference.findMany.mockResolvedValue([]);
   return { prisma, plans, profiles, consents };
 }
@@ -127,15 +130,12 @@ describe('ConsentService', () => {
     expect(prisma.consentEvent.create).not.toHaveBeenCalled();
 
     prisma.consentEvent.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce(grantedEvent());
-    const status = await consents.grant(
-      UID,
-      { version: HEALTH_CONSENT_POLICY.version, locale: 'en' },
-      { ip: '::ffff:127.0.0.1', userAgent: 'x'.repeat(600) },
-    );
+    const status = await consents.grant(UID, { version: HEALTH_CONSENT_POLICY.version, locale: 'en' });
     expect(status.granted).toBe(true);
     const data = prisma.consentEvent.create.mock.calls[0][0].data;
-    expect(data).toMatchObject({ action: 'granted', locale: 'en', ip: '::ffff:127.0.0.1' });
-    expect(data.userAgent).toHaveLength(512);
+    expect(data).toMatchObject({ action: 'granted', locale: 'en' });
+    expect(data).not.toHaveProperty('ip');
+    expect(data).not.toHaveProperty('userAgent');
     expect(data.textHash).toMatch(/^[0-9a-f]{64}$/);
   });
 
@@ -144,8 +144,8 @@ describe('ConsentService', () => {
     prisma.consentEvent.findFirst.mockResolvedValueOnce(grantedEvent()).mockResolvedValueOnce(grantedEvent()).mockResolvedValue(null);
     prisma.trainingProfile.findUnique.mockResolvedValue(profileRow({ limitations: ['knee'] }));
     plans.hasActivePlan.mockResolvedValue(true);
-    const res = await consents.withdraw(UID, { ip: 'not an ip' });
-    expect(prisma.consentEvent.create.mock.calls[0][0].data).toMatchObject({ action: 'withdrawn', ip: null });
+    const res = await consents.withdraw(UID);
+    expect(prisma.consentEvent.create.mock.calls[0][0].data).toMatchObject({ action: 'withdrawn' });
     expect(prisma.trainingProfile.updateMany.mock.calls[0][0].data).toEqual({ limitations: [], weightKg: null, heightCm: null });
     expect(prisma.$executeRaw).toHaveBeenCalled();
     expect(plans.prepare.mock.calls[0][1].limitations).toEqual([]);

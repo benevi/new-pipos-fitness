@@ -99,7 +99,7 @@ export class WorkoutsService {
         return { value: toSetResponse(existing), created: false };
       }
       this.assertInProgress(workout.status);
-      await this.assertExerciseUsable(tx, workout.planSessionId, input.planExerciseId, input.exerciseId);
+      await this.assertExerciseUsable(tx, workout.id, workout.planSessionId, input.planExerciseId, input.exerciseId);
 
       const inserted = await tx.setLog.createMany({
         data: [
@@ -273,8 +273,14 @@ export class WorkoutsService {
     return set;
   }
 
+  /**
+   * La serie de un hueco del plan solo puede ser del ejercicio del hueco o del de su sustitución
+   * registrada en este entrenamiento (CUJ-4). Se admite el original aunque haya sustitución:
+   * la cola offline puede entregar tarde series hechas antes del cambio.
+   */
   private async assertExerciseUsable(
     tx: TransactionClient,
+    workoutId: string,
     planSessionId: string,
     planExerciseId: string | null,
     exerciseId: string,
@@ -282,9 +288,18 @@ export class WorkoutsService {
     const exercise = await tx.exercise.findUnique({ where: { id: exerciseId }, select: { id: true } });
     if (!exercise) throw ApiError.validation([{ path: 'body.exerciseId', message: 'Unknown exercise' }]);
     if (planExerciseId === null) return;
-    const slot = await tx.planExercise.findFirst({ where: { id: planExerciseId, planSessionId }, select: { id: true } });
+    const slot = await tx.planExercise.findFirst({
+      where: { id: planExerciseId, planSessionId },
+      select: { exerciseId: true, substitutions: { where: { workoutSessionId: workoutId }, select: { exerciseId: true } } },
+    });
     if (!slot) {
       throw ApiError.validation([{ path: 'body.planExerciseId', message: 'Plan exercise does not belong to this workout' }]);
+    }
+    const allowed = new Set([slot.exerciseId, ...slot.substitutions.map((s) => s.exerciseId)]);
+    if (!allowed.has(exerciseId)) {
+      throw ApiError.validation([
+        { path: 'body.exerciseId', message: 'Exercise is neither the planned one nor its recorded substitution' },
+      ]);
     }
   }
 }

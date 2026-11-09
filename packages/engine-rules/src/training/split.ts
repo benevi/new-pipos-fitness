@@ -236,7 +236,31 @@ export function chooseSplit(profile: Profile, config: ProgrammingConfig): SplitC
     );
   }
   rationale.push(`Objetivo: ${GOAL_ES[profile.goal]}.`);
+  // Sin texto en `rationale`: la limitación es un dato de salud (va en healthNotes).
+  if (profile.limitations.includes('shoulder')) templates = limitVerticalPush(templates);
   return { type, templates, dayIndexes: DAY_INDEXES[d] ?? [], rationale };
+}
+
+/**
+ * Con limitación de hombro, como mucho UN hueco semanal de empuje vertical (press por encima de
+ * la cabeza, el de más riesgo para el hombro): los siguientes huecos de solo empuje vertical pasan
+ * a deltoides lateral (aislamiento, carga baja) y, si admiten empuje horizontal, este va primero.
+ */
+export function limitVerticalPush(templates: readonly SessionTemplate[]): SessionTemplate[] {
+  let seen = false;
+  return templates.map((t) => ({
+    ...t,
+    slots: t.slots.map((slot) => {
+      if (!slot.patterns.includes('vertical_push')) return slot;
+      if (!seen && slot.patterns[0] === 'vertical_push') {
+        seen = true;
+        return slot;
+      }
+      const rest = slot.patterns.filter((p) => p !== 'vertical_push');
+      if (rest.length === 0) return s(['shoulder_isolation'], 'accessory', 'side_delts');
+      return { ...slot, patterns: [...rest, 'vertical_push'] };
+    }),
+  }));
 }
 
 /** ¿Cuántas sesiones del split incluyen cada grupo? */

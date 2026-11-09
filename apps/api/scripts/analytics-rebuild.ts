@@ -1,5 +1,6 @@
 /**
- * Recalcula las proyecciones de analítica (ExerciseE1rm, WeeklyMuscleVolume, WeeklyAdherence)
+ * Recalcula las proyecciones de analítica (ExerciseE1rm, WeeklyMuscleVolume, WeeklyGroupVolume,
+ * WeeklyAdherence)
  * desde SetLog, usuario a usuario (ADR-0008). Úsalo tras cambiar una fórmula.
  *   pnpm --filter @pipos/api analytics:rebuild [userId]
  */

@@ -443,6 +443,9 @@
                                   }
                                 ]
                               }
+                            },
+                            "health": {
+                              "type": "boolean"
                             }
                           },
                           "required": [
@@ -2150,6 +2153,9 @@
                       }
                     ]
                   }
+                },
+                "health": {
+                  "type": "boolean"
                 }
               },
               "required": [

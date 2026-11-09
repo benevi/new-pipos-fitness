@@ -111,7 +111,9 @@ describe('WorkoutsService.sets', () => {
     prisma.planExercise.findFirst.mockResolvedValueOnce(null);
     await rejectsWithCode(service.upsertSet(UID, W, setBody), 'VALIDATION_FAILED');
 
-    prisma.planExercise.findFirst.mockResolvedValue({ id: 'pe1' });
+    prisma.planExercise.findFirst.mockResolvedValueOnce({ exerciseId: 'otro', substitutions: [] });
+    await rejectsWithCode(service.upsertSet(UID, W, setBody), 'VALIDATION_FAILED');
+    prisma.planExercise.findFirst.mockResolvedValue({ exerciseId: 'otro', substitutions: [{ exerciseId: 'id:press-banca-barra' }] });
     prisma.setLog.createMany.mockResolvedValueOnce({ count: 1 });
     prisma.setLog.findUniqueOrThrow.mockResolvedValueOnce(setRow());
     const created = await service.upsertSet(UID, W, setBody);
@@ -244,7 +246,7 @@ describe('SessionsService', () => {
     const { prisma, sessions } = setup();
     prisma.trainingProfile.findUnique.mockResolvedValue(profileRow());
     prisma.planVersion.findFirst.mockResolvedValue({
-      id: 'v1', createdAt: new Date('2026-11-01T00:00:00Z'),
+      id: 'v1', plan: { createdAt: new Date('2026-11-01T00:00:00Z') },
       sessions: [{ id: 'ps0', order: 0 }, { id: 'ps1', order: 1 }, { id: 'ps2', order: 2 }],
     });
     prisma.workoutSession.findFirst.mockResolvedValue(null);
@@ -262,7 +264,7 @@ describe('SessionsService', () => {
   it('today con entrenamiento en curso y sustitución aplicada', async () => {
     const { prisma, sessions } = setup();
     prisma.trainingProfile.findUnique.mockResolvedValue(profileRow());
-    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1', createdAt: NOW, sessions: [{ id: 'ps1', order: 1 }] });
+    prisma.planVersion.findFirst.mockResolvedValue({ id: 'v1', plan: { createdAt: NOW }, sessions: [{ id: 'ps1', order: 1 }] });
     prisma.workoutSession.findFirst.mockResolvedValue({
       ...workoutRow({ planSessionId: 'ps1' }),
       setLogs: [setRow({ exerciseId: 'id:press-banca-mancuernas' })],

@@ -264,8 +264,6 @@ model RefreshToken {
   replacedById  String?                   @unique @db.Uuid
   replacedBy    RefreshToken?             @relation("Rotation", fields: [replacedById], references: [id], onDelete: SetNull)
   replaces      RefreshToken?             @relation("Rotation")
-  createdByIp   String?                   @db.Inet
-  userAgent     String?                   @db.VarChar(512)
 
   @@index([userId])
   @@index([familyId])
@@ -319,8 +317,6 @@ model ConsentEvent {
   textHash      String         @db.Char(64)       // SHA-256 del texto exacto mostrado
   locale        Locale
   occurredAt    DateTime       @default(now()) @db.Timestamptz(3)
-  ip            String?        @db.Inet
-  userAgent     String?        @db.VarChar(512)
 
   @@index([userId, purpose, occurredAt(sort: Desc)])
 }
@@ -698,6 +694,7 @@ Impacto en `packages/contracts/src/enums/index.ts`: reemplazar `GoalType` por `T
 | ExerciseE1rm | `UNIQUE(userId, exerciseId, workoutSessionId)` | Upsert en escritura (una fila por ejercicio y sesión). |
 | ExerciseE1rm | `(userId, exerciseId, performedOn DESC)` | Gráfica de progresión de e1RM. |
 | WeeklyMuscleVolume | PK `(userId, weekStart, muscle)` | Upsert en escritura; gráfica semanal por músculo (`WHERE userId AND weekStart BETWEEN`). |
+| WeeklyGroupVolume | PK `(userId, weekStart, group)` | Upsert en escritura; volumen por grupo con la regla del motor (máxima fracción por ejercicio y grupo, PROGRAMACION §16.1). Fase 5: no derivable de WeeklyMuscleVolume. |
 | WeeklyAdherence | PK `(userId, weekStart)` | Upsert en escritura; tarjeta de adherencia. |
 | NutritionTarget | `(userId, createdAt DESC)` | Objetivo vigente (`LIMIT 1`) e historial. |
 
@@ -734,7 +731,7 @@ Principio: **el usuario es la raíz de borrado** (borrar cuenta = borrar todo lo
 | ExerciseE1rm → WorkoutSession | Cascade | Si se borra un entrenamiento, su e1RM deja de ser válido. |
 | ExerciseE1rm → Exercise | Restrict | Historial. |
 | ExerciseE1rm.sourceSetLogId | sin FK | Proyección reconstruible; una FK aquí obligaría a ordenar el recálculo y no aporta integridad útil (la fila se recalcula desde la sesión). |
-| WeeklyMuscleVolume / WeeklyAdherence → User | Cascade | Raíz. `planVersionId` informativo sin FK. |
+| WeeklyMuscleVolume / WeeklyGroupVolume / WeeklyAdherence → User | Cascade | Raíz. `planVersionId` informativo sin FK. |
 | NutritionTarget → User | Cascade | Raíz. |
 
 Borrado lógico de `Exercise`: el servicio de catálogo filtra `deletedAt IS NULL` en todas las lecturas para el motor y el catálogo público; las lecturas de historial (planes, logs) **no** filtran, para mostrar el nombre del ejercicio retirado.
@@ -749,7 +746,7 @@ Borrado lógico de `Exercise`: el servicio de catálogo filtra `deletedAt IS NUL
 |---|---|---|
 | **Categoría especial (art. 9, datos de salud)** | `TrainingProfile.limitations`, `TrainingProfile.weightKg`, `TrainingProfile.heightCm`; los mismos valores copiados en `PlanVersion.inputSnapshot` y `NutritionTarget.inputsSnapshot`. | Consentimiento explícito (art. 9.2.a) → `ConsentEvent`. |
 | Datos personales ordinarios | `User.email`, `TrainingProfile.age`, `sex`, `goal`, `level`, días/minutos, equipo, músculos prioritarios, preferencias de ejercicios, planes, `SetLog`, analítica, objetivos nutricionales (kcal/macros). | Ejecución del contrato (art. 6.1.b). |
-| Datos técnicos | `RefreshToken.createdByIp`, `userAgent`; `ConsentEvent.ip`, `userAgent`. | Interés legítimo (seguridad) / prueba del consentimiento. |
+| Datos técnicos | Ninguno: no se guarda IP ni user-agent (minimización; migración `20261110000000_minimizacion_ip_user_agent`). La prueba del consentimiento es el evento autenticado con versión y hash del texto. | — |
 
 Nota: los registros de carga/repeticiones no se consideran por sí solos datos de salud, pero combinados con limitaciones podrían inferirse; se tratan con el mismo control de acceso (solo el titular y procesos del sistema; los admin **no** tienen endpoints de lectura de datos de usuario en v1).
 

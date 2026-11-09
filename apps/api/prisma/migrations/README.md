@@ -1,7 +1,8 @@
 # Migraciones
 
-Una única migración inicial (`*_init`) generada desde `schema.prisma` (ADR-0009). Al final de
-`migration.sql` hay un bloque `-- RAW:` escrito a mano con lo que Prisma no expresa
+Migración inicial (`*_init`) generada desde `schema.prisma` (ADR-0009) y migraciones posteriores
+(p. ej. `*_minimizacion_ip_user_agent`, Fase 5). Al final del
+`migration.sql` de la inicial hay un bloque `-- RAW:` escrito a mano con lo que Prisma no expresa
 (CHECK, índices únicos parciales); ver `docs/MODELO_DATOS.md` §6.
 
 Reglas:

@@ -169,6 +169,7 @@ export function generatePlan(
     muscleVolume,
     warnings,
     rationale: planRationale(ctx, weeklyVolume),
+    healthNotes: planHealthNotes(ctx),
     score: roundScore(score),
     meta: {
       catalogSize: catalog.length,
@@ -216,6 +217,9 @@ function renderSession(s: DraftSession, agg: SessionAgg, order: number, ctx: Ctx
       warmupSets: warm,
       estimatedMinutes: round1(agg.exerciseMinutes[i]),
       rationale: exerciseRationale(it.ex, it.role, i, sc, load.note, warm.length, ctx),
+      healthNotes: [...it.ex.cautionZones].map(
+        (z) => `Precaución por tu limitación de ${ZONE_ES[z]}: usa un rango cómodo y para si aparece dolor.`,
+      ),
     };
   });
   const groupsTrained = s.template.groups.map((g) => GROUP_ES[g]);
@@ -281,9 +285,7 @@ function exerciseRationale(
   }
   if (warmups > 0) out.push(`${warmups} series de aproximación antes de las series efectivas.`);
   out.push(loadNote);
-  for (const z of ex.cautionZones) {
-    out.push(`Precaución por tu limitación de ${ZONE_ES[z]}: usa un rango cómodo y para si aparece dolor.`);
-  }
+  // Las precauciones por limitación (datos de salud) van en `healthNotes`, no aquí.
   return out;
 }
 
@@ -325,11 +327,6 @@ function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[]): string[] {
       `Prioridad en ${list([...ctx.priorityMuscles].map((m) => MUSCLE_ES[m]))}: su volumen se lleva a la parte alta del rango y sus ejercicios van antes.`,
     );
   }
-  if (p.limitations.length > 0) {
-    out.push(
-      `Por tu limitación de ${list(p.limitations.map((z) => ZONE_ES[z]))} se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.`,
-    );
-  }
   const below = vol.filter((v) => v.status === 'below').map((v) => GROUP_ES[v.group]);
   if (below.length === 0) out.push('Todos los grupos musculares llegan al mínimo de volumen semanal.');
   else {
@@ -338,9 +335,18 @@ function planRationale(ctx: Ctx, vol: engineV2.GroupVolume[]): string[] {
     );
   }
   out.push(
-    `Cada ${ctx.config.plan.mesocycleWeeks.value} semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.`,
+    `Cada ${ctx.config.plan.mesocycleWeeks.value} semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.`,
   );
   return out;
+}
+
+/** Explicación del plan derivada de las limitaciones (datos de salud, art. 9 RGPD). */
+function planHealthNotes(ctx: Ctx): string[] {
+  const p = ctx.profile;
+  if (p.limitations.length === 0) return [];
+  return [
+    `Por tu limitación de ${list(p.limitations.map((z) => ZONE_ES[z]))} se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.`,
+  ];
 }
 
 function suggestEquipment(
@@ -425,6 +431,7 @@ function buildWarnings(
         sugg.length ? ` Con ${list(sugg.map((e) => EQUIPMENT_ES[e as engineV2.Equipment]))} se cubriría.` : ''
       }`,
       data: { pattern: pat, reason, suggestedEquipment: sugg },
+      ...(reason === 'limitation' ? { health: true } : {}),
     });
   }
   const weekly = weeklyGroups(aggs);
@@ -515,6 +522,7 @@ function buildWarnings(
         code: 'FAVOURITE_EXCLUDED',
         message: `Tu favorito «${fav}» no se incluye porque ${txt[reason]}.`,
         data: { exerciseId: fav, reason },
+        ...(reason === 'limitation' ? { health: true } : {}),
       });
     }
   }

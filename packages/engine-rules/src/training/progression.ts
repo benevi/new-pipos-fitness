@@ -20,15 +20,29 @@ function workSets(log: Log): engineV2.LoggedSet[] {
   return log.sets.filter((s) => !s.isWarmup);
 }
 
-/** Índice de rendimiento de una sesión: mejor Epley con reps + RIR (sin tope, solo para comparar). */
-function performance(log: Log, divisor: number): number {
-  let best = 0;
-  for (const s of workSets(log)) {
-    const eff = s.reps + (s.rir ?? 0);
-    const v = s.loadKg > 0 ? s.loadKg * (1 + eff / divisor) : eff;
-    if (v > best) best = v;
-  }
-  return best;
+/** Carga de trabajo de la sesión (la mayor de las series de trabajo) y mejor reps + RIR a esa carga. */
+function topSet(log: Log): { loadKg: number; effReps: number } {
+  const ws = workSets(log);
+  const loadKg = Math.max(...ws.map((s) => s.loadKg));
+  const effReps = Math.max(...ws.filter((s) => Math.abs(s.loadKg - loadKg) < 1e-9).map((s) => s.reps + (s.rir ?? 0)));
+  return { loadKg, effReps };
+}
+
+/**
+ * ¿La sesión `next` no mejora a `prev`? (estancamiento o regresión, PROGRAMACION.md §7 regla 4).
+ * - Misma carga: compara reps + RIR de la mejor serie (≤ → estancado o peor).
+ * - Carga mayor (p. ej., tras increase_load): hacer menos reps es lo esperado; no cuenta. El
+ *   índice de Epley no es comparable entre cargas (60×12 → 62×8 «cae» un 6 % sin regresión real).
+ * - Carga menor: regresión solo si, aun así, el e1RM (Epley con RIR) es más bajo; a menos carga
+ *   y más reps Epley sobrestima, así que una caída es una regresión real.
+ */
+function notImproving(prev: Log, next: Log, divisor: number): boolean {
+  const a = topSet(prev);
+  const b = topSet(next);
+  if (Math.abs(a.loadKg - b.loadKg) < 1e-9) return b.effReps <= a.effReps;
+  if (b.loadKg > a.loadKg) return false;
+  const e1rm = (t: { loadKg: number; effReps: number }) => t.loadKg * (1 + t.effReps / divisor);
+  return e1rm(b) < e1rm(a) - 1e-9;
 }
 
 function underperformed(log: Log, p: engineV2.CurrentPrescription): boolean {
@@ -114,16 +128,19 @@ export function nextPrescription(
     return { ok: true, next: deload(base, p, config, `Han pasado ${weeksSinceDeload} semanas desde la última descarga.`) };
   }
 
-  // 3. Descarga reactiva: el rendimiento (reps o RIR a igual carga) cae dos sesiones seguidas.
+  // 3. Descarga reactiva: estancamiento o regresión N sesiones seguidas (PROGRAMACION.md §7),
+  //    comparando solo lo comparable (misma carga, o e1RM si la carga bajó).
   const n = pr.stagnationSessions.value;
   if (history.length >= n + 1) {
-    const perf = history.slice(-(n + 1)).map((h) => performance(h, config.e1rm.epleyDivisor.value));
-    let drops = true;
-    for (let i = 1; i < perf.length; i++) if (!(perf[i] < perf[i - 1] - 1e-9)) drops = false;
-    if (drops) {
+    const recent = history.slice(-(n + 1));
+    let stalled = true;
+    for (let i = 1; i < recent.length; i++) {
+      if (!notImproving(recent[i - 1], recent[i], config.e1rm.epleyDivisor.value)) stalled = false;
+    }
+    if (stalled) {
       return {
         ok: true,
-        next: deload(base, p, config, `Tus repeticiones o tu RIR han caído ${n} sesiones seguidas.`),
+        next: deload(base, p, config, `Tus repeticiones o tu RIR no han mejorado (o han caído) ${n} sesiones seguidas con la misma carga.`),
       };
     }
   }

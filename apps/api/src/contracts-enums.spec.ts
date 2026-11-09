@@ -16,6 +16,7 @@ const PAIRS: Record<string, readonly string[]> = {
   Equipment: c.EQUIPMENT,
   BodyZone: c.BODY_ZONES,
   Muscle: c.MUSCLES,
+  VolumeGroup: c.engineV2.VOLUME_GROUPS,
   MuscleRole: c.MUSCLE_ROLES,
   MovementPattern: c.MOVEMENT_PATTERNS,
   LoadType: c.LOAD_TYPES,

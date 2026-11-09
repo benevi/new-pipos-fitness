@@ -1,9 +1,11 @@
-import { e1rmOfSet, PROGRAMMING } from '@pipos/engine-rules';
+import { e1rmOfSet, groupFractions, PROGRAMMING } from '@pipos/engine-rules';
 import type { engineV2 } from '@pipos/contracts';
 
 /** Versiones de las fórmulas: si cambian, `pnpm analytics:rebuild` recalcula las proyecciones. */
 export const E1RM_FORMULA_VERSION = 'epley-rir-v1';
 export const VOLUME_FORMULA_VERSION = 'fraction-v1';
+/** Volumen por grupo con la regla del motor (máxima fracción por ejercicio y grupo). */
+export const GROUP_VOLUME_FORMULA_VERSION = 'group-max-v1';
 
 export interface SetForCalc {
   id: string;
@@ -52,15 +54,16 @@ export function muscleVolume(sets: readonly VolumeSet[]): Map<engineV2.Muscle, {
   return out;
 }
 
-/** Agrega el volumen por músculo en los grupos del motor (PROGRAMACION.md §16.1). */
-export function groupVolume(
-  muscles: ReadonlyMap<engineV2.Muscle, { effectiveSets: number }>,
-): Map<engineV2.VolumeGroup, number> {
+/**
+ * Series efectivas por grupo de volumen, contadas como el motor (PROGRAMACION.md §16.1):
+ * cada serie aporta a un grupo la MÁXIMA fracción de sus músculos de ese grupo (un remo con
+ * dorsal 1 y espalda alta 1 cuenta 1 serie de espalda, no 2). Reutiliza `groupFractions`.
+ */
+export function groupVolume(sets: readonly Pick<VolumeSet, 'muscles'>[]): Map<engineV2.VolumeGroup, number> {
   const out = new Map<engineV2.VolumeGroup, number>();
-  for (const [muscle, v] of muscles) {
-    const group = PROGRAMMING.volume.groupOfMuscle.value[muscle];
-    if (!group) continue;
-    out.set(group, Math.round(((out.get(group) ?? 0) + v.effectiveSets) * 100) / 100);
+  for (const s of sets) {
+    for (const [group, fraction] of groupFractions(s.muscles, PROGRAMMING)) out.set(group, (out.get(group) ?? 0) + fraction);
   }
+  for (const [g, v] of out) out.set(g, Math.round(v * 100) / 100);
   return out;
 }

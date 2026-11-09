@@ -42,6 +42,10 @@
       {
         "zone": "lumbar",
         "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
       }
     ],
     "substitutionGroup": "squat_bilateral",
@@ -94,6 +98,14 @@
       },
       {
         "zone": "wrist",
+        "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
+      },
+      {
+        "zone": "ankle",
         "level": "caution"
       }
     ],
@@ -300,6 +312,10 @@
       {
         "zone": "lumbar",
         "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
       }
     ],
     "substitutionGroup": "squat_machine",
@@ -336,6 +352,10 @@
     "riskTags": [
       {
         "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "hip",
         "level": "caution"
       }
     ],
@@ -430,6 +450,10 @@
     "riskTags": [
       {
         "zone": "lumbar",
+        "level": "caution"
+      },
+      {
+        "zone": "hip",
         "level": "caution"
       }
     ],
@@ -653,6 +677,10 @@
     "riskTags": [
       {
         "zone": "lumbar",
+        "level": "caution"
+      },
+      {
+        "zone": "hip",
         "level": "caution"
       }
     ],
@@ -1035,6 +1063,14 @@
       {
         "zone": "knee",
         "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
+      },
+      {
+        "zone": "ankle",
+        "level": "caution"
       }
     ],
     "substitutionGroup": "lunge",
@@ -1078,6 +1114,14 @@
       {
         "zone": "knee",
         "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
+      },
+      {
+        "zone": "ankle",
+        "level": "caution"
       }
     ],
     "substitutionGroup": "lunge",
@@ -1116,6 +1160,10 @@
       {
         "zone": "knee",
         "level": "caution"
+      },
+      {
+        "zone": "hip",
+        "level": "caution"
       }
     ],
     "substitutionGroup": "lunge",
@@ -1153,6 +1201,10 @@
     "riskTags": [
       {
         "zone": "knee",
+        "level": "caution"
+      },
+      {
+        "zone": "ankle",
         "level": "caution"
       }
     ],
@@ -1562,6 +1614,10 @@
       },
       {
         "zone": "elbow",
+        "level": "caution"
+      },
+      {
+        "zone": "shoulder",
         "level": "caution"
       }
     ],
@@ -2340,12 +2396,7 @@
         "fraction": 0.5
       }
     ],
-    "riskTags": [
-      {
-        "zone": "shoulder",
-        "level": "caution"
-      }
-    ],
+    "riskTags": [],
     "substitutionGroup": "overhead_press",
     "cuesEs": [
       "Extremo de la barra anclado en una esquina",
@@ -3171,7 +3222,12 @@
         "fraction": 0.5
       }
     ],
-    "riskTags": [],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
     "substitutionGroup": "pulldown",
     "cuesEs": [
       "Muslos bien sujetos bajo el apoyo",
@@ -3208,7 +3264,12 @@
         "fraction": 0.5
       }
     ],
-    "riskTags": [],
+    "riskTags": [
+      {
+        "zone": "shoulder",
+        "level": "caution"
+      }
+    ],
     "substitutionGroup": "pulldown",
     "cuesEs": [
       "Agarre neutro estrecho",
@@ -4279,11 +4340,6 @@
         "muscle": "hamstrings",
         "role": "primary",
         "fraction": 1
-      },
-      {
-        "muscle": "calves",
-        "role": "secondary",
-        "fraction": 0.5
       }
     ],
     "riskTags": [],

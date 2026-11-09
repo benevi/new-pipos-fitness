@@ -163,9 +163,9 @@
 - Plan para hipertrofia, nivel intermedio, 4 días de 50 min con banco, mancuernas y banda elástica.
 - Hipertrofia: 8-12 repeticiones en multiarticulares y 10-15 en aislamiento, cerca del fallo pero sin llegar en los ejercicios pesados (Schoenfeld 2017; Robinson 2024).
 - Volumen objetivo: 10-16 series efectivas por grupo y semana para tu nivel; los músculos secundarios cuentan media serie (Pelland 2026).
-- Por tu limitación de rodilla se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
 - Con 4 días de 50 min y este material, cuádriceps y gemelos no llegan al mínimo de volumen: el plan cumple igualmente el mínimo de salud de entrenar fuerza ≥ 2 días por semana (OMS 2020), y los avisos dicen qué añadir para completarlo.
-- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si el rendimiento cae dos sesiones seguidas.
+- Cada 6 semanas toca una semana de descarga (menos series y más RIR), o antes si, con la misma carga, el rendimiento se estanca o cae dos sesiones seguidas.
+- (salud) Por tu limitación de rodilla se excluyen los ejercicios de riesgo alto para esa zona y se marcan con precaución los de riesgo moderado.
 
 ## Puntuación
 

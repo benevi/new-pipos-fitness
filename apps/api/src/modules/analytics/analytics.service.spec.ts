@@ -5,6 +5,7 @@ import { FixedClock, prismaMock, UID } from '../../test/unit/support';
 import type { PrismaService } from '../../prisma/prisma.service';
 import { ProgressService, lastWeeks, volumeStatus } from '../progress/progress.service';
 import { bestE1rm, groupVolume, muscleVolume } from './analytics-calc';
+import { groupFractions, PROGRAMMING } from '@pipos/engine-rules';
 import { AnalyticsService } from './analytics.service';
 
 const workout = { id: 'w1', userId: UID, startedAt: new Date('2026-11-08T23:30:00Z') }; // lunes 9 en Madrid
@@ -50,9 +51,20 @@ describe('cálculos de analítica', () => {
     ]);
     expect(v.get('chest')).toEqual({ effectiveSets: 2, tonnageKg: 400 });
     expect(v.get('triceps')).toEqual({ effectiveSets: 0.5, tonnageKg: 100 });
-    const g = groupVolume(new Map([['chest', { effectiveSets: 2 }], ['lats', { effectiveSets: 1 }], ['upper_back', { effectiveSets: 1 }]]));
-    expect(g.get('chest')).toBe(2);
+  });
+
+  it('volumen por grupo = regla del motor: máxima fracción por ejercicio y grupo, no la suma (§16.1)', () => {
+    // Un remo (dorsal 1 + espalda alta 1) es UNA serie de espalda; un press de banca suma 1 a
+    // pecho y 0,5 a tríceps; un curl femoral con gemelo 0,5 suma 1 a isquios y 0,5 a gemelo.
+    const row = { reps: 10, loadKg: 50, muscles: [{ muscle: 'lats' as const, fraction: 1 }, { muscle: 'upper_back' as const, fraction: 1 }, { muscle: 'biceps' as const, fraction: 0.5 }] };
+    const bench = { reps: 8, loadKg: 60, muscles: [{ muscle: 'chest' as const, fraction: 1 }, { muscle: 'triceps' as const, fraction: 0.5 }, { muscle: 'front_delts' as const, fraction: 0.5 }] };
+    const g = groupVolume([row, row, bench]);
     expect(g.get('back')).toBe(2);
+    expect(g.get('biceps')).toBe(1);
+    expect(g.get('chest')).toBe(1);
+    expect(g.get('triceps')).toBe(0.5);
+    // Coincide con lo que cuenta el motor para el mismo ejercicio.
+    expect(Object.fromEntries(groupFractions(row.muscles, PROGRAMMING))).toEqual({ back: 1, biceps: 0.5 });
   });
 });
 
@@ -78,6 +90,7 @@ describe('AnalyticsService (escritura)', () => {
     expect(upsert.create.performedOn.toISOString()).toBe('2026-11-09T00:00:00.000Z');
     expect(upsert.create.e1rmKg).toBeCloseTo(53.33, 2);
     expect(prisma.weeklyMuscleVolume.createMany.mock.calls[0][0].data[0]).toMatchObject({ muscle: 'chest', effectiveSets: 1, tonnageKg: 320 });
+    expect(prisma.weeklyGroupVolume.createMany.mock.calls[0][0].data[0]).toMatchObject({ group: 'chest', effectiveSets: 1, formulaVersion: 'group-max-v1' });
     const adherence = prisma.weeklyAdherence.upsert.mock.calls[0][0];
     expect(adherence.create).toMatchObject({ plannedSessions: 2, plannedSets: 5, completedSessions: 1, completedSets: 1, planVersionId: 'v1' });
     // Rango de la semana en UTC desde la medianoche local del lunes.
@@ -142,6 +155,9 @@ describe('ProgressService (lectura)', () => {
     const { prisma, progress } = setup();
     prisma.weeklyMuscleVolume.findMany.mockResolvedValue([
       { weekStart: new Date('2026-11-09'), muscle: 'chest', effectiveSets: new Prisma.Decimal(12), tonnageKg: new Prisma.Decimal(1000) },
+    ]);
+    prisma.weeklyGroupVolume.findMany.mockResolvedValue([
+      { weekStart: new Date('2026-11-09'), group: 'chest', effectiveSets: new Prisma.Decimal(12) },
     ]);
     prisma.planVersion.findFirst.mockResolvedValueOnce({
       rationale: { weeklyVolume: [{ group: 'chest', min: 10, max: 20 }, { group: 'back', min: 10, max: 20 }] },

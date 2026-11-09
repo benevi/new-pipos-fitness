@@ -10,6 +10,7 @@ import type {
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 import { CatalogService } from '../catalog/catalog.service';
 import { buildEngineProfile, EngineInputService } from '../plans/engine-input.service';
 import { PlansService } from '../plans/plans.service';
@@ -71,6 +72,7 @@ export class ProfileService {
     private readonly engineInput: EngineInputService,
     private readonly plans: PlansService,
     private readonly clock: Clock,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   async find(userId: string): Promise<ProfileResponse | null> {
@@ -147,6 +149,22 @@ export class ProfileService {
       changed && (await this.plans.hasActivePlan(userId)) ? await this.plans.prepare(userId, after, input.timezone) : null;
 
     const planVersion = await this.plans.withVersionRetry(async (tx) => {
+      // La comprobación de arriba es optimista (el motor corre fuera de la transacción). Con el
+      // candado por usuario —el mismo que toma la retirada del consentimiento— se vuelve a leer
+      // el consentimiento: si se retiró entretanto, no se guardan datos de salud ni un plan
+      // calculado con ellos.
+      await this.analytics.lockUser(tx, userId);
+      if (!healthConsentStatus(await latestHealthConsent(tx, userId)).granted) {
+        const issues = healthFieldsWithValue(input);
+        if (issues.length > 0) {
+          throw new ApiError(
+            HttpStatus.CONFLICT,
+            'HEALTH_CONSENT_REQUIRED',
+            'Health data (limitations, weight, height) requires an active health consent: POST /me/consents/health',
+            issues,
+          );
+        }
+      }
       await tx.trainingProfile.upsert({ where: { userId }, create: { userId, ...data }, update: data });
       await tx.userExercisePreference.deleteMany({ where: { userId } });
       const prefs = [
@@ -154,6 +172,9 @@ export class ProfileService {
         ...favouriteIds.map((exerciseId) => ({ userId, exerciseId, kind: 'favourite' as const })),
       ];
       if (prefs.length > 0) await tx.userExercisePreference.createMany({ data: prefs });
+      // La zona horaria fija los límites de semana de la analítica (ADR-0008): si cambia, las
+      // proyecciones se reconstruyen desde SetLog en la misma transacción.
+      if (before && before.profile.timezone !== input.timezone) await this.analytics.rebuildUser(tx, userId);
       return prepared ? this.plans.persistVersion(tx, userId, prepared) : null;
     });
 

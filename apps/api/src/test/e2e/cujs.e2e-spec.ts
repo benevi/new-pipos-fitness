@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { randomUUID } from 'crypto';
 import { loadCatalog } from '@pipos/catalog';
+import { groupFractions, PROGRAMMING } from '@pipos/engine-rules';
 import {
   AccountExportSchema,
   PlanVersionResponseSchema,
@@ -161,6 +162,33 @@ describe('CUJ-1..8 (e2e, Postgres real)', () => {
     for (const w of same.warmupSets) expect(w.loadKg).toBeLessThanOrEqual(same.prescription.loadKg);
   });
 
+  it('CUJ-3: la descarga programada cuenta desde el inicio del plan; editar el perfil no la reinicia', async () => {
+    const { user } = await userWithPlan(ctx.app);
+    const t0 = new Date(Date.now() - 2 * DAY);
+    const { today, workout } = await startToday(ctx.app, user.accessToken, t0.toISOString());
+    const ex = today.exercises.find((e: TodayExercise) => e.loadType === 'weighted')!;
+    await logTopSets(ctx, user.accessToken, workout.id, ex, 40, t0);
+    await finish(ctx, user.accessToken, workout.id, t0);
+    // El plan empezó hace 6 semanas y un día.
+    const started = new Date(Date.now() - 43 * DAY);
+    await ctx.prisma.trainingPlan.updateMany({ where: { userId: user.id }, data: { createdAt: started } });
+    await ctx.prisma.planVersion.updateMany({ where: { userId: user.id }, data: { createdAt: started } });
+
+    // Editar el perfil (favorito de un ejercicio que ya está) crea una versión nueva HOY.
+    const edited = await request(server())
+      .put('/me/profile')
+      .set(bearer(user.accessToken))
+      .send({ ...BEGINNER_GYM, favouriteExerciseSlugs: [ex.exercise.slug] })
+      .expect(200);
+    expect(edited.body.planVersion?.version).toBe(2);
+
+    const now = await request(server()).get('/sessions/today').set(bearer(user.accessToken)).expect(200);
+    const same = now.body.exercises.find((e: TodayExercise) => e.exercise.id === ex.exercise.id);
+    expect(same).toBeDefined();
+    expect(same.prescription.action).toBe('deload');
+    expect(same.prescription.isDeload).toBe(true);
+  });
+
   it('CUJ-4: cambiar un ejercicio — 3 alternativas válidas, el cambio se ve en la sesión y en el historial', async () => {
     const { user } = await userWithPlan(ctx.app);
     const { today, workout } = await startToday(ctx.app, user.accessToken);
@@ -295,6 +323,11 @@ describe('CUJ-1..8 (e2e, Postgres real)', () => {
     const mv = week.muscles.find((m: { muscle: string }) => m.muscle === primary.muscle);
     expect(mv.effectiveSets).toBeCloseTo(ex.prescription.sets, 5);
     expect(week.groups.some((g: { targetMin: number | null }) => g.targetMin !== null)).toBe(true);
+    // Volumen por grupo contado como el motor: máxima fracción por ejercicio y grupo (§16.1).
+    for (const [group, fraction] of groupFractions(catalog.get(ex.exercise.slug)!.muscles, PROGRAMMING)) {
+      const gv = week.groups.find((g: { group: string }) => g.group === group);
+      expect(gv.effectiveSets, group).toBeCloseTo(fraction * ex.prescription.sets, 5);
+    }
 
     const adherence = await request(server()).get('/progress/adherence?weeks=1').set(bearer(user.accessToken)).expect(200);
     expect(adherence.body.weeks[0]).toMatchObject({ plannedSessions: 3, completedSessions: 1, completedSets: ex.prescription.sets });

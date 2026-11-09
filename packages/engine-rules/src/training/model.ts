@@ -38,16 +38,31 @@ export interface Ex {
   readonly cautionZones: ReadonlySet<BodyZone>;
 }
 
-export function enrich(src: CatalogExercise, config: ProgrammingConfig): Ex {
+/**
+ * Series efectivas que UNA serie de un ejercicio aporta a cada grupo de volumen: la máxima
+ * fracción de sus músculos de ese grupo, no la suma (PROGRAMACION.md §16.1). Es la regla con
+ * la que el motor cuenta el volumen; la analítica de /progress la reutiliza.
+ */
+export function groupFractions(
+  muscles: readonly { muscle: Muscle; fraction: number }[],
+  config: ProgrammingConfig,
+): Map<VolumeGroup, number> {
   const map = config.volume.groupOfMuscle.value;
   const groups = new Map<VolumeGroup, number>();
+  for (const m of muscles) {
+    const g = map[m.muscle];
+    if (g) groups.set(g, Math.max(groups.get(g) ?? 0, m.fraction));
+  }
+  return groups;
+}
+
+export function enrich(src: CatalogExercise, config: ProgrammingConfig): Ex {
+  const groups = groupFractions(src.muscles, config);
   const muscles = new Map<Muscle, number>();
   const primary = new Set<Muscle>();
   for (const m of src.muscles) {
     muscles.set(m.muscle, m.fraction);
     if (m.role === 'primary') primary.add(m.muscle);
-    const g = map[m.muscle];
-    if (g) groups.set(g, Math.max(groups.get(g) ?? 0, m.fraction));
   }
   return {
     src,
