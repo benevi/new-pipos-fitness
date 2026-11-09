@@ -172,6 +172,9 @@ export class ProfileService {
         ...favouriteIds.map((exerciseId) => ({ userId, exerciseId, kind: 'favourite' as const })),
       ];
       if (prefs.length > 0) await tx.userExercisePreference.createMany({ data: prefs });
+      // La zona horaria fija los límites de semana de la analítica (ADR-0008): si cambia, las
+      // proyecciones se reconstruyen desde SetLog en la misma transacción.
+      if (before && before.profile.timezone !== input.timezone) await this.analytics.rebuildUser(tx, userId);
       return prepared ? this.plans.persistVersion(tx, userId, prepared) : null;
     });
 

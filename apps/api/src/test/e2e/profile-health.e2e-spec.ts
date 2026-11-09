@@ -10,6 +10,8 @@ import {
   putProfile,
   registerUser,
   truncateAll,
+  setBody,
+  startToday,
   type TestContext,
 } from './helpers';
 
@@ -124,6 +126,28 @@ describe('Perfil, consentimiento de salud y nutrición (e2e, Postgres real)', ()
     const row = await ctx.prisma.trainingProfile.findUniqueOrThrow({ where: { userId: u.id } });
     expect(row.limitations).toEqual([]);
     expect(row.weightKg).toBeNull();
+  });
+
+  it('cambiar la zona horaria reconstruye la analítica semanal en la misma operación', async () => {
+    const u = await registerUser(ctx.app);
+    await putProfile(ctx.app, u.accessToken, BEGINNER_GYM); // Europe/Madrid
+    await request(server()).post('/plans/generate').set(bearer(u.accessToken)).expect(201);
+    // Lunes 02:00 UTC: lunes en Madrid (semana del 9), domingo en Nueva York (semana del 2).
+    const startedAt = '2026-11-09T02:00:00.000Z';
+    const { today, workout } = await startToday(ctx.app, u.accessToken, startedAt);
+    await request(server())
+      .post(`/workouts/${workout.id}/sets`)
+      .set(bearer(u.accessToken))
+      .send(setBody(today.exercises[0], { completedAt: '2026-11-09T02:05:00.000Z' }))
+      .expect(201);
+    const weeks = async () =>
+      [...new Set((await ctx.prisma.weeklyMuscleVolume.findMany({ where: { userId: u.id } })).map((r) => r.weekStart.toISOString().slice(0, 10)))];
+    expect(await weeks()).toEqual(['2026-11-09']);
+
+    await putProfile(ctx.app, u.accessToken, { ...BEGINNER_GYM, timezone: 'America/New_York' });
+    expect(await weeks()).toEqual(['2026-11-02']);
+    const adherence = await ctx.prisma.weeklyAdherence.findMany({ where: { userId: u.id } });
+    expect(adherence.map((r) => r.weekStart.toISOString().slice(0, 10))).toEqual(['2026-11-02']);
   });
 
   it('PUT /me/profile: valida con issues por campo y rechaza ejercicios desconocidos con 422', async () => {
