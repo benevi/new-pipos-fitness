@@ -78,6 +78,10 @@ void main() {
     await tester.pumpAndSettle();
     await tapKey(tester, 'nav-plan');
     expect(find.byKey(const Key('warning-pin-dropped')), findsOneWidget);
+    // La tarjeta de avisos termina en el último aviso (sin hueco extra).
+    final warnings = tester.getRect(find.byKey(const Key('plan-warnings')));
+    final last = tester.getRect(find.byKey(const Key('warning-pin-dropped')));
+    expect(warnings.bottom, last.bottom);
     expect(
       find.textContaining('Un cambio fijado ya no se puede aplicar.'),
       findsOneWidget,

@@ -61,18 +61,24 @@ class PlanOverview extends StatelessWidget {
           SectionCard(
             title: l10n.planWarnings,
             child: Column(
+              key: const Key('plan-warnings'),
               children: [
-                for (final w in plan.warnings)
-                  w.code == WarningCode.pinnedSubstitutionDropped
-                      ? NoticeBanner(
-                          key: const Key('warning-pin-dropped'),
-                          text: '${l10n.pinDroppedTitle} ${w.message}',
-                          icon: Icons.push_pin_outlined,
-                        )
-                      : NoticeBanner(
-                          text: w.message,
-                          icon: Icons.warning_amber_outlined,
-                        ),
+                for (final (i, w) in plan.warnings.indexed)
+                  NoticeBanner(
+                    key: w.code == WarningCode.pinnedSubstitutionDropped
+                        ? const Key('warning-pin-dropped')
+                        : null,
+                    text: w.code == WarningCode.pinnedSubstitutionDropped
+                        ? '${l10n.pinDroppedTitle} ${w.message}'
+                        : w.message,
+                    icon: w.code == WarningCode.pinnedSubstitutionDropped
+                        ? Icons.push_pin_outlined
+                        : Icons.warning_amber_outlined,
+                    // Sin hueco extra al final de la tarjeta.
+                    margin: EdgeInsets.only(
+                      bottom: i == plan.warnings.length - 1 ? 0 : AppSpacing.sm,
+                    ),
+                  ),
               ],
             ),
           ),

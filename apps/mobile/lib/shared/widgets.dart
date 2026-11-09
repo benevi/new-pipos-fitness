@@ -240,17 +240,22 @@ class NoticeBanner extends StatelessWidget {
     super.key,
     required this.text,
     this.icon = Icons.info_outline,
+    this.margin = const EdgeInsets.only(bottom: AppSpacing.md),
   });
 
   final String text;
   final IconData icon;
+
+  /// Margen exterior; dentro de una tarjeta el último aviso va sin margen
+  /// inferior (el relleno de la tarjeta ya separa).
+  final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      margin: margin,
       padding: const EdgeInsets.all(AppSpacing.ms),
       decoration: BoxDecoration(
         color: theme.colorScheme.surfaceContainerHighest,
