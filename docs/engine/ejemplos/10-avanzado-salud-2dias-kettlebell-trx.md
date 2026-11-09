@@ -1,6 +1,6 @@
 # Avanzado, salud general, 2 días × 60 min, kettlebell, TRX y bandas
 
-> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.0.0. No editar a mano.
+> Generado por `pnpm --filter @pipos/engine-rules examples` con el motor 2.1.0. No editar a mano.
 
 ## Entrada
 

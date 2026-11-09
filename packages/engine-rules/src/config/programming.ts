@@ -8,7 +8,7 @@
  */
 import type { engineV2 } from '@pipos/contracts';
 
-export const ENGINE_VERSION = '2.0.0';
+export const ENGINE_VERSION = '2.1.0';
 
 export type Confidence = 'alta' | 'media-alta' | 'media' | 'baja-media' | 'baja';
 export type Source = `PROGRAMACION.md §${string}`;
@@ -37,6 +37,7 @@ type Goal = engineV2.TrainingGoal;
 type Muscle = engineV2.Muscle;
 type VolumeGroup = engineV2.VolumeGroup;
 type MovementPattern = engineV2.MovementPattern;
+type LoadImplement = engineV2.LoadImplement;
 
 export interface RepScheme {
   readonly repMin: number;
@@ -251,6 +252,44 @@ export const PROGRAMMING = {
       note: 'Epley infraestima el peso muerto (LeSuer 1997): la carga se marca como estimación',
     }),
     loadRoundingKg: k(1, 'PROGRAMACION.md §16.10', 'baja', { heuristic: true, unit: 'kg' }),
+  },
+  /** Pasos reales de carga por material y discos (idea 1 de docs/IDEAS_EL_PLAN.md). */
+  load: {
+    stepKgByImplement: k<Record<LoadImplement, number>>(
+      {
+        barbell: 2.5,
+        trap_bar: 2.5,
+        ez_bar: 2.5,
+        smith_machine: 2.5,
+        dumbbell: 2,
+        kettlebell: 4,
+        machine: 5,
+        cable: 2.5,
+        weight_plate: 2.5,
+      },
+      'PROGRAMACION.md §16.16',
+      'baja',
+      {
+        heuristic: true,
+        unit: 'kg totales',
+        note: 'INCREMENTO_MIN_KG §7 («el siguiente peso disponible»); material típico de gimnasio, decisión de diseño',
+      },
+    ),
+    barKg: k<Partial<Record<LoadImplement, number>>>(
+      { barbell: 20, ez_bar: 10, trap_bar: 25 },
+      'PROGRAMACION.md §16.16',
+      'baja',
+      { heuristic: true, unit: 'kg', note: 'barras estándar; la guiada (smith) varía y no se desglosa' },
+    ),
+    platesKg: k<readonly number[]>([25, 20, 15, 10, 5, 2.5, 1.25], 'PROGRAMACION.md §16.16', 'baja', {
+      heuristic: true,
+      unit: 'kg por disco',
+    }),
+    bigJumpPct: k(10, 'PROGRAMACION.md §16.16', 'baja', {
+      heuristic: true,
+      unit: '%',
+      note: 'por encima, la explicación avisa de que el siguiente peso disponible es un salto grande',
+    }),
   },
   balance: {
     pullPushRatioMin: k(1, 'PROGRAMACION.md §10', 'baja', { heuristic: true }),

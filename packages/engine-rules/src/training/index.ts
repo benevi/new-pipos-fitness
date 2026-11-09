@@ -8,3 +8,13 @@ export { estimateSessionMinutes, type SessionEstimateItem } from './estimate.js'
 export { e1rmOfSet, latestE1rm } from './prescription.js';
 export { filterCatalog, exclusionReason, availableEquipment, type ExclusionReason } from './filter.js';
 export { groupFractions } from './model.js';
+export {
+  loadImplement,
+  loadStepKg,
+  roundLoad,
+  isLoadStepMultiple,
+  barKgFor,
+  plateBreakdown,
+  type LoadImplement,
+  type RoundDirection,
+} from './load.js';

@@ -34,7 +34,7 @@ describe('dailyTargets', () => {
     expect(t.adjustmentKcal).toBe(0);
     expect(t.proteinG).toBe(128);
     expect(t.fatG).toBe(Math.round((t.kcal * 0.25) / 9));
-    expect(t.engineVersion).toBe('2.0.0');
+    expect(t.engineVersion).toBe('2.1.0');
   });
 
   it('pérdida de grasa: déficit para 0,7 %/semana y proteína 2,2 g/kg', () => {

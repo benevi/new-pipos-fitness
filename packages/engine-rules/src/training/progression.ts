@@ -6,7 +6,7 @@
 import { engineV2 } from '@pipos/contracts';
 import { PROGRAMMING, type ProgrammingConfig } from '../config/programming.js';
 import { fmt } from './labels.js';
-import { roundDown } from './prescription.js';
+import { loadStepKg, roundLoad } from './load.js';
 
 type Log = engineV2.ExerciseSessionLog;
 
@@ -69,7 +69,14 @@ export function nextPrescription(
   }
   const { prescription: p, today, weeksSinceDeload } = parsed.data;
   const pr = config.progression;
-  const step = config.e1rm.loadRoundingKg.value;
+  const implement = p.implement ?? null;
+  const step = loadStepKg(implement, config);
+  /** Bajada al peso disponible inmediatamente inferior (§16.16), sin llegar a 0 ni subir. */
+  const lower = (kg: number, current: number): number => {
+    const down = roundLoad(kg, implement, 'down', config);
+    if (down > 0) return Math.min(down, current);
+    return Math.min(current, step);
+  };
   const history = parsed.data.history
     .filter((h) => h.exerciseId === p.exerciseId && h.date <= today && workSets(h).length > 0)
     .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));
@@ -107,7 +114,7 @@ export function nextPrescription(
   const gap = daysBetween(last.date, today);
   if (gap >= pr.breakDays.value) {
     const reduced =
-      weighted && currentLoad !== null ? roundDown(currentLoad * (1 - pr.breakLoadReductionPct.value / 100), step) : currentLoad;
+      weighted && currentLoad !== null ? lower(currentLoad * (1 - pr.breakLoadReductionPct.value / 100), currentLoad) : currentLoad;
     return {
       ok: true,
       next: {
@@ -149,7 +156,7 @@ export function nextPrescription(
   const prev = history.length >= 2 ? history[history.length - 2] : null;
   if (underperformed(last, p)) {
     if (prev && underperformed(prev, p) && weighted && currentLoad !== null) {
-      const reduced = roundDown(currentLoad * (1 - pr.reactiveDecreasePct.value / 100), step);
+      const reduced = lower(currentLoad * (1 - pr.reactiveDecreasePct.value / 100), currentLoad);
       return {
         ok: true,
         next: {
@@ -191,19 +198,30 @@ export function nextPrescription(
         },
       };
     }
-    const lower = pr.lowerBodyPatterns.value.includes(p.movementPattern);
-    const pct = lower ? pr.loadIncrementPctLower.value : pr.loadIncrementPctUpper.value;
-    const inc = Math.max(pr.minIncrementKg.value, roundUp((currentLoad * pct) / 100, step));
-    const next = currentLoad + inc;
+    const lowerBody = pr.lowerBodyPatterns.value.includes(p.movementPattern);
+    const pct = lowerBody ? pr.loadIncrementPctLower.value : pr.loadIncrementPctUpper.value;
+    const rawInc = Math.max(pr.minIncrementKg.value, step, roundUp((currentLoad * pct) / 100, step));
+    // El siguiente peso que existe con este material (§16.16): múltiplo del paso, por encima.
+    const next = roundLoad(currentLoad + rawInc, implement, 'up', config);
+    const inc = Math.round((next - currentLoad) * 100) / 100;
+    const rationale = [
+      implement
+        ? `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lowerBody ? 'inferior' : 'superior'}, redondeado al siguiente peso disponible, de ${fmt(step)} en ${fmt(step)} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`
+        : `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lowerBody ? 'inferior' : 'superior'}, mínimo ${pr.minIncrementKg.value} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`,
+    ];
+    const jumpPct = (inc / currentLoad) * 100;
+    if (jumpPct > config.load.bigJumpPct.value + 1e-9) {
+      rationale.push(
+        `El siguiente peso disponible es un salto grande (+${Math.round(jumpPct)} %): con ${fmt(next)} kg empieza por la parte baja del rango (${p.repMin} reps) y es normal tardar más sesiones en volver a ${p.repMax}.`,
+      );
+    }
     return {
       ok: true,
       next: {
         ...base,
         loadKg: next,
         action: 'increase_load',
-        rationale: [
-          `Completaste todas las series a ${p.repMax} reps con RIR ${p.targetRir} o más: subimos ${fmt(inc)} kg (${pct} % en tren ${lower ? 'inferior' : 'superior'}, mínimo ${pr.minIncrementKg.value} kg), de ${fmt(currentLoad)} a ${fmt(next)} kg, y vuelves a ${p.repMin} reps.`,
-        ],
+        rationale,
       },
     };
   }

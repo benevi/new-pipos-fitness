@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MovementPatternSchema } from './enums.js';
+import { LoadImplementSchema, MovementPatternSchema } from './enums.js';
 import { ExerciseSessionLogSchema, IsoDateSchema } from './history.js';
 
 export const CurrentPrescriptionSchema = z
@@ -12,6 +12,11 @@ export const CurrentPrescriptionSchema = z
     repMax: z.number().int().min(1).max(50),
     targetRir: z.number().int().min(0).max(5),
     loadKg: z.number().min(0).nullable(),
+    /**
+     * Material que fija el paso de carga (PROGRAMACION.md §16.16). Omitido o null: paso genérico
+     * de `INCREMENTO_MIN_KG` (1 kg), el comportamiento anterior.
+     */
+    implement: LoadImplementSchema.nullable().optional(),
   })
   .strict()
   .refine((p) => p.repMin <= p.repMax, { message: 'repMin > repMax', path: ['repMin'] });

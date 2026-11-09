@@ -42,6 +42,24 @@ export const EQUIPMENT = [
 export const EquipmentSchema = z.enum(EQUIPMENT);
 export type Equipment = z.infer<typeof EquipmentSchema>;
 
+/**
+ * Material que fija el paso real de carga de un ejercicio con peso (PROGRAMACION.md §16.16).
+ * Subconjunto de `EQUIPMENT`, en orden de prioridad: si un ejercicio usa varios, manda el primero.
+ */
+export const LOAD_IMPLEMENTS = [
+  'barbell',
+  'trap_bar',
+  'ez_bar',
+  'smith_machine',
+  'dumbbell',
+  'kettlebell',
+  'machine',
+  'cable',
+  'weight_plate',
+] as const;
+export const LoadImplementSchema = z.enum(LOAD_IMPLEMENTS);
+export type LoadImplement = z.infer<typeof LoadImplementSchema>;
+
 export const BODY_ZONES = ['shoulder', 'elbow', 'wrist', 'lumbar', 'hip', 'knee', 'ankle'] as const;
 export const BodyZoneSchema = z.enum(BODY_ZONES);
 export type BodyZone = z.infer<typeof BodyZoneSchema>;

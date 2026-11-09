@@ -198,7 +198,7 @@ function renderSession(s: DraftSession, agg: SessionAgg, order: number, ctx: Ctx
     const sc = agg.schemes[i];
     const load = initialLoad(it.ex, sc, ctx.profile, ctx.config);
     const w = agg.warmups[i];
-    const warm = it.ex.weighted ? warmupSets(w, load.loadKg, ctx.config) : [];
+    const warm = it.ex.weighted ? warmupSets(w, load.loadKg, ctx.config, it.ex.implement) : [];
     return {
       order: i,
       exerciseId: it.ex.slug,

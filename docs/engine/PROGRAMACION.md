@@ -763,7 +763,7 @@ Se implementó (60 iteraciones y 40.000 evaluaciones como máximo) y se midió e
 
 ### 16.10 Carga inicial desde el historial
 
-Se usa el e1RM de la **sesión más reciente** con series válidas (1-10 reps efectivas, §9). La carga se calcula para `repMin + RIR` reps efectivas y se redondea **hacia abajo a 1 kg** (`INCREMENTO_MIN_KG`, §7). Si `repMin + RIR > 10`, no se da carga (la fórmula no es fiable) y se marca como estimación.
+Se usa el e1RM de la **sesión más reciente** con series válidas (1-10 reps efectivas, §9). La carga se calcula para `repMin + RIR` reps efectivas y se redondea **hacia abajo al paso real del material** (§16.16; 1 kg si el ejercicio no tiene material de carga). Si `repMin + RIR > 10`, no se da carga (la fórmula no es fiable) y se marca como estimación.
 
 ### 16.11 Nutrición
 
@@ -790,3 +790,36 @@ El plan se versiona en mesociclos de **6 semanas**, igual a `DELOAD_CADA_SEMANAS
 ### 16.15 Afinidad en la selección de ejercicios
 
 Para cada hueco se elige el candidato con más afinidad; el desempate es por `slug`. Suman: patrón preferido del hueco, músculo preferido, músculo «natural» del patrón como primario (p. ej. pecho en empuje horizontal), favorito (+3), músculo prioritario (+2), historial del ejercicio (+1, permite cargas reales desde el primer día), carga en kg, multiarticular bilateral y barra en el hueco principal para entrenados. Restan: precaución en una zona limitada (−1,5 por zona), repetir el ejercicio en la semana (−0,75 por vez), unilateral en accesorios (−0,25, cuesta el doble de tiempo). Los pesos son heurísticos y se ajustaron revisando los planes de `docs/engine/ejemplos/`. Para llegar al suelo de un grupo, el relleno puede usar como último recurso una sesión de otros grupos (p. ej. gemelos al final del día de tirón).
+
+### 16.16 Incrementos reales por material y discos
+
+**Problema que resuelve.** Redondear todo a 1 kg proponía pesos que no existen (23 kg en mancuernas que van de 2 en 2, 47 kg en una máquina de placas de 5 kg). Va contra «nada falso» y contra la ejecución. Origen: idea 1 de `docs/IDEAS_EL_PLAN.md` (calculadora de discos de una app previa, adaptada).
+
+**Fuente y confianza.** No hay estudio que fije estos pasos: son `INCREMENTO_MIN_KG` de §7 («el siguiente peso disponible») concretado con el material típico de un gimnasio. **Decisión de diseño, heurística, confianza baja.** Los valores viven en `PROGRAMMING.load` (`heuristic: true`).
+
+| material (`loadImplement`) | paso (kg totales) | barra vacía |
+|---|---|---|
+| `barbell` | 2,5 (2 discos de 1,25) | 20 |
+| `trap_bar` | 2,5 | 25 |
+| `ez_bar` | 2,5 | 10 |
+| `smith_machine` | 2,5 | — (varía; no se desglosa) |
+| `dumbbell` | 2 (por mancuerna: el siguiente par disponible) | — |
+| `kettlebell` | 4 | — |
+| `machine` | 5 (placas del selector) | — |
+| `cable` | 2,5 | — |
+| `weight_plate` | 2,5 | — |
+
+Discos disponibles por defecto: 25, 20, 15, 10, 5, 2,5 y 1,25 kg.
+
+**Reglas.**
+1. El material de carga de un ejercicio con peso se deduce de su `equipment` con prioridad fija: barra > trap bar > barra EZ > multipower > mancuerna > kettlebell > máquina > polea > disco. Un test del catálogo exige que todo ejercicio `weighted` tenga uno.
+2. Carga inicial (§16.10) y series de aproximación (§16.5): **hacia abajo** al paso. En barra, la aproximación nunca baja de la barra vacía.
+3. Subida de carga (§7): el incremento es `max(INCREMENTO_CARGA_PCT × carga, paso)` y el resultado se redondea **hacia arriba** al siguiente múltiplo del paso.
+4. Bajada reactiva y vuelta tras pausa (§16.9): **hacia abajo** al paso, sin llegar a 0.
+5. Si la subida supera el **10 %** de la carga (p. ej. mancuernas de 8 a 10 kg, +25 %), la explicación avisa del salto. La regla de doble progresión no cambia.
+6. Desglose de discos (`plateBreakdown`): voraz de mayor a menor por lado; si no cuadra, se informa de los kg que sobran (`remainderKg`). Solo para barras con peso de barra conocido.
+
+Propiedad comprobada con fast-check: toda carga propuesta por la subida, la bajada o la vuelta tras pausa es múltiplo del paso del material.
+
+Fuera de alcance: microdiscos y pasos propios por usuario (`TrainingProfile.loadSteps`), anotado como LATER.
+
