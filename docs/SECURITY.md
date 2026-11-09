@@ -41,6 +41,13 @@ Fronteras de confianza:
    la API no arranca con configuración inválida ni con secretos por defecto.
 4. **Repositorio → catálogo**: el catálogo de ejercicios es un seed revisado en git
    (`packages/catalog`, ADR-0005). No hay endpoints de escritura del catálogo ni rutas admin.
+5. **App → YouTube (destino externo, ADR-0014 Fase 4)**: el botón «Ver vídeo (YouTube)» abre
+   un vídeo concreto, elegido y aprobado por PR, **fuera** de la app (`url_launcher` en modo
+   aplicación externa: app de YouTube o navegador). La app no embebe reproductor ni carga
+   código de terceros, y la URL solo lleva el id público del vídeo y el segundo de inicio
+   (`https://www.youtube.com/watch?v=<id>&t=<s>s`): **ningún dato del usuario**. Antes de
+   salir, un diálogo avisa de que se abandona Pipos. La API no llama a YouTube; solo el script
+   manual `media:check` consulta el oEmbed público con el id del vídeo (sin datos de usuarios).
 
 ## 3. Activos
 
@@ -166,6 +173,8 @@ desaparecen al pasar a `bcrypt` 6 (sin `node-pre-gyp`; mismo formato de hash `$2
 | I | Copia de seguridad de Android con la base local y los tokens | Reglas de exclusión de backup en la app (Fase 5); falta validarlas en un build real | ⏳ deuda |
 | T | Escrituras de tokens no atómicas (access y refresh por separado) | Corregido en la app (Fase 5) | ✅ |
 | I | HTTP en claro | Release exige HTTPS; HTTP solo en debug | ✅ |
+| I | Vídeos de YouTube: fuga de datos a Google o contenido de terceros dentro de la app | Se abren fuera de la app con una URL que solo lleva el id público del vídeo y el segundo de inicio; sin reproductor embebido ni WebView; aviso de que se sale de Pipos. Si algún día se embebe: `youtube-nocookie.com` y actualizar política de privacidad y DPIA (ADR-0014) | ✅ |
+| T | Un vídeo enlazado cambia de contenido, de dueño o desaparece | Solo vídeos concretos aprobados por PR (nunca búsquedas; el `videoId` se valida en catálogo, API y app); `media:check` antes de cada release detecta los no disponibles y los cambios de canal; un medio retirado del JSON se borra al sembrar | ✅ |
 
 ## 7. Clasificación de datos
 
@@ -231,6 +240,10 @@ Los datos de salud son categoría especial (art. 9): base legal = **consentimien
   guardan cuerpos de petición). Anotado para la DPIA.
 - **Estimaciones corporales** (IMC, % de grasa; ADR-0013): se presentan como estimación, con sus
   límites y «no es un diagnóstico»; no se dan categorías de % de grasa.
+- **Vídeos de terceros** (ADR-0014): al abrir YouTube, lo que haga allí el usuario lo gestiona
+  Google con su propia política; Pipos no le envía datos, pero el usuario sale de la app (se le
+  avisa). El contenido de un vídeo puede cambiar sin que cambie su id: se mitiga con la revisión
+  por PR, `media:check` antes de cada release y la revisión profesional antes del lanzamiento.
 - **Base local del móvil sin cifrar** (sandbox de la app; excluida de las copias de seguridad).
 - **Historial de git** conserva binarios antiguos (`.tools/`), sin secretos; no se reescribe.
 - Los textos de las explicaciones de planes **anteriores a la Fase 5** no marcaban los

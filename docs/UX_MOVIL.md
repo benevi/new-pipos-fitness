@@ -48,6 +48,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | ¿Poco tiempo hoy? | spinner en el botón «Ver cómo queda» | sin elegir nada: «Elige un tiempo o activa el volumen reducido.» | mensaje en la hoja | «Necesitas conexión para hacer esto.»; una vez aceptada, la sesión ajustada queda en caché |
 | Días y pausas | barra lineal | «No tienes pausas planificadas.» | snackbar con el error (422 → «elige N como mucho») | «Necesitas conexión para hacer esto.»; el recordatorio usa las pausas en caché |
 | Ficha del ejercicio | spinner | sin descripción o sin errores comunes: esas secciones no se pintan (sin huecos) | 404 → «Este ejercicio ya no está en el catálogo.» (sin reintento); otros → mensaje + Reintentar | copia en caché con «Sin conexión. Datos guardados el …» (las del plan vigente y de la sesión de hoy se precargan); sin copia: «Necesitas conexión para ver esta ficha.» + Reintentar |
+| Ver vídeo (YouTube) | — | sin vídeo revisado: no hay botón (ni hueco) | YouTube no se abre: «No se ha podido abrir YouTube.»; vídeo retirado después: «Este ejercicio ya no tiene un vídeo revisado.» | el botón sigue visible y al tocarlo avisa «Sin conexión: el vídeo necesita internet…»; no se sale de la app |
 | Cuerpo | spinner | sin consentimiento: explicación + «Leer y aceptar»; sin medidas: cómo pesarse | mensaje + Reintentar | última copia en caché; las medidas nuevas van a la cola |
 
 ## 3. Decisiones de interacción
@@ -73,6 +74,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 - **Contenido, en este orden.** Descripción (qué es y qué trabaja); «Músculos que trabaja» con chips de principales (resaltados) y secundarios; «Claves técnicas»; «Errores comunes»; «Qué necesitas» (material y nivel mínimo); «Zonas a vigilar».
 - **Zonas a vigilar.** Solo si el consentimiento de salud cubre las limitaciones y alguna limitación del perfil coincide con las `riskTags` del ejercicio («Rodilla: este ejercicio la carga»; las de «evitar» primero), con la nota «No es consejo médico…». Sin perfil disponible (sin red) no se muestran: nunca se adivinan.
 - **Idioma.** La descripción, las claves y los errores solo existen en castellano (deuda #29); la interfaz de la ficha sí está en es/en.
+- **Vídeo (Fase 4).** Si el ejercicio tiene un vídeo revisado, tras la descripción va el botón «Ver vídeo (YouTube)» y debajo «Vídeo revisado del canal …. Se abre en YouTube, fuera de Pipos.». Sin vídeo, nada.
 
 ### Ideas recuperadas (ADR-0013)
 
@@ -86,6 +88,8 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 ### Guía de ejercicios (ADR-0014)
 
 - **Músculos visibles (Fase 1).** Bajo el nombre de cada ejercicio de Hoy, la línea «Trabaja: Glúteos, Cuádriceps» con los músculos principales del ejercicio que se hace de verdad (el sustituto o el fijado, si lo hay). Si tiene secundarios, la propia línea es el desplegable (48 dp, «+N» y flecha): al tocarla aparece «También: Lumbares, Aductores». TalkBack lee «Trabaja: …» como botón con estado plegado/desplegado. Plan muestra los mismos músculos como chips: los principales rellenos y, tras «También:», los secundarios con borde; el rol se distingue por el texto, no solo por el color, y TalkBack lee el grupo entero. En la hoja de cambiar ejercicio, cada alternativa dice «Trabaja: …» con sus principales; la hoja entera se desplaza para no desbordar con texto grande. Los datos vienen del catálogo vía la API (`muscles`, `primaryMuscles`), ya ordenados; una respuesta o caché anterior sin ellos no pinta nada (sin huecos), y un cambio aún sin confirmar tampoco hasta sincronizar.
+
+- **Vídeos (Fase 4).** Un vídeo concreto y revisado por ejercicio (elegido y aprobado por PR; nunca una búsqueda). Botón «Ver vídeo (YouTube)» (contorno, icono ▷, ≥ 48 dp) en la ficha y en la tarjeta de Hoy bajo «Trabaja: …», solo si la API dice que hay vídeo (`media` en la ficha, `hasVideo` en Hoy; un cambio sin confirmar no lo muestra hasta sincronizar). TalkBack lee «Ver vídeo de técnica de … en YouTube. Sales de Pipos.». Al tocarlo: sin red, snackbar «Sin conexión: el vídeo necesita internet…» y no se sale; con red, diálogo «Vas a salir de Pipos» (canal del vídeo y «Pipos no envía ningún dato tuyo…») con «Cancelar» y «Abrir YouTube», que abre el vídeo **fuera** de la app (app de YouTube o navegador) en el segundo de inicio. Desde Hoy, el vídeo se lee de la ficha (o de su copia en caché). Las imágenes del catálogo aún no se muestran (ADR-0014: esta iteración sale solo con vídeos). Hoy el catálogo no tiene vídeos, así que el botón no aparece en ningún ejercicio.
 
 ## 4. Tono del texto
 
@@ -121,6 +125,7 @@ StatefulShellRoute (barra inferior; cada pestaña conserva su pila)
 | Recordatorio: permiso explicado antes de pedirlo | ✓ | `test/features/settings/schedule_test.dart` |
 | Músculos (ADR-0014): «Trabaja: …» desplegado, chips de Plan y hoja de cambio al 200 % en claro y oscuro; TalkBack lee «Trabaja: …» | ✓ | `test/features/today/exercise_muscles_test.dart` |
 | Ficha del ejercicio al 200 %, objetivos ≥ 48 dp y enlaces con etiqueta «Ver ficha de …» | ✓ | `test/features/exercise/exercise_detail_test.dart` |
+| Botón «Ver vídeo (YouTube)» ≥ 48 dp, con etiqueta que avisa de que se sale de Pipos; aviso sin red | ✓ | `test/features/exercise/exercise_video_test.dart` |
 
 ## 7. Skills consultadas
 
@@ -136,3 +141,4 @@ ADR-0013 (móvil): no se cargaron skills adicionales (`vectorlab-ux-skills:forms
 - Días de entreno, pausas y cambio fijado necesitan red (la API valida); la nota, las medidas, el cambio de ejercicio de hoy y las correcciones de series van por la cola offline.
 - El recordatorio programa avisos para 14 días: si la app no se abre en ese tiempo, deja de avisar hasta la próxima apertura. No se ha probado en un dispositivo real (sin SDK de Android en este entorno).
 - La hora del recordatorio y su interruptor se guardan solo en el dispositivo (no se sincronizan).
+- «Ver vídeo» abre el vídeo en su segundo de inicio, pero YouTube no respeta el segundo de fin en el enlace normal (`watch?v=…&t=…`): `endSeconds` queda como referencia. Abrir la app de YouTube en un dispositivo real no se ha probado (sin SDK de Android en este entorno).
