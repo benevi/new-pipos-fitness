@@ -9,6 +9,7 @@ import {
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
 import { PrismaService } from '../../prisma/prisma.service';
+import { AnalyticsService } from '../analytics/analytics.service';
 import { buildEngineProfile, EngineInputService } from '../plans/engine-input.service';
 import { PlansService, type PreparedPlan } from '../plans/plans.service';
 import { HEALTH_POLICY_TEXT_HASH, healthConsentStatus, latestHealthConsent } from './consent-status';
@@ -32,6 +33,7 @@ export class ConsentService {
     private readonly engineInput: EngineInputService,
     private readonly plans: PlansService,
     private readonly clock: Clock,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   async status(userId: string): Promise<HealthConsentStatus> {
@@ -79,6 +81,9 @@ export class ConsentService {
     }
 
     const planVersion = await this.plans.withVersionRetry(async (tx) => {
+      // Mismo candado por usuario que PUT /me/profile: o el perfil se guarda antes (y aquí se
+      // borra) o ve la retirada y rechaza los datos de salud.
+      await this.analytics.lockUser(tx, userId);
       if (latest?.action === 'granted') {
         await tx.consentEvent.create({
           data: {

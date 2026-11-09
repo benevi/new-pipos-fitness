@@ -10,6 +10,7 @@ import {
   rejectsWithCode,
   UID,
 } from '../../test/unit/support';
+import type { AnalyticsService } from '../analytics/analytics.service';
 import type { CatalogService } from '../catalog/catalog.service';
 import { EngineInputService } from '../plans/engine-input.service';
 import type { PlansService } from '../plans/plans.service';
@@ -37,14 +38,16 @@ function setup() {
     persistVersion: vi.fn().mockResolvedValue({ id: 'v2', version: 2 }),
     withVersionRetry: vi.fn(async (work: (tx: unknown) => unknown) => work(prisma)),
   };
+  const analytics = { lockUser: vi.fn(), rebuildUser: vi.fn() } as unknown as AnalyticsService;
   const profiles = new ProfileService(
     prisma as unknown as PrismaService,
     catalog as unknown as CatalogService,
     engineInput,
     plans as unknown as PlansService,
     clock,
+    analytics,
   );
-  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock);
+  const consents = new ConsentService(prisma as unknown as PrismaService, engineInput, plans as unknown as PlansService, clock, analytics);
   prisma.userExercisePreference.findMany.mockResolvedValue([]);
   return { prisma, plans, profiles, consents };
 }

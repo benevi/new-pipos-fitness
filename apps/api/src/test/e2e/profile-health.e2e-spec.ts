@@ -1,4 +1,6 @@
 import request from 'supertest';
+import { vi } from 'vitest';
+import { CatalogService } from '../../modules/catalog/catalog.service';
 import { HEALTH_CONSENT_POLICY } from '@pipos/contracts';
 import {
   BEGINNER_GYM,
@@ -96,6 +98,32 @@ describe('Perfil, consentimiento de salud y nutrición (e2e, Postgres real)', ()
     // Ni rastro en BD (incluidas las explicaciones de cada ejercicio).
     const rows = await ctx.prisma.planVersion.findMany({ where: { userId: u.id }, include: { sessions: { include: { exercises: true } } } });
     expect(JSON.stringify(rows)).not.toMatch(ZONE_TEXT);
+  });
+
+  it('carrera: si el consentimiento se retira mientras se guarda el perfil, no se guardan datos de salud', async () => {
+    const u = await registerUser(ctx.app);
+    await grantHealthConsent(ctx.app, u.accessToken);
+    await putProfile(ctx.app, u.accessToken, BEGINNER_GYM);
+    const catalog = ctx.app.get(CatalogService);
+    const original = catalog.engineCatalog.bind(catalog);
+    // La retirada llega justo después de la comprobación optimista y antes de la transacción.
+    const spy = vi.spyOn(catalog, 'engineCatalog').mockImplementationOnce(async () => {
+      await request(server()).delete('/me/consents/health').set(bearer(u.accessToken)).expect(200);
+      return original();
+    });
+    try {
+      const res = await request(server())
+        .put('/me/profile')
+        .set(bearer(u.accessToken))
+        .send({ ...BEGINNER_GYM, limitations: ['knee'], weightKg: 80 })
+        .expect(409);
+      expect(res.body.code).toBe('HEALTH_CONSENT_REQUIRED');
+    } finally {
+      spy.mockRestore();
+    }
+    const row = await ctx.prisma.trainingProfile.findUniqueOrThrow({ where: { userId: u.id } });
+    expect(row.limitations).toEqual([]);
+    expect(row.weightKg).toBeNull();
   });
 
   it('PUT /me/profile: valida con issues por campo y rechaza ejercicios desconocidos con 422', async () => {
