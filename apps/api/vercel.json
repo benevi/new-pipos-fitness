@@ -1,9 +1,20 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "regions": ["fra1"],
+  "regions": [
+    "fra1"
+  ],
   "functions": {
-    "api/index.js": { "maxDuration": 30, "includeFiles": "{dist,prisma}/**" }
+    "api/index.js": {
+      "maxDuration": 30,
+      "includeFiles": "{dist,prisma}/**"
+    }
   },
-  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api"
+    }
+  ],
+  "outputDirectory": "public"
 }
