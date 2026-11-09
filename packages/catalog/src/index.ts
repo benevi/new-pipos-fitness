@@ -78,7 +78,7 @@ export function parseCatalog(data: unknown, options: ParseCatalogOptions = {}): 
   const parsed = engineV2.CatalogSchema.safeParse(data);
   if (!parsed.success) {
     throw new CatalogValidationError(
-      parsed.error.issues.map((i) => ({ path: i.path.join('.'), message: i.message })),
+      parsed.error.issues.map((i) => ({ path: i.path.map(String).join('.'), message: i.message })),
     );
   }
   const fileIssues = mediaFileIssues(parsed.data, options.mediaDir ?? MEDIA_DIR);

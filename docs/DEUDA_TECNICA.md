@@ -111,12 +111,15 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
   entrada acotada por el límite de cuerpo). `flutter pub outdated` no se añade: Dependabot de pub
   cubre las actualizaciones de la app.
 
-### [CI] Migrar a zod 4 (excepción de `pnpm audit`)
-- **Severidad:** Media
-- **Impacto:** `pnpm audit` ignora GHSA-mrhx-c7xc-m3w5 (zod 3) porque el parche solo existe en zod 4.
-- **Propuesta:** migrar `packages/contracts` y la API a zod 4 (o a `zod/v4`), sustituir
-  `zod-to-json-schema` por `z.toJSONSchema`, regenerar OpenAPI y validar los fixtures móviles;
-  después quitar la excepción de `package.json`.
+### ~~[CI] Migrar a zod 4 (excepción de `pnpm audit`)~~ — RESUELTO
+- **Estado:** resuelto en la rama `deps/migracion-zod` (migración de dependencias mayores, PR #50).
+- **Qué se hizo:** `packages/contracts` y la API en zod 4.6 (`z.record` con clave, `z.iso.datetime`,
+  `z.uuid`, `z.email`, `error` en lugar de `required_error`; rutas de los issues con `PropertyKey`).
+  `zod-to-json-schema` sustituido por `z.toJSONSchema` (OpenAPI 3.0, `io` de entrada/salida),
+  quitando el `pattern` redundante de los formatos estándar y los límites ±2^53−1 de `.int()`.
+  `openapi.json` regenerado: mismos contratos, más precisos (los campos con `default` son
+  obligatorios en las respuestas, parámetros opcionales sin `anyOf`, fechas con tipo). Fixtures
+  móviles validados. Fuera la excepción GHSA-mrhx-c7xc-m3w5: `pnpm audit` ya no ignora nada.
 
 ### [Catálogo] Pullover en polea frente al jalón con hombro limitado
 - **Severidad:** Baja

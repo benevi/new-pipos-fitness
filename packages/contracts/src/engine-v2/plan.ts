@@ -102,7 +102,7 @@ export const EngineWarningSchema = z
   .object({
     code: WarningCodeSchema,
     message: z.string(),
-    data: z.record(z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
+    data: z.record(z.string(), z.union([z.string(), z.number(), z.boolean(), z.array(z.string())])).optional(),
     /** true si el aviso se deriva de datos de salud (se borra al retirar el consentimiento). */
     health: z.boolean().optional(),
   })

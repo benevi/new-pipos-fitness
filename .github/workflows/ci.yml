@@ -54,7 +54,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       # Falla con vulnerabilidades altas o críticas en dependencias de producción (issue #18).
-      # Excepciones documentadas en package.json (pnpm.auditConfig) y docs/SECURITY.md §6.3.
+      # Sin excepciones; si hiciera falta alguna, en package.json (pnpm.auditConfig) y docs/SECURITY.md §6.3.
       - name: Auditoría de dependencias (pnpm audit, altas y críticas)
         run: pnpm audit --prod --audit-level high
 

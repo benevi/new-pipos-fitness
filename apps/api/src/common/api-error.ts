@@ -24,6 +24,6 @@ export class ApiError extends HttpException {
   }
 }
 
-export function zodIssues(error: { issues: { path: (string | number)[]; message: string }[] }): FieldIssue[] {
-  return error.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+export function zodIssues(error: { issues: { path: PropertyKey[]; message: string }[] }): FieldIssue[] {
+  return error.issues.map((i) => ({ path: i.path.map(String).join('.'), message: i.message }));
 }

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { TEXT_LIMITS, utf8ByteLength } from './limits.js';
 
-const EmailSchema = z.string().max(TEXT_LIMITS.EMAIL).email();
+const EmailSchema = z.email().max(TEXT_LIMITS.EMAIL);
 
 /** Contraseña de registro: 8–72 bytes UTF-8 (bcrypt ignora lo que pase de 72 bytes). */
 export const PasswordSchema = z

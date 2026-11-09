@@ -18,7 +18,9 @@ export const EnvSchema = z.object({
     .min(1, 'DATABASE_URL is required')
     .refine((v) => /^postgres(ql)?:\/\//.test(v), 'DATABASE_URL must be a postgres:// URL'),
   JWT_ACCESS_SECRET: z
-    .string({ required_error: 'JWT_ACCESS_SECRET is required' })
+    .string({
+      error: (issue) => (issue.input === undefined ? 'JWT_ACCESS_SECRET is required' : undefined),
+    })
     .min(32, 'JWT_ACCESS_SECRET must be at least 32 characters'),
   /** Vida del access token en segundos. */
   JWT_ACCESS_EXPIRES_IN: z.coerce.number().int().min(60).max(86_400).default(900),
@@ -40,13 +42,13 @@ export const EnvSchema = z.object({
         .map((o) => o.trim())
         .filter((o) => o.length > 0),
     )
-    .pipe(z.array(z.string().url('CORS_ORIGINS entries must be absolute URLs'))),
+    .pipe(z.array(z.url('CORS_ORIGINS entries must be absolute URLs'))),
   LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
   SENTRY_DSN: z
     .string()
     .optional()
     .transform((v) => (v && v.trim().length > 0 ? v.trim() : undefined))
-    .pipe(z.string().url().optional()),
+    .pipe(z.url().optional()),
   /** Rate limiting global. Sólo se desactiva explícitamente (p. ej. en e2e). */
   THROTTLE_ENABLED: booleanFromEnv(true),
   /**
@@ -79,7 +81,7 @@ export function parseEnv(source: NodeJS.ProcessEnv = process.env): Env {
   const result = EnvSchema.safeParse(source);
   if (!result.success) {
     throw new InvalidEnvError(
-      result.error.issues.map((i) => `${i.path.join('.') || '(root)'}: ${i.message}`),
+      result.error.issues.map((i) => `${i.path.map(String).join('.') || '(root)'}: ${i.message}`),
     );
   }
   if (result.data.NODE_ENV === 'production' && !result.data.THROTTLE_ENABLED) {

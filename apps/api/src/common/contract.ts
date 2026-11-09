@@ -1,5 +1,5 @@
 import { applyDecorators, HttpCode, SetMetadata } from '@nestjs/common';
-import type { ZodTypeAny } from 'zod';
+import type { ZodType as ZodTypeAny } from 'zod';
 
 export const CONTRACT_KEY = 'pipos:contract';
 
