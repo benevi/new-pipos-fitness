@@ -66,6 +66,7 @@
             "additionalProperties": false
           },
           "profile": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "goal": {
@@ -150,26 +151,26 @@
                 "type": "string"
               },
               "activityLevel": {
+                "nullable": true,
                 "type": "string",
                 "enum": [
                   "sedentary_light",
                   "active",
                   "vigorous"
-                ],
-                "nullable": true
+                ]
               },
               "birthYear": {
-                "type": "integer",
-                "nullable": true
+                "nullable": true,
+                "type": "integer"
               },
               "sex": {
+                "nullable": true,
                 "type": "string",
                 "enum": [
                   "male",
                   "female",
                   "other"
-                ],
-                "nullable": true
+                ]
               },
               "bannedExerciseSlugs": {
                 "type": "array",
@@ -199,12 +200,12 @@
                 }
               },
               "weightKg": {
-                "type": "number",
-                "nullable": true
+                "nullable": true,
+                "type": "number"
               },
               "heightCm": {
-                "type": "number",
-                "nullable": true
+                "nullable": true,
+                "type": "number"
               },
               "healthConsent": {
                 "type": "object",
@@ -213,18 +214,19 @@
                     "type": "boolean"
                   },
                   "version": {
-                    "type": "string",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "string"
                   },
                   "grantedAt": {
+                    "nullable": true,
                     "type": "string",
-                    "format": "date-time",
-                    "nullable": true
+                    "format": "date-time"
                   },
                   "currentVersion": {
                     "type": "string"
                   },
                   "scopes": {
+                    "default": [],
                     "type": "array",
                     "items": {
                       "type": "string",
@@ -235,15 +237,15 @@
                         "body_measurements",
                         "derived_estimates"
                       ]
-                    },
-                    "default": []
+                    }
                   }
                 },
                 "required": [
                   "granted",
                   "version",
                   "grantedAt",
-                  "currentVersion"
+                  "currentVersion",
+                  "scopes"
                 ],
                 "additionalProperties": false
               },
@@ -252,13 +254,13 @@
                 "format": "date-time"
               },
               "trainingWeekdays": {
+                "default": [],
                 "type": "array",
                 "items": {
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 7
-                },
-                "default": []
+                }
               }
             },
             "required": [
@@ -278,10 +280,10 @@
               "weightKg",
               "heightCm",
               "healthConsent",
-              "updatedAt"
+              "updatedAt",
+              "trainingWeekdays"
             ],
-            "additionalProperties": false,
-            "nullable": true
+            "additionalProperties": false
           },
           "consentEvents": {
             "type": "array",
@@ -659,13 +661,15 @@
                                     "type": "integer"
                                   },
                                   "initialLoadKg": {
-                                    "type": "number",
-                                    "nullable": true
+                                    "nullable": true,
+                                    "type": "number"
                                   },
                                   "initialLoadIsEstimate": {
                                     "type": "boolean"
                                   },
                                   "loadImplement": {
+                                    "default": null,
+                                    "nullable": true,
                                     "type": "string",
                                     "enum": [
                                       "barbell",
@@ -677,11 +681,11 @@
                                       "machine",
                                       "cable",
                                       "weight_plate"
-                                    ],
-                                    "nullable": true,
-                                    "default": null
+                                    ]
                                   },
                                   "pinned": {
+                                    "default": null,
+                                    "nullable": true,
                                     "type": "object",
                                     "properties": {
                                       "id": {
@@ -700,9 +704,7 @@
                                       "slug",
                                       "nameEs"
                                     ],
-                                    "additionalProperties": false,
-                                    "nullable": true,
-                                    "default": null
+                                    "additionalProperties": false
                                   },
                                   "warmupSets": {
                                     "type": "array",
@@ -713,12 +715,12 @@
                                           "type": "integer"
                                         },
                                         "loadPct": {
-                                          "type": "number",
-                                          "nullable": true
+                                          "nullable": true,
+                                          "type": "number"
                                         },
                                         "loadKg": {
-                                          "type": "number",
-                                          "nullable": true
+                                          "nullable": true,
+                                          "type": "number"
                                         }
                                       },
                                       "required": [
@@ -739,6 +741,8 @@
                                     }
                                   },
                                   "muscles": {
+                                    "default": [],
+                                    "maxItems": 19,
                                     "type": "array",
                                     "items": {
                                       "type": "object",
@@ -780,9 +784,7 @@
                                         "role"
                                       ],
                                       "additionalProperties": false
-                                    },
-                                    "maxItems": 19,
-                                    "default": []
+                                    }
                                   }
                                 },
                                 "required": [
@@ -801,9 +803,12 @@
                                   "restSeconds",
                                   "initialLoadKg",
                                   "initialLoadIsEstimate",
+                                  "loadImplement",
+                                  "pinned",
                                   "warmupSets",
                                   "estimatedMinutes",
-                                  "rationale"
+                                  "rationale",
+                                  "muscles"
                                 ],
                                 "additionalProperties": false
                               }
@@ -888,9 +893,9 @@
                   "format": "date-time"
                 },
                 "completedAt": {
+                  "nullable": true,
                   "type": "string",
-                  "format": "date-time",
-                  "nullable": true
+                  "format": "date-time"
                 },
                 "sets": {
                   "type": "array",
@@ -910,9 +915,9 @@
                         "format": "uuid"
                       },
                       "planExerciseId": {
+                        "nullable": true,
                         "type": "string",
-                        "format": "uuid",
-                        "nullable": true
+                        "format": "uuid"
                       },
                       "exerciseId": {
                         "type": "string",
@@ -928,8 +933,8 @@
                         "type": "number"
                       },
                       "rir": {
-                        "type": "integer",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "integer"
                       },
                       "isWarmup": {
                         "type": "boolean"
@@ -943,9 +948,9 @@
                         "format": "date-time"
                       },
                       "deletedAt": {
+                        "nullable": true,
                         "type": "string",
-                        "format": "date-time",
-                        "nullable": true
+                        "format": "date-time"
                       }
                     },
                     "required": [
@@ -1032,23 +1037,27 @@
                   }
                 },
                 "adjustment": {
+                  "default": null,
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "availableMinutes": {
+                      "default": null,
+                      "nullable": true,
                       "type": "integer",
                       "minimum": 15,
-                      "maximum": 90,
-                      "nullable": true,
-                      "default": null
+                      "maximum": 90
                     },
                     "reducedVolume": {
-                      "type": "boolean",
-                      "default": false
+                      "default": false,
+                      "type": "boolean"
                     }
                   },
-                  "additionalProperties": false,
-                  "nullable": true,
-                  "default": null
+                  "required": [
+                    "availableMinutes",
+                    "reducedVolume"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
@@ -1059,12 +1068,14 @@
                 "startedAt",
                 "completedAt",
                 "sets",
-                "substitutions"
+                "substitutions",
+                "adjustment"
               ],
               "additionalProperties": false
             }
           },
           "exerciseNotes": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "object",
@@ -1096,10 +1107,10 @@
                 "updatedAt"
               ],
               "additionalProperties": false
-            },
-            "default": []
+            }
           },
           "trainingBreaks": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "object",
@@ -1112,8 +1123,14 @@
                   "type": "string",
                   "format": "uuid"
                 },
-                "startsOn": {},
-                "endsOn": {},
+                "startsOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "endsOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -1127,42 +1144,45 @@
                 "createdAt"
               ],
               "additionalProperties": false
-            },
-            "default": []
+            }
           },
           "bodyMeasurements": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "measuredOn": {},
+                "measuredOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "weightKg": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "waistCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "neckCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "hipCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "chestCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "armCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "thighCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "updatedAt": {
                   "type": "string",
@@ -1181,10 +1201,10 @@
                 "updatedAt"
               ],
               "additionalProperties": false
-            },
-            "default": []
+            }
           },
           "auditEvents": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "object",
@@ -1213,8 +1233,7 @@
                 "occurredAt"
               ],
               "additionalProperties": false
-            },
-            "default": []
+            }
           },
           "analytics": {
             "type": "object",
@@ -1235,7 +1254,10 @@
                       "type": "string",
                       "format": "uuid"
                     },
-                    "performedOn": {},
+                    "performedOn": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "e1rmKg": {
                       "type": "number"
                     },
@@ -1259,7 +1281,10 @@
                 "items": {
                   "type": "object",
                   "properties": {
-                    "weekStart": {},
+                    "weekStart": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "muscle": {
                       "type": "string",
                       "enum": [
@@ -1305,7 +1330,10 @@
                 "items": {
                   "type": "object",
                   "properties": {
-                    "weekStart": {},
+                    "weekStart": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "plannedSessions": {
                       "type": "integer"
                     },
@@ -1346,6 +1374,10 @@
           "consentEvents",
           "plans",
           "workouts",
+          "exerciseNotes",
+          "trainingBreaks",
+          "bodyMeasurements",
+          "auditEvents",
           "analytics"
         ],
         "additionalProperties": false
@@ -1361,7 +1393,10 @@
             "items": {
               "type": "object",
               "properties": {
-                "weekStart": {},
+                "weekStart": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "plannedSessions": {
                   "type": "integer"
                 },
@@ -1379,10 +1414,10 @@
                   "minimum": 0
                 },
                 "breakDays": {
+                  "default": 0,
                   "type": "integer",
                   "minimum": 0,
-                  "maximum": 7,
-                  "default": 0
+                  "maximum": 7
                 }
               },
               "required": [
@@ -1391,7 +1426,8 @@
                 "completedSessions",
                 "plannedSets",
                 "completedSets",
-                "sessionRatio"
+                "sessionRatio",
+                "breakDays"
               ],
               "additionalProperties": false
             }
@@ -1465,38 +1501,42 @@
         "type": "object",
         "properties": {
           "items": {
+            "maxItems": 400,
             "type": "array",
             "items": {
               "type": "object",
               "properties": {
-                "measuredOn": {},
+                "measuredOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "weightKg": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "waistCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "neckCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "hipCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "chestCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "armCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "thighCm": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "updatedAt": {
                   "type": "string",
@@ -1515,8 +1555,7 @@
                 "updatedAt"
               ],
               "additionalProperties": false
-            },
-            "maxItems": 400
+            }
           }
         },
         "required": [
@@ -1527,34 +1566,37 @@
       "BodyMeasurementResponse": {
         "type": "object",
         "properties": {
-          "measuredOn": {},
+          "measuredOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
           "weightKg": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "waistCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "neckCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "hipCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "chestCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "armCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "thighCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "updatedAt": {
             "type": "string",
@@ -1584,9 +1626,13 @@
             "type": "object",
             "properties": {
               "latest": {
+                "nullable": true,
                 "type": "object",
                 "properties": {
-                  "date": {},
+                  "date": {
+                    "type": "string",
+                    "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                  },
                   "value": {
                     "type": "number"
                   }
@@ -1595,8 +1641,7 @@
                   "date",
                   "value"
                 ],
-                "additionalProperties": false,
-                "nullable": true
+                "additionalProperties": false
               },
               "trend": {
                 "type": "object",
@@ -1613,10 +1658,11 @@
                     ]
                   },
                   "weeklyRatePct": {
-                    "type": "number",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "number"
                   },
                   "target": {
+                    "nullable": true,
                     "type": "object",
                     "properties": {
                       "direction": {
@@ -1638,8 +1684,7 @@
                       "minPct",
                       "maxPct"
                     ],
-                    "additionalProperties": false,
-                    "nullable": true
+                    "additionalProperties": false
                   },
                   "movingAverage": {
                     "type": "array",
@@ -1702,9 +1747,12 @@
                 ]
               },
               "measuredOn": {
-                "nullable": true
+                "nullable": true,
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
               },
               "result": {
+                "nullable": true,
                 "type": "object",
                 "properties": {
                   "status": {
@@ -1715,10 +1763,11 @@
                     ]
                   },
                   "value": {
-                    "type": "number",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "number"
                   },
                   "category": {
+                    "nullable": true,
                     "type": "string",
                     "enum": [
                       "underweight",
@@ -1727,12 +1776,11 @@
                       "obese_class_1",
                       "obese_class_2",
                       "obese_class_3"
-                    ],
-                    "nullable": true
+                    ]
                   },
                   "categoryEs": {
-                    "type": "string",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "string"
                   },
                   "caveats": {
                     "type": "array",
@@ -1748,15 +1796,17 @@
                   "categoryEs",
                   "caveats"
                 ],
-                "additionalProperties": false,
-                "nullable": true
+                "additionalProperties": false
               },
               "series": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "date": {},
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "value": {
                       "type": "number"
                     }
@@ -1791,9 +1841,12 @@
                 ]
               },
               "measuredOn": {
-                "nullable": true
+                "nullable": true,
+                "type": "string",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
               },
               "result": {
+                "nullable": true,
                 "type": "object",
                 "properties": {
                   "status": {
@@ -1805,8 +1858,8 @@
                     ]
                   },
                   "percent": {
-                    "type": "number",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "number"
                   },
                   "method": {
                     "type": "string",
@@ -1834,15 +1887,17 @@
                   "issues",
                   "caveats"
                 ],
-                "additionalProperties": false,
-                "nullable": true
+                "additionalProperties": false
               },
               "series": {
                 "type": "array",
                 "items": {
                   "type": "object",
                   "properties": {
-                    "date": {},
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "percent": {
                       "type": "number"
                     }
@@ -1880,9 +1935,13 @@
                   ]
                 },
                 "latest": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
-                    "date": {},
+                    "date": {
+                      "type": "string",
+                      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                    },
                     "value": {
                       "type": "number"
                     }
@@ -1891,16 +1950,15 @@
                     "date",
                     "value"
                   ],
-                  "additionalProperties": false,
-                  "nullable": true
+                  "additionalProperties": false
                 },
                 "change4w": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 },
                 "change12w": {
-                  "type": "number",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "number"
                 }
               },
               "required": [
@@ -1992,7 +2050,10 @@
                   "items": {
                     "type": "object",
                     "properties": {
-                      "date": {},
+                      "date": {
+                        "type": "string",
+                        "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                      },
                       "e1rmKg": {
                         "type": "number"
                       },
@@ -2264,8 +2325,8 @@
             }
           },
           "substitutionGroup": {
-            "type": "string",
-            "nullable": true
+            "nullable": true,
+            "type": "string"
           },
           "cuesEs": {
             "type": "array",
@@ -2274,21 +2335,23 @@
             }
           },
           "descriptionEs": {
-            "type": "string",
+            "default": null,
             "nullable": true,
-            "default": null
+            "type": "string"
           },
           "mistakesEs": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "string"
-            },
-            "default": []
+            }
           },
           "media": {
+            "default": [],
+            "maxItems": 2,
             "type": "array",
             "items": {
-              "anyOf": [
+              "oneOf": [
                 {
                   "type": "object",
                   "properties": {
@@ -2303,15 +2366,15 @@
                       "pattern": "^[A-Za-z0-9_-]{11}$"
                     },
                     "startSeconds": {
+                      "nullable": true,
                       "type": "integer",
-                      "minimum": 0,
-                      "nullable": true
+                      "minimum": 0
                     },
                     "endSeconds": {
+                      "nullable": true,
                       "type": "integer",
-                      "exclusiveMinimum": true,
                       "minimum": 0,
-                      "nullable": true
+                      "exclusiveMinimum": true
                     },
                     "channelName": {
                       "type": "string"
@@ -2377,9 +2440,7 @@
                   "additionalProperties": false
                 }
               ]
-            },
-            "maxItems": 2,
-            "default": []
+            }
           }
         },
         "required": [
@@ -2397,7 +2458,10 @@
           "muscles",
           "riskTags",
           "substitutionGroup",
-          "cuesEs"
+          "cuesEs",
+          "descriptionEs",
+          "mistakesEs",
+          "media"
         ],
         "additionalProperties": false
       },
@@ -2673,12 +2737,12 @@
             "maxLength": 32
           },
           "locale": {
+            "default": "es",
             "type": "string",
             "enum": [
               "es",
               "en"
-            ],
-            "default": "es"
+            ]
           }
         },
         "required": [
@@ -2693,18 +2757,19 @@
             "type": "boolean"
           },
           "version": {
-            "type": "string",
-            "nullable": true
+            "nullable": true,
+            "type": "string"
           },
           "grantedAt": {
+            "nullable": true,
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "currentVersion": {
             "type": "string"
           },
           "scopes": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "string",
@@ -2715,15 +2780,15 @@
                 "body_measurements",
                 "derived_estimates"
               ]
-            },
-            "default": []
+            }
           }
         },
         "required": [
           "granted",
           "version",
           "grantedAt",
-          "currentVersion"
+          "currentVersion",
+          "scopes"
         ],
         "additionalProperties": false
       },
@@ -2759,8 +2824,7 @@
         "required": [
           "email",
           "password"
-        ],
-        "additionalProperties": false
+        ]
       },
       "LogoutRequest": {
         "type": "object",
@@ -2773,8 +2837,7 @@
         },
         "required": [
           "refreshToken"
-        ],
-        "additionalProperties": false
+        ]
       },
       "MeResponse": {
         "type": "object",
@@ -2929,10 +2992,10 @@
             "maximum": 1000
           },
           "rir": {
+            "nullable": true,
             "type": "integer",
             "minimum": 0,
-            "maximum": 10,
-            "nullable": true
+            "maximum": 10
           },
           "isWarmup": {
             "type": "boolean"
@@ -2968,12 +3031,12 @@
             "format": "uuid"
           },
           "planExerciseIds": {
+            "minItems": 1,
             "type": "array",
             "items": {
               "type": "string",
               "format": "uuid"
-            },
-            "minItems": 1
+            }
           },
           "original": {
             "type": "object",
@@ -2997,6 +3060,7 @@
             "additionalProperties": false
           },
           "pinned": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "id": {
@@ -3015,8 +3079,7 @@
               "slug",
               "nameEs"
             ],
-            "additionalProperties": false,
-            "nullable": true
+            "additionalProperties": false
           }
         },
         "required": [
@@ -3415,13 +3478,15 @@
                         "type": "integer"
                       },
                       "initialLoadKg": {
-                        "type": "number",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "number"
                       },
                       "initialLoadIsEstimate": {
                         "type": "boolean"
                       },
                       "loadImplement": {
+                        "default": null,
+                        "nullable": true,
                         "type": "string",
                         "enum": [
                           "barbell",
@@ -3433,11 +3498,11 @@
                           "machine",
                           "cable",
                           "weight_plate"
-                        ],
-                        "nullable": true,
-                        "default": null
+                        ]
                       },
                       "pinned": {
+                        "default": null,
+                        "nullable": true,
                         "type": "object",
                         "properties": {
                           "id": {
@@ -3456,9 +3521,7 @@
                           "slug",
                           "nameEs"
                         ],
-                        "additionalProperties": false,
-                        "nullable": true,
-                        "default": null
+                        "additionalProperties": false
                       },
                       "warmupSets": {
                         "type": "array",
@@ -3469,12 +3532,12 @@
                               "type": "integer"
                             },
                             "loadPct": {
-                              "type": "number",
-                              "nullable": true
+                              "nullable": true,
+                              "type": "number"
                             },
                             "loadKg": {
-                              "type": "number",
-                              "nullable": true
+                              "nullable": true,
+                              "type": "number"
                             }
                           },
                           "required": [
@@ -3495,6 +3558,8 @@
                         }
                       },
                       "muscles": {
+                        "default": [],
+                        "maxItems": 19,
                         "type": "array",
                         "items": {
                           "type": "object",
@@ -3536,9 +3601,7 @@
                             "role"
                           ],
                           "additionalProperties": false
-                        },
-                        "maxItems": 19,
-                        "default": []
+                        }
                       }
                     },
                     "required": [
@@ -3557,9 +3620,12 @@
                       "restSeconds",
                       "initialLoadKg",
                       "initialLoadIsEstimate",
+                      "loadImplement",
+                      "pinned",
                       "warmupSets",
                       "estimatedMinutes",
-                      "rationale"
+                      "rationale",
+                      "muscles"
                     ],
                     "additionalProperties": false
                   }
@@ -3683,26 +3749,26 @@
             "type": "string"
           },
           "activityLevel": {
+            "nullable": true,
             "type": "string",
             "enum": [
               "sedentary_light",
               "active",
               "vigorous"
-            ],
-            "nullable": true
+            ]
           },
           "birthYear": {
-            "type": "integer",
-            "nullable": true
+            "nullable": true,
+            "type": "integer"
           },
           "sex": {
+            "nullable": true,
             "type": "string",
             "enum": [
               "male",
               "female",
               "other"
-            ],
-            "nullable": true
+            ]
           },
           "bannedExerciseSlugs": {
             "type": "array",
@@ -3732,12 +3798,12 @@
             }
           },
           "weightKg": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "heightCm": {
-            "type": "number",
-            "nullable": true
+            "nullable": true,
+            "type": "number"
           },
           "healthConsent": {
             "type": "object",
@@ -3746,18 +3812,19 @@
                 "type": "boolean"
               },
               "version": {
-                "type": "string",
-                "nullable": true
+                "nullable": true,
+                "type": "string"
               },
               "grantedAt": {
+                "nullable": true,
                 "type": "string",
-                "format": "date-time",
-                "nullable": true
+                "format": "date-time"
               },
               "currentVersion": {
                 "type": "string"
               },
               "scopes": {
+                "default": [],
                 "type": "array",
                 "items": {
                   "type": "string",
@@ -3768,15 +3835,15 @@
                     "body_measurements",
                     "derived_estimates"
                   ]
-                },
-                "default": []
+                }
               }
             },
             "required": [
               "granted",
               "version",
               "grantedAt",
-              "currentVersion"
+              "currentVersion",
+              "scopes"
             ],
             "additionalProperties": false
           },
@@ -3785,13 +3852,13 @@
             "format": "date-time"
           },
           "trainingWeekdays": {
+            "default": [],
             "type": "array",
             "items": {
               "type": "integer",
               "minimum": 1,
               "maximum": 7
-            },
-            "default": []
+            }
           }
         },
         "required": [
@@ -3811,7 +3878,8 @@
           "weightKg",
           "heightCm",
           "healthConsent",
-          "updatedAt"
+          "updatedAt",
+          "trainingWeekdays"
         ],
         "additionalProperties": false
       },
@@ -3819,13 +3887,13 @@
         "type": "object",
         "properties": {
           "trainingWeekdays": {
+            "maxItems": 6,
             "type": "array",
             "items": {
               "type": "integer",
               "minimum": 1,
               "maximum": 7
-            },
-            "maxItems": 6
+            }
           }
         },
         "required": [
@@ -3921,26 +3989,26 @@
                 "type": "string"
               },
               "activityLevel": {
+                "nullable": true,
                 "type": "string",
                 "enum": [
                   "sedentary_light",
                   "active",
                   "vigorous"
-                ],
-                "nullable": true
+                ]
               },
               "birthYear": {
-                "type": "integer",
-                "nullable": true
+                "nullable": true,
+                "type": "integer"
               },
               "sex": {
+                "nullable": true,
                 "type": "string",
                 "enum": [
                   "male",
                   "female",
                   "other"
-                ],
-                "nullable": true
+                ]
               },
               "bannedExerciseSlugs": {
                 "type": "array",
@@ -3970,12 +4038,12 @@
                 }
               },
               "weightKg": {
-                "type": "number",
-                "nullable": true
+                "nullable": true,
+                "type": "number"
               },
               "heightCm": {
-                "type": "number",
-                "nullable": true
+                "nullable": true,
+                "type": "number"
               },
               "healthConsent": {
                 "type": "object",
@@ -3984,18 +4052,19 @@
                     "type": "boolean"
                   },
                   "version": {
-                    "type": "string",
-                    "nullable": true
+                    "nullable": true,
+                    "type": "string"
                   },
                   "grantedAt": {
+                    "nullable": true,
                     "type": "string",
-                    "format": "date-time",
-                    "nullable": true
+                    "format": "date-time"
                   },
                   "currentVersion": {
                     "type": "string"
                   },
                   "scopes": {
+                    "default": [],
                     "type": "array",
                     "items": {
                       "type": "string",
@@ -4006,15 +4075,15 @@
                         "body_measurements",
                         "derived_estimates"
                       ]
-                    },
-                    "default": []
+                    }
                   }
                 },
                 "required": [
                   "granted",
                   "version",
                   "grantedAt",
-                  "currentVersion"
+                  "currentVersion",
+                  "scopes"
                 ],
                 "additionalProperties": false
               },
@@ -4023,13 +4092,13 @@
                 "format": "date-time"
               },
               "trainingWeekdays": {
+                "default": [],
                 "type": "array",
                 "items": {
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 7
-                },
-                "default": []
+                }
               }
             },
             "required": [
@@ -4049,11 +4118,13 @@
               "weightKg",
               "heightCm",
               "healthConsent",
-              "updatedAt"
+              "updatedAt",
+              "trainingWeekdays"
             ],
             "additionalProperties": false
           },
           "planVersion": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "id": {
@@ -4105,8 +4176,7 @@
               "sessionCount",
               "createdAt"
             ],
-            "additionalProperties": false,
-            "nullable": true
+            "additionalProperties": false
           }
         },
         "required": [
@@ -4147,6 +4217,7 @@
             "maximum": 90
           },
           "equipment": {
+            "maxItems": 19,
             "type": "array",
             "items": {
               "type": "string",
@@ -4171,10 +4242,11 @@
                 "medicine_ball",
                 "plyo_box"
               ]
-            },
-            "maxItems": 19
+            }
           },
           "priorityMuscles": {
+            "default": [],
+            "maxItems": 3,
             "type": "array",
             "items": {
               "type": "string",
@@ -4199,9 +4271,7 @@
                 "abductors",
                 "calves"
               ]
-            },
-            "maxItems": 3,
-            "default": []
+            }
           },
           "timezone": {
             "type": "string",
@@ -4209,55 +4279,57 @@
             "maxLength": 64
           },
           "activityLevel": {
+            "default": null,
+            "nullable": true,
             "type": "string",
             "enum": [
               "sedentary_light",
               "active",
               "vigorous"
-            ],
-            "nullable": true,
-            "default": null
+            ]
           },
           "birthYear": {
+            "default": null,
+            "nullable": true,
             "type": "integer",
             "minimum": 1900,
-            "maximum": 2100,
-            "nullable": true,
-            "default": null
+            "maximum": 2100
           },
           "sex": {
+            "default": null,
+            "nullable": true,
             "type": "string",
             "enum": [
               "male",
               "female",
               "other"
-            ],
-            "nullable": true,
-            "default": null
+            ]
           },
           "bannedExerciseSlugs": {
+            "default": [],
+            "maxItems": 200,
             "type": "array",
             "items": {
               "type": "string",
               "minLength": 2,
               "maxLength": 96,
               "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-            },
-            "maxItems": 200,
-            "default": []
+            }
           },
           "favouriteExerciseSlugs": {
+            "default": [],
+            "maxItems": 200,
             "type": "array",
             "items": {
               "type": "string",
               "minLength": 2,
               "maxLength": 96,
               "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
-            },
-            "maxItems": 200,
-            "default": []
+            }
           },
           "limitations": {
+            "default": [],
+            "maxItems": 7,
             "type": "array",
             "items": {
               "type": "string",
@@ -4270,23 +4342,21 @@
                 "knee",
                 "ankle"
               ]
-            },
-            "maxItems": 7,
-            "default": []
+            }
           },
           "weightKg": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 25,
-            "maximum": 400,
-            "nullable": true,
-            "default": null
+            "maximum": 400
           },
           "heightCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 100,
-            "maximum": 250,
-            "nullable": true,
-            "default": null
+            "maximum": 250
           }
         },
         "required": [
@@ -4343,8 +4413,7 @@
         },
         "required": [
           "refreshToken"
-        ],
-        "additionalProperties": false
+        ]
       },
       "RegisterRequest": {
         "type": "object",
@@ -4361,8 +4430,7 @@
         "required": [
           "email",
           "password"
-        ],
-        "additionalProperties": false
+        ]
       },
       "SetLogResponse": {
         "type": "object",
@@ -4380,9 +4448,9 @@
             "format": "uuid"
           },
           "planExerciseId": {
+            "nullable": true,
             "type": "string",
-            "format": "uuid",
-            "nullable": true
+            "format": "uuid"
           },
           "exerciseId": {
             "type": "string",
@@ -4398,8 +4466,8 @@
             "type": "number"
           },
           "rir": {
-            "type": "integer",
-            "nullable": true
+            "nullable": true,
+            "type": "integer"
           },
           "isWarmup": {
             "type": "boolean"
@@ -4413,9 +4481,9 @@
             "format": "date-time"
           },
           "deletedAt": {
+            "nullable": true,
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           }
         },
         "required": [
@@ -4454,15 +4522,15 @@
             "type": "object",
             "properties": {
               "availableMinutes": {
+                "default": null,
+                "nullable": true,
                 "type": "integer",
                 "minimum": 15,
-                "maximum": 90,
-                "nullable": true,
-                "default": null
+                "maximum": 90
               },
               "reducedVolume": {
-                "type": "boolean",
-                "default": false
+                "default": false,
+                "type": "boolean"
               }
             },
             "additionalProperties": false
@@ -4513,6 +4581,7 @@
             "additionalProperties": false
           },
           "substitutes": {
+            "maxItems": 3,
             "type": "array",
             "items": {
               "type": "object",
@@ -4537,6 +4606,7 @@
                   }
                 },
                 "primaryMuscles": {
+                  "default": [],
                   "type": "array",
                   "items": {
                     "type": "string",
@@ -4561,8 +4631,7 @@
                       "abductors",
                       "calves"
                     ]
-                  },
-                  "default": []
+                  }
                 }
               },
               "required": [
@@ -4570,11 +4639,11 @@
                 "slug",
                 "nameEs",
                 "score",
-                "rationale"
+                "rationale",
+                "primaryMuscles"
               ],
               "additionalProperties": false
-            },
-            "maxItems": 3
+            }
           }
         },
         "required": [
@@ -4695,6 +4764,7 @@
             "type": "string"
           },
           "workout": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "id": {
@@ -4724,8 +4794,7 @@
               "status",
               "startedAt"
             ],
-            "additionalProperties": false,
-            "nullable": true
+            "additionalProperties": false
           },
           "exercises": {
             "type": "array",
@@ -4761,6 +4830,7 @@
                   "additionalProperties": false
                 },
                 "substitutedFrom": {
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "id": {
@@ -4779,8 +4849,7 @@
                     "slug",
                     "nameEs"
                   ],
-                  "additionalProperties": false,
-                  "nullable": true
+                  "additionalProperties": false
                 },
                 "cuesEs": {
                   "type": "array",
@@ -4859,8 +4928,8 @@
                       "type": "integer"
                     },
                     "loadKg": {
-                      "type": "number",
-                      "nullable": true
+                      "nullable": true,
+                      "type": "number"
                     },
                     "isDeload": {
                       "type": "boolean"
@@ -4893,12 +4962,12 @@
                         "type": "integer"
                       },
                       "loadPct": {
-                        "type": "number",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "number"
                       },
                       "loadKg": {
-                        "type": "number",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "number"
                       }
                     },
                     "required": [
@@ -4927,9 +4996,9 @@
                         "format": "uuid"
                       },
                       "planExerciseId": {
+                        "nullable": true,
                         "type": "string",
-                        "format": "uuid",
-                        "nullable": true
+                        "format": "uuid"
                       },
                       "exerciseId": {
                         "type": "string",
@@ -4945,8 +5014,8 @@
                         "type": "number"
                       },
                       "rir": {
-                        "type": "integer",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "integer"
                       },
                       "isWarmup": {
                         "type": "boolean"
@@ -4960,9 +5029,9 @@
                         "format": "date-time"
                       },
                       "deletedAt": {
+                        "nullable": true,
                         "type": "string",
-                        "format": "date-time",
-                        "nullable": true
+                        "format": "date-time"
                       }
                     },
                     "required": [
@@ -4984,6 +5053,8 @@
                   }
                 },
                 "loadImplement": {
+                  "default": null,
+                  "nullable": true,
                   "type": "string",
                   "enum": [
                     "barbell",
@@ -4995,18 +5066,18 @@
                     "machine",
                     "cable",
                     "weight_plate"
-                  ],
-                  "nullable": true,
-                  "default": null
+                  ]
                 },
                 "loadStepKg": {
-                  "type": "number",
-                  "exclusiveMinimum": true,
-                  "minimum": 0,
+                  "default": null,
                   "nullable": true,
-                  "default": null
+                  "type": "number",
+                  "minimum": 0,
+                  "exclusiveMinimum": true
                 },
                 "plates": {
+                  "default": null,
+                  "nullable": true,
                   "type": "object",
                   "properties": {
                     "barKg": {
@@ -5017,8 +5088,8 @@
                       "type": "array",
                       "items": {
                         "type": "number",
-                        "exclusiveMinimum": true,
-                        "minimum": 0
+                        "minimum": 0,
+                        "exclusiveMinimum": true
                       }
                     },
                     "remainderKg": {
@@ -5031,20 +5102,20 @@
                     "perSide",
                     "remainderKg"
                   ],
-                  "additionalProperties": false,
-                  "nullable": true,
-                  "default": null
+                  "additionalProperties": false
                 },
                 "pinned": {
-                  "type": "boolean",
-                  "default": false
+                  "default": false,
+                  "type": "boolean"
                 },
                 "note": {
-                  "type": "string",
+                  "default": null,
                   "nullable": true,
-                  "default": null
+                  "type": "string"
                 },
                 "muscles": {
+                  "default": [],
+                  "maxItems": 19,
                   "type": "array",
                   "items": {
                     "type": "object",
@@ -5086,13 +5157,11 @@
                       "role"
                     ],
                     "additionalProperties": false
-                  },
-                  "maxItems": 19,
-                  "default": []
+                  }
                 },
                 "hasVideo": {
-                  "type": "boolean",
-                  "default": false
+                  "default": false,
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -5107,16 +5176,25 @@
                 "restSeconds",
                 "prescription",
                 "warmupSets",
-                "loggedSets"
+                "loggedSets",
+                "loadImplement",
+                "loadStepKg",
+                "plates",
+                "pinned",
+                "note",
+                "muscles",
+                "hasVideo"
               ],
               "additionalProperties": false
             }
           },
           "scheduledToday": {
-            "type": "boolean",
-            "default": true
+            "default": true,
+            "type": "boolean"
           },
           "activeBreak": {
+            "default": null,
+            "nullable": true,
             "type": "object",
             "properties": {
               "id": {
@@ -5135,11 +5213,11 @@
               "startsOn",
               "endsOn"
             ],
-            "additionalProperties": false,
-            "nullable": true,
-            "default": null
+            "additionalProperties": false
           },
           "adjustment": {
+            "default": null,
+            "nullable": true,
             "type": "object",
             "properties": {
               "source": {
@@ -5150,8 +5228,8 @@
                 ]
               },
               "availableMinutes": {
-                "type": "integer",
-                "nullable": true
+                "nullable": true,
+                "type": "integer"
               },
               "reducedVolume": {
                 "type": "boolean"
@@ -5216,9 +5294,7 @@
               "dropped",
               "rationale"
             ],
-            "additionalProperties": false,
-            "nullable": true,
-            "default": null
+            "additionalProperties": false
           }
         },
         "required": [
@@ -5234,7 +5310,10 @@
           "rationale",
           "today",
           "workout",
-          "exercises"
+          "exercises",
+          "scheduledToday",
+          "activeBreak",
+          "adjustment"
         ],
         "additionalProperties": false
       },
@@ -5242,6 +5321,7 @@
         "type": "object",
         "properties": {
           "items": {
+            "maxItems": 200,
             "type": "array",
             "items": {
               "type": "object",
@@ -5254,8 +5334,14 @@
                   "type": "string",
                   "format": "uuid"
                 },
-                "startsOn": {},
-                "endsOn": {},
+                "startsOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "endsOn": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "createdAt": {
                   "type": "string",
                   "format": "date-time"
@@ -5269,8 +5355,7 @@
                 "createdAt"
               ],
               "additionalProperties": false
-            },
-            "maxItems": 200
+            }
           }
         },
         "required": [
@@ -5289,8 +5374,14 @@
             "type": "string",
             "format": "uuid"
           },
-          "startsOn": {},
-          "endsOn": {},
+          "startsOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
+          "endsOn": {
+            "type": "string",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+          },
           "createdAt": {
             "type": "string",
             "format": "date-time"
@@ -5313,53 +5404,53 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "weightKg": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 25,
-            "maximum": 400,
-            "nullable": true,
-            "default": null
+            "maximum": 400
           },
           "waistCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 40,
-            "maximum": 250,
-            "nullable": true,
-            "default": null
+            "maximum": 250
           },
           "neckCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 20,
-            "maximum": 70,
-            "nullable": true,
-            "default": null
+            "maximum": 70
           },
           "hipCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 50,
-            "maximum": 250,
-            "nullable": true,
-            "default": null
+            "maximum": 250
           },
           "chestCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 50,
-            "maximum": 220,
-            "nullable": true,
-            "default": null
+            "maximum": 220
           },
           "armCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 15,
-            "maximum": 80,
-            "nullable": true,
-            "default": null
+            "maximum": 80
           },
           "thighCm": {
+            "default": null,
+            "nullable": true,
             "type": "number",
             "minimum": 25,
-            "maximum": 120,
-            "nullable": true,
-            "default": null
+            "maximum": 120
           }
         },
         "required": [
@@ -5375,10 +5466,10 @@
             "format": "uuid"
           },
           "planExerciseId": {
-            "type": "string",
-            "format": "uuid",
+            "default": null,
             "nullable": true,
-            "default": null
+            "type": "string",
+            "format": "uuid"
           },
           "exerciseId": {
             "type": "string",
@@ -5400,15 +5491,15 @@
             "maximum": 1000
           },
           "rir": {
+            "default": null,
+            "nullable": true,
             "type": "integer",
             "minimum": 0,
-            "maximum": 10,
-            "nullable": true,
-            "default": null
+            "maximum": 10
           },
           "isWarmup": {
-            "type": "boolean",
-            "default": false
+            "default": false,
+            "type": "boolean"
           },
           "completedAt": {
             "type": "string",
@@ -5440,7 +5531,10 @@
             "items": {
               "type": "object",
               "properties": {
-                "weekStart": {},
+                "weekStart": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
                 "muscles": {
                   "type": "array",
                   "items": {
@@ -5509,12 +5603,12 @@
                         "type": "number"
                       },
                       "targetMin": {
-                        "type": "number",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "number"
                       },
                       "targetMax": {
-                        "type": "number",
-                        "nullable": true
+                        "nullable": true,
+                        "type": "number"
                       },
                       "status": {
                         "type": "string",
@@ -5562,18 +5656,19 @@
                 "type": "boolean"
               },
               "version": {
-                "type": "string",
-                "nullable": true
+                "nullable": true,
+                "type": "string"
               },
               "grantedAt": {
+                "nullable": true,
                 "type": "string",
-                "format": "date-time",
-                "nullable": true
+                "format": "date-time"
               },
               "currentVersion": {
                 "type": "string"
               },
               "scopes": {
+                "default": [],
                 "type": "array",
                 "items": {
                   "type": "string",
@@ -5584,19 +5679,20 @@
                     "body_measurements",
                     "derived_estimates"
                   ]
-                },
-                "default": []
+                }
               }
             },
             "required": [
               "granted",
               "version",
               "grantedAt",
-              "currentVersion"
+              "currentVersion",
+              "scopes"
             ],
             "additionalProperties": false
           },
           "planVersion": {
+            "nullable": true,
             "type": "object",
             "properties": {
               "id": {
@@ -5648,8 +5744,7 @@
               "sessionCount",
               "createdAt"
             ],
-            "additionalProperties": false,
-            "nullable": true
+            "additionalProperties": false
           }
         },
         "required": [
@@ -5686,9 +5781,9 @@
             "format": "date-time"
           },
           "completedAt": {
+            "nullable": true,
             "type": "string",
-            "format": "date-time",
-            "nullable": true
+            "format": "date-time"
           },
           "sets": {
             "type": "array",
@@ -5708,9 +5803,9 @@
                   "format": "uuid"
                 },
                 "planExerciseId": {
+                  "nullable": true,
                   "type": "string",
-                  "format": "uuid",
-                  "nullable": true
+                  "format": "uuid"
                 },
                 "exerciseId": {
                   "type": "string",
@@ -5726,8 +5821,8 @@
                   "type": "number"
                 },
                 "rir": {
-                  "type": "integer",
-                  "nullable": true
+                  "nullable": true,
+                  "type": "integer"
                 },
                 "isWarmup": {
                   "type": "boolean"
@@ -5741,9 +5836,9 @@
                   "format": "date-time"
                 },
                 "deletedAt": {
+                  "nullable": true,
                   "type": "string",
-                  "format": "date-time",
-                  "nullable": true
+                  "format": "date-time"
                 }
               },
               "required": [
@@ -5830,23 +5925,27 @@
             }
           },
           "adjustment": {
+            "default": null,
+            "nullable": true,
             "type": "object",
             "properties": {
               "availableMinutes": {
+                "default": null,
+                "nullable": true,
                 "type": "integer",
                 "minimum": 15,
-                "maximum": 90,
-                "nullable": true,
-                "default": null
+                "maximum": 90
               },
               "reducedVolume": {
-                "type": "boolean",
-                "default": false
+                "default": false,
+                "type": "boolean"
               }
             },
-            "additionalProperties": false,
-            "nullable": true,
-            "default": null
+            "required": [
+              "availableMinutes",
+              "reducedVolume"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -5857,7 +5956,8 @@
           "startedAt",
           "completedAt",
           "sets",
-          "substitutions"
+          "substitutions",
+          "adjustment"
         ],
         "additionalProperties": false
       }
@@ -6141,10 +6241,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 1,
               "type": "integer",
               "minimum": 1,
-              "maximum": 10000,
-              "default": 1
+              "maximum": 10000
             }
           },
           {
@@ -6152,10 +6252,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 20,
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "default": 20
+              "maximum": 100
             }
           },
           {
@@ -6163,33 +6263,26 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "squat",
-                    "hinge",
-                    "lunge",
-                    "horizontal_push",
-                    "vertical_push",
-                    "horizontal_pull",
-                    "vertical_pull",
-                    "elbow_flexion",
-                    "elbow_extension",
-                    "shoulder_isolation",
-                    "knee_extension",
-                    "knee_flexion",
-                    "hip_isolation",
-                    "calf_raise",
-                    "core_anti_extension",
-                    "core_anti_rotation",
-                    "core_flexion",
-                    "carry"
-                  ]
-                }
+              "type": "string",
+              "enum": [
+                "squat",
+                "hinge",
+                "lunge",
+                "horizontal_push",
+                "vertical_push",
+                "horizontal_pull",
+                "vertical_pull",
+                "elbow_flexion",
+                "elbow_extension",
+                "shoulder_isolation",
+                "knee_extension",
+                "knee_flexion",
+                "hip_isolation",
+                "calf_raise",
+                "core_anti_extension",
+                "core_anti_rotation",
+                "core_flexion",
+                "carry"
               ]
             }
           },
@@ -6198,15 +6291,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "maxLength": 400
-                }
-              ]
+              "type": "string",
+              "maxLength": 400
             }
           },
           {
@@ -6214,18 +6300,11 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "beginner",
-                    "intermediate",
-                    "advanced"
-                  ]
-                }
+              "type": "string",
+              "enum": [
+                "beginner",
+                "intermediate",
+                "advanced"
               ]
             }
           },
@@ -6234,16 +6313,9 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "minLength": 1,
-                  "maxLength": 100
-                }
-              ]
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
             }
           },
           {
@@ -6251,34 +6323,27 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "chest",
-                    "front_delts",
-                    "side_delts",
-                    "rear_delts",
-                    "lats",
-                    "upper_back",
-                    "traps",
-                    "biceps",
-                    "triceps",
-                    "forearms",
-                    "abs",
-                    "obliques",
-                    "lower_back",
-                    "glutes",
-                    "quads",
-                    "hamstrings",
-                    "adductors",
-                    "abductors",
-                    "calves"
-                  ]
-                }
+              "type": "string",
+              "enum": [
+                "chest",
+                "front_delts",
+                "side_delts",
+                "rear_delts",
+                "lats",
+                "upper_back",
+                "traps",
+                "biceps",
+                "triceps",
+                "forearms",
+                "abs",
+                "obliques",
+                "lower_back",
+                "glutes",
+                "quads",
+                "hamstrings",
+                "adductors",
+                "abductors",
+                "calves"
               ]
             }
           },
@@ -6287,12 +6352,12 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": "primary",
               "type": "string",
               "enum": [
                 "primary",
                 "secondary"
-              ],
-              "default": "primary"
+              ]
             }
           }
         ],
@@ -6972,15 +7037,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             }
           }
         ],
@@ -7580,15 +7638,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             }
           },
           {
@@ -7596,15 +7647,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             }
           }
         ],
@@ -8482,15 +8526,8 @@
             "in": "header",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^[\\x21-\\x7E]{1,128}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^[\\x21-\\x7E]{1,128}$"
             }
           }
         ],
@@ -8596,10 +8633,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 1,
               "type": "integer",
               "minimum": 1,
-              "maximum": 10000,
-              "default": 1
+              "maximum": 10000
             }
           },
           {
@@ -8607,10 +8644,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 20,
               "type": "integer",
               "minimum": 1,
-              "maximum": 100,
-              "default": 20
+              "maximum": 100
             }
           }
         ],
@@ -8773,10 +8810,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 8,
               "type": "integer",
               "minimum": 1,
-              "maximum": 52,
-              "default": 8
+              "maximum": 52
             }
           }
         ],
@@ -8930,15 +8967,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "format": "uuid"
-                }
-              ]
+              "type": "string",
+              "format": "uuid"
             }
           },
           {
@@ -8946,15 +8976,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             }
           },
           {
@@ -8962,15 +8985,8 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
-                }
-              ]
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
             }
           }
         ],
@@ -9046,10 +9062,10 @@
             "in": "query",
             "required": false,
             "schema": {
+              "default": 8,
               "type": "integer",
               "minimum": 1,
-              "maximum": 52,
-              "default": 8
+              "maximum": 52
             }
           }
         ],
@@ -9126,16 +9142,9 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "integer",
-                  "minimum": 15,
-                  "maximum": 90
-                }
-              ]
+              "type": "integer",
+              "minimum": 15,
+              "maximum": 90
             }
           },
           {
@@ -9143,17 +9152,10 @@
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "not": {}
-                },
-                {
-                  "type": "string",
-                  "enum": [
-                    "normal",
-                    "reduced"
-                  ]
-                }
+              "type": "string",
+              "enum": [
+                "normal",
+                "reduced"
               ]
             }
           }

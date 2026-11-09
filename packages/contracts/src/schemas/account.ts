@@ -63,7 +63,7 @@ export const AccountExportSchema = z
           status: PlanStatusSchema,
           createdAt: DateTimeSchema,
           versions: z.array(
-            PlanVersionResponseSchema.extend({ inputSnapshot: z.record(z.unknown()) }).strict(),
+            PlanVersionResponseSchema.extend({ inputSnapshot: z.record(z.string(), z.unknown()) }).strict(),
           ),
         })
         .strict(),

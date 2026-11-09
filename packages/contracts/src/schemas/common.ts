@@ -12,9 +12,9 @@ export const CalendarDateSchema = z
   }, 'Invalid date');
 
 /** Instante ISO 8601 con zona (lo que emite `Date.prototype.toISOString`). */
-export const DateTimeSchema = z.string().datetime({ offset: true });
+export const DateTimeSchema = z.iso.datetime({ offset: true });
 
-export const IdSchema = z.string().uuid();
+export const IdSchema = z.uuid();
 
 export const ExerciseSlugSchema = z.string().min(2).max(96).regex(SLUG_REGEX, 'Invalid exercise slug');
 

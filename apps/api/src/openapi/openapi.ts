@@ -2,8 +2,7 @@ import 'reflect-metadata';
 import { RequestMethod } from '@nestjs/common';
 import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import * as contracts from '@pipos/contracts';
-import type { ZodRawShape, ZodTypeAny } from 'zod';
-import { zodToJsonSchema } from 'zod-to-json-schema';
+import { z, type ZodType } from 'zod';
 import { CONTRACT_KEY, type ContractSpec } from '../common/contract';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -58,8 +57,10 @@ export function collectRoutes(modules: readonly unknown[]): RouteContract[] {
   return routes.sort((a, b) => (a.path + a.method < b.path + b.method ? -1 : 1));
 }
 
+type ZodTypeAny = ZodType;
+
 function isZod(v: unknown): v is ZodTypeAny {
-  return typeof v === 'object' && v !== null && typeof (v as any).safeParse === 'function' && '_def' in v;
+  return typeof v === 'object' && v !== null && typeof (v as any).safeParse === 'function' && '_zod' in v;
 }
 
 /** Nombre exportado de cada esquema de @pipos/contracts (para $ref en components). */
@@ -73,23 +74,44 @@ function schemaNames(): Map<ZodTypeAny, string> {
   return names;
 }
 
+/** Formatos estándar: zod 4 añade además su expresión regular, que no aporta nada al cliente. */
+const FORMATS_WITHOUT_PATTERN = new Set(['date-time', 'date', 'uuid', 'email', 'uri']);
+
+/**
+ * Quita lo que zod 4 añade sin información útil para el contrato: el `pattern` de los formatos
+ * estándar y los límites ±2^53−1 que pone a todo `.int()`. Los límites propios se conservan.
+ */
+function dropRedundantKeywords(json: Json): void {
+  if (typeof json.format === 'string' && FORMATS_WITHOUT_PATTERN.has(json.format)) delete json.pattern;
+  if (json.minimum === Number.MIN_SAFE_INTEGER) delete json.minimum;
+  if (json.maximum === Number.MAX_SAFE_INTEGER) delete json.maximum;
+}
+
 function toJsonSchema(schema: ZodTypeAny, io: 'input' | 'output'): Json {
-  const out = zodToJsonSchema(schema, {
-    target: 'openApi3',
-    $refStrategy: 'none',
-    effectStrategy: io === 'input' ? 'input' : 'any',
-    pipeStrategy: io,
+  // Las transformaciones no se pueden representar en la salida: `unrepresentable: 'any'` → `{}`.
+  const out = z.toJSONSchema(schema, {
+    target: 'openapi-3.0',
+    io,
+    unrepresentable: 'any',
+    reused: 'inline',
+    override: ({ jsonSchema }) => dropRedundantKeywords(jsonSchema as Json),
   }) as Json;
   delete out.$schema;
   return out;
 }
 
-function objectShape(schema: ZodTypeAny): ZodRawShape {
+function objectShape(schema: ZodTypeAny): Record<string, ZodTypeAny> {
   // Sin instanceof: @pipos/contracts (CJS) y la API pueden cargar copias distintas de zod.
+  // Un `.transform()` envuelve el objeto en un `pipe` (la entrada es `in`).
   let s: any = schema;
-  while (s?._def?.typeName === 'ZodEffects') s = s._def.schema;
-  if (s?._def?.typeName !== 'ZodObject') throw new Error('params/query contracts must be Zod objects');
-  return s.shape as ZodRawShape;
+  while (s?._zod?.def?.type === 'pipe') s = s._zod.def.in;
+  if (s?._zod?.def?.type !== 'object') throw new Error('params/query contracts must be Zod objects');
+  return s.shape as Record<string, ZodTypeAny>;
+}
+
+/** Un parámetro es opcional si admite `undefined` en la entrada (`.optional()` o `.default()`). */
+function isOptionalInput(schema: ZodTypeAny): boolean {
+  return schema.safeParse(undefined).success;
 }
 
 function parameters(schema: ZodTypeAny | undefined, where: 'path' | 'query' | 'header'): Json[] {
@@ -97,8 +119,8 @@ function parameters(schema: ZodTypeAny | undefined, where: 'path' | 'query' | 'h
   return Object.entries(objectShape(schema)).map(([name, field]) => ({
     name,
     in: where,
-    required: where === 'path' || !(field as ZodTypeAny).isOptional(),
-    schema: toJsonSchema(field as ZodTypeAny, 'input'),
+    required: where === 'path' || !isOptionalInput(field),
+    schema: toJsonSchema(field, 'input'),
   }));
 }
 

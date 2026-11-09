@@ -6,7 +6,7 @@ import {
   type NestInterceptor,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import type { ZodTypeAny } from 'zod';
+import type { ZodType as ZodTypeAny } from 'zod';
 import { map, type Observable } from 'rxjs';
 import { log } from '../logging/logging';
 import { ApiError, zodIssues } from './api-error';
@@ -60,7 +60,7 @@ export class ContractInterceptor implements NestInterceptor {
         if (!result.success) {
           log('error', 'Response contract violation', {
             route,
-            issues: result.error.issues.map((i) => ({ path: i.path.join('.'), code: i.code })),
+            issues: result.error.issues.map((i) => ({ path: i.path.map(String).join('.'), code: i.code })),
           });
           throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, 'INTERNAL', 'Internal server error');
         }

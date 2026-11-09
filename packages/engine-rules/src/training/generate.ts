@@ -41,8 +41,8 @@ export interface GenerateOptions {
 
 type Warning = engineV2.EngineWarning;
 
-function issuesOf(err: { issues: { path: (string | number)[]; message: string }[] }) {
-  return err.issues.map((i) => ({ path: i.path.join('.'), message: i.message }));
+function issuesOf(err: { issues: { path: PropertyKey[]; message: string }[] }) {
+  return err.issues.map((i) => ({ path: i.path.map(String).join('.'), message: i.message }));
 }
 
 export function generatePlan(

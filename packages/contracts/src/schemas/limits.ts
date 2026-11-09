@@ -35,4 +35,4 @@ export const CatalogIdSchema = z
   .max(TEXT_LIMITS.CATALOG_ID)
   .regex(/^[A-Za-z0-9_-]+$/, 'Invalid catalog id');
 
-export const UuidSchema = z.string().uuid();
+export const UuidSchema = z.uuid();
