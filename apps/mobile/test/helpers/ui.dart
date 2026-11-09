@@ -32,3 +32,17 @@ void usePhoneSize(WidgetTester tester) {
   tester.view.devicePixelRatio = 3;
   addTearDown(tester.view.reset);
 }
+
+/// Deja correr frames y microtareas (drift, cola de sync, Dio) sin
+/// esperar a que se asiente (el temporizador de descanso no se asienta).
+Future<void> pumpFrames(WidgetTester tester, {int frames = 10}) async {
+  for (var i = 0; i < frames; i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+}
+
+/// Vuelve al principio de la lista de Hoy.
+Future<void> scrollToTop(WidgetTester tester) async {
+  await tester.drag(find.byKey(const Key('today-list')), const Offset(0, 3000));
+  await pumpFrames(tester, frames: 5);
+}

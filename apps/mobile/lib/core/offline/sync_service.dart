@@ -162,9 +162,10 @@ class SyncService {
                 ..where((t) => t.clientId.equals(adopt.clientId)))
               .write(LocalWorkoutsCompanion(serverId: Value(adopt.id)));
         }
+        _notify();
         return (await workoutByClientId(adopt.clientId))!;
       }
-      return _db
+      final adopted = await _db
           .into(_workouts)
           .insertReturning(
             LocalWorkoutsCompanion.insert(
@@ -175,6 +176,8 @@ class SyncService {
               startedAt: adopt.startedAt,
             ),
           );
+      unawaited(syncNow());
+      return adopted;
     }
     final open = await openWorkoutFor(planSessionId);
     if (open != null) return open;
@@ -211,16 +214,7 @@ class SyncService {
           .getSingleOrNull();
 
   Stream<LocalWorkout?> watchOpenWorkout(String planSessionId) =>
-      (_db.select(_workouts)
-            ..where(
-              (t) =>
-                  t.userId.equals(_uid) &
-                  t.planSessionId.equals(planSessionId) &
-                  t.finishedAt.isNull(),
-            )
-            ..orderBy([(t) => OrderingTerm.desc(t.startedAt)])
-            ..limit(1))
-          .watchSingleOrNull();
+      _watch(() => openWorkoutFor(planSessionId));
 
   /// Registra una serie (primero en drift) y dispara la sincronización.
   Future<LocalSetLog> logSet({
@@ -269,14 +263,7 @@ class SyncService {
 
   /// Series del entrenamiento (cualquier estado), en orden de registro.
   Stream<List<LocalSetLog>> watchSets(String workoutClientId) =>
-      (_db.select(_sets)
-            ..where(
-              (t) =>
-                  t.userId.equals(_uid) &
-                  t.workoutClientId.equals(workoutClientId),
-            )
-            ..orderBy(_order))
-          .watch();
+      _watch(() => setsOf(workoutClientId));
 
   Future<List<LocalSetLog>> setsOf(String workoutClientId) =>
       (_db.select(_sets)
@@ -292,18 +279,51 @@ class SyncService {
   Stream<SyncSummary> watchSummary() {
     final userId = _userId;
     if (userId == null) return Stream.value(const SyncSummary());
-    return (_db.select(_sets)..where(
-          (t) =>
-              t.userId.equals(userId) &
-              t.status.equalsValue(SetSyncStatus.synced).not(),
-        ))
-        .watch()
-        .map(
-          (rows) => SyncSummary(
-            pending: rows.where((r) => r.status != SetSyncStatus.failed).length,
-            failed: rows.where((r) => r.status == SetSyncStatus.failed).length,
-          ),
-        );
+    return _watch(() async {
+      final rows =
+          await (_db.select(_sets)..where(
+                (t) =>
+                    t.userId.equals(userId) &
+                    t.status.equalsValue(SetSyncStatus.synced).not(),
+              ))
+              .get();
+      return SyncSummary(
+        pending: rows.where((r) => r.status != SetSyncStatus.failed).length,
+        failed: rows.where((r) => r.status == SetSyncStatus.failed).length,
+      );
+    });
+  }
+
+  /// Avisa a los `watch*` de que algo cambió en la cola. Se usa un
+  /// `StreamController` propio en vez de las stream queries de drift: es
+  /// explícito (solo este servicio escribe en estas tablas) y funciona igual
+  /// en los widget tests con reloj falso.
+  final _changes = StreamController<void>.broadcast();
+
+  void _notify() {
+    if (!_changes.isClosed) _changes.add(null);
+  }
+
+  Stream<T> _watch<T>(Future<T> Function() query) {
+    late final StreamController<T> controller;
+    StreamSubscription<void>? sub;
+    Future<void> emit() async {
+      try {
+        final value = await query();
+        if (!controller.isClosed) controller.add(value);
+      } catch (e, st) {
+        if (!controller.isClosed) controller.addError(e, st);
+      }
+    }
+
+    controller = StreamController<T>(
+      onListen: () {
+        sub = _changes.stream.listen((_) => emit());
+        emit();
+      },
+      onCancel: () => sub?.cancel(),
+    );
+    return controller.stream;
   }
 
   static final _order = <OrderClauseGenerator<$LocalSetLogsTable>>[
@@ -393,6 +413,7 @@ class SyncService {
   /// terminar y se devuelve la misma `Future`.
   Future<SyncReport> syncNow() {
     if (_disposed || _userId == null) return Future.value(const SyncReport());
+    _notify();
     final running = _running;
     if (running != null) {
       _runAgain = true;
@@ -408,6 +429,7 @@ class SyncService {
     do {
       _runAgain = false;
       report = await _pass();
+      _notify();
     } while (_runAgain && !_disposed);
     return report;
   }
@@ -642,10 +664,11 @@ class SyncService {
         );
   }
 
-  Future<void> _setStatus(String clientId, SetSyncStatus status) {
-    return (_db.update(_sets)..where((t) => t.clientId.equals(clientId))).write(
+  Future<void> _setStatus(String clientId, SetSyncStatus status) async {
+    await (_db.update(_sets)..where((t) => t.clientId.equals(clientId))).write(
       LocalSetLogsCompanion(status: Value(status)),
     );
+    _notify();
   }
 
   Future<void> _markSetFailed(LocalSetLog item, String reason, int attempts) {
@@ -668,6 +691,7 @@ class SyncService {
 
   Future<void> dispose() async {
     _disposed = true;
+    await _changes.close();
     _retryTimer?.cancel();
     await _connectivitySub?.cancel();
   }

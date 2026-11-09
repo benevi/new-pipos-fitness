@@ -49,6 +49,10 @@ class FakeBackend
   }
 
   bool online = true;
+
+  /// `true`: las rutas de entrenamiento van por Dio real (y el test simula
+  /// la API con el `FakeHttpAdapter`, códigos 201/200 incluidos).
+  bool useHttpWorkoutApi = false;
   bool hasPlan;
   bool hasProfile;
   String password = 'correcta';
@@ -428,7 +432,7 @@ class FakeBackend
   List<Override> get overrides => [
     profileApiProvider.overrideWithValue(this),
     planApiProvider.overrideWithValue(this),
-    workoutApiProvider.overrideWithValue(this),
+    if (!useHttpWorkoutApi) workoutApiProvider.overrideWithValue(this),
     progressApiProvider.overrideWithValue(this),
     accountApiProvider.overrideWithValue(this),
     catalogApiProvider.overrideWithValue(this),
