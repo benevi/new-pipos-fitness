@@ -22,6 +22,13 @@ export const CurrentPrescriptionSchema = z
   .refine((p) => p.repMin <= p.repMax, { message: 'repMin > repMax', path: ['repMin'] });
 export type CurrentPrescription = z.infer<typeof CurrentPrescriptionSchema>;
 
+/** Pausa planificada (idea 6, ADR-0013): fechas locales del usuario, ambas incluidas. */
+export const PlannedBreakSchema = z
+  .object({ startsOn: IsoDateSchema, endsOn: IsoDateSchema })
+  .strict()
+  .refine((b) => b.endsOn >= b.startsOn, { message: 'endsOn < startsOn', path: ['endsOn'] });
+export type PlannedBreak = z.infer<typeof PlannedBreakSchema>;
+
 export const NextPrescriptionInputSchema = z
   .object({
     prescription: CurrentPrescriptionSchema,
@@ -30,6 +37,11 @@ export const NextPrescriptionInputSchema = z
     today: IsoDateSchema,
     /** Semanas completas desde la última descarga (o desde el inicio del plan). */
     weeksSinceDeload: z.number().int().min(0).max(52),
+    /**
+     * Pausas planificadas: sus días no cuentan como ausencia para la vuelta tras ≥ 14 días
+     * (PROGRAMACION.md §16.18).
+     */
+    breaks: z.array(PlannedBreakSchema).max(200).optional(),
   })
   .strict();
 export type NextPrescriptionInput = z.infer<typeof NextPrescriptionInputSchema>;

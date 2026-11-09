@@ -7,6 +7,7 @@ import { engineV2 } from '@pipos/contracts';
 import { PROGRAMMING, type ProgrammingConfig } from '../config/programming.js';
 import { fmt } from './labels.js';
 import { loadStepKg, roundLoad } from './load.js';
+import { daysAwayExcludingBreaks } from './schedule.js';
 
 type Log = engineV2.ExerciseSessionLog;
 
@@ -111,7 +112,8 @@ export function nextPrescription(
   const currentLoad = weighted ? (p.loadKg ?? (lastLoad > 0 ? lastLoad : null)) : p.loadKg;
 
   // 1. Vuelta tras una pausa larga (CUJ-5).
-  const gap = daysBetween(last.date, today);
+  // Los días en pausa planificada no cuentan como ausencia (§16.18).
+  const gap = daysAwayExcludingBreaks(last.date, today, parsed.data.breaks ?? []);
   if (gap >= pr.breakDays.value) {
     const reduced =
       weighted && currentLoad !== null ? lower(currentLoad * (1 - pr.breakLoadReductionPct.value / 100), currentLoad) : currentLoad;

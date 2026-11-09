@@ -5,7 +5,11 @@ import { SLUG_REGEX } from '../engine-v2/catalog.js';
 export const CalendarDateSchema = z
   .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected a date YYYY-MM-DD')
-  .refine((v) => !Number.isNaN(Date.parse(`${v}T00:00:00Z`)), 'Invalid date');
+  // Ida y vuelta: rechaza también fechas que Date.parse «corrige» (p. ej. 2026-11-31).
+  .refine((v) => {
+    const ms = Date.parse(`${v}T00:00:00Z`);
+    return !Number.isNaN(ms) && new Date(ms).toISOString().slice(0, 10) === v;
+  }, 'Invalid date');
 
 /** Instante ISO 8601 con zona (lo que emite `Date.prototype.toISOString`). */
 export const DateTimeSchema = z.string().datetime({ offset: true });

@@ -6,7 +6,10 @@ import {
   ExerciseNoteResponseSchema,
   PlanExerciseOverrideResponseSchema,
   PlanVersionResponseSchema,
+  ProfileResponseSchema,
   TodaySessionResponseSchema,
+  TrainingBreakListResponseSchema,
+  TrainingBreakResponseSchema,
   type TodayExercise,
 } from '@pipos/contracts';
 import type { WriteEvent } from '../../prisma/prisma.service';
@@ -401,6 +404,117 @@ describe('Ideas recuperadas (e2e, Postgres real)', () => {
       expect(ex.prescription.action).not.toBe('decrease_load');
       expect(ex.prescription.action).not.toBe('deload');
       expect(ex.prescription.loadKg).toBe(40);
+    });
+  });
+
+  describe('Idea 6: días de entreno y pausas planificadas', () => {
+    it('PATCH /me/profile/schedule: valida contra daysPerWeek, no crea versión y today dice si toca', async () => {
+      const { user } = await userWithPlan(ctx.app); // 3 días por semana
+      const t = bearer(user.accessToken);
+      const versions = await ctx.prisma.planVersion.count({ where: { userId: user.id } });
+      await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [1, 2, 3, 4] }).expect(422);
+      await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [1, 1] }).expect(400);
+      await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [0] }).expect(400);
+      const res = await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [5, 1, 3] }).expect(200);
+      expect(ProfileResponseSchema.parse(res.body).trainingWeekdays).toEqual([1, 3, 5]);
+      expect(await ctx.prisma.planVersion.count({ where: { userId: user.id } })).toBe(versions);
+
+      ctx.clock.set('2026-11-09T10:00:00.000Z'); // lunes
+      const monday = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(monday.scheduledToday).toBe(true);
+      expect(monday.activeBreak).toBeNull();
+      ctx.clock.set('2026-11-10T10:00:00.000Z'); // martes
+      const tuesday = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(tuesday.scheduledToday).toBe(false);
+
+      // Bajar daysPerWeek por debajo de los días elegidos los vacía; si caben, se conservan.
+      await request(server()).put('/me/profile').set(t).send({ ...BEGINNER_GYM, daysPerWeek: 2 }).expect(200);
+      expect((await request(server()).get('/me/profile').set(t).expect(200)).body.trainingWeekdays).toEqual([]);
+      await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [2, 4] }).expect(200);
+      await request(server()).put('/me/profile').set(t).send({ ...BEGINNER_GYM, daysPerWeek: 4 }).expect(200);
+      expect((await request(server()).get('/me/profile').set(t).expect(200)).body.trainingWeekdays).toEqual([2, 4]);
+    });
+
+    it('pausas: validación, idempotencia, solapes, adherencia sin 0 % falso y today en pausa', async () => {
+      const { user } = await userWithPlan(ctx.app); // 3 días
+      const t = bearer(user.accessToken);
+      await request(server()).patch('/me/profile/schedule').set(t).send({ trainingWeekdays: [1, 3, 5] }).expect(200);
+      // Entrena el lunes 2026-11-09.
+      ctx.clock.set('2026-11-09T10:00:00.000Z');
+      const { workout } = await startToday(ctx.app, user.accessToken, '2026-11-09T10:00:00.000Z');
+      await finishAt(user.accessToken, workout.id, new Date('2026-11-09T10:00:00.000Z'));
+      ctx.clock.set('2026-11-11T10:00:00.000Z');
+      const week = async () =>
+        (await request(server()).get('/progress/adherence?weeks=1').set(t).expect(200)).body.weeks[0] as {
+          plannedSessions: number;
+          completedSessions: number;
+          breakDays: number;
+        };
+      expect(await week()).toMatchObject({ plannedSessions: 3, completedSessions: 1, breakDays: 0 });
+
+      // Validación.
+      const bad = (startsOn: string, endsOn: string) =>
+        request(server()).post('/me/breaks').set(t).send({ clientId: randomUUID(), startsOn, endsOn });
+      await bad('2026-11-15', '2026-11-10').expect(400);
+      await bad('2026-11-10', '2027-01-09').expect(400); // 61 días
+      await bad('2026-11-31', '2026-12-01').expect(400);
+
+      // Pausa de martes a domingo: queda el lunes (elegido) → 1 prevista, 1 hecha.
+      const body = { clientId: randomUUID(), startsOn: '2026-11-10', endsOn: '2026-11-15' };
+      const created = TrainingBreakResponseSchema.parse((await request(server()).post('/me/breaks').set(t).send(body).expect(201)).body);
+      expect(created).toMatchObject({ startsOn: '2026-11-10', endsOn: '2026-11-15' });
+      await request(server()).post('/me/breaks').set(t).send(body).expect(200); // reenvío
+      await request(server()).post('/me/breaks').set(t).send({ ...body, endsOn: '2026-11-16' }).expect(409); // clientId reutilizado
+      await request(server()).post('/me/breaks').set(t).send({ clientId: randomUUID(), startsOn: '2026-11-15', endsOn: '2026-11-20' }).expect(409); // solape
+      expect(await week()).toMatchObject({ plannedSessions: 1, completedSessions: 1, breakDays: 6 });
+      const row = await ctx.prisma.weeklyAdherence.findFirstOrThrow({ where: { userId: user.id } });
+      expect(row.plannedSessions).toBe(1); // recalculado al escribir (ADR-0008)
+
+      const today = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(today.activeBreak).toEqual({ id: created.id, startsOn: '2026-11-10', endsOn: '2026-11-15' });
+      expect(today.scheduledToday).toBe(false);
+      const list = TrainingBreakListResponseSchema.parse((await request(server()).get('/me/breaks?from=2026-11-01').set(t).expect(200)).body);
+      expect(list.items.map((b) => b.id)).toEqual([created.id]);
+      expect((await request(server()).get('/me/breaks?from=2026-12-01').set(t).expect(200)).body.items).toEqual([]);
+
+      // Otro usuario no ve ni borra la pausa.
+      const other = await userWithPlan(ctx.app);
+      expect((await request(server()).get('/me/breaks').set(bearer(other.user.accessToken)).expect(200)).body.items).toEqual([]);
+      await request(server()).delete(`/me/breaks/${created.id}`).set(bearer(other.user.accessToken)).expect(200);
+      expect(await ctx.prisma.trainingBreak.count({ where: { id: created.id } })).toBe(1);
+
+      // Borrar la pausa restaura lo previsto.
+      await request(server()).delete(`/me/breaks/${created.id}`).set(t).expect(200);
+      await request(server()).delete(`/me/breaks/${created.id}`).set(t).expect(200);
+      expect(await week()).toMatchObject({ plannedSessions: 3, completedSessions: 1, breakDays: 0 });
+    });
+
+    it('la pausa planificada no cuenta como ausencia: no baja la carga al volver', async () => {
+      const { user } = await userWithPlan(ctx.app);
+      const t = bearer(user.accessToken);
+      const plan = PlanVersionResponseSchema.parse((await request(server()).get('/plans/current').set(t).expect(200)).body);
+      const day0 = new Date('2026-08-03T10:00:00.000Z');
+      ctx.clock.set(day0);
+      const { today, workout } = await startToday(ctx.app, user.accessToken, day0.toISOString());
+      const ex = today.exercises.find((e: TodayExercise) => e.loadType === 'weighted') as TodayExercise;
+      await logTop(user.accessToken, workout.id, ex, 40, day0);
+      await finishAt(user.accessToken, workout.id, day0);
+      for (let d = 1; d < plan.sessions.length; d++) {
+        const at = new Date(day0.getTime() + d * DAY);
+        ctx.clock.set(at);
+        const w = await startToday(ctx.app, user.accessToken, at.toISOString());
+        await finishAt(user.accessToken, w.workout.id, at);
+      }
+      // 21 días después de la sesión.
+      ctx.clock.set(new Date(day0.getTime() + 21 * DAY));
+      const away = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      expect(away.exercises.find((e) => e.planExerciseId === ex.planExerciseId)!.prescription.action).toBe('return_after_break');
+      // Con 15 de esos días en pausa planificada, la ausencia real es de 6 días.
+      await request(server()).post('/me/breaks').set(t).send({ clientId: randomUUID(), startsOn: '2026-08-05', endsOn: '2026-08-19' }).expect(201);
+      const back = TodaySessionResponseSchema.parse((await request(server()).get('/sessions/today').set(t).expect(200)).body);
+      const p = back.exercises.find((e) => e.planExerciseId === ex.planExerciseId)!.prescription;
+      expect(p.action).not.toBe('return_after_break');
+      expect(p.loadKg).toBeGreaterThanOrEqual(40);
     });
   });
 });

@@ -71,6 +71,8 @@ export const AdherenceWeekSchema = z
     completedSets: z.number().int(),
     /** completedSessions / plannedSessions (0 si no hay nada planificado). */
     sessionRatio: z.number().min(0),
+    /** Días de la semana en pausa planificada (idea 6); ya descontados de plannedSessions. */
+    breakDays: z.number().int().min(0).max(7).default(0),
   })
   .strict();
 

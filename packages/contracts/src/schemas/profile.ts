@@ -126,6 +126,11 @@ export const ProfileResponseSchema = z
     heightCm: z.number().nullable(),
     healthConsent: HealthConsentStatusSchema,
     updatedAt: DateTimeSchema,
+    /**
+     * Días de entreno preferidos (ISO 1 = lunes … 7 = domingo; idea 6, ADR-0013). Siempre
+     * presente en el servidor; el `default` solo mantiene válidos los clientes anteriores.
+     */
+    trainingWeekdays: z.array(z.number().int().min(1).max(7)).default([]),
   })
   .strict();
 export type ProfileResponse = z.infer<typeof ProfileResponseSchema>;
@@ -147,3 +152,14 @@ export const WithdrawHealthConsentResponseSchema = z
   })
   .strict();
 export type WithdrawHealthConsentResponse = z.infer<typeof WithdrawHealthConsentResponseSchema>;
+
+/**
+ * PATCH /me/profile/schedule — días de entreno preferidos (idea 6, ADR-0013). Como mucho
+ * `daysPerWeek` días (si no, 422). No es una entrada del motor: NO crea una versión del plan.
+ * Sirve para el recordatorio LOCAL del móvil (no hay push del servidor) y para «hoy toca».
+ * `PUT /me/profile` los conserva salvo que `daysPerWeek` baje por debajo de su número (se vacían).
+ */
+export const ProfileScheduleRequestSchema = z
+  .object({ trainingWeekdays: uniqueArray(z.number().int().min(1).max(7), 6) })
+  .strict();
+export type ProfileScheduleRequest = z.infer<typeof ProfileScheduleRequestSchema>;

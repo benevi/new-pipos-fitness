@@ -12,6 +12,7 @@ import { PlanVersionResponseSchema } from './plans.js';
 import { ProfileResponseSchema } from './profile.js';
 import { WorkoutResponseSchema } from './workouts.js';
 import { TEXT_LIMITS } from './limits.js';
+import { TrainingBreakResponseSchema } from './breaks.js';
 import { ExerciseNoteResponseSchema } from './notes.js';
 
 export const MeResponseSchema = z
@@ -70,6 +71,8 @@ export const AccountExportSchema = z
     //    válidas las exportaciones y fixtures anteriores.
     /** Notas fijas por ejercicio (texto libre del usuario). */
     exerciseNotes: z.array(ExerciseNoteResponseSchema).default([]),
+    /** Pausas planificadas. */
+    trainingBreaks: z.array(TrainingBreakResponseSchema).default([]),
     analytics: z
       .object({
         e1rm: z.array(

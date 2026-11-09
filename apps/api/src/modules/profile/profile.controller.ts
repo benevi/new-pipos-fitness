@@ -1,5 +1,15 @@
-import { Body, Controller, Delete, Get, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Put, Query, Res, UseGuards } from '@nestjs/common';
+import type { Response } from 'express';
 import {
+  CreateTrainingBreakRequestSchema,
+  OkResponseSchema,
+  ProfileScheduleRequestSchema,
+  TrainingBreakListQuerySchema,
+  TrainingBreakListResponseSchema,
+  TrainingBreakResponseSchema,
+  type CreateTrainingBreakRequest,
+  type ProfileScheduleRequest,
+  type TrainingBreakListQuery,
   GrantHealthConsentRequestSchema,
   HealthConsentStatusSchema,
   ProfileResponseSchema,
@@ -14,7 +24,9 @@ import type { AuthenticatedUser } from '../auth/authenticated-user';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ConsentService } from './consent.service';
+import { IdParamsSchema } from '../catalog/catalog.controller';
 import { ProfileService } from './profile.service';
+import { ScheduleService } from './schedule.service';
 
 @Controller('me')
 @UseGuards(JwtAuthGuard)
@@ -22,6 +34,7 @@ export class ProfileController {
   constructor(
     private readonly profiles: ProfileService,
     private readonly consents: ConsentService,
+    private readonly schedule: ScheduleService,
   ) {}
 
   @Get('profile')
@@ -73,5 +86,60 @@ export class ProfileController {
   })
   withdraw(@CurrentUser() user: AuthenticatedUser) {
     return this.consents.withdraw(user.id);
+  }
+
+  // ── Días de entreno y pausas planificadas (idea 6, ADR-0013) ──
+
+  @Patch('profile/schedule')
+  @Contract({
+    tag: 'profile',
+    summary: 'Días de entreno preferidos (no crea versión del plan)',
+    description:
+      'ISO 1 = lunes … 7 = domingo, como mucho daysPerWeek (422 si hay más). Solo sirven para el recordatorio local del móvil y para «hoy toca».',
+    body: ProfileScheduleRequestSchema,
+    response: ProfileResponseSchema,
+    errors: [404, 422],
+  })
+  setSchedule(@CurrentUser() user: AuthenticatedUser, @Body() body: ProfileScheduleRequest) {
+    return this.schedule.setWeekdays(user.id, body);
+  }
+
+  @Get('breaks')
+  @Contract({
+    tag: 'profile',
+    summary: 'Pausas planificadas (las que terminan en `from` o después)',
+    query: TrainingBreakListQuerySchema,
+    response: TrainingBreakListResponseSchema,
+  })
+  listBreaks(@CurrentUser() user: AuthenticatedUser, @Query() query: TrainingBreakListQuery) {
+    return this.schedule.listBreaks(user.id, query);
+  }
+
+  @Post('breaks')
+  @Contract({
+    tag: 'profile',
+    summary: 'Crear una pausa planificada (idempotente por clientId; 409 si se solapa con otra)',
+    description: 'Sin motivo (sería un dato de salud). Excluye esos días de la adherencia y de la ausencia que baja la carga.',
+    body: CreateTrainingBreakRequestSchema,
+    response: TrainingBreakResponseSchema,
+    status: 201,
+    alternateStatuses: [200],
+    errors: [409],
+  })
+  async createBreak(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() body: CreateTrainingBreakRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const result = await this.schedule.createBreak(user.id, body);
+    res.status(result.created ? 201 : 200);
+    return result.value;
+  }
+
+  @Delete('breaks/:id')
+  @Contract({ tag: 'profile', summary: 'Borrar una pausa planificada (idempotente)', params: IdParamsSchema, response: OkResponseSchema })
+  async deleteBreak(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
+    await this.schedule.deleteBreak(user.id, id);
+    return { ok: true as const };
   }
 }

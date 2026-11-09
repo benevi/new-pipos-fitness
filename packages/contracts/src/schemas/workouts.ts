@@ -247,6 +247,17 @@ export const TodaySessionResponseSchema = z
       .strict()
       .nullable(),
     exercises: z.array(TodayExerciseSchema),
+    /**
+     * ¿Hoy es uno de tus días de entreno? (idea 6; los días por defecto del plan si no has elegido;
+     * false en pausa). Es informativo: puedes entrenar igualmente.
+     */
+    scheduledToday: z.boolean().default(true),
+    /** Pausa planificada que cubre hoy, o null. */
+    activeBreak: z
+      .object({ id: IdSchema, startsOn: z.string(), endsOn: z.string() })
+      .strict()
+      .nullable()
+      .default(null),
     /** Ajuste aplicado hoy (idea 4); null = sesión completa. Siempre presente en el servidor. */
     adjustment: TodayAdjustmentSchema.nullable().default(null),
   })

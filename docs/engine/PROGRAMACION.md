@@ -853,3 +853,15 @@ Apoyo: la autorregulación por RIR es eficaz (Graham y Cleather 2021; Helms 2018
 | `adjust.reducedSetsDelta` | 1 | diseño | baja (heurística) |
 | `adjust.reducedExtraRir` | 1 | diseño; autorregulación §7 | baja (heurística) |
 
+### 16.18 Días de entreno y pausas planificadas
+
+Origen: idea 6 de `docs/IDEAS_EL_PLAN.md` (una app previa tenía «plan semanal por días» y «modo vacaciones» para congelar la racha). Aquí no hay rachas: la pausa sirve para que la adherencia no muestre un 0 % falso («nada falso»).
+
+- **Días de entreno** (`trainingWeekdays`, 1 = lunes … 7 = domingo, como mucho tantos como `daysPerWeek`): no son una entrada del motor. El plan sigue el orden del microciclo (CUJ-5); los días solo sirven para el recordatorio **local** del móvil y para decir «hoy no está entre tus días». Sin días elegidos, se usan los días por defecto del plan (§16.13).
+- **Pausa planificada** (inicio y fin, ambos incluidos, como mucho 60 días; sin motivo, porque «enfermedad» sería un dato de salud):
+  - **Adherencia:** las sesiones previstas de una semana descuentan los días en pausa. Con días elegidos (tantos como sesiones), se cuentan los elegidos fuera de pausa; sin ellos, `round(sesiones × días_sin_pausa / 7)`. El reparto proporcional es **heurístico, confianza baja**.
+  - **Ausencia ≥ 14 días (§16.9):** los días en pausa planificada **no cuentan** como ausencia: tras una pausa avisada no se aplica la bajada automática del 10 %. Es una **decisión de producto** (la pausa es intencionada y avisada; el RIR objetivo de cada serie sigue autorregulando la carga, §7). **No hay evidencia** de que esta excepción sea mejor que bajar la carga: confianza baja. Si la ausencia sin contar la pausa sigue siendo ≥ 14 días, la bajada se aplica igual.
+  - La descarga programada no se mueve (anclar `weeksSinceDeload` al final de una pausa queda anotado en DEUDA_TECNICA).
+
+Constantes: `PAUSA_MAX_DIAS = 60` (contrato de la API; diseño, baja).
+

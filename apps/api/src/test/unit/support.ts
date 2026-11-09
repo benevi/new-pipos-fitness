@@ -26,7 +26,9 @@ export function prismaMock(): PrismaMock {
       const fns = new Map<string, Mock>();
       m = new Proxy({} as Record<string, Mock>, {
         get: (_t, method: string) => {
-          if (!fns.has(method)) fns.set(method, vi.fn());
+          // `findMany` devuelve [] por defecto: una tabla sin filas (las lecturas nuevas no rompen
+          // los tests que no las configuran).
+          if (!fns.has(method)) fns.set(method, method === 'findMany' ? vi.fn().mockResolvedValue([]) : vi.fn());
           return fns.get(method);
         },
       });
@@ -109,6 +111,7 @@ export function profileRow(overrides: Partial<TrainingProfile> = {}): TrainingPr
     timezone: 'Europe/Madrid',
     activityLevel: null,
     limitations: [],
+    trainingWeekdays: [],
     weightKg: null,
     heightCm: null,
     birthYear: null,

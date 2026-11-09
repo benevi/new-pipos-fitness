@@ -1,9 +1,11 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import {
+  activeBreak,
   adjustedPrescription,
   adjustSession,
   barKgFor,
   daysBetween,
+  isScheduledDay,
   loadImplement,
   loadStepKg,
   nextPendingSession,
@@ -14,10 +16,10 @@ import {
 import type { engineV2, ExerciseRef, TodayExercise, TodaySessionQuery, TodaySessionResponse } from '@pipos/contracts';
 import { ApiError } from '../../common/api-error';
 import { Clock } from '../../common/clock';
-import { localDate } from '../../common/time';
+import { addDays, dateColumn, fromDateColumn, localDate } from '../../common/time';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CatalogService } from '../catalog/catalog.service';
-import { EngineInputService } from '../plans/engine-input.service';
+import { EngineInputService, HISTORY_DAYS } from '../plans/engine-input.service';
 import { warmupsFor } from '../plans/plan-mapper';
 import { NotesService } from './notes.service';
 import { toSetResponse } from './workout-mapper';
@@ -75,7 +77,7 @@ export class SessionsService {
     const version = await this.prisma.planVersion.findFirst({
       where: { userId, plan: { status: 'active' } },
       orderBy: { version: 'desc' },
-      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true }, orderBy: { order: 'asc' } } },
+      select: { id: true, plan: { select: { createdAt: true } }, sessions: { select: { id: true, order: true, dayIndex: true }, orderBy: { order: 'asc' } } },
     });
     if (!version || version.sessions.length === 0) {
       throw new ApiError(HttpStatus.NOT_FOUND, 'PLAN_REQUIRED', 'No training plan yet');
@@ -127,6 +129,14 @@ export class SessionsService {
     });
     const today = localDate(this.clock.now(), tz);
     const weeks = weeksSinceDeload(localDate(version.plan.createdAt, tz), today);
+    // Pausas planificadas recientes y vigentes (idea 6): no cuentan como ausencia (§16.18).
+    const breakRows = await this.prisma.trainingBreak.findMany({
+      where: { userId, endsOn: { gte: dateColumn(addDays(today, -HISTORY_DAYS)) } },
+      orderBy: { startsOn: 'asc' },
+      select: { id: true, startsOn: true, endsOn: true },
+    });
+    const breaks = breakRows.map((b) => ({ id: b.id, startsOn: fromDateColumn(b.startsOn), endsOn: fromDateColumn(b.endsOn) }));
+    const plannedBreaks = breaks.map(({ startsOn, endsOn }) => ({ startsOn, endsOn }));
 
     const computed = session.exercises.map((slot) => {
       const performedId = performedOf(slot);
@@ -155,6 +165,7 @@ export class SessionsService {
         history: own,
         today,
         weeksSinceDeload: weeks,
+        ...(plannedBreaks.length > 0 ? { breaks: plannedBreaks } : {}),
       });
       if (!result.ok) {
         throw new ApiError(HttpStatus.INTERNAL_SERVER_ERROR, 'INTERNAL', 'Could not compute the prescription');
@@ -244,6 +255,13 @@ export class SessionsService {
         ? { id: workout.id, clientId: workout.clientId, status: workout.status, startedAt: workout.startedAt.toISOString() }
         : null,
       exercises,
+      scheduledToday: isScheduledDay(
+        today,
+        ctx.profile.trainingWeekdays,
+        version.sessions.map((s) => s.dayIndex + 1),
+        plannedBreaks,
+      ),
+      activeBreak: activeBreak(today, breaks),
       adjustment:
         active && adjusted
           ? {

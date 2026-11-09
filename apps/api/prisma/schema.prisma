@@ -245,6 +245,7 @@ model User {
   weeklyAdherence     WeeklyAdherence[]
   exerciseNotes       UserExerciseNote[]
   planOverrides       PlanExerciseOverride[]
+  trainingBreaks      TrainingBreak[]
   moderatedMedia      ExerciseMedia[]          @relation("MediaModeratedBy")
 }
 
@@ -291,6 +292,9 @@ model TrainingProfile {
   weightKg          Decimal?       @db.Decimal(5, 2)
   heightCm          Decimal?       @db.Decimal(5, 1)
   // ── datos personales ordinarios ──
+  /// Días de entreno preferidos (ISO 1 = lunes … 7 = domingo), como mucho `daysPerWeek`. No es
+  /// una entrada del motor: solo recordatorio local y «hoy toca» (idea 6, ADR-0013).
+  trainingWeekdays  Int[]          @default([]) @db.SmallInt
   birthYear         Int?           @db.SmallInt
   sex               Sex?
   createdAt         DateTime       @default(now()) @db.Timestamptz(3)
@@ -307,6 +311,23 @@ model UserExercisePreference {
 
   @@id([userId, exerciseId])
   @@index([exerciseId])
+}
+
+/// Pausa planificada (vacaciones…; idea 6, ADR-0013). Fechas locales del usuario, ambas
+/// incluidas, como mucho 60 días. Sin motivo (sería dato de salud). Excluye sus días de la
+/// adherencia y de la ausencia que baja la carga (PROGRAMACION.md §16.18).
+model TrainingBreak {
+  id        String   @id @default(uuid()) @db.Uuid
+  /// Idempotencia offline (ADR-0007).
+  clientId  String   @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startsOn  DateTime @db.Date
+  endsOn    DateTime @db.Date
+  createdAt DateTime @default(now()) @db.Timestamptz(3)
+
+  @@unique([userId, clientId])
+  @@index([userId, startsOn])
 }
 
 /// Nota fija del usuario para un ejercicio (ajustes de máquina, agarre…; idea 2, ADR-0013).

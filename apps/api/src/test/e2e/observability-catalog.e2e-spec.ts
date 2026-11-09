@@ -1,4 +1,5 @@
 import request from 'supertest';
+import { randomUUID } from 'crypto';
 import { loadCatalog } from '@pipos/catalog';
 import { FEATURE_MODULES } from '../../app.module';
 import { setLogSink } from '../../logging/logging';
@@ -46,6 +47,12 @@ describe('Observabilidad, GET sin escrituras y catálogo (e2e, Postgres real)', 
       .set(bearer(u.accessToken))
       .send({ text: 'Asiento en el 4', clientUpdatedAt: new Date().toISOString() })
       .expect(200);
+    await request(server()).patch('/me/profile/schedule').set(bearer(u.accessToken)).send({ trainingWeekdays: [1, 3, 5] }).expect(200);
+    await request(server())
+      .post('/me/breaks')
+      .set(bearer(u.accessToken))
+      .send({ clientId: randomUUID(), startsOn: '2026-08-01', endsOn: '2026-08-15' })
+      .expect(201);
 
     const ids: Record<string, string> = {
       '/exercises/:id': today.exercises[0].exercise.id,

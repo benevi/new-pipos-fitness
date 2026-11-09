@@ -27,3 +27,14 @@ export {
   type AdjustedItem,
   type SessionAdjustment,
 } from './adjust.js';
+export {
+  activeBreak,
+  breakDaysInRange,
+  daysAwayExcludingBreaks,
+  inBreak,
+  isoWeekday,
+  isScheduledDay,
+  plannedSessionsForWeek,
+  type PlannedBreak,
+  type WeekPlan,
+} from './schedule.js';
