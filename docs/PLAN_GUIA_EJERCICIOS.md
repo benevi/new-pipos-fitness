@@ -1,6 +1,6 @@
 # Plan: guía de ejercicios (músculos, ficha, mapa muscular y vídeos)
 
-**Fecha:** 2026-11-09 · **Base:** `main` @ `ac8c074` · **Estado:** propuesta, pendiente de aprobar por Victor · **Decisión asociada:** ADR-0014 (se escribe en la Fase 0)
+**Fecha:** 2026-11-09 · **Base:** `main` @ `ac8c074` · **Estado:** aprobado · **Decisión asociada:** [ADR-0014](adr/0014-guia-de-ejercicios.md) (Fase 0 hecha; respuestas a la sección 6 en el ADR)
 
 ## 1. Objetivo
 
