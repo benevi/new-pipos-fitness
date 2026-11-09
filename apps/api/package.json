@@ -15,7 +15,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "test:e2e": "vitest run -c vitest.e2e.config.ts",
+    "test:e2e": "vitest run -c vitest.e2e.config.mts",
     "prisma:migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
