@@ -181,6 +181,31 @@ void main() {
     expect(storage.refreshToken, 'r1');
   });
 
+  for (final relogin in [false, true]) {
+    test('401 de una petición de la sesión anterior NO borra los tokens '
+        'nuevos (relogin en el mismo scope: $relogin)', () async {
+      final coordinator = container.read(authSessionCoordinatorProvider);
+      adapter.reply('POST', '/auth/refresh', 401);
+      adapter.on('GET', '/me', (o) async {
+        // Mientras volaba: logout de A y login de B.
+        coordinator.onLoggedOut();
+        if (relogin) coordinator.onSessionStarted();
+        storage.accessToken = 'b-access';
+        storage.refreshToken = 'b-refresh';
+        return const FakeResponse(401);
+      });
+
+      await expectLater(
+        dio().get<dynamic>('/me'),
+        throwsA(isA<DioException>()),
+      );
+
+      expect(storage.accessToken, 'b-access');
+      expect(storage.refreshToken, 'b-refresh');
+      expect(ended, [SessionEndReason.logout]);
+    });
+  }
+
   test('peticiones con skipAuth: sin token y sin refresh ante 401', () async {
     adapter.reply('POST', '/auth/login', 401, {'message': 'Invalid'});
 

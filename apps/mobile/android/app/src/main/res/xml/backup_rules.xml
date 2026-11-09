@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android <= 11 (fullBackupContent). allowBackup="false" ya desactiva la
+     copia; además se excluye todo por si un fabricante la fuerza: tokens,
+     BD local con series/sesiones y cachés no deben salir del dispositivo. -->
+<full-backup-content>
+    <exclude domain="root" path="." />
+    <exclude domain="file" path="." />
+    <exclude domain="database" path="." />
+    <exclude domain="sharedpref" path="." />
+    <exclude domain="external" path="." />
+</full-backup-content>

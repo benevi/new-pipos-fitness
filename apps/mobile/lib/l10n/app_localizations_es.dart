@@ -551,6 +551,58 @@ class AppLocalizationsEs extends AppLocalizations {
   String get todayFinishConfirm => 'Terminar';
 
   @override
+  String todayFinishUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count series sin enviar.',
+      one: 'Hay 1 serie sin enviar.',
+    );
+    return '$_temp0 Se reintentará antes de cerrar el entrenamiento; mientras no se envíe, el cierre queda en espera.';
+  }
+
+  @override
+  String get todayFinishRetryNow => 'Reintentar envío';
+
+  @override
+  String todayStaleSession(String date) {
+    return 'Sesión guardada del $date. Sin conexión no podemos saber qué sesión toca hoy; puedes registrarla igualmente y se sincronizará al volver la red.';
+  }
+
+  @override
+  String get todayNoUserOffline =>
+      'No se pudo registrar la serie: conéctate a internet una vez para verificar tu sesión.';
+
+  @override
+  String todayConflictBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series',
+      one: '1 serie',
+    );
+    return 'Un entrenamiento guardado en este móvil ($_temp0) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.';
+  }
+
+  @override
+  String get todayConflictDiscard => 'Descartar';
+
+  @override
+  String get todayConflictDiscardTitle =>
+      '¿Descartar el entrenamiento de este móvil?';
+
+  @override
+  String todayConflictDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Se borrarán $count series que no llegaron al servidor.',
+      one: 'Se borrará 1 serie que no llegó al servidor.',
+    );
+    return '$_temp0 No se puede deshacer.';
+  }
+
+  @override
   String get todayStartHint =>
       'El entrenamiento empieza al confirmar la primera serie.';
 
@@ -814,6 +866,24 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get settingsLogout => 'Cerrar sesión';
+
+  @override
+  String get settingsLogoutConfirmTitle => '¿Cerrar sesión?';
+
+  @override
+  String get settingsLogoutConfirmBody =>
+      'Se borrarán de este móvil tu plan y tus sesiones guardadas. Tus datos siguen en tu cuenta.';
+
+  @override
+  String settingsLogoutUnsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count series sin enviar al servidor.',
+      one: 'Hay 1 serie sin enviar al servidor.',
+    );
+    return '$_temp0 Si cierras sesión ahora se perderán. Conéctate a internet para enviarlas antes.';
+  }
 
   @override
   String get settingsLegal => 'Aviso legal y médico';

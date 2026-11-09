@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:drift/drift.dart' show Value;
 import 'package:drift/native.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,6 +16,13 @@ import '../../helpers/fake_backend.dart';
 const planSession = '00000000-0000-4000-8000-000000000020';
 const planExercise = '00000000-0000-4000-8000-000000000030';
 const exercise = '00000000-0000-4000-8000-000000000040';
+
+class _BrokenConnectivity extends ManualConnectivitySource {
+  _BrokenConnectivity() : super(online: true);
+
+  @override
+  Future<bool> isOnline() async => throw StateError('plugin roto');
+}
 
 /// Backend que falla las series con un error permanente.
 class _RejectingBackend extends FakeBackend {
@@ -184,6 +193,127 @@ void main() {
   });
 
   test(
+    'una serie failed bloquea el finish (no se pierde) y se reintenta antes',
+    () async {
+      connectivity.online = true;
+      var reject = true;
+      backend.setFailure = (r) => reject
+          ? const ApiFailure(
+              type: ApiFailureType.badRequest,
+              message: 'bad',
+              statusCode: 422,
+              code: ApiErrorCode.validationFailed,
+            )
+          : null;
+      final first = await logOne();
+      await service.syncNow();
+      expect(
+        (await service.setsOf(first.workoutClientId)).single.status,
+        SetSyncStatus.failed,
+      );
+      reject = false;
+      await logOne(index: 1);
+      await service.syncNow();
+      expect(await service.unsyncedCount(first.workoutClientId), 1);
+
+      // Mientras la serie siga fallando, el finish NO se envía.
+      reject = true;
+      await service.finishWorkout(first.workoutClientId);
+      await service.syncNow();
+      expect(backend.finishCalls, 0);
+      expect(
+        (await service.workoutByClientId(first.workoutClientId))!.finishSynced,
+        isFalse,
+      );
+
+      // Al terminar de nuevo se reintenta la fallida ANTES del finish.
+      reject = false;
+      await service.finishWorkout(first.workoutClientId);
+      await service.syncNow();
+      expect(backend.sets.keys, contains(first.clientId));
+      expect(backend.sets, hasLength(2));
+      expect(backend.finishes, 1);
+      expect(await service.unsyncedCount(first.workoutClientId), 0);
+    },
+  );
+
+  test('finish con error transitorio: backoff con attempts, no cada 2 s '
+      'sin límite', () async {
+    connectivity.online = true;
+    final set = await logOne();
+    await service.syncNow();
+    backend.finishFailures.addAll([
+      const ApiFailure(
+        type: ApiFailureType.server,
+        message: '503',
+        statusCode: 503,
+      ),
+      const ApiFailure(
+        type: ApiFailureType.server,
+        message: '503',
+        statusCode: 503,
+      ),
+    ]);
+    await service.finishWorkout(set.workoutClientId);
+    await service.syncNow();
+    expect(backend.finishCalls, 1);
+    var w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.attempts, 1);
+    expect(w.nextAttemptAt!.toUtc(), now.add(service.backoff.delayFor(1)));
+
+    // Antes de su hora no se reintenta.
+    await service.syncNow();
+    expect(backend.finishCalls, 1);
+
+    now = now.add(const Duration(seconds: 3));
+    await service.syncNow();
+    expect(backend.finishCalls, 2);
+    w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.attempts, 2);
+    expect(w.nextAttemptAt!.toUtc(), now.add(service.backoff.delayFor(2)));
+
+    now = now.add(const Duration(minutes: 1));
+    await service.syncNow();
+    expect(backend.finishes, 1);
+    expect(
+      (await service.workoutByClientId(set.workoutClientId))!.finishSynced,
+      isTrue,
+    );
+  });
+
+  test('finish agotando reintentos queda parado hasta retryFailed', () async {
+    await service.dispose();
+    service = SyncService(
+      database: db,
+      api: backend,
+      connectivity: connectivity,
+      userId: 'user-1',
+      clock: () => now,
+      backoff: const BackoffPolicy(maxAttempts: 2),
+    );
+    connectivity.online = true;
+    final set = await logOne();
+    await service.syncNow();
+    for (var i = 0; i < 3; i++) {
+      backend.finishFailures.add(
+        const ApiFailure(type: ApiFailureType.network, message: 'off'),
+      );
+    }
+    await service.finishWorkout(set.workoutClientId);
+    await service.syncNow();
+    now = now.add(const Duration(minutes: 10));
+    await service.syncNow();
+    expect(backend.finishCalls, 2);
+    now = now.add(const Duration(minutes: 10));
+    await service.syncNow();
+    expect(backend.finishCalls, 2, reason: 'agotado: no se reintenta solo');
+    backend.finishFailures.clear();
+    await service.retryFailed();
+    await service.syncNow();
+    expect(backend.finishes, 1);
+  });
+
+  test(
     'adoptar el entrenamiento en curso de la API reutiliza su clientId',
     () async {
       final adopted = await service.startWorkout(
@@ -201,6 +331,103 @@ void main() {
       expect(again.clientId, 'client-x');
     },
   );
+
+  test('dos confirmaciones casi simultáneas crean UN solo entrenamiento '
+      'local', () async {
+    final results = await Future.wait([
+      service.startWorkout(planSessionId: planSession),
+      service.startWorkout(planSessionId: planSession),
+      service.startWorkout(planSessionId: planSession),
+    ]);
+    expect(results.map((w) => w.clientId).toSet(), hasLength(1));
+    expect(await db.select(db.localWorkouts).get(), hasLength(1));
+  });
+
+  test('409 WORKOUT_IN_PROGRESS de la MISMA sesión: adopta el remoto y '
+      'envía allí las series', () async {
+    final remote = backend.seedInProgress(
+      clientId: 'other-device',
+      planSessionId: planSession,
+      startedAt: now,
+    );
+    final set = await logOne();
+    connectivity.online = true;
+    await service.syncNow();
+
+    final w = (await service.workoutByClientId(set.workoutClientId))!;
+    expect(w.serverId, remote.id);
+    expect(w.lastError, isNull);
+    expect(backend.sets[set.clientId]!.workoutId, remote.id);
+    expect(
+      (await service.setsOf(set.workoutClientId)).single.status,
+      SetSyncStatus.synced,
+    );
+  });
+
+  test('409 WORKOUT_IN_PROGRESS de OTRA sesión: conflicto visible, series '
+      'failed (no pending para siempre) y se puede descartar', () async {
+    final remote = backend.seedInProgress(
+      clientId: 'other-device',
+      planSessionId: '00000000-0000-4000-8000-000000000099',
+      startedAt: now,
+    );
+    final set = await logOne();
+    connectivity.online = true;
+    await service.syncNow();
+
+    final conflicts = await service.watchConflictingWorkouts().first;
+    expect(conflicts.single.clientId, set.workoutClientId);
+    expect(
+      (await service.setsOf(set.workoutClientId)).single.status,
+      SetSyncStatus.failed,
+    );
+    // Una serie registrada después tampoco queda pendiente para siempre.
+    final later = await logOne(index: 1);
+    await service.syncNow();
+    expect(
+      (await service.setsOf(later.workoutClientId)).last.status,
+      SetSyncStatus.failed,
+    );
+
+    // Tras terminar el otro, «Reintentar» lo arranca y envía las series.
+    backend.workouts[remote.clientId] = (await backend.finishWorkout(
+      remote.id,
+      now,
+    ));
+    await service.retryFailed();
+    await service.syncNow();
+    expect(await service.watchConflictingWorkouts().first, isEmpty);
+    expect(backend.sets, hasLength(2));
+
+    // Descartar borra el entrenamiento local y sus series.
+    await service.discardWorkout(set.workoutClientId);
+    expect(await service.workoutByClientId(set.workoutClientId), isNull);
+    expect(await service.setsOf(set.workoutClientId), isEmpty);
+  });
+
+  test('los syncNow lanzados sin esperar capturan y reportan el error '
+      '(no hay error no manejado)', () async {
+    final broken = _BrokenConnectivity();
+    final reported = <Object>[];
+    final uncaught = <Object>[];
+    await runZonedGuarded(() async {
+      final s = SyncService(
+        database: db,
+        api: backend,
+        connectivity: broken,
+        userId: 'user-1',
+        clock: () => now,
+        onError: (e, _) => reported.add(e),
+      );
+      await s.start();
+      await s.startWorkout(planSessionId: planSession);
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+      await s.dispose();
+    }, (e, _) => uncaught.add(e));
+    await broken.dispose();
+    expect(uncaught, isEmpty);
+    expect(reported, isNotEmpty);
+  });
 
   test('BackoffPolicy: exponencial y acotado', () {
     const p = BackoffPolicy(

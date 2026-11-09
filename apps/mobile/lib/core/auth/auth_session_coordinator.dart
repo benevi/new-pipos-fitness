@@ -36,9 +36,15 @@ class AuthSessionCoordinator {
 
   final SessionEndCallback _onSessionEnded;
   bool _ended = false;
+  int _generation = 0;
 
   /// `true` cuando esta sesión ya ha terminado (y el reset está en curso).
   bool get hasEnded => _ended;
+
+  /// Cambia cada vez que una sesión termina o empieza. Una petición
+  /// anotada con una generación distinta pertenece a una sesión anterior y
+  /// no debe tocar los tokens actuales.
+  int get generation => _generation;
 
   /// El servidor invalidó la sesión. Idempotente: varias peticiones que
   /// fallen a la vez solo provocan un reset.
@@ -50,11 +56,13 @@ class AuthSessionCoordinator {
   /// Una sesión nueva empezó (login/registro) dentro del mismo scope.
   void onSessionStarted() {
     _ended = false;
+    _generation++;
   }
 
   void _end(SessionEndReason reason) {
     if (_ended) return;
     _ended = true;
+    _generation++;
     _onSessionEnded(reason);
   }
 }

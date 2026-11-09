@@ -187,4 +187,36 @@ void main() {
     expect(find.byKey(const Key('today-cached')), findsOneWidget);
     await harness.drainAndUnmount(tester);
   });
+
+  testWidgets('sin red y con la caché de OTRO día: «sesión guardada del …» '
+      'en vez de presentarla como la de hoy', (tester) async {
+    usePhoneSize(tester);
+    var now = DateTime(2026, 11, 9, 8);
+    final harness = AppHarness(
+      storage: InMemoryTokenStorage(
+        accessToken: 'access-1',
+        refreshToken: 'refresh-1',
+        cachedUser: const AuthUser(id: 'user-1', email: 'ana@pipos.app'),
+      ),
+      clock: () => now,
+    );
+    harness.adapter.reply('GET', '/me', 200, meJson());
+    await harness.pump(tester);
+    await tester.pumpAndSettle();
+    expect(find.text('Sentadilla trasera'), findsOneWidget);
+
+    // Al día siguiente se abre sin red.
+    now = DateTime(2026, 11, 10, 8);
+    harness.setOnline(false);
+    harness.adapter.on('GET', '/me', (_) => const FakeResponse.offline());
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump(const Duration(seconds: 1));
+    await tester.pumpWidget(harness.build());
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('today-stale')), findsOneWidget);
+    expect(find.textContaining('Sesión guardada del'), findsOneWidget);
+    expect(find.byKey(const Key('today-cached')), findsNothing);
+    await harness.drainAndUnmount(tester);
+  });
 }

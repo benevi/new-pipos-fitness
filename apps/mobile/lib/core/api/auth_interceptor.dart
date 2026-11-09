@@ -14,7 +14,8 @@
 ///    d. En otro caso se refresca vía [RefreshLock] (los 401 concurrentes
 ///       comparten el mismo refresh) y se reintenta una vez.
 /// 3. Refresh rechazado por el servidor (400/401/403) → se borran tokens y se
-///    notifica sesión expirada. Excepción: `401 AUTH_REFRESH_RACE` (otro
+///    notifica sesión expirada (solo si la petición es de la sesión actual:
+///    ver [AuthSessionCoordinator.generation]). Excepción: `401 AUTH_REFRESH_RACE` (otro
 ///    refresh concurrente ganó) NO cierra sesión: se reintenta con el token
 ///    guardado si cambió; si no, se propaga el error original. Un fallo de red durante el refresh NO cierra
 ///    la sesión (modo offline): se propaga el error original.
@@ -33,6 +34,9 @@ class AuthExtra {
 
   static const String skipAuth = 'skipAuth';
   static const String retried = 'retried';
+
+  /// Generación del [AuthSessionCoordinator] con la que salió la petición.
+  static const String generation = 'authGeneration';
 
   static const Map<String, dynamic> public = {skipAuth: true};
 }
@@ -136,6 +140,7 @@ class AuthInterceptor extends Interceptor {
     RequestInterceptorHandler handler,
   ) async {
     if (!_isSkipAuth(options)) {
+      options.extra[AuthExtra.generation] ??= _coordinator.generation;
       final token = await _storage.readAccessToken();
       if (token != null) {
         options.headers['Authorization'] = 'Bearer $token';
@@ -156,9 +161,15 @@ class AuthInterceptor extends Interceptor {
       return handler.next(err);
     }
 
+    if (!_isCurrentSession(options)) {
+      // Petición de una sesión ya terminada: ni se reintenta con los tokens
+      // de la sesión nueva ni se tocan.
+      return handler.next(err);
+    }
+
     if (options.extra[AuthExtra.retried] == true) {
       // Ya se reintentó con un token fresco y sigue siendo 401.
-      await _expireSession();
+      await _expireSession(options);
       return handler.next(err);
     }
 
@@ -173,7 +184,7 @@ class AuthInterceptor extends Interceptor {
       try {
         tokenForRetry = await _refreshLock.execute(_refresher.refresh);
       } on RefreshRejectedException {
-        await _expireSession();
+        await _expireSession(options);
         return handler.next(err);
       } on RefreshRaceException {
         final stored = await _storage.readAccessToken();
@@ -199,10 +210,18 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  Future<void> _expireSession() async {
+  /// Solo si la petición es de la sesión ACTUAL: un 401 tardío de una
+  /// sesión ya terminada (logout, otro usuario ya entró) no debe borrar los
+  /// tokens nuevos.
+  Future<void> _expireSession(RequestOptions options) async {
+    if (!_isCurrentSession(options)) return;
     await _storage.clear();
     _coordinator.onSessionExpired();
   }
+
+  bool _isCurrentSession(RequestOptions options) =>
+      !_coordinator.hasEnded &&
+      options.extra[AuthExtra.generation] == _coordinator.generation;
 
   static String? _bearer(Object? header) {
     if (header is! String) return null;

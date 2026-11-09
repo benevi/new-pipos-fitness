@@ -550,6 +550,57 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayFinishConfirm => 'Finish';
 
   @override
+  String todayFinishUnsynced(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets haven\'t been sent.',
+      one: '1 set hasn\'t been sent.',
+    );
+    return '$_temp0 They\'ll be retried before closing the workout; until they\'re sent, closing stays on hold.';
+  }
+
+  @override
+  String get todayFinishRetryNow => 'Retry sending';
+
+  @override
+  String todayStaleSession(String date) {
+    return 'Session saved on $date. Offline we can\'t tell which session is due today; you can still log it and it will sync when you\'re back online.';
+  }
+
+  @override
+  String get todayNoUserOffline =>
+      'Couldn\'t log the set: connect to the internet once to verify your session.';
+
+  @override
+  String todayConflictBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return 'A workout saved on this phone ($_temp0) couldn\'t be started on the server: another workout is in progress on your account. Finish that workout and tap “Retry”, or discard the one on this phone.';
+  }
+
+  @override
+  String get todayConflictDiscard => 'Discard';
+
+  @override
+  String get todayConflictDiscardTitle => 'Discard the workout on this phone?';
+
+  @override
+  String todayConflictDiscardBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets that never reached the server will be deleted.',
+      one: '1 set that never reached the server will be deleted.',
+    );
+    return '$_temp0 This can\'t be undone.';
+  }
+
+  @override
   String get todayStartHint =>
       'The workout starts when you confirm the first set.';
 
@@ -812,6 +863,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settingsLogout => 'Log out';
+
+  @override
+  String get settingsLogoutConfirmTitle => 'Sign out?';
+
+  @override
+  String get settingsLogoutConfirmBody =>
+      'Your plan and saved sessions will be removed from this phone. Your data stays in your account.';
+
+  @override
+  String settingsLogoutUnsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets haven\'t been sent to the server.',
+      one: '1 set hasn\'t been sent to the server.',
+    );
+    return '$_temp0 If you sign out now they\'ll be lost. Connect to the internet to send them first.';
+  }
 
   @override
   String get settingsLegal => 'Legal and medical notice';

@@ -84,6 +84,13 @@ class FakeBackend
   /// Simula que la API guarda la siguiente serie pero la respuesta se
   /// pierde (timeout): el cliente reintentará con el mismo `clientId`.
   bool loseNextSetResponse = false;
+
+  /// Si devuelve un fallo, `upsertSet` lo lanza (sin guardar la serie).
+  ApiFailure? Function(UpsertSetRequest request)? setFailure;
+
+  /// Fallos que lanzarán los próximos `finishWorkout` (uno por llamada).
+  final List<ApiFailure> finishFailures = [];
+  int finishCalls = 0;
   bool accountDeleted = false;
   int exports = 0;
 
@@ -235,7 +242,42 @@ class FakeBackend
   Future<TodaySession> getToday() async {
     _guard('GET /sessions/today');
     if (!hasPlan) throw _error(404, ApiErrorCode.planRequired);
+    // Como la API: si hay un entrenamiento en curso, la sesión de hoy es la
+    // suya y lleva su referencia.
+    for (final w in workouts.values) {
+      if (w.status != WorkoutStatus.inProgress) continue;
+      return TodaySession.fromJson({
+        ...todayJson,
+        'planSessionId': w.planSessionId,
+        'workout': {
+          'id': w.id,
+          'clientId': w.clientId,
+          'status': w.status.wire,
+          'startedAt': isoUtc(w.startedAt),
+        },
+      });
+    }
     return TodaySession.fromJson(todayJson);
+  }
+
+  /// Simula un entrenamiento empezado en otro dispositivo.
+  Workout seedInProgress({
+    required String clientId,
+    required String planSessionId,
+    required DateTime startedAt,
+  }) {
+    final w = Workout(
+      id: 'srv-$clientId',
+      clientId: clientId,
+      planSessionId: planSessionId,
+      status: WorkoutStatus.inProgress,
+      startedAt: startedAt,
+      completedAt: null,
+      sets: const [],
+      substitutions: const [],
+    );
+    workouts[clientId] = w;
+    return w;
   }
 
   @override
@@ -243,6 +285,9 @@ class FakeBackend
     _guard('POST /workouts');
     final existing = workouts[request.clientId];
     if (existing != null) return Upserted(existing, created: false);
+    if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
+      throw _error(409, ApiErrorCode.workoutInProgress);
+    }
     final w = Workout(
       id: 'srv-${request.clientId}',
       clientId: request.clientId,
@@ -272,7 +317,12 @@ class FakeBackend
     _guard('POST /workouts/$workoutId/sets');
     final w = _byServerId(workoutId);
     if (w == null) throw _error(404, ApiErrorCode.notFound);
+    final injected = setFailure?.call(request);
+    if (injected != null) throw injected;
     final existing = sets[request.clientId];
+    if (existing == null && w.status != WorkoutStatus.inProgress) {
+      throw _error(409, ApiErrorCode.workoutFinished);
+    }
     if (existing != null) {
       setsReplayed++;
       return Upserted(existing, created: false);
@@ -307,6 +357,8 @@ class FakeBackend
   @override
   Future<Workout> finishWorkout(String workoutId, DateTime completedAt) async {
     _guard('POST /workouts/$workoutId/finish');
+    finishCalls++;
+    if (finishFailures.isNotEmpty) throw finishFailures.removeAt(0);
     final w = _byServerId(workoutId);
     if (w == null) throw _error(404, ApiErrorCode.notFound);
     if (w.status != WorkoutStatus.inProgress) {

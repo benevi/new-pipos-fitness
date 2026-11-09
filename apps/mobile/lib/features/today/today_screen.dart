@@ -118,7 +118,21 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
     double load,
     int? rir,
   ) async {
-    final workout = await _ensureWorkout();
+    final LocalWorkout workout;
+    try {
+      workout = await _ensureWorkout();
+    } on StateError {
+      // Sin usuario conocido (sesión offline sin datos cacheados) no hay
+      // cola a la que asociar la serie.
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(AppLocalizations.of(context).todayNoUserOffline),
+          ),
+        );
+      }
+      return;
+    }
     await ref
         .read(syncServiceProvider)
         .logSet(
@@ -148,16 +162,42 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
       }
     }
     final remaining = planned - done;
+    final unsynced = local
+        .where((s) => s.status != SetSyncStatus.synced)
+        .length;
+    final hasFailed = local.any((s) => s.status == SetSyncStatus.failed);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l10n.todayFinishConfirmTitle),
-        content: Text(l10n.todayFinishConfirmBody(remaining)),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.todayFinishConfirmBody(remaining)),
+            if (unsynced > 0) ...[
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                l10n.todayFinishUnsynced(unsynced),
+                key: const Key('finish-unsynced'),
+              ),
+            ],
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
             child: Text(l10n.actionCancel),
           ),
+          if (hasFailed)
+            TextButton(
+              key: const Key('finish-retry'),
+              onPressed: () {
+                ref.read(syncServiceProvider).retryFailed();
+                Navigator.of(ctx).pop(false);
+              },
+              child: Text(l10n.todayFinishRetryNow),
+            ),
           FilledButton(
             key: const Key('finish-confirm'),
             onPressed: () => Navigator.of(ctx).pop(true),
@@ -211,7 +251,15 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
         key: const Key('today-list'),
         padding: const EdgeInsets.all(AppSpacing.md),
         children: [
-          if (widget.cached.fromCache && widget.cached.savedAt != null)
+          if (widget.cached.isStale && widget.cached.savedAt != null)
+            NoticeBanner(
+              key: const Key('today-stale'),
+              text: l10n.todayStaleSession(
+                l10n.shortDate(widget.cached.savedAt!),
+              ),
+              icon: Icons.history,
+            )
+          else if (widget.cached.fromCache && widget.cached.savedAt != null)
             NoticeBanner(
               key: const Key('today-cached'),
               text: l10n.cachedDataNotice(
@@ -219,6 +267,10 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
               ),
               icon: Icons.cloud_off_outlined,
             ),
+          for (final c
+              in ref.watch(conflictingWorkoutsProvider).valueOrNull ??
+                  const <LocalWorkout>[])
+            _ConflictBanner(workout: c),
           Semantics(
             header: true,
             child: Text(session.name, style: theme.textTheme.headlineSmall),
@@ -264,6 +316,82 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
           NoticeBanner(
             text: l10n.medicalNotice,
             icon: Icons.health_and_safety_outlined,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Entrenamiento local que la API no deja empezar porque hay otro en curso
+/// en la cuenta: explica qué pasa y ofrece reintentar o descartar.
+class _ConflictBanner extends ConsumerWidget {
+  const _ConflictBanner({required this.workout});
+
+  final LocalWorkout workout;
+
+  Future<void> _discard(BuildContext context, WidgetRef ref, int count) async {
+    final l10n = AppLocalizations.of(context);
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l10n.todayConflictDiscardTitle),
+        content: Text(l10n.todayConflictDiscardBody(count)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text(l10n.actionCancel),
+          ),
+          FilledButton(
+            key: const Key('conflict-discard-confirm'),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: Text(l10n.todayConflictDiscard),
+          ),
+        ],
+      ),
+    );
+    if (ok == true) {
+      await ref.read(syncServiceProvider).discardWorkout(workout.clientId);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final count =
+        ref.watch(localSetsProvider(workout.clientId)).valueOrNull?.length ?? 0;
+    return Container(
+      key: Key('workout-conflict-${workout.clientId}'),
+      margin: const EdgeInsets.only(bottom: AppSpacing.md),
+      padding: const EdgeInsets.all(AppSpacing.ms),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.errorContainer,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            l10n.todayConflictBody(count),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onErrorContainer,
+            ),
+          ),
+          Wrap(
+            spacing: AppSpacing.sm,
+            children: [
+              TextButton(
+                key: const Key('conflict-retry'),
+                onPressed: () => ref.read(syncServiceProvider).retryFailed(),
+                child: Text(l10n.syncRetry),
+              ),
+              TextButton(
+                key: const Key('conflict-discard'),
+                onPressed: () => _discard(context, ref, count),
+                child: Text(l10n.todayConflictDiscard),
+              ),
+            ],
           ),
         ],
       ),

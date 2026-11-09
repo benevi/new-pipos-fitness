@@ -2,6 +2,10 @@
 class AppConstants {
   AppConstants._();
 
+  /// Tokens + userId en un solo JSON (ver `SecureTokenStorage`).
+  static const String sessionKey = 'session';
+
+  /// Claves antiguas (antes de Fase 5); se migran a [sessionKey] al leer.
   static const String accessTokenKey = 'access_token';
   static const String refreshTokenKey = 'refresh_token';
   static const String cachedUserKey = 'cached_user';

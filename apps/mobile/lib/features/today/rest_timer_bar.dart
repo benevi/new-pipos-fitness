@@ -7,7 +7,7 @@ import 'today_providers.dart';
 
 /// Barra del descanso (abajo, sobre la navegación). Respeta
 /// `MediaQuery.disableAnimations`: sin la barra de progreso, solo el texto.
-class RestTimerBar extends ConsumerWidget {
+class RestTimerBar extends ConsumerStatefulWidget {
   const RestTimerBar({super.key});
 
   static String format(int seconds) {
@@ -17,7 +17,30 @@ class RestTimerBar extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RestTimerBar> createState() => _RestTimerBarState();
+}
+
+class _RestTimerBarState extends ConsumerState<RestTimerBar> {
+  // Al volver a primer plano se recalcula al instante (sin esperar al
+  // siguiente tick).
+  late final AppLifecycleListener _lifecycle = AppLifecycleListener(
+    onResume: () => ref.read(restTimerProvider.notifier).refresh(),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _lifecycle;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final timer = ref.watch(restTimerProvider);
     if (timer == null) return const SizedBox.shrink();
     final l10n = AppLocalizations.of(context);
@@ -26,7 +49,7 @@ class RestTimerBar extends ConsumerWidget {
     final controller = ref.read(restTimerProvider.notifier);
     final text = timer.done
         ? l10n.restTimerDone
-        : l10n.restTimerRemaining(format(timer.remaining));
+        : l10n.restTimerRemaining(RestTimerBar.format(timer.remaining));
 
     return Material(
       key: const Key('rest-timer'),
