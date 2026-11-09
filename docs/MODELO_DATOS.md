@@ -264,8 +264,6 @@ model RefreshToken {
   replacedById  String?                   @unique @db.Uuid
   replacedBy    RefreshToken?             @relation("Rotation", fields: [replacedById], references: [id], onDelete: SetNull)
   replaces      RefreshToken?             @relation("Rotation")
-  createdByIp   String?                   @db.Inet
-  userAgent     String?                   @db.VarChar(512)
 
   @@index([userId])
   @@index([familyId])
@@ -319,8 +317,6 @@ model ConsentEvent {
   textHash      String         @db.Char(64)       // SHA-256 del texto exacto mostrado
   locale        Locale
   occurredAt    DateTime       @default(now()) @db.Timestamptz(3)
-  ip            String?        @db.Inet
-  userAgent     String?        @db.VarChar(512)
 
   @@index([userId, purpose, occurredAt(sort: Desc)])
 }
@@ -749,7 +745,7 @@ Borrado lógico de `Exercise`: el servicio de catálogo filtra `deletedAt IS NUL
 |---|---|---|
 | **Categoría especial (art. 9, datos de salud)** | `TrainingProfile.limitations`, `TrainingProfile.weightKg`, `TrainingProfile.heightCm`; los mismos valores copiados en `PlanVersion.inputSnapshot` y `NutritionTarget.inputsSnapshot`. | Consentimiento explícito (art. 9.2.a) → `ConsentEvent`. |
 | Datos personales ordinarios | `User.email`, `TrainingProfile.age`, `sex`, `goal`, `level`, días/minutos, equipo, músculos prioritarios, preferencias de ejercicios, planes, `SetLog`, analítica, objetivos nutricionales (kcal/macros). | Ejecución del contrato (art. 6.1.b). |
-| Datos técnicos | `RefreshToken.createdByIp`, `userAgent`; `ConsentEvent.ip`, `userAgent`. | Interés legítimo (seguridad) / prueba del consentimiento. |
+| Datos técnicos | Ninguno: no se guarda IP ni user-agent (minimización; migración `20261110000000_minimizacion_ip_user_agent`). La prueba del consentimiento es el evento autenticado con versión y hash del texto. | — |
 
 Nota: los registros de carga/repeticiones no se consideran por sí solos datos de salud, pero combinados con limitaciones podrían inferirse; se tratan con el mismo control de acceso (solo el titular y procesos del sistema; los admin **no** tienen endpoints de lectura de datos de usuario en v1).
 

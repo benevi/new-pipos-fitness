@@ -44,6 +44,15 @@ describe('Perfil, consentimiento de salud y nutrición (e2e, Postgres real)', ()
     expect(ok.body.profile.healthConsent.granted).toBe(false);
   });
 
+  it('minimización: ni ConsentEvent ni RefreshToken guardan IP ni user-agent', async () => {
+    const cols = await ctx.prisma.$queryRaw<{ table_name: string; column_name: string }[]>`
+      SELECT table_name, column_name FROM information_schema.columns
+      WHERE table_schema = 'public' AND table_name IN ('ConsentEvent', 'RefreshToken')`;
+    const names = cols.map((c) => `${c.table_name}.${c.column_name}`);
+    expect(names).toContain('ConsentEvent.textHash');
+    expect(names.filter((n) => /\.(ip|userAgent|createdByIp)$/.test(n))).toEqual([]);
+  });
+
   it('consentimiento: versión equivocada → 422; concedido es idempotente y queda registrado con el hash del texto', async () => {
     const u = await registerUser(ctx.app);
     const bad = await request(server()).post('/me/consents/health').set(bearer(u.accessToken)).send({ version: 'v0' }).expect(422);

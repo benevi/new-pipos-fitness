@@ -14,13 +14,6 @@ import { buildEngineProfile, EngineInputService } from '../plans/engine-input.se
 import { PlansService, type PreparedPlan } from '../plans/plans.service';
 import { HEALTH_POLICY_TEXT_HASH, healthConsentStatus, latestHealthConsent } from './consent-status';
 
-export interface ConsentRequestMeta {
-  ip?: string;
-  userAgent?: string;
-}
-
-const IPV4_OR_6 = /^[0-9a-fA-F:.]{2,45}$/;
-
 /**
  * Consentimiento explícito para datos de salud (RGPD art. 9.2.a; ADR-0011).
  * Registro append-only en ConsentEvent; la retirada borra los datos de salud, redacta las
@@ -43,7 +36,6 @@ export class ConsentService {
   async grant(
     userId: string,
     input: { version: string; locale: Locale } & GrantHealthConsentRequest,
-    meta: ConsentRequestMeta = {},
   ): Promise<HealthConsentStatus> {
     if (input.version !== HEALTH_CONSENT_POLICY.version) {
       throw new ApiError(
@@ -64,14 +56,12 @@ export class ConsentService {
         textHash: HEALTH_POLICY_TEXT_HASH,
         locale: input.locale,
         occurredAt: this.clock.now(),
-        ip: meta.ip && IPV4_OR_6.test(meta.ip) ? meta.ip : null,
-        userAgent: meta.userAgent?.slice(0, 512) ?? null,
       },
     });
     return this.status(userId);
   }
 
-  async withdraw(userId: string, meta: ConsentRequestMeta = {}): Promise<WithdrawHealthConsentResponse> {
+  async withdraw(userId: string): Promise<WithdrawHealthConsentResponse> {
     const latest = await latestHealthConsent(this.prisma, userId);
     const ctx = await this.engineInput.load(userId);
     let prepared: PreparedPlan | null = null;
@@ -94,8 +84,6 @@ export class ConsentService {
             textHash: latest.textHash,
             locale: latest.locale,
             occurredAt: this.clock.now(),
-            ip: meta.ip && IPV4_OR_6.test(meta.ip) ? meta.ip : null,
-            userAgent: meta.userAgent?.slice(0, 512) ?? null,
           },
         });
       }

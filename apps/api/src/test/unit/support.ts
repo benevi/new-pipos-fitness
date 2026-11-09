@@ -127,8 +127,6 @@ export function grantedEvent(version = 'health-2026-11') {
     textHash: 'a'.repeat(64),
     locale: 'es',
     occurredAt: new Date('2026-11-01T00:00:00Z'),
-    ip: null,
-    userAgent: null,
   };
 }
 

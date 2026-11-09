@@ -1,5 +1,4 @@
-import { Body, Controller, Delete, Get, Post, Put, Req, UseGuards } from '@nestjs/common';
-import type { Request } from 'express';
+import { Body, Controller, Delete, Get, Post, Put, UseGuards } from '@nestjs/common';
 import {
   GrantHealthConsentRequestSchema,
   HealthConsentStatusSchema,
@@ -16,10 +15,6 @@ import { CurrentUser } from '../auth/current-user.decorator';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ConsentService } from './consent.service';
 import { ProfileService } from './profile.service';
-
-function requestMeta(req: Request) {
-  return { ip: req.ip, userAgent: req.get('user-agent') ?? undefined };
-}
 
 @Controller('me')
 @UseGuards(JwtAuthGuard)
@@ -66,9 +61,8 @@ export class ProfileController {
   grant(
     @CurrentUser() user: AuthenticatedUser,
     @Body() body: { version: string; locale: Locale },
-    @Req() req: Request,
   ) {
-    return this.consents.grant(user.id, body, requestMeta(req));
+    return this.consents.grant(user.id, body);
   }
 
   @Delete('consents/health')
@@ -77,7 +71,7 @@ export class ProfileController {
     summary: 'Retirar el consentimiento: borra los datos de salud y regenera el plan sin ellos',
     response: WithdrawHealthConsentResponseSchema,
   })
-  withdraw(@CurrentUser() user: AuthenticatedUser, @Req() req: Request) {
-    return this.consents.withdraw(user.id, requestMeta(req));
+  withdraw(@CurrentUser() user: AuthenticatedUser) {
+    return this.consents.withdraw(user.id);
   }
 }
