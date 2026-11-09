@@ -1430,6 +1430,24 @@ abstract class AppLocalizations {
   /// **'Cerrar sesión'**
   String get settingsLogout;
 
+  /// No description provided for @settingsLogoutConfirmTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Cerrar sesión?'**
+  String get settingsLogoutConfirmTitle;
+
+  /// No description provided for @settingsLogoutConfirmBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Se borrarán de este móvil tu plan y tus sesiones guardadas. Tus datos siguen en tu cuenta.'**
+  String get settingsLogoutConfirmBody;
+
+  /// No description provided for @settingsLogoutUnsent.
+  ///
+  /// In es, this message translates to:
+  /// **'{count, plural, =1{Hay 1 serie sin enviar al servidor.} other{Hay {count} series sin enviar al servidor.}} Si cierras sesión ahora se perderán. Conéctate a internet para enviarlas antes.'**
+  String settingsLogoutUnsent(int count);
+
   /// No description provided for @settingsLegal.
   ///
   /// In es, this message translates to:

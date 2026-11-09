@@ -103,7 +103,7 @@ class CacheStore {
     )..where((t) => t.userId.equals(userId) & t.cacheKey.equals(key))).go();
   }
 
-  /// Borra todo lo local del usuario (cuenta eliminada).
+  /// Borra todo lo local del usuario (cuenta eliminada o logout confirmado).
   Future<void> wipeUser() async {
     final userId = _userId;
     if (userId == null) return;

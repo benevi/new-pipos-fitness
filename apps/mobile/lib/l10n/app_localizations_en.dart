@@ -865,6 +865,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsLogout => 'Log out';
 
   @override
+  String get settingsLogoutConfirmTitle => 'Sign out?';
+
+  @override
+  String get settingsLogoutConfirmBody =>
+      'Your plan and saved sessions will be removed from this phone. Your data stays in your account.';
+
+  @override
+  String settingsLogoutUnsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets haven\'t been sent to the server.',
+      one: '1 set hasn\'t been sent to the server.',
+    );
+    return '$_temp0 If you sign out now they\'ll be lost. Connect to the internet to send them first.';
+  }
+
+  @override
   String get settingsLegal => 'Legal and medical notice';
 
   @override

@@ -868,6 +868,24 @@ class AppLocalizationsEs extends AppLocalizations {
   String get settingsLogout => 'Cerrar sesión';
 
   @override
+  String get settingsLogoutConfirmTitle => '¿Cerrar sesión?';
+
+  @override
+  String get settingsLogoutConfirmBody =>
+      'Se borrarán de este móvil tu plan y tus sesiones guardadas. Tus datos siguen en tu cuenta.';
+
+  @override
+  String settingsLogoutUnsent(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Hay $count series sin enviar al servidor.',
+      one: 'Hay 1 serie sin enviar al servidor.',
+    );
+    return '$_temp0 Si cierras sesión ahora se perderán. Conéctate a internet para enviarlas antes.';
+  }
+
+  @override
   String get settingsLegal => 'Aviso legal y médico';
 
   @override
