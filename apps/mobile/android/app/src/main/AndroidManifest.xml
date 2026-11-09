@@ -70,5 +70,13 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- url_launcher (ADR-0014, Fase 4): «Ver vídeo» abre un vídeo revisado de
+             YouTube FUERA de la app (app de YouTube o navegador). Desde Android 11
+             hace falta declarar que la app consulta quién abre enlaces https. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <category android:name="android.intent.category.BROWSABLE"/>
+            <data android:scheme="https"/>
+        </intent>
     </queries>
 </manifest>

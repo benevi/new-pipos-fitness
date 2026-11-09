@@ -82,6 +82,7 @@ export function fakeEngineCatalog(): EngineCatalog {
     muscles: e.muscles.map((m) => ({ muscle: m.muscle, fraction: m.fraction })),
     muscleRefs: sortExerciseMuscles(e.muscles),
     loadImplement: loadImplement(e),
+    hasVideo: e.media.some((m) => m.kind === 'youtube'),
   }));
   return { exercises, bySlug: new Map(entries.map((e) => [e.slug, e])), byId: new Map(entries.map((e) => [e.id, e])) };
 }

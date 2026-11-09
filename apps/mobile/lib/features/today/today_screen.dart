@@ -23,6 +23,7 @@ import '../../models/notes_breaks.dart' show parseCalendarDate;
 import '../../models/plan.dart';
 import '../../models/workout.dart';
 import '../exercise/exercise_detail_screen.dart';
+import '../exercise/exercise_video.dart';
 import '../../shared/decimal_input.dart';
 import '../../shared/exercise_muscles.dart';
 import '../../shared/widgets.dart';
@@ -785,6 +786,15 @@ class ExerciseCard extends StatelessWidget {
               id: exercise.planExerciseId,
               muscles: exercise.muscles,
             ),
+            // Vídeo revisado (ADR-0014, Fase 4): sin vídeo, no hay botón.
+            if (exercise.hasVideo)
+              Padding(
+                padding: const EdgeInsets.only(top: AppSpacing.xs),
+                child: ExerciseVideoButton(
+                  idOrSlug: exercise.exercise.id,
+                  exerciseName: exercise.exercise.nameEs,
+                ),
+              ),
             if (onEditNote != null)
               _NoteBox(
                 planExerciseId: exercise.planExerciseId,

@@ -203,6 +203,12 @@ export const TodayExerciseSchema = z
     // ── Fase 1 de la guía de ejercicios (ADR-0014).
     /** Músculos del ejercicio realmente hecho (sustituto o fijado incluidos): principales primero. */
     muscles: ExerciseMusclesSchema,
+    // ── Fase 4 de la guía de ejercicios (ADR-0014).
+    /**
+     * true si el ejercicio realmente hecho tiene un vídeo revisado (aprobado por PR): la app pinta
+     * el botón «Ver vídeo» sin pedir la ficha. false (y sin botón) si no lo hay.
+     */
+    hasVideo: z.boolean().default(false),
   })
   .strict();
 export type TodayExercise = z.infer<typeof TodayExerciseSchema>;

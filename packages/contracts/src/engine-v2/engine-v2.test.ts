@@ -20,12 +20,28 @@ const exercise = {
   cuesEs: ['Escápulas juntas', 'Barra al centro del pecho'],
   descriptionEs: 'Empuje tumbado en banco que baja la barra al pecho y la sube; trabaja sobre todo el pecho.',
   mistakesEs: ['Rebotar la barra en el pecho', 'Despegar los glúteos del banco'],
-  media: null,
+  media: [],
 };
+
+/** Medios FICTICIOS (solo para tests; el catálogo real no lleva vídeos hasta que se aprueben por PR). */
+const VIDEO = {
+  kind: 'youtube',
+  videoId: 'AAAAAAAAAA1',
+  startSeconds: 12,
+  channelName: 'Canal de prueba',
+  locale: 'es',
+  isPrimary: true,
+};
+const IMAGE = { kind: 'image', file: 'press-prueba.webp', credit: 'Equipo Pipos', licence: 'own-work', isPrimary: false };
 
 describe('engineV2: catálogo', () => {
   it('acepta un ejercicio bien etiquetado', () => {
     expect(engineV2.CatalogExerciseSchema.safeParse(exercise).success).toBe(true);
+  });
+
+  it('acepta hasta 2 medios con uno principal (ADR-0014, Fase 4)', () => {
+    expect(engineV2.CatalogExerciseSchema.safeParse({ ...exercise, media: [VIDEO] }).success).toBe(true);
+    expect(engineV2.CatalogExerciseSchema.safeParse({ ...exercise, media: [VIDEO, IMAGE] }).success).toBe(true);
   });
 
   it.each([
@@ -68,6 +84,11 @@ describe('engineV2: catálogo', () => {
     ['descripción de más de 400 caracteres', { descriptionEs: 'x'.repeat(401) }],
     ['más de 3 errores comunes', { mistakesEs: ['Error uno', 'Error dos', 'Error tres', 'Error cuatro'] }],
     ['error común de más de 120 caracteres', { mistakesEs: ['x'.repeat(121)] }],
+    ['medios a null (formato anterior a la Fase 4)', { media: null }],
+    ['más de 2 medios', { media: [VIDEO, { ...VIDEO, videoId: 'BBBBBBBBBB2', isPrimary: false }, IMAGE] }],
+    ['medios sin principal', { media: [{ ...VIDEO, isPrimary: false }] }],
+    ['dos medios principales', { media: [VIDEO, { ...IMAGE, isPrimary: true }] }],
+    ['el mismo vídeo dos veces', { media: [VIDEO, { ...VIDEO, isPrimary: false }] }],
   ])('rechaza %s', (_name, patch) => {
     expect(engineV2.CatalogExerciseSchema.safeParse({ ...exercise, ...patch }).success).toBe(false);
   });

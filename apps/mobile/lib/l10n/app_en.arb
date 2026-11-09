@@ -485,5 +485,14 @@
   "exerciseDetailMinLevel": "Minimum level",
   "exerciseDetailWatchZones": "Areas to watch",
   "exerciseDetailZoneLine": "{zone}: {level, select, avoid{this exercise loads it heavily} other{this exercise loads it}}",
-  "exerciseDetailWatchZonesNote": "Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional."
+  "exerciseDetailWatchZonesNote": "Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional.",
+  "exerciseVideoButton": "Watch video (YouTube)",
+  "exerciseVideoSemantics": "Watch the {name} technique video on YouTube. You leave Pipos.",
+  "exerciseVideoChannel": "Reviewed video from the {channel} channel. It opens in YouTube, outside Pipos.",
+  "exerciseVideoLeaveTitle": "You're leaving Pipos",
+  "exerciseVideoLeaveBody": "The video from the {channel} channel opens in YouTube (app or browser). Pipos sends none of your data; what you do there is handled by YouTube.",
+  "exerciseVideoLeaveConfirm": "Open YouTube",
+  "exerciseVideoOffline": "You're offline: the video needs internet. Try again when you're back online.",
+  "exerciseVideoUnavailable": "This exercise no longer has a reviewed video.",
+  "exerciseVideoOpenFailed": "YouTube couldn't be opened."
 }

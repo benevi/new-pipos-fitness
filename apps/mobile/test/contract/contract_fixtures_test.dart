@@ -49,6 +49,20 @@ void main() {
   );
   roundTrip('set_log', (j) => SetLog.fromJson(j).toJson());
   roundTrip('exercise_detail', (j) => ExerciseDetail.fromJson(j).toJson());
+  // Fase 4 (ADR-0014): medios FICTICIOS, solo para tests.
+  roundTrip(
+    'exercise_detail_video',
+    (j) => ExerciseDetail.fromJson(j).toJson(),
+  );
+  test(
+    'exercise_detail_video: el vídeo principal y la imagen se conservan',
+    () {
+      final d = ExerciseDetail.fromJson(fixture('exercise_detail_video'));
+      expect(d.media, hasLength(2));
+      expect(d.primaryVideo?.videoId, 'AAAAAAAAAA1');
+      expect(d.primaryVideo?.startSeconds, 42);
+    },
+  );
   test(
     'exercise_detail_legacy: sin ficha → descripción null, listas vacías',
     () {
@@ -170,10 +184,13 @@ void main() {
           ..remove('loadStepKg')
           ..remove('plates')
           ..remove('pinned')
-          ..remove('note');
+          ..remove('note')
+          ..remove('hasVideo');
       }
       final s = TodaySession.fromJson(j);
       expect(s.scheduledToday, isTrue);
+      // Sin `hasVideo` (anterior a la Fase 4 de ADR-0014): sin botón de vídeo.
+      expect(s.exercises.first.hasVideo, isFalse);
       expect(s.exercises.first.plates, isNull);
       expect(s.exercises.first.pinned, isFalse);
     },

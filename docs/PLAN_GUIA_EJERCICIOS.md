@@ -203,6 +203,11 @@ Progreso muestra el mapa de la semana con alternativa en lista.
 
 **Bloqueada** hasta tener contenido revisado (preguntas abiertas). El código puede prepararse antes.
 
+**Estado (2026-11-09):** código preparado (rama `mejoras/guia-fase-4-videos`): esquema y validación de
+`media`, `media:check`, seed y API (`media`, `hasVideo`), botón en la app y docs. El catálogo sigue **sin
+vídeos**: la fase no está «hecha» hasta que una persona elija y apruebe los vídeos por PR según el
+procedimiento de `packages/catalog/README.md`.
+
 **Catálogo**
 - `media` deja de ser `null`: lista de `{ kind: 'youtube', videoId, startSeconds?, endSeconds?,
   channelName, locale }` o `{ kind: 'image', file, credit, licence }`. Máximo 2 por ejercicio, uno

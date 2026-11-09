@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import type { Prisma } from '@prisma/client';
 import { getExercise } from '@pipos/catalog';
 import { loadImplement } from '@pipos/engine-rules';
-import { sortExerciseMuscles } from '@pipos/contracts';
+import { engineV2 as contractsV2, sortExerciseMuscles } from '@pipos/contracts';
 import type {
   engineV2,
   ExerciseDetail,
+  ExerciseMedia,
   ExerciseListQuery,
   ExerciseListResponse,
   ExerciseMuscleRef,
@@ -15,6 +16,8 @@ import type {
   MovementPattern,
 } from '@pipos/contracts';
 import { ApiError } from '../../common/api-error';
+
+const MediaImageLicenceSchema = contractsV2.MediaImageLicenceSchema;
 import { Clock } from '../../common/clock';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -22,9 +25,42 @@ const exerciseInclude = {
   muscles: { orderBy: { muscle: 'asc' } },
   riskTags: { orderBy: { zone: 'asc' } },
   substitutionGroup: { select: { key: true } },
+  // Solo medios aprobados (los escribe el seed desde el catálogo revisado por PR; ADR-0005,
+  // ADR-0014). El principal primero.
+  media: {
+    where: { moderationStatus: 'approved' },
+    orderBy: [{ isPrimary: 'desc' }, { createdAt: 'asc' }, { id: 'asc' }],
+  },
 } satisfies Prisma.ExerciseInclude;
 
 type ExerciseRow = Prisma.ExerciseGetPayload<{ include: typeof exerciseInclude }>;
+type MediaRow = ExerciseRow['media'][number];
+
+/**
+ * Medio aprobado tal como lo envía la API. Una fila incompleta (no debería existir por el CHECK
+ * `media_source_chk`) se omite: nunca se envía un medio a medias.
+ */
+export function toExerciseMedia(row: MediaRow): ExerciseMedia | null {
+  if (row.kind === 'youtube') {
+    if (!row.externalId || !row.channelName || !row.locale) return null;
+    return {
+      kind: 'youtube',
+      videoId: row.externalId,
+      startSeconds: row.startSeconds,
+      endSeconds: row.endSeconds,
+      channelName: row.channelName,
+      locale: row.locale,
+      isPrimary: row.isPrimary,
+    };
+  }
+  const licence = MediaImageLicenceSchema.safeParse(row.licence);
+  if (!row.file || !row.credit || !licence.success) return null;
+  return { kind: 'image', file: row.file, credit: row.credit, licence: licence.data, isPrimary: row.isPrimary };
+}
+
+function approvedMedia(row: ExerciseRow): ExerciseMedia[] {
+  return row.media.map(toExerciseMedia).filter((m): m is ExerciseMedia => m !== null);
+}
 
 export interface CatalogEntry {
   id: string;
@@ -39,6 +75,8 @@ export interface CatalogEntry {
   muscleRefs: ExerciseMuscleRef[];
   /** Material que fija el paso de carga (PROGRAMACION.md §16.16); null si no se carga en kg. */
   loadImplement: engineV2.LoadImplement | null;
+  /** Tiene un vídeo aprobado (ADR-0014, Fase 4): la tarjeta de Hoy pinta «Ver vídeo». */
+  hasVideo: boolean;
 }
 
 export interface EngineCatalog {
@@ -71,7 +109,8 @@ export function toEngineExercise(row: ExerciseRow): engineV2.CatalogExercise {
     cuesEs: row.cuesEs,
     descriptionEs: row.descriptionEs ?? packaged?.descriptionEs ?? `Ejercicio del catálogo: ${row.nameEs}`,
     mistakesEs: row.descriptionEs === null ? (packaged?.mistakesEs ?? []) : row.mistakesEs,
-    media: null,
+    // El motor no usa los medios; la app los recibe del detalle (`GET /exercises/:id`).
+    media: [],
   };
 }
 
@@ -103,6 +142,7 @@ function toEntry(row: ExerciseRow): CatalogEntry {
     muscles: row.muscles.map((m) => ({ muscle: m.muscle, fraction: Number(m.fraction) })),
     muscleRefs: sortExerciseMuscles(row.muscles),
     loadImplement: loadImplement(row),
+    hasVideo: approvedMedia(row).some((m) => m.kind === 'youtube'),
   };
 }
 
@@ -200,8 +240,8 @@ export class CatalogService {
       cuesEs: row.cuesEs,
       descriptionEs: row.descriptionEs,
       mistakesEs: row.mistakesEs,
-      // Fase 4 (ADR-0014): solo medios revisados del catálogo; hasta entonces, ninguno.
-      media: [],
+      // Fase 4 (ADR-0014): solo medios aprobados del catálogo (revisados por PR), el principal primero.
+      media: approvedMedia(row),
     };
   }
 }

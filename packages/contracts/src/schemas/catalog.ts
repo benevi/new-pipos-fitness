@@ -11,6 +11,12 @@ import {
   RiskLevelSchema,
   TrainingLevelSchema,
 } from '../enums/index.js';
+import {
+  EXERCISE_MEDIA_MAX,
+  MEDIA_IMAGE_FILE_REGEX,
+  MediaImageLicenceSchema,
+  YOUTUBE_VIDEO_ID_REGEX,
+} from '../engine-v2/catalog.js';
 import { ExerciseSlugSchema, IdSchema, PaginationQuerySchema, paginatedSchema } from './common.js';
 import { TEXT_LIMITS } from './limits.js';
 
@@ -82,14 +88,15 @@ export const ExerciseIdOrSlugParamsSchema = z.object({ id: z.union([IdSchema, Ex
 export type ExerciseIdOrSlugParams = z.infer<typeof ExerciseIdOrSlugParamsSchema>;
 
 /**
- * Medio de técnica revisado (ADR-0014, Fase 4). Hasta la Fase 4 la lista llega siempre vacía:
- * nunca se envía un enlace a una búsqueda ni un medio sin revisar.
+ * Medio de técnica revisado (ADR-0014, Fase 4): solo los del catálogo, aprobados por PR
+ * (ADR-0005). Nunca un enlace a una búsqueda ni un medio sin revisar. El principal va primero.
  */
 export const ExerciseMediaSchema = z.discriminatedUnion('kind', [
   z
     .object({
       kind: z.literal('youtube'),
-      videoId: z.string().regex(/^[A-Za-z0-9_-]{11}$/),
+      videoId: z.string().regex(YOUTUBE_VIDEO_ID_REGEX),
+      /** Segundo de inicio (null = desde el principio). */
       startSeconds: z.number().int().nonnegative().nullable(),
       endSeconds: z.number().int().positive().nullable(),
       channelName: z.string(),
@@ -100,9 +107,10 @@ export const ExerciseMediaSchema = z.discriminatedUnion('kind', [
   z
     .object({
       kind: z.literal('image'),
-      url: z.string().url(),
+      /** Fichero del paquete del catálogo (`packages/catalog/media/`). */
+      file: z.string().regex(MEDIA_IMAGE_FILE_REGEX),
       credit: z.string(),
-      licence: z.string(),
+      licence: MediaImageLicenceSchema,
       isPrimary: z.boolean(),
     })
     .strict(),
@@ -118,8 +126,8 @@ export const ExerciseDetailSchema = ExerciseSummarySchema.extend({
   descriptionEs: z.string().nullable().default(null),
   /** Errores comunes (0-3). */
   mistakesEs: z.array(z.string()).default([]),
-  /** Vídeos e imágenes revisados; lista vacía hasta la Fase 4. */
-  media: z.array(ExerciseMediaSchema).default([]),
+  /** Vídeos e imágenes revisados (0-2, el principal primero); vacía si nadie ha aprobado ninguno. */
+  media: z.array(ExerciseMediaSchema).max(EXERCISE_MEDIA_MAX).default([]),
 }).strict();
 export type ExerciseDetail = z.infer<typeof ExerciseDetailSchema>;
 
