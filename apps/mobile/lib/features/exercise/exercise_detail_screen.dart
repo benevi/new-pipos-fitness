@@ -22,6 +22,8 @@ import '../../models/exercise.dart';
 import '../../models/profile.dart';
 import '../../shared/widgets.dart';
 import '../onboarding/onboarding_controller.dart' show profileProvider;
+import '../onboarding/profile_draft.dart' show PickedExercise, ProfilePick;
+import '../setup/setup_provider.dart';
 import 'exercise_providers.dart';
 
 /// Ruta de la ficha (`/exercise/:id`, id o slug).
@@ -193,6 +195,11 @@ class _DetailBody extends ConsumerWidget {
             ],
           ),
         ),
+        // Favoritos y vetados (ADR-0014, Fase 3): solo con el perfil hecho
+        // (en el onboarding ya se eligen en su paso) y legible.
+        if (profile != null &&
+            ref.watch(setupStatusProvider) == SetupStatus.ready)
+          _PreferencesCard(detail: detail),
         if (watchZones.isNotEmpty)
           SectionCard(
             key: const Key('exercise-watch-zones'),
@@ -236,6 +243,64 @@ class _DetailBody extends ConsumerWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// «Añadir a favoritos» / «No quiero hacerlo»: llevan a la edición del perfil
+/// existente con el cambio preparado; no hay otro camino de escritura (al
+/// guardar, el perfil regenera el plan).
+class _PreferencesCard extends StatelessWidget {
+  const _PreferencesCard({required this.detail});
+
+  final ExerciseDetail detail;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final lang = Localizations.localeOf(context).languageCode;
+    // `go` y no `push`: la edición vive en la rama de Ajustes del shell, y
+    // apilarla sobre la ficha duplicaría la página del shell.
+    void open({required bool favourite}) => context.go(
+      '/settings/profile',
+      extra: ProfilePick(
+        exercise: PickedExercise(
+          slug: detail.slug,
+          name: detail.localizedName(lang),
+        ),
+        favourite: favourite,
+      ),
+    );
+    const buttonSize = Size(0, AppSpacing.xxl);
+    return SectionCard(
+      key: const Key('exercise-preferences'),
+      title: l10n.exerciseDetailPreferences,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          OutlinedButton.icon(
+            key: const Key('exercise-add-favourite'),
+            style: OutlinedButton.styleFrom(minimumSize: buttonSize),
+            icon: const Icon(Icons.star_outline),
+            label: Text(l10n.exerciseDetailAddFavourite),
+            onPressed: () => open(favourite: true),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          OutlinedButton.icon(
+            key: const Key('exercise-ban'),
+            style: OutlinedButton.styleFrom(minimumSize: buttonSize),
+            icon: const Icon(Icons.block),
+            label: Text(l10n.exerciseDetailBan),
+            onPressed: () => open(favourite: false),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            l10n.exerciseDetailPreferencesNote,
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
+      ),
     );
   }
 }

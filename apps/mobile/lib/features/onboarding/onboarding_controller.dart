@@ -131,6 +131,27 @@ class OnboardingController extends StateNotifier<OnboardingState> {
     state = state.copyWith(errors: errors, bump: true, clearFailure: true);
   }
 
+  /// Prepara un cambio de favoritos o vetados que llega desde la ficha: el
+  /// ejercicio pasa a la lista elegida (y sale de la otra) y el formulario se
+  /// abre en el paso de preferencias. No guarda nada hasta que el usuario lo
+  /// confirma.
+  void applyPick(ProfilePick pick) {
+    final slug = pick.exercise.slug;
+    edit(
+      (d) {
+        d.favourites.removeWhere((x) => x.slug == slug);
+        d.banned.removeWhere((x) => x.slug == slug);
+        (pick.favourite ? d.favourites : d.banned).add(pick.exercise);
+      },
+      field: pick.favourite
+          ? OnboardingField.favouriteExerciseSlugs
+          : OnboardingField.bannedExerciseSlugs,
+    );
+    if (steps.contains(OnboardingStep.preferences)) {
+      state = state.copyWith(step: OnboardingStep.preferences, bump: true);
+    }
+  }
+
   void setConsent(bool accepted) {
     state.draft.consent = accepted;
     if (!accepted) {

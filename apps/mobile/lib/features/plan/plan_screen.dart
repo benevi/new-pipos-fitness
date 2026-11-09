@@ -11,6 +11,7 @@ import '../today/today_providers.dart';
 import '../../l10n/app_localizations.dart';
 import '../../l10n/failure_messages.dart';
 import '../../shared/widgets.dart';
+import '../exercises/exercises_screen.dart' show exercisesLocation;
 import '../setup/setup_provider.dart';
 import 'plan_providers.dart';
 import 'plan_view.dart';
@@ -59,17 +60,44 @@ class PlanScreen extends ConsumerWidget {
             child: PlanOverview(
               plan: cached.value,
               onUnpin: cached.fromCache ? null : (e) => _unpin(context, ref, e),
-              header: cached.fromCache && cached.savedAt != null
-                  ? NoticeBanner(
+              header: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  if (cached.fromCache && cached.savedAt != null)
+                    NoticeBanner(
                       text: l10n.cachedDataNotice(
                         l10n.dateTime(cached.savedAt!),
                       ),
                       icon: Icons.cloud_off_outlined,
-                    )
-                  : null,
+                    ),
+                  const ExercisesByMuscleEntry(),
+                ],
+              ),
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+/// Entrada a la biblioteca por músculo (ADR-0014, Fase 3; CUJ-12): primer
+/// toque de los tres que llevan a cualquier ficha.
+class ExercisesByMuscleEntry extends StatelessWidget {
+  const ExercisesByMuscleEntry({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return Card(
+      child: ListTile(
+        key: const Key('plan-exercises-by-muscle'),
+        minTileHeight: AppSpacing.xxl + AppSpacing.md,
+        leading: const Icon(Icons.accessibility_new),
+        title: Text(l10n.planExercisesByMuscle),
+        subtitle: Text(l10n.planExercisesByMuscleHint),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.go(exercisesLocation),
       ),
     );
   }

@@ -1,0 +1,96 @@
+{
+  "items": [
+    {
+      "id": "00000000-0000-4000-8000-000000000100",
+      "slug": "hip-thrust-mancuerna",
+      "nameEs": "Hip thrust con mancuerna",
+      "nameEn": "Dumbbell hip thrust",
+      "movementPattern": "hip_isolation",
+      "isCompound": false,
+      "isUnilateral": false,
+      "minLevel": "beginner",
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "loadType": "weighted",
+      "primaryMuscles": [
+        "glutes"
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000110",
+      "slug": "patada-gluteo-polea",
+      "nameEs": "Patada de glúteo en polea",
+      "nameEn": "Cable glute kickback",
+      "movementPattern": "hip_isolation",
+      "isCompound": false,
+      "isUnilateral": true,
+      "minLevel": "beginner",
+      "equipment": [
+        "cable"
+      ],
+      "loadType": "weighted",
+      "primaryMuscles": [
+        "glutes"
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000120",
+      "slug": "puente-gluteos",
+      "nameEs": "Puente de glúteos",
+      "nameEn": "Glute bridge",
+      "movementPattern": "hip_isolation",
+      "isCompound": false,
+      "isUnilateral": false,
+      "minLevel": "beginner",
+      "equipment": [
+        "bodyweight"
+      ],
+      "loadType": "unweighted",
+      "primaryMuscles": [
+        "glutes"
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000130",
+      "slug": "peso-muerto-barra",
+      "nameEs": "Peso muerto convencional con barra",
+      "nameEn": "Barbell conventional deadlift",
+      "movementPattern": "hinge",
+      "isCompound": true,
+      "isUnilateral": false,
+      "minLevel": "intermediate",
+      "equipment": [
+        "barbell"
+      ],
+      "loadType": "weighted",
+      "primaryMuscles": [
+        "glutes",
+        "hamstrings"
+      ]
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000140",
+      "slug": "sentadilla-bulgara-mancuernas",
+      "nameEs": "Sentadilla búlgara con mancuernas",
+      "nameEn": "Dumbbell Bulgarian split squat",
+      "movementPattern": "lunge",
+      "isCompound": true,
+      "isUnilateral": true,
+      "minLevel": "intermediate",
+      "equipment": [
+        "dumbbell",
+        "bench"
+      ],
+      "loadType": "weighted",
+      "primaryMuscles": [
+        "glutes",
+        "quads"
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 100,
+  "total": 5
+}

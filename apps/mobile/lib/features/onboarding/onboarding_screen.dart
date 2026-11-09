@@ -35,9 +35,12 @@ class OnboardingScreen extends ConsumerWidget {
   }
 }
 
-/// Edición del perfil desde Ajustes.
+/// Edición del perfil desde Ajustes. Con [pick] (desde la ficha de un
+/// ejercicio) se abre en preferencias con ese cambio ya preparado.
 class ProfileEditScreen extends ConsumerWidget {
-  const ProfileEditScreen({super.key});
+  const ProfileEditScreen({super.key, this.pick});
+
+  final ProfilePick? pick;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -60,9 +63,50 @@ class ProfileEditScreen extends ConsumerWidget {
               profile: null,
               mode: ProfileFormMode.onboarding,
             )
-          : _ProfileFormScaffold(profile: p, mode: ProfileFormMode.edit),
+          : pick == null
+          ? _ProfileFormScaffold(profile: p, mode: ProfileFormMode.edit)
+          : _WithPick(
+              profile: p,
+              pick: pick!,
+              child: _ProfileFormScaffold(
+                profile: p,
+                mode: ProfileFormMode.edit,
+              ),
+            ),
     );
   }
+}
+
+/// Aplica una sola vez el cambio preparado desde la ficha.
+class _WithPick extends ConsumerStatefulWidget {
+  const _WithPick({
+    required this.profile,
+    required this.pick,
+    required this.child,
+  });
+
+  final ProfileResponse profile;
+  final ProfilePick pick;
+  final Widget child;
+
+  @override
+  ConsumerState<_WithPick> createState() => _WithPickState();
+}
+
+class _WithPickState extends ConsumerState<_WithPick> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ref
+          .read(profileEditControllerProvider(widget.profile).notifier)
+          .applyPick(widget.pick);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => widget.child;
 }
 
 class _ProfileFormScaffold extends ConsumerWidget {

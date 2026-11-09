@@ -2804,6 +2804,199 @@ abstract class AppLocalizations {
   /// In es, this message translates to:
   /// **'Según las limitaciones que indicaste en tu perfil. No es consejo médico: si notas dolor, para y consulta a un profesional sanitario.'**
   String get exerciseDetailWatchZonesNote;
+
+  /// No description provided for @planExercisesByMuscle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver ejercicios por músculo'**
+  String get planExercisesByMuscle;
+
+  /// No description provided for @planExercisesByMuscleHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Elige un músculo en el cuerpo o en una lista y mira qué ejercicios lo trabajan.'**
+  String get planExercisesByMuscleHint;
+
+  /// No description provided for @exercisesTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejercicios'**
+  String get exercisesTitle;
+
+  /// No description provided for @exercisesTabBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuerpo'**
+  String get exercisesTabBody;
+
+  /// No description provided for @exercisesTabList.
+  ///
+  /// In es, this message translates to:
+  /// **'Lista'**
+  String get exercisesTabList;
+
+  /// No description provided for @exercisesBodyHint.
+  ///
+  /// In es, this message translates to:
+  /// **'Toca un músculo para ver los ejercicios que lo trabajan.'**
+  String get exercisesBodyHint;
+
+  /// No description provided for @exercisesListAlternative.
+  ///
+  /// In es, this message translates to:
+  /// **'¿Te cuesta tocar una zona? En «Lista» están los mismos músculos por grupo.'**
+  String get exercisesListAlternative;
+
+  /// No description provided for @exercisesFront.
+  ///
+  /// In es, this message translates to:
+  /// **'Delante'**
+  String get exercisesFront;
+
+  /// No description provided for @exercisesBack.
+  ///
+  /// In es, this message translates to:
+  /// **'Detrás'**
+  String get exercisesBack;
+
+  /// No description provided for @exercisesRegionLabel.
+  ///
+  /// In es, this message translates to:
+  /// **'{muscle}, vista de {side}. Ver sus ejercicios'**
+  String exercisesRegionLabel(String muscle, String side);
+
+  /// No description provided for @exercisesOtherMuscles.
+  ///
+  /// In es, this message translates to:
+  /// **'Otros músculos'**
+  String get exercisesOtherMuscles;
+
+  /// No description provided for @exercisesOtherMusclesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'No cuentan para ningún grupo de volumen del plan.'**
+  String get exercisesOtherMusclesNote;
+
+  /// No description provided for @muscleExercisesIntro.
+  ///
+  /// In es, this message translates to:
+  /// **'Ejercicios que trabajan {muscle} como músculo principal, de principiante a avanzado.'**
+  String muscleExercisesIntro(String muscle);
+
+  /// No description provided for @muscleExercisesAllCatalog.
+  ///
+  /// In es, this message translates to:
+  /// **'Todo el catálogo'**
+  String get muscleExercisesAllCatalog;
+
+  /// No description provided for @muscleExercisesAllCatalogOn.
+  ///
+  /// In es, this message translates to:
+  /// **'Con cualquier material'**
+  String get muscleExercisesAllCatalogOn;
+
+  /// No description provided for @muscleExercisesAllCatalogOff.
+  ///
+  /// In es, this message translates to:
+  /// **'Solo los que puedes hacer con tu material'**
+  String get muscleExercisesAllCatalogOff;
+
+  /// No description provided for @muscleExercisesEmptyTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin ejercicios'**
+  String get muscleExercisesEmptyTitle;
+
+  /// No description provided for @muscleExercisesEmptyMine.
+  ///
+  /// In es, this message translates to:
+  /// **'Con tu material no hay ejercicios que trabajen este músculo como principal.'**
+  String get muscleExercisesEmptyMine;
+
+  /// No description provided for @muscleExercisesEmptyAll.
+  ///
+  /// In es, this message translates to:
+  /// **'No hay ejercicios que trabajen este músculo como principal.'**
+  String get muscleExercisesEmptyAll;
+
+  /// No description provided for @muscleExercisesShowAll.
+  ///
+  /// In es, this message translates to:
+  /// **'Ver todo el catálogo'**
+  String get muscleExercisesShowAll;
+
+  /// No description provided for @exerciseDetailPreferences.
+  ///
+  /// In es, this message translates to:
+  /// **'Tus preferencias'**
+  String get exerciseDetailPreferences;
+
+  /// No description provided for @exerciseDetailAddFavourite.
+  ///
+  /// In es, this message translates to:
+  /// **'Añadir a favoritos'**
+  String get exerciseDetailAddFavourite;
+
+  /// No description provided for @exerciseDetailBan.
+  ///
+  /// In es, this message translates to:
+  /// **'No quiero hacerlo'**
+  String get exerciseDetailBan;
+
+  /// No description provided for @exerciseDetailPreferencesNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Se abre la edición de tu perfil con el cambio preparado; al guardar, se regenera tu plan.'**
+  String get exerciseDetailPreferencesNote;
+
+  /// No description provided for @progressHeatmapTitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Mapa de la semana'**
+  String get progressHeatmapTitle;
+
+  /// No description provided for @progressHeatmapSubtitle.
+  ///
+  /// In es, this message translates to:
+  /// **'Series de esta semana frente a tu objetivo.'**
+  String get progressHeatmapSubtitle;
+
+  /// No description provided for @progressHeatmapEmpty.
+  ///
+  /// In es, this message translates to:
+  /// **'Cuando tengas un plan y entrenes esta semana, cada músculo se coloreará según tus series.'**
+  String get progressHeatmapEmpty;
+
+  /// No description provided for @progressHeatmapLegendNoTarget.
+  ///
+  /// In es, this message translates to:
+  /// **'Sin objetivo'**
+  String get progressHeatmapLegendNoTarget;
+
+  /// No description provided for @progressHeatmapRegion.
+  ///
+  /// In es, this message translates to:
+  /// **'{muscle} ({group}): {sets} series, objetivo {min} a {max}, {status}'**
+  String progressHeatmapRegion(
+    String muscle,
+    String group,
+    String sets,
+    String min,
+    String max,
+    String status,
+  );
+
+  /// No description provided for @progressHeatmapRegionNoGroup.
+  ///
+  /// In es, this message translates to:
+  /// **'{muscle}: no cuenta para ningún grupo, sin objetivo'**
+  String progressHeatmapRegionNoGroup(String muscle);
+
+  /// No description provided for @progressHeatmapListNote.
+  ///
+  /// In es, this message translates to:
+  /// **'Las barras de abajo dan los mismos datos por grupo.'**
+  String get progressHeatmapListNote;
 }
 
 class _AppLocalizationsDelegate

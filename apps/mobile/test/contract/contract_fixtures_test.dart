@@ -74,6 +74,13 @@ void main() {
       ExerciseSummary.fromJson,
     ).toJson((s) => s.toJson()),
   );
+  roundTrip(
+    'exercise_list_by_muscle',
+    (j) => Paginated.fromJson(
+      j,
+      ExerciseSummary.fromJson,
+    ).toJson((s) => s.toJson()),
+  );
 
   // ADR-0013 (ideas recuperadas).
   roundTrip(

@@ -89,6 +89,55 @@ void main() {
     },
   );
 
+  testWidgets(
+    'texto ×2.0: biblioteca por músculo, ficha con preferencias y mapa de '
+    'calor (ADR-0014, Fase 3) sin overflow y accesibles',
+    (tester) async {
+      usePhoneSize(tester);
+      tester.platformDispatcher.textScaleFactorTestValue = 2.0;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      final semantics = tester.ensureSemantics();
+      final harness = AppHarness.signedIn();
+      await harness.pump(tester);
+      await tester.pumpAndSettle();
+
+      // Plan → Ejercicios (cuerpo y lista) → glúteos → ficha.
+      await tapKey(tester, 'nav-plan');
+      await tapKey(tester, 'plan-exercises-by-muscle');
+      await _checkScreen(tester);
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('body-figure-back')),
+        200,
+        scrollable: verticalScrollable(),
+      );
+      await _checkScreen(tester);
+      await tapKey(tester, 'exercises-tab-list');
+      await _checkScreen(tester);
+      await tapKey(tester, 'muscle-list-glutes');
+      await _checkScreen(tester);
+      await tapKey(tester, 'library-exercise-puente-gluteos');
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('exercise-preferences')),
+        200,
+        scrollable: verticalScrollable(),
+      );
+      await _checkScreen(tester);
+      await tapKey(tester, 'exercise-add-favourite');
+      await _checkScreen(tester);
+
+      // Progreso: mapa de calor con su leyenda.
+      await tapKey(tester, 'nav-progress');
+      await tester.scrollUntilVisible(
+        find.byKey(const Key('heatmap-figure-front')),
+        200,
+        scrollable: verticalScrollable(),
+      );
+      await _checkScreen(tester);
+      semantics.dispose();
+      await harness.drainAndUnmount(tester);
+    },
+  );
+
   testWidgets('texto ×2.0: cuestionario sin overflow', (tester) async {
     usePhoneSize(tester);
     tester.platformDispatcher.textScaleFactorTestValue = 2.0;

@@ -2052,4 +2052,122 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get exerciseDetailWatchZonesNote =>
       'Based on the limitations in your profile. This is not medical advice: if you feel pain, stop and see a health professional.';
+
+  @override
+  String get planExercisesByMuscle => 'Browse exercises by muscle';
+
+  @override
+  String get planExercisesByMuscleHint =>
+      'Pick a muscle on the body or in a list and see which exercises work it.';
+
+  @override
+  String get exercisesTitle => 'Exercises';
+
+  @override
+  String get exercisesTabBody => 'Body';
+
+  @override
+  String get exercisesTabList => 'List';
+
+  @override
+  String get exercisesBodyHint =>
+      'Tap a muscle to see the exercises that work it.';
+
+  @override
+  String get exercisesListAlternative =>
+      'Hard to tap an area? «List» has the same muscles by group.';
+
+  @override
+  String get exercisesFront => 'Front';
+
+  @override
+  String get exercisesBack => 'Back';
+
+  @override
+  String exercisesRegionLabel(String muscle, String side) {
+    return '$muscle, $side view. See its exercises';
+  }
+
+  @override
+  String get exercisesOtherMuscles => 'Other muscles';
+
+  @override
+  String get exercisesOtherMusclesNote =>
+      'They don\'t count towards any volume group in the plan.';
+
+  @override
+  String muscleExercisesIntro(String muscle) {
+    return 'Exercises that work $muscle as a primary muscle, from beginner to advanced.';
+  }
+
+  @override
+  String get muscleExercisesAllCatalog => 'Whole catalogue';
+
+  @override
+  String get muscleExercisesAllCatalogOn => 'With any equipment';
+
+  @override
+  String get muscleExercisesAllCatalogOff =>
+      'Only those you can do with your equipment';
+
+  @override
+  String get muscleExercisesEmptyTitle => 'No exercises';
+
+  @override
+  String get muscleExercisesEmptyMine =>
+      'With your equipment there are no exercises that work this muscle as primary.';
+
+  @override
+  String get muscleExercisesEmptyAll =>
+      'There are no exercises that work this muscle as primary.';
+
+  @override
+  String get muscleExercisesShowAll => 'See the whole catalogue';
+
+  @override
+  String get exerciseDetailPreferences => 'Your preferences';
+
+  @override
+  String get exerciseDetailAddFavourite => 'Add to favourites';
+
+  @override
+  String get exerciseDetailBan => 'I don\'t want to do it';
+
+  @override
+  String get exerciseDetailPreferencesNote =>
+      'Your profile opens with the change ready; saving regenerates your plan.';
+
+  @override
+  String get progressHeatmapTitle => 'This week\'s map';
+
+  @override
+  String get progressHeatmapSubtitle => 'Sets this week against your target.';
+
+  @override
+  String get progressHeatmapEmpty =>
+      'Once you have a plan and train this week, each muscle will be coloured by your sets.';
+
+  @override
+  String get progressHeatmapLegendNoTarget => 'No target';
+
+  @override
+  String progressHeatmapRegion(
+    String muscle,
+    String group,
+    String sets,
+    String min,
+    String max,
+    String status,
+  ) {
+    return '$muscle ($group): $sets sets, target $min to $max, $status';
+  }
+
+  @override
+  String progressHeatmapRegionNoGroup(String muscle) {
+    return '$muscle: doesn\'t count towards any group, no target';
+  }
+
+  @override
+  String get progressHeatmapListNote =>
+      'The bars below give the same data by group.';
 }
