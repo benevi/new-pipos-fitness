@@ -1094,6 +1094,18 @@ abstract class AppLocalizations {
   /// **'Un entrenamiento guardado en este móvil ({count, plural, =1{1 serie} other{{count} series}}) no se pudo empezar en el servidor: ya hay otro en curso en tu cuenta. Termina ese entrenamiento y pulsa «Reintentar», o descarta el de este móvil.'**
   String todayConflictBody(int count);
 
+  /// No description provided for @todayPlanOutdatedBody.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan cambió mientras entrenabas sin conexión: este entrenamiento guardado en el móvil ({count, plural, =1{1 serie} other{{count} series}}) es de la sesión anterior y no se puede subir. Se conserva aquí hasta que lo descartes.'**
+  String todayPlanOutdatedBody(int count);
+
+  /// No description provided for @setRejectedPlanOutdated.
+  ///
+  /// In es, this message translates to:
+  /// **'Tu plan cambió: esta serie es de la sesión anterior y no se puede subir.'**
+  String get setRejectedPlanOutdated;
+
   /// No description provided for @todayConflictDiscard.
   ///
   /// In es, this message translates to:

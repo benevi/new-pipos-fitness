@@ -30,6 +30,7 @@ import 'edit_set_sheet.dart';
 import 'note_sheet.dart';
 import 'plates.dart';
 import 'rest_timer_bar.dart';
+import '../plan/plan_providers.dart';
 import 'swap_sheet.dart';
 import 'today_providers.dart';
 
@@ -298,6 +299,14 @@ class _SessionBodyState extends ConsumerState<_SessionBody> {
       swaps,
       workout?.clientId,
     );
+    // El plan cambió mientras el inicio esperaba en la cola: se relee la
+    // sesión vigente (y el plan).
+    ref.listen(planOutdatedProvider, (_, next) {
+      if (next.hasValue) {
+        ref.invalidate(todaySessionProvider);
+        ref.invalidate(currentPlanProvider);
+      }
+    });
     ref.listen(pendingSwapsProvider, (prev, next) {
       final before = prev?.valueOrNull?.map((s) => s.key).toSet() ?? {};
       final now = next.valueOrNull?.map((s) => s.key).toSet() ?? {};
@@ -487,6 +496,7 @@ class _ConflictBanner extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final outdated = workout.lastError == ApiErrorCode.planSessionOutdated;
     final theme = Theme.of(context);
     final count = visibleSets(
       ref.watch(localSetsProvider(workout.clientId)).valueOrNull ?? const [],
@@ -503,7 +513,9 @@ class _ConflictBanner extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            l10n.todayConflictBody(count),
+            outdated
+                ? l10n.todayPlanOutdatedBody(count)
+                : l10n.todayConflictBody(count),
             style: theme.textTheme.bodyMedium?.copyWith(
               color: theme.colorScheme.onErrorContainer,
             ),
@@ -511,11 +523,14 @@ class _ConflictBanner extends ConsumerWidget {
           Wrap(
             spacing: AppSpacing.sm,
             children: [
-              TextButton(
-                key: const Key('conflict-retry'),
-                onPressed: () => ref.read(syncServiceProvider).retryFailed(),
-                child: Text(l10n.syncRetry),
-              ),
+              // Con un plan nuevo, reintentar no sirve: sus series son de
+              // la sesión antigua. Se conserva en el móvil hasta descartarlo.
+              if (!outdated)
+                TextButton(
+                  key: const Key('conflict-retry'),
+                  onPressed: () => ref.read(syncServiceProvider).retryFailed(),
+                  child: Text(l10n.syncRetry),
+                ),
               TextButton(
                 key: const Key('conflict-discard'),
                 onPressed: () => _discard(context, ref, count),

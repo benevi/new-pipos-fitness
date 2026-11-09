@@ -143,8 +143,14 @@ final openWorkoutProvider = StreamProvider.autoDispose
           ref.watch(syncServiceProvider).watchOpenWorkout(planSessionId),
     );
 
+/// La API avisó de que el plan cambió (`409 PLAN_SESSION_OUTDATED`).
+final planOutdatedProvider = StreamProvider.autoDispose<void>(
+  (ref) => ref.watch(syncServiceProvider).planOutdated,
+);
+
 /// Entrenamientos locales bloqueados por otro en curso en la cuenta
-/// (`409 WORKOUT_IN_PROGRESS` de otra sesión del plan).
+/// (`409 WORKOUT_IN_PROGRESS` de otra sesión del plan) o por un cambio de
+/// plan con series ya hechas (`409 PLAN_SESSION_OUTDATED`).
 final conflictingWorkoutsProvider =
     StreamProvider.autoDispose<List<LocalWorkout>>(
       (ref) => ref.watch(syncServiceProvider).watchConflictingWorkouts(),

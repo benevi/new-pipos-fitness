@@ -649,6 +649,21 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String todayPlanOutdatedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sets',
+      one: '1 set',
+    );
+    return 'Your plan changed while you trained offline: this workout saved on your phone ($_temp0) belongs to the previous session and can\'t be uploaded. It stays here until you discard it.';
+  }
+
+  @override
+  String get setRejectedPlanOutdated =>
+      'Your plan changed: this set belongs to the previous session and can\'t be uploaded.';
+
+  @override
   String get todayConflictDiscard => 'Discard';
 
   @override

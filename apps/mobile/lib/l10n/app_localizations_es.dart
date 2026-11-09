@@ -651,6 +651,21 @@ class AppLocalizationsEs extends AppLocalizations {
   }
 
   @override
+  String todayPlanOutdatedBody(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count series',
+      one: '1 serie',
+    );
+    return 'Tu plan cambió mientras entrenabas sin conexión: este entrenamiento guardado en el móvil ($_temp0) es de la sesión anterior y no se puede subir. Se conserva aquí hasta que lo descartes.';
+  }
+
+  @override
+  String get setRejectedPlanOutdated =>
+      'Tu plan cambió: esta serie es de la sesión anterior y no se puede subir.';
+
+  @override
   String get todayConflictDiscard => 'Descartar';
 
   @override

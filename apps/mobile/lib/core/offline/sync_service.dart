@@ -869,7 +869,15 @@ class SyncService {
   /// MISMA sesión del plan, se adopta: el entrenamiento local queda
   /// enlazado al id remoto y sus series se envían allí. Si es de otra
   /// sesión se propaga el 409 (la UI ofrece reintentar o descartar).
-  Future<String> _startOnServer(LocalWorkout w) async {
+  ///
+  /// `409 PLAN_SESSION_OUTDATED` (el plan cambió, p. ej. desde otro
+  /// dispositivo, mientras el inicio esperaba en la cola) no es un fallo
+  /// permanente: se relee `GET /sessions/today` y, si el entrenamiento local
+  /// aún no tiene series ni cambios de ejercicio (que serían de huecos de la
+  /// versión antigua), se reapunta a la sesión vigente y se reintenta con el
+  /// MISMO `clientId`. Si ya los tiene, se propaga: queda en conflicto (sin
+  /// bloquear la cola) y la UI ofrece descartarlo o conservarlo en el móvil.
+  Future<String> _startOnServer(LocalWorkout w, {bool retried = false}) async {
     try {
       final result = await _api.startWorkout(
         StartWorkoutRequest(
@@ -883,6 +891,25 @@ class SyncService {
       return result.value.id;
     } catch (e) {
       final f = ApiFailure.from(e);
+      if (f.code == ApiErrorCode.planSessionOutdated) {
+        _planOutdated();
+        if (retried) rethrow;
+        final today = await _api.getToday();
+        final hasWork =
+            (await setsOf(w.clientId)).any((s) => !s.deleted) ||
+            (await _swapRowsOf(w.clientId)).isNotEmpty;
+        if (hasWork || today.planSessionId == w.planSessionId) rethrow;
+        await (_db.update(
+          _workouts,
+        )..where((t) => t.clientId.equals(w.clientId))).write(
+          LocalWorkoutsCompanion(planSessionId: Value(today.planSessionId)),
+        );
+        _notify();
+        return _startOnServer(
+          w.copyWith(planSessionId: today.planSessionId),
+          retried: true,
+        );
+      }
       if (f.code != ApiErrorCode.workoutInProgress) rethrow;
       final today = await _api.getToday();
       final remote = today.workout;
@@ -896,9 +923,20 @@ class SyncService {
     }
   }
 
+  /// La API avisó de que el plan cambió (`PLAN_SESSION_OUTDATED`): la UI
+  /// relee la sesión de hoy y el plan.
+  Stream<void> get planOutdated => _planOutdatedController.stream;
+  final _planOutdatedController = StreamController<void>.broadcast();
+
+  void _planOutdated() {
+    if (!_planOutdatedController.isClosed) _planOutdatedController.add(null);
+  }
+
   /// Entrenamientos locales cuyo inicio rechazó la API porque hay otro en
-  /// curso (de otra sesión) en la cuenta. La UI ofrece reintentar (tras
-  /// terminar el otro) o descartar el local.
+  /// curso (de otra sesión) en la cuenta, o porque su sesión es de una
+  /// versión del plan que ya no es la vigente y ya tiene series
+  /// (`lastError` lo distingue). La UI ofrece reintentar (solo en el primer
+  /// caso) o descartar el local.
   Stream<List<LocalWorkout>> watchConflictingWorkouts() {
     final userId = _userId;
     if (userId == null) return Stream.value(const []);
@@ -908,7 +946,10 @@ class SyncService {
                 (t) =>
                     t.userId.equals(userId) &
                     t.serverId.isNull() &
-                    t.lastError.equals(ApiErrorCode.workoutInProgress),
+                    t.lastError.isIn(const [
+                      ApiErrorCode.workoutInProgress,
+                      ApiErrorCode.planSessionOutdated,
+                    ]),
               ))
               .get(),
     );
@@ -1654,6 +1695,7 @@ class SyncService {
   Future<void> dispose() async {
     _disposed = true;
     await _changes.close();
+    await _planOutdatedController.close();
     _retryTimer?.cancel();
     await _connectivitySub?.cancel();
   }

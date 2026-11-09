@@ -81,6 +81,9 @@ class FakeBackend
   final List<WorkoutAdjustment> todayQueries = [];
   final List<StartWorkoutRequest> startRequests = [];
 
+  /// Sesiones de versiones del plan que ya no son la vigente.
+  final Set<String> outdatedPlanSessions = {};
+
   /// Cambios fijados: planExerciseId → exerciseId.
   final Map<String, String> pins = {};
 
@@ -385,6 +388,10 @@ class FakeBackend
     startRequests.add(request);
     final existing = workouts[request.clientId];
     if (existing != null) return Upserted(existing, created: false);
+    // Como la API (issue #10): sesión de una versión del plan no vigente.
+    if (outdatedPlanSessions.contains(request.planSessionId)) {
+      throw _error(409, ApiErrorCode.planSessionOutdated);
+    }
     if (workouts.values.any((w) => w.status == WorkoutStatus.inProgress)) {
       throw _error(409, ApiErrorCode.workoutInProgress);
     }

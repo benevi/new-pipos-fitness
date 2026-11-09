@@ -40,6 +40,7 @@ String setRejectionReason(AppLocalizations l10n, String? code) =>
       'HTTP 400' ||
       'HTTP 422' => l10n.setRejectedInvalid,
       ApiErrorCode.workoutFinished => l10n.setRejectedFinished,
+      ApiErrorCode.planSessionOutdated => l10n.setRejectedPlanOutdated,
       ApiErrorCode.notFound ||
       ApiErrorCode.workoutInProgress ||
       'WORKOUT_NOT_STARTED' => l10n.setRejectedNotStarted,

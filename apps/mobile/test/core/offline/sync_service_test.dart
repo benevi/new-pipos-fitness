@@ -501,6 +501,65 @@ void main() {
     expect(await service.setsOf(a.clientId), hasLength(1));
   });
 
+  group('409 PLAN_SESSION_OUTDATED (el plan cambió con el inicio en cola)', () {
+    const oldSession = '00000000-0000-4000-8000-000000000098';
+
+    test('sin series: relee /sessions/today y reintenta con la sesión '
+        'vigente y el MISMO clientId', () async {
+      backend.outdatedPlanSessions.add(oldSession);
+      final w = await service.startWorkout(planSessionId: oldSession);
+      var outdated = 0;
+      final sub = service.planOutdated.listen((_) => outdated++);
+      connectivity.online = true;
+      await service.syncNow();
+      await sub.cancel();
+
+      expect(backend.startRequests.map((r) => r.clientId).toSet(), {
+        w.clientId,
+      });
+      expect(backend.startRequests.map((r) => r.planSessionId), [
+        oldSession,
+        planSession,
+      ]);
+      final local = (await service.workoutByClientId(w.clientId))!;
+      expect(local.planSessionId, planSession);
+      expect(local.serverId, 'srv-${w.clientId}');
+      expect(local.lastError, isNull);
+      expect(outdated, greaterThan(0), reason: 'la UI relee la sesión');
+    });
+
+    test('con series: no se reintenta ni bloquea la cola; queda en conflicto '
+        'con su motivo para descartarlo o conservarlo', () async {
+      backend.outdatedPlanSessions.add(oldSession);
+      final w = await service.startWorkout(planSessionId: oldSession);
+      final set = await service.logSet(
+        workoutClientId: w.clientId,
+        planExerciseId: planExercise,
+        exerciseId: exercise,
+        setIndex: 0,
+        reps: 8,
+        loadKg: 60,
+      );
+      connectivity.online = true;
+      await service.syncNow();
+
+      expect(backend.startRequests, hasLength(1));
+      final conflict = (await service.watchConflictingWorkouts().first).single;
+      expect(conflict.clientId, w.clientId);
+      expect(conflict.lastError, ApiErrorCode.planSessionOutdated);
+      final row = (await service.setsOf(w.clientId)).single;
+      expect(row.clientId, set.clientId);
+      expect(row.status, SetSyncStatus.failed);
+      expect(row.lastError, ApiErrorCode.planSessionOutdated);
+
+      // Se conserva hasta que la persona decide; descartarlo lo quita.
+      await service.syncNow();
+      expect(await service.workoutByClientId(w.clientId), isNotNull);
+      await service.discardWorkout(w.clientId);
+      expect(await service.watchConflictingWorkouts().first, isEmpty);
+    });
+  });
+
   test('los syncNow lanzados sin esperar capturan y reportan el error '
       '(no hay error no manejado)', () async {
     final broken = _BrokenConnectivity();

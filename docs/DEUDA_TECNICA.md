@@ -175,23 +175,14 @@ Lo que bloquea el despliegue (firma, TLS, DPIA…) está además en [DEPLOY_CHEC
 
 Lista facilitada por la revisión de la app tras sus correcciones de la Fase 5.
 
-### [Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento
-- **Severidad:** Media (sin esto, un inicio encolado offline justo antes de un cambio de plan
-  hecho en otro dispositivo queda en `failed` con sus series)
-- **Contexto:** desde el issue #10 la API rechaza `POST /workouts` con una sesión de una versión
-  del plan que ya no es la vigente. Solo afecta a entrenamientos **nuevos**: si el `clientId` ya
-  existe en el servidor, el reenvío devuelve 200 y las series se siguen aceptando.
-- **Comportamiento esperado del cliente:**
-  1. Tratar `PLAN_SESSION_OUTDATED` como recuperable, **no** como fallo permanente de la cola.
-  2. Refrescar `GET /sessions/today` (y la caché del plan, `GET /plans/current`).
-  3. Si el entrenamiento local **no tiene series**: reapuntarlo a la `planSessionId` vigente que
-     devuelve `/sessions/today` y reintentar el `POST /workouts` con el **mismo `clientId`**.
-  4. Si **ya tiene series** locales (hechas offline con la sesión antigua): no se pueden subir a
-     la sesión nueva (sus `planExerciseId` son de la versión antigua → 400). Avisar al usuario
-     («tu plan cambió mientras entrenabas sin conexión») y ofrecer descartar el entrenamiento
-     local o rehacerlo con la sesión vigente; nunca dejarlo bloqueando la cola.
-  5. Test de sincronización: inicio encolado + regeneración del plan → reintento con la sesión
-     vigente y el mismo `clientId`.
+### ~~[Móvil] Manejar `409 PLAN_SESSION_OUTDATED` al empezar un entrenamiento~~ — RESUELTO (PR pendiente)
+- **Estado:** resuelto en la rama `deuda/movil-1`.
+- **Qué se hizo:** `SyncService._startOnServer` trata `PLAN_SESSION_OUTDATED` como recuperable:
+  relee `GET /sessions/today` y, si el entrenamiento local no tiene series ni cambios de ejercicio,
+  lo reapunta a la sesión vigente y reintenta `POST /workouts` con el mismo `clientId`. Si ya tiene
+  series, queda en conflicto con su motivo (sin bloquear la cola): Hoy avisa de que el plan cambió
+  y ofrece descartarlo (se conserva en el móvil hasta entonces); la sesión y el plan se releen.
+  Tests en `test/core/offline/sync_service_test.dart`.
 
 ### [Móvil] Enviar `Idempotency-Key` al generar el plan y descartar entrenamientos
 - **Severidad:** Baja
