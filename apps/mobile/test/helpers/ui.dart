@@ -8,6 +8,14 @@ Future<void> tapKey(
   bool settle = true,
 }) async {
   final finder = find.byKey(Key(key));
+  if (finder.evaluate().isEmpty) {
+    // Listas perezosas: el elemento aún no está construido.
+    await tester.scrollUntilVisible(
+      finder,
+      200,
+      scrollable: find.byType(Scrollable).last,
+    );
+  }
   await tester.ensureVisible(finder);
   await tester.pump();
   await tester.tap(finder);
